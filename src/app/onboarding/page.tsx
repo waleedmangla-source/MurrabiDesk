@@ -89,8 +89,6 @@ export default function OnboardingPage() {
   }
 
   const handleConnect = () => {
-    const CLIENT_ID = "834945075004-a5rh91gdl55tqcplv91uh8gs3lajaauu.apps.googleusercontent.com";
-    const REDIRECT_URI = "http://localhost:3001/api/auth/google/callback";
     const SCOPES = [
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/gmail.modify",
@@ -99,9 +97,12 @@ export default function OnboardingPage() {
       "openid"
     ].join(" ");
 
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
+    const redirect_uri = `${origin}/api/auth/google/callback`;
+
     const params = new URLSearchParams({
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
+      client_id: '898739956427-0l10a5eb5782782782782782782782782.apps.googleusercontent.com',
+      redirect_uri,
       response_type: "code",
       scope: SCOPES,
       access_type: "offline",

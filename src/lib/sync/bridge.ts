@@ -15,18 +15,25 @@ export const liquid = {
         }
     }
 
-    // 2. Fallback to Liquid Glass Brain (Safari Mode)
+    // 2. Identify Environment and Route
+    const isElectron = typeof window !== 'undefined' && navigator.userAgent.toLowerCase().indexOf('electron') > -1;
+    const targetUrl = isElectron ? `${BRAIN_URL}/${action}` : `/api/brain/${action}`;
+    
+    // 3. Attach Token for Cloud/Web requests
+    const tokenHeader = typeof window !== 'undefined' ? localStorage.getItem('google_refresh_token_encrypted') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (tokenHeader) headers['x-murrabi-token'] = tokenHeader;
+
     try {
-      const response = await fetch(`${BRAIN_URL}/${action}`, {
+      const response = await fetch(targetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(data)
       });
       if (!response.ok) throw new Error(`Brain Error: ${response.status}`);
       return await response.json();
     } catch (err) {
       console.warn(`[LIQUID] Bridge failed for ${action}:`, err);
-      // No-op or throw depending on UI needs
       return null;
     }
   }

@@ -28,7 +28,7 @@
     "files": [
       "main.js",
       "preload.js",
-      "main-sync-service.js",
+      "src/lib/main-sync-service.js",
       "out/**/*",
       "package.json"
     ],

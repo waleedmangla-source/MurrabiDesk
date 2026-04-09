@@ -40,7 +40,7 @@ function decrypt(text) {
 // 2. MOCK ELECTRON PLUMBING (Mocking what MainSyncService expects)
 // We need to Mock the parts of electron that MainSyncService imports but doesn't use for GUI.
 // (Luckily, MainSyncService was already quite clean).
-const MainSyncService = require('./main-sync-service');
+const MainSyncService = require('./src/lib/main-sync-service');
 
 // 3. ENV & PATHS
 function loadEnv() {
