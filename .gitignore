@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Electron build output and binaries
+dist/
+dist-main/
+*.app/
+**/*.app/
+*.zip
+**/*.zip
+*.dmg
+**/*.dmg
+*.exe
+**/*.exe
+*.asar
+**/*.asar
+app.asar
+main-bundled.js
+
+# Shipping / Packaging Folders
+Ready-To-Ship*/
+
+# Staging and cache
+staging*/
+asar_staging/
+staging_asar/
+.npm-cache/
+.chrome-profile/
+.electron-user-data*/
+.electron-v6-stable-data/
+.murrabi-headless-data/
+
+# Environment and secrets
+.env
+.env*.local
+.env.local.example
+credentials*.json
+*.pem
+*.key
+
+# Logs and Debug
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+ps_aux.txt
+v6_pid*.txt
+v7_pid*.txt
+v8_pid*.txt
+v9_pid*.txt
+current_procs.txt
+
+# Temp / Generated Files
+pdf_b64.txt
+template.b64
+waqfeen_*.html
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project-specific ignored
+scratch/
+test-dir/
