@@ -68,6 +68,7 @@
     "@tiptap/pm": "^3.21.0",
     "@tiptap/react": "^3.21.0",
     "@tiptap/starter-kit": "^3.21.0",
+    "better-sqlite3": "^12.8.0",
     "clsx": "^2.1.1",
     "googleapis": "^171.4.0",
     "lucide-react": "^0.378.0",
@@ -79,6 +80,7 @@
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

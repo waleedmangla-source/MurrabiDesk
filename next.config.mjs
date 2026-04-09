@@ -10,6 +10,9 @@ const nextConfig = {
         unoptimized: true,
         domains: ['lh3.googleusercontent.com'],
     },
+    experimental: {
+        serverComponentsExternalPackages: ['better-sqlite3'],
+    }
 };
 
 export default nextConfig;
