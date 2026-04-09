@@ -33,17 +33,25 @@ export default function OnboardingPage() {
   const handleOAuthExchange = async (code: string) => {
     setIsConnecting(true);
     try {
-      console.log('Onboarding: Genesis Hand-off Detected. Synchronizing...');
+      console.log('🧠 [AUTH] Genesis Hand-off Detected. Initiating exchange...');
       const result = await liquid.invoke('auth-exchange', { code });
+      
+      console.log('🧠 [AUTH] Exchange Result:', result);
+
       if (result && result.success && result.encryptedToken) {
+        console.log('🧠 [AUTH] Token secured. Redirecting to Command Center...');
         localStorage.setItem('google_refresh_token_encrypted', result.encryptedToken);
-        router.push('/');
+        // Add a small delay to ensure localStorage is flushed
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       } else {
-        console.error('Genesis Failure:', result.error);
+        console.error('🧠 [AUTH] Genesis Failure:', result?.error || 'Unknown Error');
+        alert(`Authentication Error: ${result?.error || 'Unknown Error'}. Please check your Google Cloud Console redirect URIs.`);
         setIsVerifying(false);
       }
     } catch (err) {
-      console.error('Hand-off Error:', err);
+      console.error('🧠 [AUTH] Hand-off Error:', err);
       setIsVerifying(false);
     } finally {
       setIsConnecting(false);

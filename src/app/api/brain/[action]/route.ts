@@ -38,7 +38,12 @@ export async function POST(
   const action = params.action;
   const body = await request.json();
   const origin = request.nextUrl.origin;
-  const REDIRECT_URI = `${origin}/api/auth/google/callback`;
+  // Ensure we use the proper scheme and host for Google's redirect URI
+  const REDIRECT_URI = origin.includes('localhost') 
+    ? `http://localhost:3001/api/auth/google/callback`
+    : `${origin}/api/auth/google/callback`;
+
+  console.log(`🧠 [BRAIN-API] Origin: ${origin} | Redirect: ${REDIRECT_URI}`);
 
   // Use token from request headers if available (Stateless mode)
   const tokenHeader = request.headers.get('x-murrabi-token');
