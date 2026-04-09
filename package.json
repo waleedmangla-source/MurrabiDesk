@@ -6,10 +6,10 @@
   "private": true,
   "main": "main.js",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3001",
     "launch": "node launch_desktop_stable.js",
-    "preapp:dev": "lsof -i :3000 -t | xargs kill -9 || true",
-    "app:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
+    "preapp:dev": "lsof -i :3001 -t | xargs kill -9 || true",
+    "app:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3001 && NODE_ENV=development electron .\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

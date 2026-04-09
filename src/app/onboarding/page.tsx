@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Sparkles, ArrowRight, ShieldCheck, Cloud, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { liquid } from '@/lib/sync/bridge';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -32,8 +33,8 @@ export default function OnboardingPage() {
     setIsConnecting(true);
     try {
       console.log('Onboarding: Genesis Hand-off Detected. Synchronizing...');
-      const result = await window.electron.authExchangeCode(code);
-      if (result.success && result.encryptedToken) {
+      const result = await liquid.invoke('auth-exchange', { code });
+      if (result && result.success && result.encryptedToken) {
         localStorage.setItem('google_refresh_token_encrypted', result.encryptedToken);
         router.push('/');
       } else {
@@ -88,7 +89,7 @@ export default function OnboardingPage() {
 
   const handleConnect = () => {
     const CLIENT_ID = "834945075004-a5rh91gdl55tqcplv91uh8gs3lajaauu.apps.googleusercontent.com";
-    const REDIRECT_URI = "http://localhost:3000/api/auth/google/callback";
+    const REDIRECT_URI = "http://localhost:3001/api/auth/google/callback";
     const SCOPES = [
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/gmail.modify",
@@ -116,13 +117,13 @@ export default function OnboardingPage() {
     
     try {
       // 1. Encrypt and save token to localStorage
-      let encrypted = token;
-      if (window.electron) {
-        encrypted = await window.electron.encryptString(token);
-        await window.electron.syncInit(token);
-      }
+      const result = await liquid.invoke('auth-exchange', { code: token });
       
-      localStorage.setItem('google_refresh_token_encrypted', encrypted);
+      if (result && result.success && result.encryptedToken) {
+        localStorage.setItem('google_refresh_token_encrypted', result.encryptedToken);
+        // Force sync init
+        await liquid.invoke('sync-init', { refreshToken: token });
+      }
       
       // 2. Redirect to Dashboard
       router.push("/");

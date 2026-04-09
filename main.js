@@ -30,7 +30,7 @@ if (process.platform === 'darwin') {
 let syncService = null;
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = 'http://localhost:3000/api/auth/google/callback';
+const REDIRECT_URI = 'http://localhost:3001/api/auth/google/callback';
 
 function createWindow() {
   const port = process.env.PORT || 7778;
