@@ -32,6 +32,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { clsx } from "clsx";
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import { liquid } from '@/lib/sync/bridge';
 
 const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string, soft: string, rgb: string }> = {
   red: { main: '#ef4444', hover: '#dc2626', glow: 'rgba(239, 68, 68, 0.5)', soft: 'rgba(239, 68, 68, 0.1)', rgb: '239, 68, 68' },
@@ -86,10 +87,21 @@ export default function RootLayout({
     window.addEventListener('online', () => setIsOnline(true));
     window.addEventListener('offline', () => setIsOnline(false));
 
-    // Fetch User Profile
-    GoogleSyncService.getUserProfile().then(profile => {
-      if (profile) setUserProfile(profile);
-    });
+    // 3. Initialize Sync Engine if token exists
+    const existingToken = localStorage.getItem('google_refresh_token_encrypted');
+    const isGuest = localStorage.getItem('murrabi_guest_mode') === 'true';
+
+    if (existingToken && !isGuest) {
+      liquid.invoke('sync-init', { refreshToken: existingToken }).then(() => {
+        // Fetch User Profile after init
+        GoogleSyncService.getUserProfile().then(profile => {
+          if (profile) setUserProfile(profile);
+        });
+      });
+    } else if (isGuest) {
+      setUserProfile({ name: 'Guest User', email: 'guest@murrabi.local', picture: null });
+    }
+
     // Load Accent Preference
     const savedSettings = localStorage.getItem('murrabi_settings');
     if (savedSettings) {

@@ -145,7 +145,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
+      res.end(JSON.stringify(result || { success: false, error: 'Empty state' }));
     } catch (err) {
       console.error(`🧠 [BRAIN-NODE] Error: ${err.message}`);
       res.writeHead(500);

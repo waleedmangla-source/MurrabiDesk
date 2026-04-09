@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Sparkles, ArrowRight, ShieldCheck, Cloud, Globe } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, Cloud, Globe, Zap, LogOut, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { liquid } from '@/lib/sync/bridge';
 
@@ -11,9 +11,10 @@ export default function OnboardingPage() {
   const [isVerifying, setIsVerifying] = useState(true);
 
   React.useEffect(() => {
-    // 1. Check for manual auth
+    // 1. Check for manual auth or guest mode
     const isAuth = localStorage.getItem('google_refresh_token_encrypted');
-    if (isAuth) {
+    const isGuest = localStorage.getItem('murrabi_guest_mode') === 'true';
+    if (isAuth || isGuest) {
       router.push('/');
       return;
     }
@@ -111,6 +112,12 @@ export default function OnboardingPage() {
     window.location.href = GOOGLE_AUTH_URL;
   };
 
+  const handleBypass = () => {
+    console.log('🛡 [AUTH] Manual Bypass Triggered. Entering Guest Mode.');
+    localStorage.setItem('murrabi_guest_mode', 'true');
+    router.push('/');
+  };
+
   const handleApplyToken = async () => {
     if (!token) return;
     setIsConnecting(true);
@@ -191,6 +198,15 @@ export default function OnboardingPage() {
                 <Cloud size={24} className="text-white" />
                 Connect Google Account
               </button>
+              
+              <button 
+                onClick={handleBypass}
+                className="w-full h-12 rounded-[15px] bg-red-600/10 border border-red-500/20 text-red-500 font-bold text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-red-600/20 transition-all active:scale-[0.98]"
+              >
+                <Zap size={14} />
+                Bypass Authentication (Dev Mode)
+              </button>
+
               <p className="text-center text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
                 Secure OAuth2 Authentication
               </p>
