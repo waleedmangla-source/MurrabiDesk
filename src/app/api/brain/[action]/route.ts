@@ -131,6 +131,15 @@ export async function POST(
         result = { success: true };
         break;
 
+      case 'logout':
+        result = { success: true };
+        break;
+
+      case 'sync-init':
+        // Cloud API is stateless, but we can validate the token here if needed
+        result = { success: true };
+        break;
+
       case 'decrypt':
         result = { decrypted: decrypt(body.encrypted) };
         break;

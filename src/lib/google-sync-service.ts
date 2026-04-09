@@ -139,13 +139,26 @@ export class GoogleSyncService {
     // Clear tokens & profiles from LocalStorage
     localStorage.removeItem('google_refresh_token_encrypted');
     localStorage.removeItem('cached_user_profile');
+    localStorage.removeItem('murrabi_guest_mode');
     
     // Clear all service caches
-    const cachedKeys = Object.keys(localStorage).filter(k => k.startsWith('cache_') || k.startsWith('calendar') || k === 'gmail' || k === 'notes');
+    const cachedKeys = Object.keys(localStorage).filter(k => 
+      k.startsWith('cache_') || 
+      k.startsWith('calendar') || 
+      k.startsWith('gmail') || 
+      k.startsWith('notes') ||
+      k.includes('token')
+    );
     cachedKeys.forEach(k => localStorage.removeItem(k));
 
+    console.log('🧠 [SYNC] Protocol Termination: Local storage purged.');
+
     // Clear Electron-side internal store & session
-    await liquid.invoke('logout');
+    try {
+      await liquid.invoke('logout');
+    } catch (e) {
+      console.warn('Cloud logout notification bypass.');
+    }
   }
 }
 
