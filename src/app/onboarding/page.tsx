@@ -101,7 +101,7 @@ export default function OnboardingPage() {
     const redirect_uri = `${origin}/api/auth/google/callback`;
 
     const params = new URLSearchParams({
-      client_id: '898739956427-0l10a5eb5782782782782782782782782.apps.googleusercontent.com',
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '834945075004-a5rh91gdl55tqcplv91uh8gs3lajaauu.apps.googleusercontent.com',
       redirect_uri,
       response_type: "code",
       scope: SCOPES,
