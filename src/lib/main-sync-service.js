@@ -6,6 +6,7 @@ try {
     electron = { ipcMain: { handle: () => {}, on: () => {} }, safeStorage: { isEncryptionAvailable: () => false } };
 }
 const { ipcMain, safeStorage } = electron;
+const { google } = require('googleapis');
 
 class MainSyncService {
   constructor(clientId, clientSecret, redirectUri) {

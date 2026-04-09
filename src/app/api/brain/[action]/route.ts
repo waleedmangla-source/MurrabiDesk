@@ -94,6 +94,43 @@ export async function POST(
         result = { success: true };
         break;
 
+      case 'calendar-insert':
+        result = await syncService.createCalendarEvent(body);
+        break;
+
+      case 'gmail-send':
+        await syncService.sendEmail(body.to, body.subject, body.body, body.attachments);
+        result = { success: true };
+        break;
+
+      case 'gmail-archive':
+        await syncService.archiveEmail(body.id || body);
+        result = { success: true };
+        break;
+
+      case 'gmail-trash':
+        await syncService.trashEmail(body.id || body);
+        result = { success: true };
+        break;
+
+      case 'gmail-mark-read':
+        await syncService.markAsRead(body.id || body);
+        result = { success: true };
+        break;
+
+      case 'list-notes':
+        result = await syncService.listNotes();
+        break;
+
+      case 'get-note-content':
+        result = await syncService.getNoteContent(body.fileId);
+        break;
+
+      case 'save-note':
+        await syncService.saveNote(body.name, body.content, body.fileId);
+        result = { success: true };
+        break;
+
       case 'decrypt':
         result = { decrypted: decrypt(body.encrypted) };
         break;
