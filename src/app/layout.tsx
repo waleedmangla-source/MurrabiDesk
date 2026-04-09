@@ -210,12 +210,12 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#8E1E2F" />
+        <meta name="theme-color" content="#0a0a2e" />
         <link rel="apple-touch-icon" href="/icons/icon.png" />
       </head>
       <body className={clsx(
         inter.className, 
-        isElectron ? "bg-transparent is-electron" : "bg-black", 
+        isElectron ? "bg-transparent is-electron" : "bg-[#0a0a2e]", 
         "transition-colors duration-500"
       )}>
         <div className="flex h-screen w-full bg-transparent overflow-hidden relative">
