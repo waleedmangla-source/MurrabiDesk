@@ -24,12 +24,14 @@ import {
   Terminal,
   X,
   Minus,
-  Maximize2
+  Maximize2,
+  Download
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { clsx } from "clsx";
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
 const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string, soft: string, rgb: string }> = {
   red: { main: '#ef4444', hover: '#dc2626', glow: 'rgba(239, 68, 68, 0.5)', soft: 'rgba(239, 68, 68, 0.1)', rgb: '239, 68, 68' },
@@ -150,12 +152,20 @@ export default function RootLayout({
     };
   }, []);
 
-  // Auth Guard Protocol
+  // Auth Guard Protocol (Liquid Shield V2)
   useEffect(() => {
     if (!mounted) return;
+    
     const isAuth = localStorage.getItem('google_refresh_token_encrypted');
-    if (!isAuth && pathname !== '/onboarding') {
+    const isGuest = localStorage.getItem('murrabi_guest_mode') === 'true';
+    const authenticated = isAuth || isGuest;
+
+    if (!authenticated && pathname !== '/onboarding') {
+      console.log('🛡 [AUTH] Unauthorized access detected. Shielding to Onboarding.');
       router.push('/onboarding');
+    } else if (authenticated && pathname === '/onboarding') {
+      console.log('🛡 [AUTH] Valid session identified. Entering Dashboard.');
+      router.push('/');
     }
   }, [mounted, pathname, router]);
 
@@ -191,7 +201,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#8E1E2F" />
         <link rel="apple-touch-icon" href="/icons/icon.png" />
       </head>
-      <body className={clsx(inter.className, isElectron ? "bg-transparent" : "bg-black", "transition-colors duration-500")}>
+      <body className={clsx(
+        inter.className, 
+        isElectron ? "bg-transparent is-electron" : "bg-black", 
+        "transition-colors duration-500"
+      )}>
         <div className="flex h-screen w-full bg-transparent overflow-hidden relative">
           <CommandPalette />
 
@@ -293,8 +307,24 @@ export default function RootLayout({
                     <Settings size={20} />
                   </Link>
                </div>
+               
+               {/* Installation Call to Action */}
+               {!isElectron && (
+                 <div className="mt-4 px-2">
+                    <button 
+                     id="pwa-install-trigger"
+                     className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 rounded-xl py-4 text-[9px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-600/20 hover:text-red-400 transition-all no-drag shadow-lg shadow-red-900/10 group"
+                    >
+                      <Download size={12} className="group-hover:bounce" />
+                      Initialize App Mode
+                    </button>
+                 </div>
+               )}
             </div>
           </aside>
+
+          {/* Integration of PWA Prompt Component */}
+          {!isElectron && <PWAInstallPrompt />}
 
           <main className={clsx(
             "flex-1 h-full overflow-y-auto custom-scrollbar transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",
