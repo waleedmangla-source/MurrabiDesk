@@ -68,7 +68,7 @@ export default function RootLayout({
     { icon: Mail, label: "Emails", href: "/emails" },
     { icon: Calendar, label: "Calendar", href: "/calendar" },
     { icon: FileText, label: "Notes", href: "/notes" },
-    { icon: Receipt, label: "Expenses", href: "/expenses" },
+    { icon: Receipt, label: "Expense Tool", href: "/expenses" },
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
 

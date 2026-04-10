@@ -621,7 +621,7 @@ export default function ExpensesPage() {
       {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-medium tracking-tighter text-white">Mission <span className="text-red-600">Expenses</span></h1>
+          <h1 className="text-4xl font-medium tracking-tighter text-white">Expense <span className="text-red-600">Tool</span></h1>
           <p className="text-white/30 max-w-xl mt-2 font-medium tracking-[0.05em] text-[11px]">
              Official AMJ Canada Waqfeen Financial Reporting Framework
           </p>
