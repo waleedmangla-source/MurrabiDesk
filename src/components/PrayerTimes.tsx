@@ -127,7 +127,7 @@ export default function PrayerTimes() {
                    "flex flex-col items-center gap-3 p-4 circular-pod transition-all duration-700 group/prayer relative aspect-square justify-center border border-white/5 shadow-2xl",
                    nextPrayer === p.name 
                      ? "bg-accent-main/10 border-accent-main/20 shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)]" 
-                     : "bg-black/20 hover:bg-black/30"
+                     : "bg-black/20 "
                  )}
                >
                   {/* Miniature Analog Clock Face */}

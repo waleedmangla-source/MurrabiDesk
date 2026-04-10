@@ -230,7 +230,7 @@ export default function RootLayout({
           
           {/* Sidebar */}
           <aside className={clsx(
-            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-6 pb-6 pt-14 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
+            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
             isSidebarCollapsed ? "-ml-64" : "ml-0"
           )}>
             {/* Ambient Animated Sidebar Background */}
@@ -242,12 +242,12 @@ export default function RootLayout({
             {/* Internal Toggle Button (Hide/Collapse) */}
             <button 
               onClick={() => setIsSidebarCollapsed(true)}
-              className="absolute -right-3 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/20 hover:text-red-500 hover:bg-red-600/10 transition-all no-drag opacity-0 group-hover/sidebar:opacity-100 z-50"
+              className="absolute -right-3 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/20   transition-all no-drag opacity-0 group-hover/sidebar:opacity-100 z-50"
             >
               <ChevronLeft size={16} />
             </button>
 
-            <div className="flex flex-col items-center gap-2 text-center w-full pt-4 relative group z-10">
+            <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
                 <span className="font-black text-3xl tracking-tighter text-red-500 leading-none">Desk</span>
@@ -275,7 +275,7 @@ export default function RootLayout({
                 <Link 
                    key={link.label} 
                    className={clsx(
-                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3.5 px-5 font-bold tracking-tight hover:bg-red-600/10 hover:shadow-2xl hover:shadow-red-900/20",
+                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3.5 px-5 font-bold tracking-tight   ",
                     pathname === link.href && "active !text-white !shadow-2xl !shadow-red-900/40"
                   )}
                   href={link.href}
@@ -294,7 +294,7 @@ export default function RootLayout({
                   <Link 
                     href="/profile"
                     className={clsx(
-                      "flex-grow flex items-center gap-3 p-1.5 px-3 rounded-2xl border transition-all hover:bg-white/10",
+                      "flex-grow flex items-center gap-3 p-1.5 px-3 rounded-2xl border transition-all ",
                       pathname === '/profile' ? "bg-red-600/10 border-red-500/30" : "border-white/10 bg-white/5 shadow-sm"
                     )}
                   >
@@ -318,24 +318,11 @@ export default function RootLayout({
                   {/* Settings Icon on the Right (Minimalist/No Box) */}
                   <Link 
                     href="/settings"
-                    className="p-2 text-v4-ink/30 hover:text-red-500 transition-all hover:scale-110 active:scale-95"
+                    className="p-2 text-v4-ink/30  transition-all  active:scale-95"
                   >
                     <Settings size={20} />
                   </Link>
                </div>
-               
-               {/* Installation Call to Action */}
-               {!isElectron && (
-                 <div className="mt-4 px-2">
-                    <button 
-                     id="pwa-install-trigger"
-                     className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 rounded-xl py-4 text-[9px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-600/20 hover:text-red-400 transition-all no-drag shadow-lg shadow-red-900/10 group"
-                    >
-                      <Download size={12} className="group-hover:bounce" />
-                      Initialize App Mode
-                    </button>
-                 </div>
-               )}
             </div>
           </aside>
 
@@ -350,7 +337,7 @@ export default function RootLayout({
              {isSidebarCollapsed && (
                <button 
                  onClick={() => setIsSidebarCollapsed(false)}
-                 className="fixed top-1/2 -translate-y-1/2 left-0 z-[100] w-1.5 h-32 bg-red-600 rounded-r-[6px] hover:w-2.5 transition-all duration-300 shadow-[2px_0_15px_rgba(239,68,68,0.4)] group/lip flex items-center justify-center cursor-pointer animate-in fade-in slide-in-from-left-2"
+                 className="fixed top-1/2 -translate-y-1/2 left-0 z-[100] w-1.5 h-32 bg-red-600 rounded-r-[6px]  transition-all duration-300 shadow-[2px_0_15px_rgba(239,68,68,0.4)] group/lip flex items-center justify-center cursor-pointer animate-in fade-in slide-in-from-left-2"
                  title="Open Sidebar (Cmd+D)"
                >
                  <div className="w-0.5 h-12 bg-white/20 rounded-full opacity-0 group-hover/lip:opacity-100 transition-opacity" />

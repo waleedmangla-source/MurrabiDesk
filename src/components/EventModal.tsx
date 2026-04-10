@@ -119,7 +119,7 @@ export default function EventModal({
           </div>
           <button 
             onClick={onClose}
-            className="p-3 text-white/20 hover:text-white hover:bg-white/10 transition-all rounded-full"
+            className="p-3 text-white/20   transition-all rounded-full"
           >
             <X size={20} />
           </button>
@@ -195,7 +195,7 @@ export default function EventModal({
                     "h-12 rounded-xl border uppercase text-[8px] font-black tracking-widest transition-all",
                     type === t 
                       ? "bg-white text-black border-white shadow-xl shadow-white/5" 
-                      : "bg-white/[0.01] border-white/5 text-white/20 hover:bg-white/5 hover:text-white"
+                      : "bg-white/[0.01] border-white/5 text-white/20  "
                   )}
                 >
                   {t}
@@ -213,7 +213,7 @@ export default function EventModal({
                  "w-full h-16 rounded-2xl flex items-center justify-center gap-4 transition-all duration-500 shadow-2xl relative overflow-hidden group font-black uppercase text-[10px] tracking-[0.3em]",
                  status === 'success' ? "bg-red-600 text-white" :
                  status === 'error' ? "bg-red-800 text-white" :
-                 "bg-white text-black hover:bg-gray-100 active:scale-[0.98]"
+                 "bg-white text-black  active:scale-[0.98]"
                )}
              >
                 {status === 'syncing' ? (
@@ -225,7 +225,7 @@ export default function EventModal({
                 ) : (
                   <>
                     <span>Confirm task</span>
-                     <div className="absolute right-8 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all">
+                     <div className="absolute right-8 opacity-0   transition-all">
                         →
                      </div>
                   </>

@@ -145,7 +145,7 @@ export default function ProfilePage() {
         <button 
           onClick={fetchProfile}
           className={clsx(
-            "flex items-center gap-3 px-6 h-12 bg-white/5 border border-white/5 rounded-2xl text-v4-ink/40 hover:text-red-500 hover:border-red-500/30 transition-all font-black uppercase text-[10px] tracking-widest",
+            "flex items-center gap-3 px-6 h-12 bg-white/5 border border-white/5 rounded-2xl text-v4-ink/40   transition-all font-black uppercase text-[10px] tracking-widest",
             isRefreshing && "opacity-50 pointer-events-none"
           )}
         >
@@ -362,19 +362,19 @@ export default function ProfilePage() {
                 <button 
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="group relative overflow-hidden px-12 h-16 rounded-[20px] font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 flex items-center gap-4 text-white shadow-2xl hover:shadow-accent-glow active:scale-95 disabled:opacity-50"
+                  className="group relative overflow-hidden px-12 h-16 rounded-[20px] font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 flex items-center gap-4 text-white shadow-2xl  active:scale-95 disabled:opacity-50"
                 >
                    {/* Background Rush Container */}
                    <div className="absolute inset-0 bg-white/10 z-0" />
                    
                    {/* Color Rush Layer */}
                    <div className={clsx(
-                      "absolute inset-0 z-0 transition-all duration-700 ease-out translate-y-full group-hover:translate-y-0 bg-accent-main",
+                      "absolute inset-0 z-0 transition-all duration-700 ease-out translate-y-full  bg-accent-main",
                       isSaving && "translate-y-0"
                    )} />
                    
                    {/* Sparkle Rush Layer */}
-                   <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                   <div className="absolute inset-0 z-0 opacity-0  transition-opacity pointer-events-none">
                       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.2)_0%,transparent_70%)] animate-pulse" />
                    </div>
 
@@ -392,14 +392,14 @@ export default function ProfilePage() {
                         </>
                       ) : (
                         <>
-                           <Save size={18} className="group-hover:translate-x-1 transition-transform" />
+                           <Save size={18} className=" transition-transform" />
                            Commit Profile
                         </>
                       )}
                    </span>
 
                    {/* Rainbow Aura Glow */}
-                   <div className="absolute -inset-1 z-[-1] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl">
+                   <div className="absolute -inset-1 z-[-1] opacity-0  transition-opacity duration-700 blur-xl">
                       <div className="w-full h-full bg-[linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] bg-[length:400%_400%] animate-[gradient_3s_linear_infinite] rounded-[22px]" />
                    </div>
                 </button>
@@ -431,7 +431,7 @@ export default function ProfilePage() {
                 }}
                 className="group relative h-14 px-10 rounded-[18px] font-black uppercase tracking-widest text-[10px] text-white overflow-hidden transition-all active:scale-95"
               >
-                 <div className="absolute inset-0 bg-white/5 group-hover:bg-red-600 transition-colors duration-500" />
+                 <div className="absolute inset-0 bg-white/5  transition-colors duration-500" />
                  <span className="relative z-10 flex items-center gap-3">
                     <CloudOff size={16} />
                     Log Out of Murrabi Desk

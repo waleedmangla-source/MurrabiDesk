@@ -204,7 +204,7 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               <button 
                 onClick={handleConnect}
-                className="w-full h-16 rounded-[20px] bg-white/10 border border-white/20 text-white font-black text-lg flex items-center justify-center gap-3 hover:bg-white/20 transition-all active:scale-[0.98] shadow-xl"
+                className="w-full h-16 rounded-[20px] bg-white/10 border border-white/20 text-white font-black text-lg flex items-center justify-center gap-3  transition-all active:scale-[0.98] shadow-xl"
               >
                 <Cloud size={24} className="text-white" />
                 Connect Google Account
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
               
               <button 
                 onClick={handleBypass}
-                className="w-full h-12 rounded-[15px] bg-red-600/10 border border-red-500/20 text-red-500 font-bold text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-red-600/20 transition-all active:scale-[0.98]"
+                className="w-full h-12 rounded-[15px] bg-red-600/10 border border-red-500/20 text-red-500 font-bold text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-2  transition-all active:scale-[0.98]"
               >
                 <Zap size={14} />
                 Bypass Authentication (Dev Mode)

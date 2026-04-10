@@ -55,7 +55,7 @@ const WorldClock: React.FC<WorldClockProps> = ({ city, timezone }) => {
   const hDeg = (((h % 12) + m / 60) / 12) * 360;
 
   return (
-    <div className="flex flex-col items-center justify-center group hover:scale-110 transition-all duration-700 no-drag cursor-pointer p-2 relative">
+    <div className="flex flex-col items-center justify-center group  transition-all duration-700 no-drag cursor-pointer p-2 relative">
       {/* Main Circular Clock Body */}
       <div className="relative w-32 h-32 circular-pod border border-white/10 glass shadow-2xl flex flex-col items-center justify-center overflow-hidden">
         {/* Hour Markers */}

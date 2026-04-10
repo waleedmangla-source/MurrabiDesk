@@ -156,7 +156,7 @@ export default function SettingsPage() {
                              "py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
                              settings.syncFrequency === freq 
                                ? "bg-red-600 border-red-500/50 text-white shadow-lg shadow-red-500/20" 
-                               : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
+                               : "bg-white/5 border-white/5 text-white/40 "
                            )}
                          >
                             {freq}
@@ -165,7 +165,7 @@ export default function SettingsPage() {
                    </div>
                 </div>
 
-                <button className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 text-v4-ink text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600/10 hover:text-red-500 transition-all">
+                <button className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 text-v4-ink text-[10px] font-black uppercase tracking-[0.3em]   transition-all">
                    Force Protocol Resync
                 </button>
              </div>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                          onClick={() => setSettings(prev => ({ ...prev, accentColor: color.id }))}
                          className={clsx(
                            "group relative flex flex-col items-center gap-3 transition-all",
-                           settings.accentColor === color.id ? "scale-110" : "opacity-40 hover:opacity-100"
+                           settings.accentColor === color.id ? "scale-110" : "opacity-40 "
                          )}
                        >
                           <div 
@@ -283,7 +283,7 @@ export default function SettingsPage() {
                       onClick={() => setSettings(prev => ({ ...prev, accentColor: 'creamy' }))}
                       className={clsx(
                         "group relative flex flex-col items-center gap-3 transition-all",
-                        settings.accentColor === 'creamy' ? "scale-110" : "opacity-40 hover:opacity-100"
+                        settings.accentColor === 'creamy' ? "scale-110" : "opacity-40 "
                       )}
                     >
                       <div 
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                       onClick={() => setSettings(prev => ({ ...prev, accentColor: 'flup' }))}
                       className={clsx(
                         "group relative flex flex-col items-center gap-3 transition-all",
-                        settings.accentColor === 'flup' ? "scale-110" : "opacity-40 hover:opacity-100"
+                        settings.accentColor === 'flup' ? "scale-110" : "opacity-40 "
                       )}
                     >
                       <div 
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                         onClick={handleWipeProtocol}
                         className={clsx(
                           "w-full h-12 rounded-xl font-black text-[9px] uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-2xl",
-                          wipeLock ? "bg-white/5 text-white/10 opacity-50 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700 shadow-red-900/40"
+                          wipeLock ? "bg-white/5 text-white/10 opacity-50 cursor-not-allowed" : "bg-red-600 text-white  shadow-red-900/40"
                         )}
                       >
                          <Trash2 size={14} />
@@ -427,7 +427,7 @@ export default function SettingsPage() {
                    <p className="text-[10px] font-bold text-white/40 leading-relaxed">
                       Upload your digital signature to be automatically appended to SECS Expense Reports, mission letters, and scholarly archives.
                    </p>
-                   <div className="relative group/upload h-48 border-2 border-dashed border-white/10 rounded-3xl hover:border-red-500/30 transition-all bg-black/20 flex flex-col items-center justify-center gap-4 cursor-pointer">
+                   <div className="relative group/upload h-48 border-2 border-dashed border-white/10 rounded-3xl  transition-all bg-black/20 flex flex-col items-center justify-center gap-4 cursor-pointer">
                       <input 
                         type="file" 
                         onChange={handleSignatureUpload}
@@ -456,7 +456,7 @@ export default function SettingsPage() {
                    {settings.signatureData && (
                      <button 
                        onClick={() => setSettings(prev => ({ ...prev, signatureData: null }))}
-                       className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-colors"
+                       className="text-[9px] font-black uppercase tracking-widest text-red-500  transition-colors"
                      >
                        Remove Signature
                      </button>
@@ -471,14 +471,14 @@ export default function SettingsPage() {
            <button 
              onClick={handleSave}
              disabled={isSaving}
-             className="group relative overflow-hidden px-16 h-20 rounded-[28px] font-black uppercase tracking-[0.3em] text-[12px] transition-all duration-500 flex items-center gap-4 text-white shadow-2xl hover:shadow-red-500/20 active:scale-95 disabled:opacity-50"
+             className="group relative overflow-hidden px-16 h-20 rounded-[28px] font-black uppercase tracking-[0.3em] text-[12px] transition-all duration-500 flex items-center gap-4 text-white shadow-2xl  active:scale-95 disabled:opacity-50"
            >
               {/* Background Rush Container */}
               <div className="absolute inset-0 bg-white/5 z-0" />
               
               {/* Color Rush Layer */}
               <div className={clsx(
-                 "absolute inset-0 z-0 transition-all duration-700 ease-out translate-y-full group-hover:translate-y-0 bg-red-600",
+                 "absolute inset-0 z-0 transition-all duration-700 ease-out translate-y-full  bg-red-600",
                  isSaving && "translate-y-0"
               )} />
               
@@ -496,14 +496,14 @@ export default function SettingsPage() {
                    </>
                  ) : (
                    <>
-                      <Save size={20} className="group-hover:translate-x-1 transition-transform" />
+                      <Save size={20} className=" transition-transform" />
                       Update Mission Protocol
                    </>
                  )}
               </span>
 
               {/* Rainbow Aura Glow */}
-              <div className="absolute -inset-1 z-[-1] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl">
+              <div className="absolute -inset-1 z-[-1] opacity-0  transition-opacity duration-700 blur-xl">
                  <div className="w-full h-full bg-[linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] bg-[length:400%_400%] animate-[gradient_3s_linear_infinite] rounded-[30px]" />
               </div>
            </button>
@@ -534,7 +534,7 @@ function ToggleRow({ icon, label, description, active, onToggle }: {
   onToggle: () => void 
 }) {
   return (
-    <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 group/toggle hover:bg-white/10 transition-all">
+    <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 group/toggle  transition-all">
        <div className="flex items-center gap-4">
           <div className={clsx(
              "p-3 rounded-xl border transition-all",

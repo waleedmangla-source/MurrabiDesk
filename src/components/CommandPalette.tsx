@@ -87,12 +87,12 @@ export default function CommandPalette() {
                       cmd.action();
                       setIsOpen(false);
                    }}
-                   className="w-full flex items-center gap-4 p-4 rounded-[14px] hover:bg-red-600 hover:text-white transition-all text-left group hover:shadow-xl hover:shadow-red-900/40 border border-transparent hover:border-white/20"
+                   className="w-full flex items-center gap-4 p-4 rounded-[14px]   transition-all text-left group   border border-transparent "
                  >
-                    <div className="p-3 rounded-[14px] bg-white/5 border border-white/10 group-hover:bg-white/20 group-hover:border-white/40 transition-all">
-                       <cmd.icon size={20} className="text-white/60 group-hover:text-white" />
+                    <div className="p-3 rounded-[14px] bg-white/5 border border-white/10   transition-all">
+                       <cmd.icon size={20} className="text-white/60 " />
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-white/90 group-hover:text-white">{cmd.label}</span>
+                    <span className="font-bold text-lg tracking-tight text-white/90 ">{cmd.label}</span>
                  </button>
               ))
            )}

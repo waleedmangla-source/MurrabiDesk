@@ -105,7 +105,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                 target="_blank" 
                 rel="noopener noreferrer"
                 title={link.name}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-white/5 border border-white/5 hover:border-red-600/40 transition-all shadow-xl hover:shadow-red-600/10 overflow-hidden group-hover/pod:scale-110 active:scale-95 group-hover/pod:bg-white/10"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-white/5 border border-white/5  transition-all shadow-xl  overflow-hidden group-hover/pod:scale-110 active:scale-95 group-hover/pod:bg-white/10"
                >
                  <img 
                     src={getLogo(link.id, link.url)} 
@@ -127,7 +127,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
           {links.filter(l => !l.isPreset).length < 6 && (
             <button 
               onClick={() => setIsAdding(true)}
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-dashed border-white/10 text-white/10 hover:border-red-600/40 hover:text-red-500 hover:bg-red-600/5 transition-all active:scale-95"
+              className="flex items-center justify-center w-11 h-11 rounded-full border border-dashed border-white/10 text-white/10    transition-all active:scale-95"
             >
               <Plus size={18} />
             </button>
@@ -157,8 +157,8 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                 onChange={e => setNewUrl(e.target.value)}
               />
               <div className="flex justify-end gap-3 pt-2">
-                <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-colors">Cancel</button>
-                <button onClick={addLink} className="bg-red-600 text-white px-6 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">Establish</button>
+                <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-white/30  transition-colors">Cancel</button>
+                <button onClick={addLink} className="bg-red-600 text-white px-6 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20  active:scale-95 transition-all">Establish</button>
               </div>
             </div>
           </div>
@@ -182,23 +182,23 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                   '--hover-glow': colorSet.glow,
                   '--hover-bg': colorSet.bg
                 } as any}
-                className="group relative w-32 h-32 rounded-full glass border border-white/10 bg-white/5 transition-all duration-700 hover:border-[var(--hover-glow)] hover:-translate-y-2 overflow-hidden shadow-2xl flex items-center justify-center"
+                className="group relative w-32 h-32 rounded-full glass border border-white/10 bg-white/5 transition-all duration-700 (--hover-glow)]  overflow-hidden shadow-2xl flex items-center justify-center"
               >
                 {/* Background Identity Glow */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--hover-bg)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--hover-bg)] to-transparent opacity-0  transition-opacity duration-700" />
                 
                 {/* Logo Pod (Cropped) */}
-                <div className="relative z-10 w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
+                <div className="relative z-10 w-full h-full flex items-center justify-center transition-transform duration-700 ">
                     <img 
                       src={getLogo(link.id, link.url)} 
                       alt={link.name} 
-                      className="w-[85%] h-[85%] object-cover rounded-full transition-all duration-700 group-hover:scale-125 group-hover:shadow-[0_0_40px_var(--hover-glow)]" 
+                      className="w-[85%] h-[85%] object-cover rounded-full transition-all duration-700  _0_40px_var(--hover-glow)]" 
                     />
                 </div>
 
                 {/* External Protocol Icon */}
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-[2px]">
-                    <div className="scale-150 text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0  transition-all duration-500 backdrop-blur-[2px]">
+                    <div className="scale-150 text-white translate-y-4  transition-transform duration-500">
                         <ExternalLink size={16} />
                     </div>
                 </div>
@@ -211,13 +211,13 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                         e.stopPropagation();
                         removeLink(link.id);
                       }}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 shadow-lg hover:scale-110 active:scale-95"
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0  transition-all z-20 shadow-lg  active:scale-95"
                     >
                       <Trash2 size={12} />
                     </button>
                 )}
               </a>
-              <div className="text-center group-hover:scale-105 transition-transform duration-500">
+              <div className="text-center  transition-transform duration-500">
                 <h3 className="text-[10px] font-black text-white italic tracking-tight uppercase">{link.name}</h3>
                 <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mt-1 font-mono">{new URL(link.url).hostname}</p>
               </div>
@@ -230,9 +230,9 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
           <div className="flex flex-col items-center gap-4">
             <button 
               onClick={() => setIsAdding(true)}
-              className="w-32 h-32 rounded-full border-2 border-dashed border-white/5 text-white/10 hover:border-red-600/30 hover:bg-red-600/5 hover:text-red-500 transition-all group flex items-center justify-center"
+              className="w-32 h-32 rounded-full border-2 border-dashed border-white/5 text-white/10    transition-all group flex items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-full border border-dashed border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-full border border-dashed border-white/10 flex items-center justify-center  transition-transform">
                 <Plus size={24} />
               </div>
             </button>
@@ -256,7 +256,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                          <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">Connect External Intelligence</p>
                       </div>
                    </div>
-                   <button onClick={() => setIsAdding(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-white/20 hover:text-white transition-all">
+                   <button onClick={() => setIsAdding(false)} className="w-10 h-10 rounded-full  flex items-center justify-center text-white/20  transition-all">
                       <X size={20} />
                    </button>
                 </div>
@@ -286,7 +286,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                    
                    <button 
                      onClick={addLink}
-                     className="w-full h-16 mt-4 bg-red-600 rounded-[22px] font-black uppercase tracking-[0.3em] text-[11px] text-white shadow-2xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                     className="w-full h-16 mt-4 bg-red-600 rounded-[22px] font-black uppercase tracking-[0.3em] text-[11px] text-white shadow-2xl shadow-red-900/40   active:scale-[0.98] transition-all"
                    >
                      Initiate Link Connection
                    </button>

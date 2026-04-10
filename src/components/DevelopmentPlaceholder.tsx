@@ -10,11 +10,11 @@ export default function DevelopmentPlaceholder({ title }: DevelopmentPlaceholder
     <div className="main-content flex flex-col items-center justify-center min-h-[70vh] animate-in fade-in duration-1000">
       <div className="relative group">
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-red-600/20 blur-[100px] rounded-full group-hover:bg-red-600/30 transition-all duration-700" />
+        <div className="absolute inset-0 bg-red-600/20 blur-[100px] rounded-full  transition-all duration-700" />
         
         {/* Glass Card */}
         <div className="relative glass border border-white/10 p-12 rounded-[40px] flex flex-col items-center max-w-lg text-center gap-6 shadow-2xl backdrop-blur-3xl">
-          <div className="w-20 h-20 rounded-3xl bg-red-600/10 flex items-center justify-center border border-red-600/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+          <div className="w-20 h-20 rounded-3xl bg-red-600/10 flex items-center justify-center border border-red-600/20 shadow-inner  transition-transform duration-500">
             <Construction size={40} className="text-red-500 animate-pulse" />
           </div>
           

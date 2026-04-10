@@ -40,13 +40,13 @@ const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ className }) => {
         <div className="flex gap-2">
           <button 
             onClick={prevMonth}
-            className="p-2.5 rounded-2xl glass border border-white/5 text-white/30 hover:text-accent-main hover:bg-white/10 transition-all active:scale-90"
+            className="p-2.5 rounded-2xl glass border border-white/5 text-white/30   transition-all active:scale-90"
           >
             <ChevronLeft size={16} />
           </button>
           <button 
             onClick={nextMonth}
-            className="p-2.5 rounded-2xl glass border border-white/5 text-white/30 hover:text-accent-main hover:bg-white/10 transition-all active:scale-90"
+            className="p-2.5 rounded-2xl glass border border-white/5 text-white/30   transition-all active:scale-90"
           >
             <ChevronRight size={16} />
           </button>
@@ -80,7 +80,7 @@ const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ className }) => {
                 "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all border group cursor-pointer",
                 isToday 
                   ? "bg-accent-main shadow-2xl shadow-accent-soft border-accent-glow text-white z-10" 
-                  : "glass border-white/5 text-white/40 hover:text-white hover:bg-white/10"
+                  : "glass border-white/5 text-white/40  "
               )}
             >
               <span className={clsx(

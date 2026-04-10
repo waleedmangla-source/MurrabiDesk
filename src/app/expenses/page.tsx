@@ -77,15 +77,15 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
       style={style}
       className={clsx(
         "flex items-center gap-4 glass bg-white/5 p-3 rounded-[16px] group transition-all border border-white/5",
-        isDragging ? "shadow-2xl shadow-red-600/30 border-red-600/30 scale-105" : "hover:bg-white/10"
+        isDragging ? "shadow-2xl shadow-red-600/30 border-red-600/30 scale-105" : ""
       )}
     >
       <div 
         {...attributes} 
         {...listeners} 
-        className="cursor-grab active:cursor-grabbing p-1 hover:bg-white/10 rounded-md transition-colors"
+        className="cursor-grab active:cursor-grabbing p-1  rounded-md transition-colors"
       >
-        <GripVertical size={16} className="text-white/20 group-hover:text-white" />
+        <GripVertical size={16} className="text-white/20 " />
       </div>
 
       <div className="w-10 h-10 rounded-[12px] bg-red-600/20 flex flex-col items-center justify-center border border-red-600/30 flex-shrink-0">
@@ -100,7 +100,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
 
       <button 
           onClick={() => onRemove(receipt.id)}
-          className="p-1.5 hover:bg-red-600/20 rounded-md text-red-600/40 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+          className="p-1.5  rounded-md text-red-600/40  transition-all opacity-0 "
       >
           <Trash2 size={14} />
       </button>
@@ -715,7 +715,7 @@ export default function ExpensesPage() {
                   {activeIndices.map((idx) => {
                     const sec = SECS.find(s => s.idx === idx)!;
                     return (
-                      <tr key={idx} className="border-b border-v4-rule/50 group hover:bg-v4-ink/5 transition-colors">
+                      <tr key={idx} className="border-b border-v4-rule/50 group  transition-colors">
                         <td className="py-2 px-3 font-bold text-v4-ink">{sec.label}</td>
                         <td className="py-2 px-3">
                           <input 
@@ -747,7 +747,7 @@ export default function ExpensesPage() {
                         <td className="py-2 px-3 text-center">
                           <button 
                               onClick={() => removeCategory(idx)}
-                              className="text-v4-rule hover:text-v4-red transition-colors active:scale-90"
+                              className="text-v4-rule  transition-colors active:scale-90"
                           >
                               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                           </button>
@@ -775,7 +775,7 @@ export default function ExpensesPage() {
                         </select>
                          <button 
                              onClick={addCategory}
-                             className="!bg-red-600 !text-white !py-1 !px-4 rounded-[14px] !text-[9px] font-bold hover:bg-red-700 active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
+                             className="!bg-red-600 !text-white !py-1 !px-4 rounded-[14px] !text-[9px] font-bold  active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
                          >
                             ADD
                         </button>
@@ -831,13 +831,13 @@ export default function ExpensesPage() {
               <div className="card-body">
                   <div className="space-y-4">
                       {receipts.length === 0 ? (
-                          <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group hover:border-red-600/30 transition-all cursor-pointer"
+                          <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
                                onClick={() => fileInputRef.current?.click()}>
-                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-red-600/10 group-hover:scale-110 transition-all">
-                                  <Paperclip size={20} className="text-white/40 group-hover:text-red-600" />
+                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center   transition-all">
+                                  <Paperclip size={20} className="text-white/40 " />
                               </div>
                               <div className="text-center">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">Click to upload receipts</p>
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50  transition-colors">Click to upload receipts</p>
                                   <p className="text-[8px] font-black uppercase tracking-widest text-white/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
                               </div>
                           </div>
@@ -868,10 +868,10 @@ export default function ExpensesPage() {
 
                       <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2 hover:bg-white/5 hover:border-white/20 transition-all group"
+                          className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2   transition-all group"
                       >
-                          <Plus size={14} className="text-white/20 group-hover:text-red-600" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/20 group-hover:text-white">Add Another Receipt</span>
+                          <Plus size={14} className="text-white/20 " />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-white/20 ">Add Another Receipt</span>
                       </button>
 
                       <input 
@@ -892,7 +892,7 @@ export default function ExpensesPage() {
           <button 
             onClick={handleDownload}
             disabled={isGenerating}
-            className="btn-v4 py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag border-white/5 hover:bg-white/5"
+            className="btn-v4 py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag border-white/5 "
           >
             {isGenerating ? (
               <div className="animate-spin rounded-full h-6 w-6 border-4 border-white/20 border-t-white" />
@@ -935,7 +935,7 @@ export default function ExpensesPage() {
             <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">History <span className="text-red-600">Vault</span></h2>
             <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Storage</p>
           </div>
-          <button onClick={() => setIsHistoryOpen(false)} className="p-2 hover:bg-white/10 text-white/50 hover:text-white rounded-xl transition-all">
+          <button onClick={() => setIsHistoryOpen(false)} className="p-2  text-white/50  rounded-xl transition-all">
             <ChevronLeft className="rotate-180" size={18} />
           </button>
         </div>
@@ -955,7 +955,7 @@ export default function ExpensesPage() {
                 
                 <div className="space-y-3">
                   {monthForms.map(form => (
-                    <div key={form.id} className="glass bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 relative group hover:border-red-600/30 hover:bg-white/10 transition-all">
+                    <div key={form.id} className="glass bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 relative group   transition-all">
                        <div className="flex items-start justify-between">
                           <div className="pr-4">
                             <p className="text-[10px] font-black text-white uppercase tracking-wider">{form.date} &bull; <span className="text-white/40">{form.fullName}</span></p>
