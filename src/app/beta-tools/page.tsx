@@ -79,8 +79,8 @@ export default function BetaToolsPage() {
       {/* Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase" style={{ color: 'var(--foreground)' }}>Beta <span className="text-red-600">Lab</span></h1>
-          <p className="opacity-30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]" style={{ color: 'var(--foreground)' }}>
+          <h1 className="text-4xl font-medium tracking-tighter" style={{ color: 'var(--foreground)' }}>Beta <span className="text-red-600">Lab</span></h1>
+          <p className="opacity-30 max-w-xl mt-2 font-medium tracking-[0.05em] text-[11px]" style={{ color: 'var(--foreground)' }}>
              Experimental Infrastructure & Extraction Modules
           </p>
         </div>
