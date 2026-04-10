@@ -7,8 +7,6 @@
   "main": "main.js",
   "scripts": {
     "dev": "next dev -p 3001",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
     "launch": "node launch_desktop_stable.js",
     "preapp:dev": "lsof -i :3001 -t | xargs kill -9 || true",
     "app:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3001 && NODE_ENV=development electron .\"",
@@ -66,7 +64,6 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@tauri-apps/api": "^2.10.1",
     "@tiptap/extension-underline": "^3.21.0",
     "@tiptap/pm": "^3.21.0",
     "@tiptap/react": "^3.21.0",
@@ -84,7 +81,6 @@
     "youtube-dl-exec": "^3.1.4"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.10.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^18",

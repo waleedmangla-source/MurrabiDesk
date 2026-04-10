@@ -77,11 +77,9 @@ export default function RootLayout({
   useEffect(() => {
     setMounted(true);
     
-    // Detect Native App environment (Electron or Tauri)
+    // Detect Electron environment
     const isEnvElectron = navigator.userAgent.toLowerCase().indexOf('electron') > -1;
-    const isEnvTauri = !!(window as any).__TAURI_INTERNALS__;
-    const isApp = isEnvElectron || isEnvTauri;
-    setIsElectron(isApp);
+    setIsElectron(isEnvElectron);
     
     // Check Google Sync Status
     const syncStatus = localStorage.getItem('google_sync_status');
