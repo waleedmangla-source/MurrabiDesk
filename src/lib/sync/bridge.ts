@@ -15,6 +15,12 @@ export const liquid = {
         }
     }
 
+    // 2. Try Tauri IPC (if available)
+    if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return invoke(action, data);
+    }
+
     // 2. Identify Environment and Route
     const isElectron = typeof window !== 'undefined' && navigator.userAgent.toLowerCase().indexOf('electron') > -1;
     const targetUrl = isElectron ? `${BRAIN_URL}/${action}` : `/api/brain/${action}`;
