@@ -409,6 +409,10 @@ export default function ExpensesPage() {
       return;
     }
 
+    if (!window.confirm("Are you sure you want to send this expense report via email?")) {
+      return;
+    }
+
     setIsSending(true);
     try {
       const fullItems = Array(30).fill(null).map((_, i) => ({
