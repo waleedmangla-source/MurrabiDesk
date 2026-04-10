@@ -209,12 +209,11 @@
   display: none !important;
 }
 
-/* Absolute Black Buttons */
+/* Absolute Black Buttons (Keeping for actual action buttons) */
 [data-theme="arctic"] .btn-ruby,
 [data-theme="arctic"] .bg-red-600,
 [data-theme="arctic"] .bg-red-500,
-[data-theme="arctic"] .bg-accent-main,
-[data-theme="arctic"] .nav-link.active {
+[data-theme="arctic"] .bg-accent-main {
   background: #000000 !important;
   background-color: #000000 !important;
   color: #ffffff !important;
@@ -222,7 +221,19 @@
   box-shadow: none !important;
 }
 
-[data-theme="arctic"] .nav-link.active .text-white { color: #ffffff !important; }
+/* Subtly Darkened Nav Bar Items (Not absolute black) */
+[data-theme="arctic"] .nav-link.active {
+  background: rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="arctic"] .nav-link.active .text-white,
+[data-theme="arctic"] .nav-link.active svg { 
+  color: #000000 !important; 
+}
 
 /* Dashboard Strip Customization: Remove all bouncing/scaling hover effects globally */
 [data-theme="arctic"] *,
