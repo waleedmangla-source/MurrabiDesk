@@ -530,12 +530,10 @@ export default function ExpensesPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Persistent History Sidebar (Left) */}
-      <div className="w-[380px] glass bg-[#020310]/10 border-r border-white/5 flex flex-col h-full shrink-0">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between no-drag mt-[38px] shrink-0">
-          <div>
-            <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">History <span className="text-red-600">Vault</span></h2>
-            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Storage</p>
-          </div>
+      <div className="w-[190px] glass bg-[#020310]/10 border-r border-white/5 flex flex-col h-full shrink-0">
+        <div className="p-4 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0">
+          <h2 className="text-sm font-black italic tracking-tighter text-white uppercase leading-none">Expense <span className="text-red-600">History</span></h2>
+          <p className="text-[7px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Vault</p>
         </div>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar no-drag pb-32">
@@ -546,22 +544,18 @@ export default function ExpensesPage() {
 
             return (
               <div key={m} className="space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-white uppercase">{m}</h3>
-                  <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">${monthTotal.toFixed(2)}</span>
+                <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+                  <h3 className="text-[9px] font-black tracking-[0.1em] text-white uppercase truncate">{m}</h3>
+                  <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">${monthTotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="space-y-3">
                   {monthForms.map(form => (
-                    <div key={form.id} className="glass bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 relative group   transition-all">
-                       <div className="flex items-start justify-between">
-                          <div className="pr-4">
-                            <p className="text-[10px] font-black text-white uppercase tracking-wider">{form.date} &bull; <span className="text-white/40">{form.fullName}</span></p>
-                            <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mt-1.5 leading-relaxed">{form.purpose}</p>
-                          </div>
-                          <div className="flex flex-col items-end shrink-0">
-                            <p className="text-xs font-black text-white bg-black/40 px-2 py-1 rounded-lg border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
-                          </div>
+                    <div key={form.id} className="glass bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col gap-2 relative group transition-all">
+                       <div className="flex flex-col gap-1">
+                          <p className="text-[8px] font-black text-white uppercase tracking-tight">{form.date}</p>
+                          <p className="text-[8px] font-bold text-white/50 uppercase tracking-tight truncate">{form.purpose}</p>
+                          <p className="text-[9px] font-black text-white mt-1 italic">${form.total.toFixed(2)}</p>
                        </div>
                        
                        <div className="mt-1 pt-3 border-t border-white/5 flex items-center justify-between">
