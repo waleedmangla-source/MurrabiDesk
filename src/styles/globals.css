@@ -187,13 +187,13 @@
 [data-theme="arctic"] .glass,
 [data-theme="arctic"] .glass-card {
   background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
   box-shadow: none !important;
 }
 
 [data-theme="arctic"] aside {
-  background: #fbfbfb !important;
-  border-right-color: rgba(0, 0, 0, 0.06) !important;
+  background: #ffffff !important;
+  border-right-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 [data-theme="arctic"] .text-white { color: #000000 !important; }
@@ -221,18 +221,32 @@
 
 [data-theme="arctic"] .nav-link.active .text-white { color: #ffffff !important; }
 
-[data-theme="arctic"] .btn-ruby:hover,
-[data-theme="arctic"] .nav-link:hover,
-[data-theme="arctic"] .glass-card:hover {
+/* Dashboard Strip Customization: Remove all bouncing/scaling hover effects globally */
+[data-theme="arctic"] *,
+[data-theme="arctic"] *:hover,
+[data-theme="arctic"] .group:hover *,
+[data-theme="arctic"] .peer:hover ~ * {
   transform: none !important;
   box-shadow: none !important;
-  filter: none !important;
+}
+
+[data-theme="arctic"] .btn-ruby:hover,
+[data-theme="arctic"] .glass-card:hover {
   opacity: 0.85 !important;
 }
 
 [data-theme="arctic"] .glass-card:hover {
   background: #fafafa !important;
-  border-color: rgba(0,0,0,0.1) !important;
+  border-color: rgba(0,0,0,0.15) !important;
+}
+
+/* Nav Links Spacing */
+[data-theme="arctic"] nav.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.125rem !important; /* Extremely close together */
+}
+[data-theme="arctic"] .nav-link {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
 }
 
 [data-theme="arctic"] .bg-white\/5 { background-color: rgba(0, 0, 0, 0.03) !important; }
