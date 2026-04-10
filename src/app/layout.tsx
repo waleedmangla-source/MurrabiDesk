@@ -235,8 +235,14 @@ export default function RootLayout({
           )}>
             {/* Ambient Animated Sidebar Background */}
             <div className="absolute inset-0 pointer-events-none z-0">
-               <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)] animate-[spin_20s_linear_infinite] mix-blend-screen" />
-               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-[pulse_4s_ease-in-out_infinite]" />
+               <div className={clsx(
+                 "absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen",
+                 isFlupTheme ? "bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.15)_0%,transparent_50%)]" : "bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)]"
+               )} />
+               <div className={clsx(
+                 "absolute inset-0 animate-[pulse_4s_ease-in-out_infinite]",
+                 isFlupTheme ? "bg-gradient-to-b from-transparent via-emerald-500/5 to-transparent" : "bg-gradient-to-b from-transparent via-red-500/5 to-transparent"
+               )} />
             </div>
 
             {/* Internal Toggle Button (Hide/Collapse) */}
@@ -250,9 +256,15 @@ export default function RootLayout({
             <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
-                <span className="font-black text-3xl tracking-tighter text-red-500 leading-none">Desk</span>
+                <span className={clsx(
+                  "font-black text-3xl tracking-tighter leading-none",
+                  isFlupTheme ? "text-[#10b981]" : "text-red-500"
+                )}>Desk</span>
               </div>
-              <p className="text-[9px] text-red-500/60 font-black uppercase tracking-[0.3em]">
+              <p className={clsx(
+                "text-[9px] font-black uppercase tracking-[0.3em]",
+                isFlupTheme ? "text-[#10b981]/60" : "text-red-500/60"
+              )}>
                 CREATED BY WALEED M.
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
