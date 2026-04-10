@@ -211,7 +211,6 @@ export default function ExpensesPage() {
   const [isSending, setIsSending] = useState(false);
   
   // History State
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [expensesHistory, setExpensesHistory] = useState<any[]>([]);
 
   const fetchExpenses = async () => {
@@ -529,7 +528,86 @@ export default function ExpensesPage() {
   const availableSECS = useMemo(() => SECS.filter(s => !s.isH && !activeIndices.includes(s.idx!)), [activeIndices]);
 
   return (
-    <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-transparent">
+      {/* Persistent History Sidebar (Left) */}
+      <div className="w-[380px] glass bg-[#020310]/10 border-r border-white/5 flex flex-col h-full shrink-0">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between no-drag mt-[38px] shrink-0">
+          <div>
+            <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">History <span className="text-red-600">Vault</span></h2>
+            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Storage</p>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar no-drag pb-32">
+          {months.map(m => {
+            const monthForms = expensesHistory.filter(e => e.month === m);
+            if (monthForms.length === 0) return null;
+            const monthTotal = monthForms.reduce((sum, e) => sum + e.total, 0);
+
+            return (
+              <div key={m} className="space-y-4">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <h3 className="text-[10px] font-black tracking-[0.2em] text-white uppercase">{m}</h3>
+                  <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">${monthTotal.toFixed(2)}</span>
+                </div>
+                
+                <div className="space-y-3">
+                  {monthForms.map(form => (
+                    <div key={form.id} className="glass bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 relative group   transition-all">
+                       <div className="flex items-start justify-between">
+                          <div className="pr-4">
+                            <p className="text-[10px] font-black text-white uppercase tracking-wider">{form.date} &bull; <span className="text-white/40">{form.fullName}</span></p>
+                            <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mt-1.5 leading-relaxed">{form.purpose}</p>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0">
+                            <p className="text-xs font-black text-white bg-black/40 px-2 py-1 rounded-lg border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
+                          </div>
+                       </div>
+                       
+                       <div className="mt-1 pt-3 border-t border-white/5 flex items-center justify-between">
+                          <label className="flex items-center gap-3 cursor-pointer group/chk select-none">
+                            <div className={clsx(
+                              "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all",
+                              form.refunded ? "bg-red-600 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "border-white/20 bg-black/50 group-hover/chk:border-red-500/50"
+                            )}>
+                              {form.refunded ? <div className="w-[6px] h-[6px] bg-white rounded-[1.5px]" /> : null}
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              className="hidden" 
+                              checked={!!form.refunded} 
+                              onChange={() => toggleRefund(form.id, form.refunded)} 
+                            />
+                            <span className={clsx(
+                              "text-[9px] font-black uppercase tracking-widest transition-colors",
+                              form.refunded ? "text-red-500" : "text-white/30 group-hover/chk:text-white/50"
+                            )}>
+                              {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
+                            </span>
+                          </label>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          
+          {expensesHistory.length === 0 && (
+            <div className="text-center py-20 flex flex-col items-center">
+               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                 <History size={24} className="text-white/20" />
+               </div>
+               <p className="text-[12px] font-black uppercase tracking-widest text-white/80">No History Found</p>
+               <p className="text-[9px] font-black uppercase tracking-widest text-white/30 mt-2 max-w-[200px] leading-relaxed">
+                 Expenses will automatically save here once exported.
+               </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-y-auto scroll-smooth">
       {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
@@ -540,13 +618,6 @@ export default function ExpensesPage() {
         </div>
         
         <div className="flex gap-4">
-           <button 
-             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-             className={clsx("btn-v4 px-6 flex items-center gap-2 active:scale-95", isHistoryOpen ? "bg-white/20" : "")}
-           >
-             <History size={16} />
-             History
-           </button>
            <button 
              onClick={handleDownload}
              disabled={isGenerating}
@@ -925,90 +996,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* History Drawer */}
-      <div className={clsx(
-        "fixed top-0 right-0 h-full w-full md:w-[400px] glass bg-[#020310]/95 backdrop-blur-3xl border-l border-white/5 z-[100] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col pointer-events-auto shadow-[0_0_100px_rgba(0,0,0,0.8)]",
-        isHistoryOpen ? "translate-x-0" : "translate-x-full"
-      )}>
-        <div className="p-6 border-b border-white/5 flex items-center justify-between no-drag mt-[38px] shrink-0">
-          <div>
-            <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">History <span className="text-red-600">Vault</span></h2>
-            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Storage</p>
-          </div>
-          <button onClick={() => setIsHistoryOpen(false)} className="p-2  text-white/50  rounded-xl transition-all">
-            <ChevronLeft className="rotate-180" size={18} />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar no-drag pb-32">
-          {months.map(m => {
-            const monthForms = expensesHistory.filter(e => e.month === m);
-            if (monthForms.length === 0) return null;
-            const monthTotal = monthForms.reduce((sum, e) => sum + e.total, 0);
-
-            return (
-              <div key={m} className="space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-white uppercase">{m}</h3>
-                  <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">${monthTotal.toFixed(2)}</span>
-                </div>
-                
-                <div className="space-y-3">
-                  {monthForms.map(form => (
-                    <div key={form.id} className="glass bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 relative group   transition-all">
-                       <div className="flex items-start justify-between">
-                          <div className="pr-4">
-                            <p className="text-[10px] font-black text-white uppercase tracking-wider">{form.date} &bull; <span className="text-white/40">{form.fullName}</span></p>
-                            <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mt-1.5 leading-relaxed">{form.purpose}</p>
-                          </div>
-                          <div className="flex flex-col items-end shrink-0">
-                            <p className="text-xs font-black text-white bg-black/40 px-2 py-1 rounded-lg border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
-                          </div>
-                       </div>
-                       
-                       <div className="mt-1 pt-3 border-t border-white/5 flex items-center justify-between">
-                          <label className="flex items-center gap-3 cursor-pointer group/chk select-none">
-                            <div className={clsx(
-                              "w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all",
-                              form.refunded ? "bg-red-600 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "border-white/20 bg-black/50 group-hover/chk:border-red-500/50"
-                            )}>
-                              {form.refunded ? <div className="w-[6px] h-[6px] bg-white rounded-[1.5px]" /> : null}
-                            </div>
-                            <input 
-                              type="checkbox" 
-                              className="hidden" 
-                              checked={!!form.refunded} 
-                              onChange={() => toggleRefund(form.id, form.refunded)} 
-                            />
-                            <span className={clsx(
-                              "text-[9px] font-black uppercase tracking-widest transition-colors",
-                              form.refunded ? "text-red-500" : "text-white/30 group-hover/chk:text-white/50"
-                            )}>
-                              {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
-                            </span>
-                          </label>
-                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-          
-          {expensesHistory.length === 0 && (
-            <div className="text-center py-20 flex flex-col items-center">
-               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                 <History size={24} className="text-white/20" />
-               </div>
-               <p className="text-[12px] font-black uppercase tracking-widest text-white/80">No History Found</p>
-               <p className="text-[9px] font-black uppercase tracking-widest text-white/30 mt-2 max-w-[200px] leading-relaxed">
-                 Expenses will automatically save here once exported.
-               </p>
-            </div>
-          )}
-        </div>
       </div>
-
     </div>
   );
 }
