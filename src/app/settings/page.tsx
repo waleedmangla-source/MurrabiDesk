@@ -309,6 +309,36 @@ export default function SettingsPage() {
                         </div>
                       )}
                     </button>
+
+                    {/* Flup White Theme (Emerald) */}
+                    <button
+                      onClick={() => setSettings(prev => ({ ...prev, accentColor: 'flup' }))}
+                      className={clsx(
+                        "group relative flex flex-col items-center gap-3 transition-all",
+                        settings.accentColor === 'flup' ? "scale-110" : "opacity-40 hover:opacity-100"
+                      )}
+                    >
+                      <div 
+                        className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl relative overflow-hidden flex items-center justify-center bg-white"
+                        style={{ 
+                          borderColor: settings.accentColor === 'flup' ? '#10b981' : 'transparent',
+                          boxShadow: settings.accentColor === 'flup' ? '0 0 30px rgba(16,185,129,0.3)' : 'none'
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-[#10b981]" />
+                      </div>
+                      <div className={clsx(
+                        "text-[9px] font-black uppercase tracking-widest transition-opacity whitespace-nowrap",
+                        settings.accentColor === 'flup' ? "opacity-100 text-white" : "opacity-0"
+                      )}>
+                        Flup White
+                      </div>
+                      {settings.accentColor === 'flup' && (
+                        <div className="absolute -top-1 -right-1 bg-[#10b981] text-white p-1 rounded-full shadow-lg">
+                          <CheckCircle2 size={12} />
+                        </div>
+                      )}
+                    </button>
                  </div>
               </div>
            </div>
