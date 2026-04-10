@@ -247,10 +247,10 @@ export default function RootLayout({
             <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
-                <span className="font-black text-3xl tracking-tighter text-red-500 leading-none">Desk</span>
+                <span className="font-black text-3xl tracking-tighter text-red-600 leading-none">Desk</span>
               </div>
-              <p className="text-[9px] text-red-500/60 font-black uppercase tracking-[0.3em]">
-                CREATED BY WALEED M.
+              <p className="text-[10px] text-red-600 font-black uppercase tracking-[0.3em] mt-1.5 translate-y-[1px]">
+                Protocol Console
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
                 {isOnline ? (
