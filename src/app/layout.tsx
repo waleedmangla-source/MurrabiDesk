@@ -40,9 +40,8 @@ const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string,
   emerald: { main: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.5)', soft: 'rgba(16, 185, 129, 0.1)', rgb: '16, 185, 129' },
   amber: { main: '#f59e0b', hover: '#d97706', glow: 'rgba(245, 158, 11, 0.5)', soft: 'rgba(245, 158, 11, 0.1)', rgb: '245, 158, 11' },
   violet: { main: '#8b5cf6', hover: '#7c3aed', glow: 'rgba(139, 92, 246, 0.5)', soft: 'rgba(139, 92, 246, 0.1)', rgb: '139, 92, 246' },
-  // Creamy White & Arctic White — full light themes; accent vars overridden via data-theme CSS
+  // Creamy White — full light theme; accent vars overridden via data-theme CSS
   creamy: { main: '#44403c', hover: '#1c1917', glow: 'rgba(68, 64, 60, 0.25)', soft: 'rgba(68, 64, 60, 0.08)', rgb: '68, 64, 60' },
-  arctic: { main: '#000000', hover: '#000000', glow: 'rgba(0, 0, 0, 0.1)', soft: 'rgba(0, 0, 0, 0.05)', rgb: '0, 0, 0' },
 };
 
 const inter = Inter({ subsets: ["latin"] });
@@ -68,7 +67,7 @@ export default function RootLayout({
     { icon: Mail, label: "Emails", href: "/emails" },
     { icon: Calendar, label: "Calendar", href: "/calendar" },
     { icon: FileText, label: "Notes", href: "/notes" },
-    { icon: Receipt, label: "Expense Tool", href: "/expenses" },
+    { icon: Receipt, label: "Expenses", href: "/expenses" },
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
 
@@ -191,13 +190,13 @@ export default function RootLayout({
   );
 
   const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.red;
-  const isLightTheme = accentColor === 'creamy' || accentColor === 'arctic';
+  const isCreamyTheme = accentColor === 'creamy';
 
   return (
     <html 
       lang="en" 
-      className={isLightTheme ? '' : 'dark'}
-      data-theme={isLightTheme ? accentColor : undefined}
+      className={isCreamyTheme ? '' : 'dark'}
+      data-theme={isCreamyTheme ? 'creamy' : undefined}
       style={{
         '--accent-main': currentAccent.main,
         '--accent-hover': currentAccent.hover,
@@ -227,11 +226,11 @@ export default function RootLayout({
           
           {/* Sidebar */}
           <aside className={clsx(
-            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-6 pb-6 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
+            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-6 pb-6 pt-14 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
             isSidebarCollapsed ? "-ml-64" : "ml-0"
           )}>
             {/* Ambient Animated Sidebar Background */}
-            <div className="absolute inset-0 pointer-events-none z-0 sidebar-ambient-bg">
+            <div className="absolute inset-0 pointer-events-none z-0">
                <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)] animate-[spin_20s_linear_infinite] mix-blend-screen" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-[pulse_4s_ease-in-out_infinite]" />
             </div>
@@ -244,19 +243,19 @@ export default function RootLayout({
               <ChevronLeft size={16} />
             </button>
 
-            <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
+            <div className="flex flex-col items-center gap-2 text-center w-full pt-4 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
-                <span className="font-black text-3xl tracking-tighter text-red-600 leading-none">Desk</span>
+                <span className="font-black text-3xl tracking-tighter text-red-500 leading-none">Desk</span>
               </div>
-              <p className="text-[10px] text-red-600 font-medium tracking-[0.1em] mt-1.5 translate-y-[1px]">
-                Created by Waleed M.
+              <p className="text-[9px] text-red-500/60 font-black uppercase tracking-[0.3em]">
+                CREATED BY WALEED M.
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
                 {isOnline ? (
                   <>
                     <Cloud size={14} className="text-green-500" />
-                    Cloud Synchronized • Core v4.0
+                    Cloud Synchronized • Protocol 4.0
                   </>
                 ) : (
                   <>
@@ -306,9 +305,9 @@ export default function RootLayout({
                        <h4 className="text-[11px] font-black text-v4-ink truncate leading-none mb-1">
                           {userProfile?.name || "Waleed Mangla"}
                        </h4>
-                        <p className="text-[8px] font-medium text-red-500/40 tracking-widest truncate">
-                           HQ Analyst
-                        </p>
+                       <p className="text-[8px] font-black text-red-500/40 uppercase tracking-widest truncate">
+                          HQ Protocol
+                       </p>
                     </div>
                   </Link>
 
@@ -321,7 +320,18 @@ export default function RootLayout({
                   </Link>
                </div>
                
-
+               {/* Installation Call to Action */}
+               {!isElectron && (
+                 <div className="mt-4 px-2">
+                    <button 
+                     id="pwa-install-trigger"
+                     className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 rounded-xl py-4 text-[9px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-600/20 hover:text-red-400 transition-all no-drag shadow-lg shadow-red-900/10 group"
+                    >
+                      <Download size={12} className="group-hover:bounce" />
+                      Initialize App Mode
+                    </button>
+                 </div>
+               )}
             </div>
           </aside>
 

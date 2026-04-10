@@ -110,9 +110,9 @@ export default function SettingsPage() {
       {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-medium tracking-tighter text-white">Mission <span className="text-red-600">Settings</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-medium tracking-[0.05em] text-[11px]">
-             Operational Infrastructure & Engine Configuration
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Settings</span></h1>
+          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]">
+             Operational Infrastructure & Protocol Configuration
           </p>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
                    <div className="flex items-center gap-4">
                       <Cloud size={20} className="text-white/40" />
                       <div>
-                         <div className="text-[10px] font-black uppercase tracking-widest text-white/20">Sync Engine Status</div>
+                         <div className="text-[10px] font-black uppercase tracking-widest text-white/20">Protocol Status</div>
                          <div className="text-sm font-bold text-white">Encrypted WebSocket Active</div>
                       </div>
                    </div>
@@ -166,7 +166,7 @@ export default function SettingsPage() {
                 </div>
 
                 <button className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 text-v4-ink text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600/10 hover:text-red-500 transition-all">
-                   Force Engine Resync
+                   Force Protocol Resync
                 </button>
              </div>
           </div>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                    <Layout size={24} />
                 </div>
                 <div>
-                   <h3 className="text-lg font-black text-white italic tracking-tight">Display Modules</h3>
+                   <h3 className="text-lg font-black text-white italic tracking-tight">Display Protocols</h3>
                    <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Interface Density & Visibility</p>
                 </div>
              </div>
@@ -226,7 +226,7 @@ export default function SettingsPage() {
                     <Monitor size={24} />
                  </div>
                  <div>
-                    <h3 className="text-lg font-black text-white italic tracking-tight">Mission Accent Engine</h3>
+                    <h3 className="text-lg font-black text-white italic tracking-tight">Mission Accent Protocol</h3>
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Global Color Identity Override</p>
                  </div>
               </div>
@@ -309,34 +309,6 @@ export default function SettingsPage() {
                         </div>
                       )}
                     </button>
-
-                    {/* Arctic White Theme */}
-                    <button
-                      onClick={() => setSettings(prev => ({ ...prev, accentColor: 'arctic' }))}
-                      className={clsx(
-                        "group relative flex flex-col items-center gap-3 transition-all",
-                        settings.accentColor === 'arctic' ? "scale-110" : "opacity-40 hover:opacity-100"
-                      )}
-                    >
-                      <div 
-                        className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl relative overflow-hidden bg-white"
-                        style={{ 
-                          borderColor: settings.accentColor === 'arctic' ? '#000000' : 'transparent',
-                          boxShadow: settings.accentColor === 'arctic' ? '0 0 30px rgba(255,255,255,0.8)' : 'none'
-                        }}
-                      />
-                      <div className={clsx(
-                        "text-[9px] font-black uppercase tracking-widest transition-opacity whitespace-nowrap",
-                        settings.accentColor === 'arctic' ? "opacity-100 text-white" : "opacity-0"
-                      )}>
-                        Arctic White
-                      </div>
-                      {settings.accentColor === 'arctic' && (
-                        <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full shadow-lg">
-                          <CheckCircle2 size={12} />
-                        </div>
-                      )}
-                    </button>
                  </div>
               </div>
            </div>
@@ -375,7 +347,7 @@ export default function SettingsPage() {
                       Destructive Alpha Sequence
                    </h4>
                    <p className="text-[9px] font-bold text-white/40 leading-relaxed mb-6">
-                      Secure Wipe Engine clears all local mission cache, including emails, calendar, and notes. This cannot be undone.
+                      Wipe Protocol clears all local mission cache, including emails, calendar, and notes. This cannot be undone.
                    </p>
                    
                    <div className="flex flex-col gap-3">
@@ -387,7 +359,7 @@ export default function SettingsPage() {
                         )}
                       >
                          {wipeLock ? <Eye size={14} /> : <EyeOff size={14} />}
-                         {wipeLock ? "Unlock Security Gate" : "Wipe Securely Loaded"}
+                         {wipeLock ? "Unlock Wipe Protocol" : "Wipe Securely Loaded"}
                       </button>
                       
                       <button 
@@ -446,7 +418,7 @@ export default function SettingsPage() {
                         <img src={settings.signatureData} alt="Signature Preview" className="max-w-full max-h-full object-contain grayscale" />
                       ) : (
                         <div className="text-[9px] font-black uppercase tracking-[0.2em] text-black/10 text-center italic">
-                           No Signature Injected<br/>(System Default)
+                           No Signature Injected<br/>(Protocol Default)
                         </div>
                       )}
                       <div className="absolute top-4 right-4 text-[8px] font-black text-black/20 uppercase tracking-widest">Digital Auth</div>
