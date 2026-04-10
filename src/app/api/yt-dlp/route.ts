@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import theytdl from "youtube-dl-exec";
+import { create as createYtdl } from "youtube-dl-exec";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
 
 // Helper to get binary path
 const binPath = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
+const ytdl = createYtdl(binPath);
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,10 +19,11 @@ export async function POST(req: NextRequest) {
     console.log("Fetching info for:", url);
 
     // Capture metadata first to show the user what they are downloading
-    const info = await theytdl(url, {
+    const info = await ytdl(url, {
       dumpSingleJson: true,
       noCheckCertificates: true,
       preferFreeFormats: true,
+      noWarnings: true,
       addHeader: [
         'referer:youtube.com',
         'user-agent:googlebot'
@@ -53,7 +55,7 @@ export async function GET(req: NextRequest) {
     console.log(`Starting ${type} download for:`, url);
 
     // Determine title for filename
-    const info = await theytdl(url, {
+    const info = await ytdl(url, {
       dumpSingleJson: true,
       noWarnings: true,
       noCheckCertificates: true,

@@ -249,8 +249,8 @@ export default function RootLayout({
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
                 <span className="font-black text-3xl tracking-tighter text-red-600 leading-none">Desk</span>
               </div>
-              <p className="text-[10px] text-red-600 font-black uppercase tracking-[0.3em] mt-1.5 translate-y-[1px]">
-                Control Center
+              <p className="text-[10px] text-red-600 font-medium tracking-[0.1em] mt-1.5 translate-y-[1px]">
+                Created by Waleed M.
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
                 {isOnline ? (
@@ -306,9 +306,9 @@ export default function RootLayout({
                        <h4 className="text-[11px] font-black text-v4-ink truncate leading-none mb-1">
                           {userProfile?.name || "Waleed Mangla"}
                        </h4>
-                       <p className="text-[8px] font-black text-red-500/40 uppercase tracking-widest truncate">
-                          HQ Protocol
-                       </p>
+                        <p className="text-[8px] font-medium text-red-500/40 tracking-widest truncate">
+                           HQ Analyst
+                        </p>
                     </div>
                   </Link>
 
@@ -321,18 +321,7 @@ export default function RootLayout({
                   </Link>
                </div>
                
-               {/* Installation Call to Action */}
-               {!isElectron && (
-                 <div className="mt-4 px-2">
-                    <button 
-                     id="pwa-install-trigger"
-                     className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 rounded-xl py-4 text-[9px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-600/20 hover:text-red-400 transition-all no-drag shadow-lg shadow-red-900/10 group"
-                    >
-                      <Download size={12} className="group-hover:bounce" />
-                      Initialize App Mode
-                    </button>
-                 </div>
-               )}
+
             </div>
           </aside>
 

@@ -540,7 +540,7 @@ export default function ExpensesPage() {
         <div className="p-6 border-b border-white/5 flex items-center justify-between no-drag mt-[38px] shrink-0 min-w-[400px]">
           <div>
             <h2 className="text-xl font-medium tracking-tighter text-white">Past <span className="text-red-600">Expenses</span></h2>
-            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Archive</p>
+            <p className="text-[8px] font-medium tracking-widest text-red-500/50 mt-1">Local Secure Archive</p>
           </div>
           <button onClick={() => setIsHistoryOpen(false)} className="p-2 hover:bg-white/10 text-white/50 hover:text-white rounded-xl transition-all">
             <ChevronLeft size={18} />

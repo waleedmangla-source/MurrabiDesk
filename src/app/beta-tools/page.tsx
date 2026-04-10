@@ -113,7 +113,7 @@ export default function BetaToolsPage() {
                 <button 
                   type="submit"
                   disabled={loading || !url}
-                  className="absolute right-2 top-2 bottom-2 px-6 bg-red-600 hover:bg-red-700 disabled:bg-white/5 disabled:text-white/20 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2"
+                  className="absolute right-2 top-2 bottom-2 px-6 bg-red-600 hover:bg-red-700 disabled:bg-white/5 disabled:text-white/20 text-white rounded-xl font-medium tracking-widest text-[10px] transition-all flex items-center gap-2"
                 >
                   {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
                   Inspect
@@ -129,8 +129,8 @@ export default function BetaToolsPage() {
             </form>
 
             <div className="mt-12 space-y-4">
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-20 pb-2 border-b border-white/5" style={{ color: 'var(--foreground)' }}>
-                  <span>Active Modules</span>
+                 <div className="flex items-center justify-between text-[10px] font-medium tracking-widest opacity-20 pb-2 border-b border-white/5" style={{ color: 'var(--foreground)' }}>
+                   <span>Active Modules</span>
                   <span>Security Shield</span>
                 </div>
               
@@ -139,10 +139,10 @@ export default function BetaToolsPage() {
                    <div className="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
                      <Activity size={18} />
                    </div>
-                   <div>
-                      <div className="text-[11px] font-black italic" style={{ color: 'var(--foreground)' }}>Neural Link Diagnostics</div>
-                      <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest" style={{ color: 'var(--foreground)' }}>v4.0 Sync System</p>
-                   </div>
+                    <div>
+                       <div className="text-[11px] font-medium" style={{ color: 'var(--foreground)' }}>Extraction Diagnostics</div>
+                       <p className="text-[9px] font-medium opacity-30 tracking-widest" style={{ color: 'var(--foreground)' }}>v4.0 Sync System</p>
+                    </div>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 opacity-50 cursor-not-allowed">
