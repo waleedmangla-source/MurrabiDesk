@@ -69,7 +69,7 @@ export default function BetaToolsPage() {
         setDownloadSuccess(true);
       }, 3000);
     } catch (err) {
-      setError("Failed to initialize download protocol.");
+      setError("Failed to initialize download sequence.");
       setDownloading(false);
     }
   };
@@ -79,8 +79,8 @@ export default function BetaToolsPage() {
       {/* Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Beta <span className="text-red-600">Protocols</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]">
+          <h1 className="text-4xl font-black tracking-tighter uppercase" style={{ color: 'var(--foreground)' }}>Beta <span className="text-red-600">Lab</span></h1>
+          <p className="opacity-30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]" style={{ color: 'var(--foreground)' }}>
              Experimental Infrastructure & Extraction Modules
           </p>
         </div>
@@ -95,8 +95,8 @@ export default function BetaToolsPage() {
                 <Youtube size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white italic tracking-tight">Media Extraction</h3>
-                <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">yt-dlp Implementation 2.0</p>
+                <h3 className="text-lg font-black tracking-tight" style={{ color: 'var(--foreground)' }}>Media Extraction</h3>
+                <p className="text-[9px] font-black uppercase tracking-widest leading-none mt-1 opacity-40" style={{ color: 'var(--foreground)' }}>yt-dlp Implementation 2.0</p>
               </div>
             </div>
 
@@ -107,7 +107,8 @@ export default function BetaToolsPage() {
                   placeholder="Paste YouTube Link Here..."
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-white/10 focus:outline-none focus:border-red-600/50 transition-all font-bold"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 placeholder:opacity-10 focus:outline-none focus:border-red-600/50 transition-all font-bold"
+                  style={{ color: 'var(--foreground)' }}
                 />
                 <button 
                   type="submit"
@@ -128,10 +129,10 @@ export default function BetaToolsPage() {
             </form>
 
             <div className="mt-12 space-y-4">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-white/20 pb-2 border-b border-white/5">
-                <span>Active Modules</span>
-                <span>Security Protocol</span>
-              </div>
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-20 pb-2 border-b border-white/5" style={{ color: 'var(--foreground)' }}>
+                  <span>Active Modules</span>
+                  <span>Security Shield</span>
+                </div>
               
               <div className="space-y-3">
                 <div className="p-5 rounded-2xl bg-white/10 border border-white/10 flex items-center gap-4 group cursor-pointer hover:border-red-600/50 transition-all">
@@ -139,18 +140,18 @@ export default function BetaToolsPage() {
                      <Activity size={18} />
                    </div>
                    <div>
-                      <div className="text-[11px] font-black text-white italic">Neural Link Diagnostics</div>
-                      <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Protocol 4.0 Verified</p>
+                      <div className="text-[11px] font-black italic" style={{ color: 'var(--foreground)' }}>Neural Link Diagnostics</div>
+                      <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest" style={{ color: 'var(--foreground)' }}>v4.0 Sync System</p>
                    </div>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 opacity-50 cursor-not-allowed">
-                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/40">
+                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center opacity-40" style={{ color: 'var(--foreground)' }}>
                      <Terminal size={18} />
                    </div>
                    <div>
-                      <div className="text-[11px] font-black text-white/40 italic">System Kernel Access</div>
-                      <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Access Restricted</p>
+                      <div className="text-[11px] font-black opacity-40 italic" style={{ color: 'var(--foreground)' }}>System Kernel Access</div>
+                      <p className="text-[9px] font-bold opacity-20 uppercase tracking-widest" style={{ color: 'var(--foreground)' }}>Access Restricted</p>
                    </div>
                 </div>
               </div>
@@ -185,12 +186,12 @@ export default function BetaToolsPage() {
                      <button 
                        onClick={() => handleDownload('video')}
                        disabled={downloading}
-                       className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white text-black hover:bg-red-600 hover:text-white transition-all duration-500 overflow-hidden"
+                       className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white text-black hover:bg-red-600 hover:text-white transition-all duration-500 overflow-hidden border border-black/5 shadow-xl"
                      >
                         <Video size={32} />
                         <div className="flex flex-col items-center">
                            <span className="text-xs font-black uppercase tracking-widest">Download Video</span>
-                           <span className="text-[9px] font-bold opacity-40 group-hover:opacity-60 transition-opacity">MP4 Format • 1080p Target</span>
+                           <span className="text-[9px] font-bold opacity-40 group-hover:opacity-60 transition-opacity uppercase">MP4 Format • 720p/1080p</span>
                         </div>
                         {downloading && (
                           <div className="absolute inset-0 bg-red-600 flex items-center justify-center">
@@ -202,12 +203,13 @@ export default function BetaToolsPage() {
                      <button 
                        onClick={() => handleDownload('audio')}
                        disabled={downloading}
-                       className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white/5 border border-white/10 text-white hover:border-red-600/50 hover:bg-red-600/10 transition-all duration-500"
+                       className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white/5 border border-white/10 hover:border-red-600/50 hover:bg-red-600/10 transition-all duration-500"
+                       style={{ color: 'var(--foreground)' }}
                      >
                         <Music size={32} className="text-red-600" />
                         <div className="flex flex-col items-center">
                            <span className="text-xs font-black uppercase tracking-widest">Extract Audio</span>
-                           <span className="text-[9px] font-bold text-white/30 group-hover:text-white/60 transition-colors">MP3 Format • 320kbps</span>
+                           <span className="text-[9px] font-bold opacity-30 group-hover:opacity-60 transition-colors uppercase">MP3 Format • 320kbps</span>
                         </div>
                         {downloading && (
                           <div className="absolute inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center">
@@ -221,8 +223,8 @@ export default function BetaToolsPage() {
                     <div className="flex items-center gap-4 p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 animate-in zoom-in-95">
                        <CheckCircle2 size={24} />
                        <div>
-                          <div className="text-sm font-black italic tracking-tight">Mission Success</div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Protocol has successfully queued your file for extraction & local storage.</p>
+                          <div className="text-sm font-black tracking-tight uppercase">Download Initialized</div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">The background process has successfully triggered your file stream.</p>
                        </div>
                     </div>
                   )}
@@ -232,13 +234,14 @@ export default function BetaToolsPage() {
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
                            <img src={videoInfo.uploader_url ? `https://ui-avatars.com/api/?name=${videoInfo.uploader}&background=random` : ""} alt={videoInfo.uploader} />
                         </div>
-                        <span className="text-[11px] font-black text-white italic">{videoInfo.uploader}</span>
+                        <span className="text-[11px] font-black uppercase" style={{ color: 'var(--foreground)' }}>{videoInfo.uploader}</span>
                      </div>
                      <a 
                        href={url} 
                        target="_blank" 
                        rel="noopener noreferrer"
-                       className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-red-600 transition-colors"
+                       className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-20 hover:text-red-600 transition-colors"
+                       style={{ color: 'var(--foreground)' }}
                      >
                         Source Link <ExternalLink size={12} />
                      </a>
@@ -247,11 +250,11 @@ export default function BetaToolsPage() {
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center glass-card border border-white/5 bg-white/5 rounded-[32px] p-20 text-center">
-               <div className="w-24 h-24 rounded-[32px] bg-white/5 flex items-center justify-center mb-8 border border-white/10 text-white/10">
+               <div className="w-24 h-24 rounded-[32px] bg-white/5 flex items-center justify-center mb-8 border border-white/10 opacity-10" style={{ color: 'var(--foreground)' }}>
                   <Youtube size={48} />
                </div>
-               <h3 className="text-xl font-black text-white italic tracking-tight opacity-20">Awaiting Target URL...</h3>
-               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10 mt-4 leading-relaxed max-w-xs">
+               <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase" style={{ color: 'var(--foreground)' }}>Awaiting Target URL...</h3>
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-10 mt-4 leading-relaxed max-w-xs" style={{ color: 'var(--foreground)' }}>
                   Enter a valid YouTube protocol link to initialize the extraction engine.
                </p>
             </div>

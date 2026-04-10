@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  font-style: normal !important;
+}
+
 :root {
   --foreground: #ffffff;
   --text-main: #ffffff;
@@ -228,6 +232,10 @@
   color: #ef4444 !important; /* Proper Red for active link icon/text highlight */
   border-color: rgba(0, 0, 0, 0.1) !important;
   box-shadow: none !important;
+}
+
+[data-theme="arctic"] * {
+  font-style: normal !important;
 }
 
 [data-theme="arctic"] .nav-link.active .text-white,

@@ -295,9 +295,9 @@ export default function ExpensesPage() {
   }, [itemData, activeIndices]);
 
   const diagnosticChecks = useMemo(() => [
-    { label: "Report Status", status: "DRAFT", val: formData.expense_month || "Protocol 4.0", icon: ClipboardList, color: "text-amber-500" },
+    { label: "Report Status", status: "DRAFT", val: formData.expense_month || "v4.0 Sync", icon: ClipboardList, color: "text-amber-500" },
     { label: "Claim Volume", status: activeIndices.length + " ACTIVE", val: `$${totals.grand}`, icon: DollarSign, color: "text-emerald-500" },
-    { label: "Tax Protocol", status: "VERIFIED", val: `$${totals.gst} HST`, icon: Shield, color: "text-blue-500" },
+    { label: "Tax Computation", status: "VERIFIED", val: `$${totals.gst} HST`, icon: Shield, color: "text-blue-500" },
     { label: "Export Priority", status: totals.grand !== '0.00' ? "CRITICAL" : "IDLE", val: totals.grand !== '0.00' ? "Awaiting Download" : "No Content", icon: Zap, color: totals.grand !== '0.00' ? "text-red-500" : "text-white/20" }
   ], [formData.expense_month, activeIndices.length, totals]);
 
@@ -534,8 +534,8 @@ export default function ExpensesPage() {
       <div className="flex items-end justify-between mb-2">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Expenses</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
-             Official AMJ Canada Waqfeen Financial Reporting Protocol
+          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]">
+             Official AMJ Canada Waqfeen Financial Reporting Framework
           </p>
         </div>
         
@@ -545,7 +545,7 @@ export default function ExpensesPage() {
              className={clsx("btn-v4 px-6 flex items-center gap-2 active:scale-95", isHistoryOpen ? "bg-white/20" : "")}
            >
              <History size={16} />
-             History
+             Past Expenses
            </button>
            <button 
              onClick={handleDownload}
@@ -927,16 +927,16 @@ export default function ExpensesPage() {
 
       {/* History Drawer */}
       <div className={clsx(
-        "fixed top-0 right-0 h-full w-full md:w-[400px] glass bg-[#020310]/95 backdrop-blur-3xl border-l border-white/5 z-[100] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col pointer-events-auto shadow-[0_0_100px_rgba(0,0,0,0.8)]",
-        isHistoryOpen ? "translate-x-0" : "translate-x-full"
+        "fixed top-0 left-0 h-full w-full md:w-[400px] glass bg-[#020310]/95 backdrop-blur-3xl border-r border-white/5 z-[100] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col pointer-events-auto shadow-[0_0_100px_rgba(0,0,0,0.8)]",
+        isHistoryOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-6 border-b border-white/5 flex items-center justify-between no-drag mt-[38px] shrink-0">
           <div>
-            <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">History <span className="text-red-600">Vault</span></h2>
-            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Storage</p>
+            <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">Past <span className="text-red-600">Expenses</span></h2>
+            <p className="text-[8px] font-black uppercase tracking-widest text-red-500/50 mt-1">Local Secure Archive</p>
           </div>
           <button onClick={() => setIsHistoryOpen(false)} className="p-2 hover:bg-white/10 text-white/50 hover:text-white rounded-xl transition-all">
-            <ChevronLeft className="rotate-180" size={18} />
+            <ChevronLeft size={18} />
           </button>
         </div>
         

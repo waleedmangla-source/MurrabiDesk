@@ -250,13 +250,13 @@ export default function RootLayout({
                 <span className="font-black text-3xl tracking-tighter text-red-600 leading-none">Desk</span>
               </div>
               <p className="text-[10px] text-red-600 font-black uppercase tracking-[0.3em] mt-1.5 translate-y-[1px]">
-                Protocol Console
+                Control Center
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
                 {isOnline ? (
                   <>
                     <Cloud size={14} className="text-green-500" />
-                    Cloud Synchronized • Protocol 4.0
+                    Cloud Synchronized • Core v4.0
                   </>
                 ) : (
                   <>
