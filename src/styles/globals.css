@@ -205,6 +205,10 @@
 [data-theme="arctic"] .text-white\/10 { color: rgba(0, 0, 0, 0.1) !important; }
 [data-theme="arctic"] .text-main, [data-theme="arctic"] .text-v4-ink { color: #000000 !important; }
 
+[data-theme="arctic"] .sidebar-ambient-bg {
+  display: none !important;
+}
+
 /* Absolute Black Buttons */
 [data-theme="arctic"] .btn-ruby,
 [data-theme="arctic"] .bg-red-600,

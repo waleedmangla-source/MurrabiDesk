@@ -231,7 +231,7 @@ export default function RootLayout({
             isSidebarCollapsed ? "-ml-64" : "ml-0"
           )}>
             {/* Ambient Animated Sidebar Background */}
-            <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 pointer-events-none z-0 sidebar-ambient-bg">
                <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)] animate-[spin_20s_linear_infinite] mix-blend-screen" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-[pulse_4s_ease-in-out_infinite]" />
             </div>
