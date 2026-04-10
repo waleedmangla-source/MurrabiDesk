@@ -177,8 +177,7 @@
 
 [data-theme="arctic"] body,
 [data-theme="arctic"] html,
-[data-theme="arctic"] #__next,
-[data-theme="arctic"] .flex {
+[data-theme="arctic"] #__next {
   background-color: #ffffff !important;
   background: #ffffff !important;
   color: #000000;
