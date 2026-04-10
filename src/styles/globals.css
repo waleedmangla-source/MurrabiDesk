@@ -228,27 +228,31 @@
 [data-theme="flup"] .text-white\/10 { color: rgba(30, 41, 59, 0.15) !important; }
 [data-theme="flup"] .text-main, [data-theme="flup"] .text-v4-ink { color: #1e293b !important; }
 
-/* Convert red/pink tones to emerald/Flup green across all utilities */
-[data-theme="flup"] .text-red-500,
-[data-theme="flup"] .text-red-600 { color: #10b981 !important; }
+/* Comprehensive Red/Pink/Rose to Emerald mapping for Flup Theme */
+[data-theme="flup"] [class*="text-red-"],
+[data-theme="flup"] [class*="text-rose-"],
+[data-theme="flup"] [class*="text-pink-"] { color: #10b981 !important; }
 
-[data-theme="flup"] .bg-red-600,
-[data-theme="flup"] .bg-red-500 { background-color: #10b981 !important; color: #ffffff !important; }
+[data-theme="flup"] [class*="bg-red-"],
+[data-theme="flup"] [class*="bg-rose-"],
+[data-theme="flup"] [class*="bg-pink-"] { background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
 
-[data-theme="flup"] .bg-red-600\/10,
-[data-theme="flup"] .bg-red-500\/10,
-[data-theme="flup"] .bg-red-500\/5 { background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
+[data-theme="flup"] [class*="bg-red-600"],
+[data-theme="flup"] [class*="bg-red-500"] { background-color: #10b981 !important; color: #ffffff !important; }
 
-[data-theme="flup"] .border-red-500,
-[data-theme="flup"] .border-red-600,
-[data-theme="flup"] .border-red-500\/10,
-[data-theme="flup"] .border-red-500\/20,
-[data-theme="flup"] .border-red-500\/30 { border-color: rgba(16, 185, 129, 0.3) !important; }
+[data-theme="flup"] [class*="border-red-"],
+[data-theme="flup"] [class*="border-rose-"],
+[data-theme="flup"] [class*="border-pink-"] { border-color: rgba(16, 185, 129, 0.3) !important; }
 
-[data-theme="flup"] .shadow-red-500\/10,
-[data-theme="flup"] .shadow-red-500\/20,
-[data-theme="flup"] .shadow-red-900\/40,
-[data-theme="flup"] .shadow-red-900\/10 { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important; }
+[data-theme="flup"] [class*="shadow-red-"],
+[data-theme="flup"] [class*="shadow-rose-"],
+[data-theme="flup"] [class*="shadow-pink-"] { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important; }
+
+/* Flatten buttons and remove gradients in Flup */
+[data-theme="flup"] .btn-ruby {
+  background: #10b981 !important;
+  box-shadow: none !important;
+}
 
 /* Surface Tint Conversion */
 [data-theme="flup"] .bg-white\/5 { background-color: #f8fafc !important; }

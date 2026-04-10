@@ -233,17 +233,13 @@ export default function RootLayout({
             "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
             isSidebarCollapsed ? "-ml-64" : "ml-0"
           )}>
-            {/* Ambient Animated Sidebar Background */}
-            <div className="absolute inset-0 pointer-events-none z-0">
-               <div className={clsx(
-                 "absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen",
-                 isFlupTheme ? "bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.15)_0%,transparent_50%)]" : "bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)]"
-               )} />
-               <div className={clsx(
-                 "absolute inset-0 animate-[pulse_4s_ease-in-out_infinite]",
-                 isFlupTheme ? "bg-gradient-to-b from-transparent via-emerald-500/5 to-transparent" : "bg-gradient-to-b from-transparent via-red-500/5 to-transparent"
-               )} />
-            </div>
+            {/* Ambient Animated Sidebar Background — Only for Dark/Ruby themes */}
+            {!isLightTheme && (
+              <div className="absolute inset-0 pointer-events-none z-0">
+                 <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)]" />
+                 <div className="absolute inset-0 animate-[pulse_4s_ease-in-out_infinite] bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
+              </div>
+            )}
 
             {/* Internal Toggle Button (Hide/Collapse) */}
             <button 
