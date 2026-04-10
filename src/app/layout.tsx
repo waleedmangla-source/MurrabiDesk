@@ -227,7 +227,7 @@ export default function RootLayout({
           
           {/* Sidebar */}
           <aside className={clsx(
-            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-6 pb-6 pt-14 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
+            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-6 pb-6 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
             isSidebarCollapsed ? "-ml-64" : "ml-0"
           )}>
             {/* Ambient Animated Sidebar Background */}
@@ -244,7 +244,7 @@ export default function RootLayout({
               <ChevronLeft size={16} />
             </button>
 
-            <div className="flex flex-col items-center gap-2 text-center w-full pt-4 relative group z-10">
+            <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
                 <span className="font-black text-3xl tracking-tighter text-red-500 leading-none">Desk</span>
