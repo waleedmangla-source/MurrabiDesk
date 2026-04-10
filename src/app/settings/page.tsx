@@ -309,6 +309,34 @@ export default function SettingsPage() {
                         </div>
                       )}
                     </button>
+
+                    {/* Arctic White Theme */}
+                    <button
+                      onClick={() => setSettings(prev => ({ ...prev, accentColor: 'arctic' }))}
+                      className={clsx(
+                        "group relative flex flex-col items-center gap-3 transition-all",
+                        settings.accentColor === 'arctic' ? "scale-110" : "opacity-40 hover:opacity-100"
+                      )}
+                    >
+                      <div 
+                        className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl relative overflow-hidden bg-white"
+                        style={{ 
+                          borderColor: settings.accentColor === 'arctic' ? '#000000' : 'transparent',
+                          boxShadow: settings.accentColor === 'arctic' ? '0 0 30px rgba(255,255,255,0.8)' : 'none'
+                        }}
+                      />
+                      <div className={clsx(
+                        "text-[9px] font-black uppercase tracking-widest transition-opacity whitespace-nowrap",
+                        settings.accentColor === 'arctic' ? "opacity-100 text-white" : "opacity-0"
+                      )}>
+                        Arctic White
+                      </div>
+                      {settings.accentColor === 'arctic' && (
+                        <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full shadow-lg">
+                          <CheckCircle2 size={12} />
+                        </div>
+                      )}
+                    </button>
                  </div>
               </div>
            </div>

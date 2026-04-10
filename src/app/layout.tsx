@@ -40,8 +40,9 @@ const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string,
   emerald: { main: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.5)', soft: 'rgba(16, 185, 129, 0.1)', rgb: '16, 185, 129' },
   amber: { main: '#f59e0b', hover: '#d97706', glow: 'rgba(245, 158, 11, 0.5)', soft: 'rgba(245, 158, 11, 0.1)', rgb: '245, 158, 11' },
   violet: { main: '#8b5cf6', hover: '#7c3aed', glow: 'rgba(139, 92, 246, 0.5)', soft: 'rgba(139, 92, 246, 0.1)', rgb: '139, 92, 246' },
-  // Creamy White — full light theme; accent vars overridden via data-theme CSS
+  // Creamy White & Arctic White — full light themes; accent vars overridden via data-theme CSS
   creamy: { main: '#44403c', hover: '#1c1917', glow: 'rgba(68, 64, 60, 0.25)', soft: 'rgba(68, 64, 60, 0.08)', rgb: '68, 64, 60' },
+  arctic: { main: '#000000', hover: '#000000', glow: 'rgba(0, 0, 0, 0.1)', soft: 'rgba(0, 0, 0, 0.05)', rgb: '0, 0, 0' },
 };
 
 const inter = Inter({ subsets: ["latin"] });
@@ -190,13 +191,13 @@ export default function RootLayout({
   );
 
   const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.red;
-  const isCreamyTheme = accentColor === 'creamy';
+  const isLightTheme = accentColor === 'creamy' || accentColor === 'arctic';
 
   return (
     <html 
       lang="en" 
-      className={isCreamyTheme ? '' : 'dark'}
-      data-theme={isCreamyTheme ? 'creamy' : undefined}
+      className={isLightTheme ? '' : 'dark'}
+      data-theme={isLightTheme ? accentColor : undefined}
       style={{
         '--accent-main': currentAccent.main,
         '--accent-hover': currentAccent.hover,
