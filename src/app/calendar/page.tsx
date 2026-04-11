@@ -22,6 +22,7 @@ interface CalendarEvent {
   color?: string;
   allDay?: boolean;
   description?: string;
+  calendar: string; // Added category
 }
 
 interface NewEventDraft {
@@ -58,6 +59,11 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const FULL_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const CALENDARS = [
+  { name: "Personal", color: "var(--accent-main)" },
+  { name: "Work", color: "#3b82f6" },
+  { name: "Birthdays", color: "#ec4899" }
+];
 
 // ─────────────────────────────────────────────────────────────
 // Utils
@@ -576,6 +582,7 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>(["Personal", "Work", "Birthdays"]);
   const [draft, setDraft] = useState<NewEventDraft>({
     title: "", date: localDateStr(today), startTime: "09:00", endTime: "10:00", location: "", color: "accent"
   });
@@ -590,11 +597,12 @@ export default function CalendarPage() {
         const now = new Date();
         const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
         setEvents([
-          { id: "1", title: "Team Standup", start: new Date(y,m,d,9,0).toISOString(), end: new Date(y,m,d,9,30).toISOString(), color: "blue" },
-          { id: "2", title: "Design Review", start: new Date(y,m,d,11,0).toISOString(), end: new Date(y,m,d,12,0).toISOString(), color: "lavender" },
-          { id: "3", title: "Lunch Break", start: new Date(y,m,d,13,0).toISOString(), end: new Date(y,m,d,14,0).toISOString(), color: "mint" },
-          { id: "4", title: "Friday Khutbah", start: new Date(y,m,d+2,13,0).toISOString(), end: new Date(y,m,d+2,14,0).toISOString(), color: "accent" },
-          { id: "5", title: "Product Sprint", start: new Date(y,m,d+1,10,0).toISOString(), end: new Date(y,m,d+1,12,0).toISOString(), color: "peach" },
+          { id: "1", title: "Team Standup", start: new Date(y,m,d,9,0).toISOString(), end: new Date(y,m,d,9,30).toISOString(), color: "blue", calendar: "Work" },
+          { id: "2", title: "Design Review", start: new Date(y,m,d,11,0).toISOString(), end: new Date(y,m,d,12,0).toISOString(), color: "lavender", calendar: "Work" },
+          { id: "3", title: "Lunch Break", start: new Date(y,m,d,13,0).toISOString(), end: new Date(y,m,d,14,0).toISOString(), color: "mint", calendar: "Personal" },
+          { id: "4", title: "Friday Khutbah", start: new Date(y,m,d+2,13,0).toISOString(), end: new Date(y,m,d+2,14,0).toISOString(), color: "accent", calendar: "Personal" },
+          { id: "5", title: "Product Sprint", start: new Date(y,m,d+1,10,0).toISOString(), end: new Date(y,m,d+1,12,0).toISOString(), color: "peach", calendar: "Work" },
+          { id: "6", title: "Mom's Birthday", start: new Date(y,m,d-1,0,0).toISOString(), end: new Date(y,m,d-1,23,59).toISOString(), color: "rose", calendar: "Birthdays" },
         ]);
         return;
       }
@@ -609,6 +617,7 @@ export default function CalendarPage() {
         description: e.description,
         allDay: !e.start?.dateTime,
         color: ["accent","blue","mint","lavender","peach","rose"][i % 6],
+        calendar: i % 3 === 0 ? "Work" : i % 3 === 1 ? "Personal" : "Birthdays"
       }));
       setEvents(mapped);
     } catch {
@@ -640,7 +649,11 @@ export default function CalendarPage() {
   };
 
   // ── Filter events ──
-  const filteredEvents = (forDate: Date) => events.filter(e => sameDay(isoToDate(e.start), forDate));
+  const activeEvents = useMemo(() => {
+    return events.filter(e => selectedCalendars.includes(e.calendar));
+  }, [events, selectedCalendars]);
+
+  const filteredEvents = (forDate: Date) => activeEvents.filter(e => sameDay(isoToDate(e.start), forDate));
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(startOfWeek(current));
     d.setDate(d.getDate() + i);
@@ -648,11 +661,11 @@ export default function CalendarPage() {
   });
 
   const upcomingEvents = useMemo(() => {
-    return events
+    return activeEvents
       .filter(e => new Date(e.start).getTime() > Date.now())
       .sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, 10);
-  }, [events]);
+  }, [activeEvents]);
 
   // ── Handle new event ──
   const handleNewEventFromSlot = (date: Date, hour: number) => {
@@ -678,6 +691,7 @@ export default function CalendarPage() {
         end: endISO,
         location: draft.location || undefined,
         color: draft.color,
+        calendar: "Personal" // Default to Personal
       };
       setEvents(prev => [...prev, newEv]);
 
@@ -712,23 +726,48 @@ export default function CalendarPage() {
           selected={current} 
           onSelect={(d) => { setCurrent(d); if (view === "month") setView("day"); }} 
           today={today}
-          events={events}
+          events={activeEvents}
         />
 
         <div className="border-t border-white/5 mx-4" />
 
         {/* My Calendars */}
         <div className="px-4 pt-4 pb-2">
-          <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-2">My Calendars</div>
-          {["Personal","Work","Birthdays"].map((cal, i) => {
-            const colors = ["var(--accent-main)", "#3b82f6", "#ec4899"];
-            return (
-              <div key={cal} className="flex items-center gap-2 py-1.5 group cursor-pointer">
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ background: colors[i] }} />
-                <span className="text-xs font-bold text-[var(--foreground)]">{cal}</span>
-              </div>
-            );
-          })}
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">My Calendars</div>
+            <button 
+              onClick={() => setSelectedCalendars(CALENDARS.map(c => c.name))}
+              className="text-[8px] font-black uppercase tracking-widest text-[var(--accent-main)] hover:brightness-110 transition-all px-2 py-1 rounded-md bg-white/5 active:scale-95"
+            >
+              Show All
+            </button>
+          </div>
+          <div className="space-y-1">
+            {CALENDARS.map((cal) => {
+              const isActive = selectedCalendars.includes(cal.name);
+              return (
+                <div 
+                  key={cal.name} 
+                  className={clsx(
+                    "flex items-center gap-3 py-2 px-3 rounded-xl cursor-pointer group transition-all",
+                    isActive ? "bg-white/5" : "opacity-50 grayscale hover:opacity-80 hover:grayscale-0"
+                  )}
+                  onClick={() => {
+                    setSelectedCalendars(prev => 
+                      prev.includes(cal.name) 
+                        ? prev.filter(n => n !== cal.name) 
+                        : [...prev, cal.name]
+                    );
+                  }}
+                >
+                  <div className="w-4 h-4 rounded-md flex items-center justify-center border border-white/10 shrink-0" style={{ background: cal.color }}>
+                    {isActive && <Check size={10} className="text-white" strokeWidth={4} />}
+                  </div>
+                  <span className="text-xs font-bold text-[var(--foreground)] truncate flex-1">{cal.name}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="border-t border-white/5 mx-4 my-2" />
