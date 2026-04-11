@@ -1,5 +1,4 @@
-"use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Inbox, Star, Send, FileText, Trash2, Archive,
   Search, Edit3, RefreshCw, Loader2, CheckCircle,
@@ -97,8 +96,8 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg'
 // ─────────────────────────────────────────────────────────────
 // Compose Modal
 // ─────────────────────────────────────────────────────────────
-function ComposeModal({ onClose, onSend }: { onClose: () => void; onSend: (d: ComposeData) => Promise<void> }) {
-  const [form, setForm] = useState<ComposeData>({ to: '', subject: '', body: '' });
+function ComposeModal({ onClose, onSend, initialTo = '' }: { onClose: () => void; onSend: (d: ComposeData) => Promise<void>; initialTo?: string }) {
+  const [form, setForm] = useState<ComposeData>({ to: initialTo, subject: '', body: '' });
   const [sending, setSending] = useState(false);
 
   async function handleSend() {
@@ -346,9 +345,11 @@ export default function EmailsPage() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [folder, setFolder] = useState<Folder>('inbox');
   const [selected, setSelected] = useState<Email | null>(null);
+  const [composing, setComposing] = useState(false);
+  const [composingTo, setComposingTo] = useState<string>('');
+  const [sidebarTab, setSidebarTab] = useState<'folders' | 'quick-mail'>('folders');
   const [query, setQuery] = useState('');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
-  const [composing, setComposing] = useState(false);
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
 
   // ── Fetch ──
@@ -453,6 +454,24 @@ export default function EmailsPage() {
     return matchesQuery && matchesFolder;
   });
 
+  const frequentRecipients = useMemo(() => {
+    const counts: Record<string, { count: number; name: string; email: string }> = {};
+    emails.forEach(e => {
+      const email = e.from;
+      const name = e.fromName || email;
+      if (!counts[email]) counts[email] = { count: 0, name, email };
+      counts[email].count++;
+    });
+    return Object.values(counts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 12);
+  }, [emails]);
+
+  const handleQuickMail = (email: string) => {
+    setComposingTo(email);
+    setComposing(true);
+  };
+
   const unread = emails.filter(e => !e.read && !e.labels.includes('TRASH') && !e.labels.includes('SENT')).length;
 
   const SyncIcon = syncStatus === 'syncing' ? Loader2 : syncStatus === 'synced' ? CheckCircle : syncStatus === 'error' ? AlertCircle : RefreshCw;
@@ -468,37 +487,84 @@ export default function EmailsPage() {
             <span className="text-xs font-black uppercase tracking-tight text-white truncate">Gmail</span>
             <ChevronDown size={12} className="text-white/60 ml-auto" />
           </div>
+
+          {/* Sidebar Tabs */}
+          <div className="flex bg-white/5 rounded-xl p-0.5 mt-4 border border-white/5">
+            {[
+              { id: 'folders', label: 'Folders' },
+              { id: 'quick-mail', label: 'Quick' }
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setSidebarTab(t.id as any)}
+                className={clsx(
+                  "flex-1 py-1.5 rounded-[10px] text-[10px] font-black uppercase tracking-widest transition-all",
+                  sidebarTab === t.id ? "bg-white/10 text-white shadow-sm" : "text-[var(--text-dim)] hover:text-white"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Folders */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {FOLDERS.map(f => {
-            const count = f.id === 'inbox' ? unread : 0;
-            const Icon = f.icon;
-            const active = folder === f.id;
-            return (
-              <button
-                key={f.id}
-                onClick={() => { setFolder(f.id); setSelected(null); }}
-                className={clsx(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left",
-                  active
-                    ? "font-black text-white"
-                    : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+          {sidebarTab === 'folders' ? (
+            <nav className="px-3 py-4 space-y-0.5">
+              {FOLDERS.map(f => {
+                const count = f.id === 'inbox' ? unread : 0;
+                const Icon = f.icon;
+                const active = folder === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => { setFolder(f.id); setSelected(null); }}
+                    className={clsx(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left",
+                      active
+                        ? "font-black text-white"
+                        : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
+                    )}
+                    style={active ? { background: 'var(--accent-main)' } : {}}
+                  >
+                    <Icon size={15} className="shrink-0" />
+                    <span className="text-xs font-bold flex-1">{f.label}</span>
+                    {count > 0 && (
+                      <span className={clsx("text-[9px] font-black px-1.5 py-0.5 rounded-full", active ? "bg-white/20 text-white" : "bg-[var(--accent-soft)] text-[var(--accent-main)]")}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          ) : (
+            <div className="p-4 flex flex-col flex-1">
+              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-4 shrink-0">Frequent Recipients</div>
+              <div className="grid grid-cols-2 gap-2 pb-4">
+                {frequentRecipients.length === 0 ? (
+                  <div className="col-span-2 text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
+                    No frequent contacts yet
+                  </div>
+                ) : (
+                  frequentRecipients.map(recipient => (
+                    <button
+                      key={recipient.email}
+                      onClick={() => handleQuickMail(recipient.email)}
+                      className="aspect-square flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group"
+                    >
+                      <Avatar name={recipient.name} size="md" />
+                      <div className="mt-2 text-[10px] font-black tracking-tight text-[var(--foreground)] truncate w-full text-center group-hover:text-[var(--accent-main)] transition-colors">
+                        {recipient.name.split(' ')[0]}
+                      </div>
+                    </button>
+                  ))
                 )}
-                style={active ? { background: 'var(--accent-main)' } : {}}
-              >
-                <Icon size={15} className="shrink-0" />
-                <span className="text-xs font-bold flex-1">{f.label}</span>
-                {count > 0 && (
-                  <span className={clsx("text-[9px] font-black px-1.5 py-0.5 rounded-full", active ? "bg-white/20 text-white" : "bg-[var(--accent-soft)] text-[var(--accent-main)]")}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Compose */}
         <div className="p-4 border-t border-white/5">
@@ -639,7 +705,11 @@ export default function EmailsPage() {
 
       {/* ── Compose Modal ── */}
       {composing && (
-        <ComposeModal onClose={() => setComposing(false)} onSend={handleSend} />
+        <ComposeModal
+          onClose={() => { setComposing(false); setComposingTo(''); }}
+          onSend={handleSend}
+          initialTo={composingTo}
+        />
       )}
     </div>
   );
