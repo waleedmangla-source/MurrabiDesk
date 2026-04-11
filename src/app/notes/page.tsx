@@ -518,9 +518,7 @@ export default function NotesPage() {
             <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">
               Mission <span style={{ color: 'var(--accent-main)' }}>Notes</span>
             </h1>
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)] mt-1">
-              {token ? 'Google Drive Sync Enabled' : 'Guest Mode — Notes not synced'}
-            </p>
+
           </div>
 
           <div className="flex items-center gap-3">

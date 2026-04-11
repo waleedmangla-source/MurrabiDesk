@@ -263,19 +263,7 @@ export default function RootLayout({
               )}>
                 CREATED BY WALEED M.
               </p>
-              <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-white/40">
-                {isOnline ? (
-                  <>
-                    <Cloud size={14} className="text-green-500" />
-                    Cloud Synchronized • Protocol 4.0
-                  </>
-                ) : (
-                  <>
-                    <CloudOff size={14} className="text-red-500" />
-                    Offline Mode • Local Cache
-                  </>
-                )}
-              </div>
+
             </div>
 
             <nav className="flex-grow space-y-2 relative z-10">
