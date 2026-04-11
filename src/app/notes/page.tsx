@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, Search, Grid3X3, List, Pin, Tag, Trash2, X,
   RefreshCw, CheckCircle, AlertCircle, Loader2, Edit3,
-  ChevronDown, Palette
+  ChevronDown, Palette, Clock, FileText
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -43,6 +43,21 @@ const NOTE_COLORS: { key: string; label: string; bg: string; border: string; tex
 
 function getColor(key: string) {
   return NOTE_COLORS.find(c => c.key === key) || NOTE_COLORS[0];
+}
+
+function formatNoteDate(dateStr: string) {
+  try {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).format(date);
+  } catch {
+    return 'Recently';
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -510,7 +525,54 @@ export default function NotesPage() {
     : 'text-white/30';
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-transparent">
+    <div className="flex h-screen overflow-hidden bg-transparent">
+      {/* ── Secondary Sidebar: All Notes Inventory ── */}
+      <div className="w-[240px] shrink-0 h-full border-r border-white/5 glass bg-black/20 flex flex-col animate-in fade-in slide-in-from-left-4 duration-500">
+        <div className="px-5 pt-12 pb-5 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md flex items-center justify-center bg-[var(--accent-main)] text-white">
+              <Plus size={12} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--foreground)]">Inventory</span>
+          </div>
+          <span className="text-[9px] font-bold text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full">{notes.length}</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          <div className="space-y-1">
+            {notes.map(note => (
+              <button
+                key={note.id}
+                onClick={() => setEditingNote(note)}
+                className={clsx(
+                  "w-full text-left px-3 py-3 rounded-xl transition-all group/item border border-transparent",
+                  editingNote?.id === note.id 
+                    ? "bg-[var(--accent-soft)] border-[var(--accent-soft)]" 
+                    : "hover:bg-white/5 hover:border-white/5"
+                )}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className={clsx("w-1.5 h-1.5 rounded-full mt-1.5 shrink-0", getColor(note.color).bg.replace('bg-', 'bg-opacity-100 bg-'))} style={{ backgroundColor: note.color !== 'default' ? undefined : 'var(--accent-main)' }} />
+                  <div className="flex-1 min-w-0">
+                    <h4 className={clsx(
+                      "text-xs font-bold truncate transition-colors",
+                      editingNote?.id === note.id ? "text-[var(--accent-main)]" : "text-white/80 group-hover/item:text-white"
+                    )}>
+                      {note.title || 'Untitled Note'}
+                    </h4>
+                    <div className="flex items-center gap-1.5 mt-1 text-[9px] font-medium text-white/30">
+                      <Clock size={9} />
+                      <span>{formatNoteDate(note.updatedAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
       {/* ── Toolbar ── */}
       <div className="shrink-0 px-8 pt-12 pb-6 border-b border-white/5">
         <div className="flex items-start justify-between mb-6">
@@ -692,5 +754,6 @@ export default function NotesPage() {
         />
       )}
     </div>
-  );
+  </div>
+);
 }
