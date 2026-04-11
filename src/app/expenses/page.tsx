@@ -534,7 +534,7 @@ export default function ExpensesPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
-      <div className="w-[200px] xl:w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+      <div className="w-[200px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
         <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8">
           <div className="flex items-center">
             <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
