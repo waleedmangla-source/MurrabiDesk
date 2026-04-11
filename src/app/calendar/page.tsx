@@ -172,10 +172,10 @@ function MiniCalendar({ selected, onSelect, today, events = [] }: {
                   !isSelected && !isToday && "text-[var(--foreground)] hover:bg-white/10"
                 )}
               >
-                <span className={clsx(hasEvents && "translate-y-[-1px]")}>{d.getDate()}</span>
+                <span>{d.getDate()}</span>
                 {hasEvents && (
                   <div className={clsx(
-                    "w-0.5 h-0.5 rounded-full absolute bottom-1.5",
+                    "w-1 h-1 rounded-full absolute bottom-1",
                     isToday ? "bg-[var(--accent-main)]" : "bg-white/30"
                   )} />
                 )}
