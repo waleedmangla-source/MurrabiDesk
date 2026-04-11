@@ -657,10 +657,7 @@ export default function ExpensesPage() {
       {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Mission <span className="text-[var(--accent-main)]">Expenses</span></h1>
-          <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
-             Expense Management System
-          </p>
+          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">Tool</span></h1>
         </div>
         
         <div className="flex gap-4">
