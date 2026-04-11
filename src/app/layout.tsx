@@ -25,7 +25,8 @@ import {
   X,
   Minus,
   Maximize2,
-  Download
+  Download,
+  Info
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname } from "next/navigation";
@@ -257,12 +258,27 @@ export default function RootLayout({
                   isFlupTheme ? "text-[#10b981]" : "text-red-500"
                 )}>Desk</span>
               </div>
-              <p className={clsx(
-                "text-[9px] font-black uppercase tracking-[0.3em]",
-                isFlupTheme ? "text-[#10b981]/60" : "text-red-500/60"
-              )}>
-                CREATED BY WALEED M.
-              </p>
+              <div className="flex items-center justify-center gap-1.5">
+                <p className={clsx(
+                  "text-[9px] font-black uppercase tracking-[0.3em]",
+                  isFlupTheme ? "text-[#10b981]/60" : "text-red-500/60"
+                )}>
+                  CREATED BY WALEED M.
+                </p>
+                <div className="relative group/tooltip">
+                  <Info
+                    size={10}
+                    className={clsx(
+                      "cursor-pointer transition-opacity hover:opacity-100 opacity-50",
+                      isFlupTheme ? "text-[#10b981]" : "text-red-500"
+                    )}
+                  />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
+                    This is a volunteer project created for productivity purposes only.
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/80" />
+                  </div>
+                </div>
+              </div>
 
             </div>
 
