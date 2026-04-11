@@ -297,12 +297,7 @@ export default function ExpensesPage() {
     };
   }, [itemData, activeIndices]);
 
-  const diagnosticChecks = useMemo(() => [
-    { label: "Report Status", status: "DRAFT", val: formData.expense_month || "Protocol 4.0", icon: ClipboardList, color: "text-amber-500" },
-    { label: "Claim Volume", status: activeIndices.length + " ACTIVE", val: `$${totals.grand}`, icon: DollarSign, color: "text-[var(--accent-main)]" },
-    { label: "Tax Protocol", status: "VERIFIED", val: `$${totals.gst} HST`, icon: Shield, color: "text-blue-500" },
-    { label: "Export Priority", status: totals.grand !== '0.00' ? "CRITICAL" : "IDLE", val: totals.grand !== '0.00' ? "Awaiting Download" : "No Content", icon: Zap, color: totals.grand !== '0.00' ? "text-[var(--accent-main)]" : "text-[var(--text-main)]/20" }
-  ], [formData.expense_month, activeIndices.length, totals]);
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -673,23 +668,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* Primary Diagnostic Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {diagnosticChecks.map((check) => (
-          <div key={check.label} className="glass p-5 flex flex-col gap-3 relative overflow-hidden group">
-            <div className="flex items-center justify-between relative z-10">
-              <check.icon className={check.color} size={20} />
-              <span className={clsx("text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-black/40", check.color)}>
-                {check.status}
-              </span>
-            </div>
-            <div className="relative z-10">
-              <p className="text-[var(--text-main)]/20 text-[10px] font-black uppercase tracking-widest">{check.label}</p>
-              <h3 className="text-xl font-black text-[var(--text-main)] mt-1 tracking-tighter italic">{check.val}</h3>
-            </div>
-          </div>
-        ))}
-      </div>
+
 
       <div className="w-full space-y-8 form-v4 no-drag pt-4">
 
