@@ -213,6 +213,7 @@ export default function ExpensesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   
   // Navigation State
   type Tab = 'overview' | 'create' | 'history';
@@ -666,66 +667,64 @@ export default function ExpensesPage() {
           {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 no-drag overflow-y-auto custom-scrollbar">
-           <button 
-             onClick={startNewReport}
-             className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] bg-[var(--accent-main)]/10 text-[var(--accent-main)] border border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 transition-all text-left mb-6 group"
-           >
-             <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Report</span>
-           </button>
-
+        <nav className="flex-1 p-4 space-y-2 no-drag mt-4 overflow-y-auto custom-scrollbar">
            <button 
              onClick={() => setActiveTab('overview')}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <Zap size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dashboard</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Overview</span>
            </button>
 
            <button 
-             onClick={() => setActiveTab('create')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'create' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             onClick={() => {
+               startNewReport();
+               setActiveTab('create');
+             }}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'create' && !isReadOnly) ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <Plus size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Editor</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Expense</span>
            </button>
+
+           <div className="h-px bg-white/5 my-4 mx-2" />
 
            <button 
-             onClick={() => setActiveTab('history')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'history' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+             className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)] transition-all text-left group"
            >
-             <History size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats & History</span>
+             <div className="flex items-center gap-3">
+               <History size={18} />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Expense History</span>
+             </div>
+             <ChevronLeft size={14} className={clsx("transition-transform duration-300", isHistoryOpen ? "-rotate-90" : "")} />
            </button>
 
-           <div className="pt-6 px-4 py-2">
-             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em]">Recent Reports</span>
-           </div>
-
-           <div className="space-y-1">
-             {expensesHistory.slice(0, 10).map((exp) => (
-               <button
-                 key={exp.id}
-                 onClick={() => loadFromHistory(exp)}
-                 className={clsx(
-                   "w-full flex flex-col gap-1 px-4 py-3 rounded-[12px] transition-all text-left border group",
-                   currentReportId === exp.id 
-                    ? "bg-white/10 border-white/10" 
-                    : "border-transparent hover:bg-white/5"
-                 )}
-               >
-                 <div className="flex justify-between items-center w-full">
-                   <span className="text-[10px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month} Report</span>
-                   <Shield size={10} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
-                 </div>
-                 <div className="flex justify-between items-center w-full">
-                   <span className="text-[8px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                   <span className="text-[9px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
-                 </div>
-               </button>
-             ))}
-           </div>
+           {isHistoryOpen && (
+             <div className="space-y-1 mt-2 animate-in slide-in-from-top-2 duration-300">
+               {expensesHistory.slice(0, 10).map((exp) => (
+                 <button
+                   key={exp.id}
+                   onClick={() => loadFromHistory(exp)}
+                   className={clsx(
+                     "w-full flex flex-col gap-1 px-4 py-2 rounded-[10px] transition-all text-left border group ml-2",
+                     currentReportId === exp.id 
+                      ? "bg-white/10 border-white/10" 
+                      : "border-transparent hover:bg-white/5"
+                   )}
+                 >
+                   <div className="flex justify-between items-center w-full">
+                     <span className="text-[9px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month}</span>
+                     <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
+                   </div>
+                   <div className="flex justify-between items-center w-full">
+                     <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                     <span className="text-[8px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
+                   </div>
+                 </button>
+               ))}
+             </div>
+           )}
         </nav>
       </div>
 
