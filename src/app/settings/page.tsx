@@ -632,7 +632,7 @@ function PrivacyTab() {
 // ─────────────────────────────────────────────────────────────
 // 🔧 Replace the src below with your actual Google Form embed URL
 // Go to your Google Form → Send → Embed → copy the src value from the <iframe> tag
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true";
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScNyE_i3NqCeeqLbjtuu43TA0KI_PnjDvTpCB1uRgFlyf74qA/viewform?embedded=true";
 
 function FeedbackTab() {
   const isPlaceholder = GOOGLE_FORM_URL.includes('YOUR_FORM_ID');
@@ -669,11 +669,11 @@ function FeedbackTab() {
           </div>
         ) : (
           /* Live embedded Google Form */
-          <div className="rounded-2xl overflow-hidden border border-white/5" style={{ minHeight: 600 }}>
+          <div className="rounded-2xl overflow-hidden border border-white/5" style={{ minHeight: 1080 }}>
             <iframe
               src={GOOGLE_FORM_URL}
               width="100%"
-              height="640"
+              height="1080"
               frameBorder="0"
               marginHeight={0}
               marginWidth={0}
