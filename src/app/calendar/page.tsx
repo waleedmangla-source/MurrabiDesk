@@ -61,8 +61,7 @@ const FULL_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const CALENDARS = [
   { name: "Personal", color: "var(--accent-main)" },
-  { name: "Work", color: "#3b82f6" },
-  { name: "Birthdays", color: "#ec4899" }
+  { name: "Work", color: "#3b82f6" }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -582,7 +581,7 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedCalendars, setSelectedCalendars] = useState<string[]>(["Personal", "Work", "Birthdays"]);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>(["Personal", "Work"]);
   const [draft, setDraft] = useState<NewEventDraft>({
     title: "", date: localDateStr(today), startTime: "09:00", endTime: "10:00", location: "", color: "accent"
   });
@@ -602,7 +601,6 @@ export default function CalendarPage() {
           { id: "3", title: "Lunch Break", start: new Date(y,m,d,13,0).toISOString(), end: new Date(y,m,d,14,0).toISOString(), color: "mint", calendar: "Personal" },
           { id: "4", title: "Friday Khutbah", start: new Date(y,m,d+2,13,0).toISOString(), end: new Date(y,m,d+2,14,0).toISOString(), color: "accent", calendar: "Personal" },
           { id: "5", title: "Product Sprint", start: new Date(y,m,d+1,10,0).toISOString(), end: new Date(y,m,d+1,12,0).toISOString(), color: "peach", calendar: "Work" },
-          { id: "6", title: "Mom's Birthday", start: new Date(y,m,d-1,0,0).toISOString(), end: new Date(y,m,d-1,23,59).toISOString(), color: "rose", calendar: "Birthdays" },
         ]);
         return;
       }
@@ -617,7 +615,7 @@ export default function CalendarPage() {
         description: e.description,
         allDay: !e.start?.dateTime,
         color: ["accent","blue","mint","lavender","peach","rose"][i % 6],
-        calendar: i % 3 === 0 ? "Work" : i % 3 === 1 ? "Personal" : "Birthdays"
+        calendar: i % 2 === 0 ? "Work" : "Personal"
       }));
       setEvents(mapped);
     } catch {
