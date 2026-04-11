@@ -85,22 +85,22 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
         {...listeners} 
         className="cursor-grab active:cursor-grabbing p-1  rounded-md transition-colors"
       >
-        <GripVertical size={16} className="text-white/20 " />
+        <GripVertical size={16} className="text-[var(--text-main)]/20 " />
       </div>
 
       <div className="w-10 h-10 rounded-[12px] bg-red-600/20 flex flex-col items-center justify-center border border-red-600/30 flex-shrink-0">
-          <span className="text-[8px] font-black text-red-600 uppercase tracking-tighter">REF</span>
-          <span className="text-xs font-black text-white italic leading-none">#{idx + 1}</span>
+          <span className="text-[8px] font-black text-[var(--accent-main)] uppercase tracking-tighter">REF</span>
+          <span className="text-xs font-black text-[var(--text-main)] italic leading-none">#{idx + 1}</span>
       </div>
       
       <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold text-white truncate uppercase tracking-tight">{receipt.name}</p>
-          <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mt-1">{receipt.type.split('/')[1]}</p>
+          <p className="text-[10px] font-bold text-[var(--text-main)] truncate uppercase tracking-tight">{receipt.name}</p>
+          <p className="text-[8px] font-black text-[var(--text-main)]/20 uppercase tracking-widest mt-1">{receipt.type.split('/')[1]}</p>
       </div>
 
       <button 
           onClick={() => onRemove(receipt.id)}
-          className="p-1.5  rounded-md text-red-600/40  transition-all opacity-0 "
+          className="p-1.5  rounded-md text-[var(--accent-main)]/40  transition-all opacity-0 "
       >
           <Trash2 size={14} />
       </button>
@@ -299,9 +299,9 @@ export default function ExpensesPage() {
 
   const diagnosticChecks = useMemo(() => [
     { label: "Report Status", status: "DRAFT", val: formData.expense_month || "Protocol 4.0", icon: ClipboardList, color: "text-amber-500" },
-    { label: "Claim Volume", status: activeIndices.length + " ACTIVE", val: `$${totals.grand}`, icon: DollarSign, color: "text-emerald-500" },
+    { label: "Claim Volume", status: activeIndices.length + " ACTIVE", val: `$${totals.grand}`, icon: DollarSign, color: "text-[var(--accent-main)]" },
     { label: "Tax Protocol", status: "VERIFIED", val: `$${totals.gst} HST`, icon: Shield, color: "text-blue-500" },
-    { label: "Export Priority", status: totals.grand !== '0.00' ? "CRITICAL" : "IDLE", val: totals.grand !== '0.00' ? "Awaiting Download" : "No Content", icon: Zap, color: totals.grand !== '0.00' ? "text-red-500" : "text-white/20" }
+    { label: "Export Priority", status: totals.grand !== '0.00' ? "CRITICAL" : "IDLE", val: totals.grand !== '0.00' ? "Awaiting Download" : "No Content", icon: Zap, color: totals.grand !== '0.00' ? "text-[var(--accent-main)]" : "text-[var(--text-main)]/20" }
   ], [formData.expense_month, activeIndices.length, totals]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -534,33 +534,33 @@ export default function ExpensesPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
-      <div className="w-[200px] xl:w-[240px] glass bg-[#020310]/10 border-r border-white/5 flex flex-col h-full shrink-0">
+      <div className="w-[200px] xl:w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
         <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8">
           <div className="flex items-center">
-            <span className="font-black text-3xl tracking-tighter leading-none text-white">Murrabi</span>
-            <span className="font-black text-3xl tracking-tighter leading-none text-emerald-500">Desk</span>
+            <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
+            <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--accent-main)' }}>Desk</span>
           </div>
-          <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500/50 mt-1 pl-1">Expense Protocol</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]/50 mt-1 pl-1">Expense Protocol</p>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 no-drag mt-4">
            <button 
              onClick={() => setActiveTab('overview')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-white/50 hover:bg-white/5 hover:text-white")}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <Briefcase size={16} />
              <span className="text-xs font-black uppercase tracking-widest">Overview</span>
            </button>
            <button 
              onClick={() => setActiveTab('create')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'create' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-white/50 hover:bg-white/5 hover:text-white")}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'create' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <Plus size={16} />
              <span className="text-xs font-black uppercase tracking-widest">New Expense</span>
            </button>
            <button 
              onClick={() => setActiveTab('history')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'history' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-white/50 hover:bg-white/5 hover:text-white")}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'history' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <History size={16} />
              <span className="text-xs font-black uppercase tracking-widest">History</span>
@@ -571,12 +571,12 @@ export default function ExpensesPage() {
       <div className="flex-1 main-content flex flex-col h-screen overflow-y-auto scroll-smooth">
         {activeTab === 'overview' && (
           <div className="p-12 flex flex-col items-center justify-center h-full text-center animate-in fade-in zoom-in-95 duration-500">
-             <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20 relative group">
+             <div className="w-20 h-20 rounded-full bg-[var(--accent-soft)] flex items-center justify-center mb-6 border border-[var(--accent-soft)] relative group">
                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <Briefcase size={32} className="text-emerald-500" />
+               <Briefcase size={32} className="text-[var(--accent-main)]" />
              </div>
-             <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase">Overview <span className="text-emerald-500">Dashboard</span></h1>
-             <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-4 max-w-[300px] leading-relaxed">
+             <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Overview <span className="text-[var(--accent-main)]">Dashboard</span></h1>
+             <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] mt-4 max-w-[300px] leading-relaxed">
                Comprehensive financial metrics and visualizations will flow here in Protocol 5.0.
              </p>
           </div>
@@ -585,8 +585,8 @@ export default function ExpensesPage() {
         {activeTab === 'history' && (
           <div className="p-8 md:p-12 pt-24 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto w-full">
             <div className="mb-12">
-              <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Expense <span className="text-emerald-500">History</span></h1>
-              <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
+              <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">History</span></h1>
+              <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
                  Local Secure Access &middot; Synced Reconciliations
               </p>
             </div>
@@ -600,8 +600,8 @@ export default function ExpensesPage() {
                 return (
                   <div key={m} className="space-y-6">
                     <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-                      <h3 className="text-lg font-black tracking-widest text-white uppercase">{m}</h3>
-                      <span className="text-sm font-black text-emerald-500 uppercase px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg shadow-inner">${monthTotal.toFixed(2)}</span>
+                      <h3 className="text-lg font-black tracking-widest text-[var(--text-main)] uppercase">{m}</h3>
+                      <span className="text-sm font-black text-[var(--accent-main)] uppercase px-3 py-1 bg-[var(--accent-soft)] border border-[var(--accent-soft)] rounded-lg shadow-inner">${monthTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -609,11 +609,11 @@ export default function ExpensesPage() {
                         <div key={form.id} className="glass bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col gap-4 relative group transition-all hover:bg-white/10 hover:border-white/10">
                            <div className="flex items-start justify-between">
                               <div className="pr-4">
-                                <p className="text-[11px] font-black text-white uppercase tracking-wider">{form.date} &bull; <span className="text-white/40">{form.fullName}</span></p>
-                                <p className="text-sm font-bold text-white/50 uppercase mt-2 leading-relaxed">{form.purpose}</p>
+                                <p className="text-[11px] font-black text-[var(--text-main)] uppercase tracking-wider">{form.date} &bull; <span className="text-[var(--text-main)]/40">{form.fullName}</span></p>
+                                <p className="text-sm font-bold text-[var(--text-main)]/50 uppercase mt-2 leading-relaxed">{form.purpose}</p>
                               </div>
                               <div className="flex flex-col items-end shrink-0">
-                                <p className="text-lg font-black text-white bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
+                                <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
                               </div>
                            </div>
                            
@@ -633,7 +633,7 @@ export default function ExpensesPage() {
                                 />
                                 <span className={clsx(
                                   "text-[10px] font-black uppercase tracking-widest transition-colors",
-                                  form.refunded ? "text-emerald-500" : "text-white/30 group-hover/chk:text-white/50"
+                                  form.refunded ? "text-[var(--accent-main)]" : "text-[var(--text-dim)] group-hover/chk:text-[var(--text-main)]/50"
                                 )}>
                                   {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
                                 </span>
@@ -649,10 +649,10 @@ export default function ExpensesPage() {
               {expensesHistory.length === 0 && (
                 <div className="text-center py-32 flex flex-col items-center">
                    <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                     <History size={32} className="text-white/20" />
+                     <History size={32} className="text-[var(--text-main)]/20" />
                    </div>
-                   <p className="text-lg font-black uppercase tracking-widest text-white/80">No History Found</p>
-                   <p className="text-xs font-black uppercase tracking-widest text-white/30 mt-3 max-w-[300px] leading-relaxed">
+                   <p className="text-lg font-black uppercase tracking-widest text-[var(--text-main)]/80">No History Found</p>
+                   <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)] mt-3 max-w-[300px] leading-relaxed">
                      Expenses will automatically appear here once exported via the New Expense tool.
                    </p>
                 </div>
@@ -666,8 +666,8 @@ export default function ExpensesPage() {
       {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Expenses</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
+          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Mission <span className="text-[var(--accent-main)]">Expenses</span></h1>
+          <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
              Official AMJ Canada Waqfeen Financial Reporting Protocol
           </p>
         </div>
@@ -695,8 +695,8 @@ export default function ExpensesPage() {
               </span>
             </div>
             <div className="relative z-10">
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">{check.label}</p>
-              <h3 className="text-xl font-black text-white mt-1 tracking-tighter italic">{check.val}</h3>
+              <p className="text-[var(--text-main)]/20 text-[10px] font-black uppercase tracking-widest">{check.label}</p>
+              <h3 className="text-xl font-black text-[var(--text-main)] mt-1 tracking-tighter italic">{check.val}</h3>
             </div>
           </div>
         ))}
@@ -892,7 +892,7 @@ export default function ExpensesPage() {
                               const val = parseInt(e.target.value);
                               setSelectedIdx(val);
                             }}
-                            className="!bg-black/20 !text-white !py-2 !px-3 !text-[11px] !w-full !border !border-white/10 rounded-[14px] font-medium appearance-none"
+                            className="!bg-black/20 !text-[var(--text-main)] !py-2 !px-3 !text-[11px] !w-full !border !border-white/10 rounded-[14px] font-medium appearance-none"
                          >
                             <option value="-1">Add Expense (Pick Category)...</option>
                             {availableSECS.map(s => (
@@ -901,7 +901,7 @@ export default function ExpensesPage() {
                         </select>
                          <button 
                              onClick={addCategory}
-                             className="!bg-red-600 !text-white !py-1 !px-4 rounded-[14px] !text-[9px] font-bold  active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
+                             className="!bg-red-600 !text-[var(--text-main)] !py-1 !px-4 rounded-[14px] !text-[9px] font-bold  active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
                          >
                             ADD
                         </button>
@@ -950,7 +950,7 @@ export default function ExpensesPage() {
                       <div className="dot"></div>
                       RECEIPTS & PROOF OF PURCHASE
                   </div>
-                  <span className="text-[9px] font-black italic text-red-600 uppercase tracking-widest">
+                  <span className="text-[9px] font-black italic text-[var(--accent-main)] uppercase tracking-widest">
                       {receipts.length} / 10 ATTACHED
                   </span>
               </div>
@@ -960,11 +960,11 @@ export default function ExpensesPage() {
                           <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
                                onClick={() => fileInputRef.current?.click()}>
                               <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center   transition-all">
-                                  <Paperclip size={20} className="text-white/40 " />
+                                  <Paperclip size={20} className="text-[var(--text-main)]/40 " />
                               </div>
                               <div className="text-center">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50  transition-colors">Click to upload receipts</p>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-white/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]/50  transition-colors">Click to upload receipts</p>
+                                  <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-main)]/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
                               </div>
                           </div>
                       ) : (
@@ -996,8 +996,8 @@ export default function ExpensesPage() {
                           onClick={() => fileInputRef.current?.click()}
                           className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2   transition-all group"
                       >
-                          <Plus size={14} className="text-white/20 " />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/20 ">Add Another Receipt</span>
+                          <Plus size={14} className="text-[var(--text-main)]/20 " />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-main)]/20 ">Add Another Receipt</span>
                       </button>
 
                       <input 
@@ -1045,7 +1045,7 @@ export default function ExpensesPage() {
             )}
           </button>
 
-          <p className="col-span-1 md:col-span-2 text-center text-[10px] text-white/20 mt-2 uppercase tracking-[0.2em] font-black">
+          <p className="col-span-1 md:col-span-2 text-center text-[10px] text-[var(--text-main)]/20 mt-2 uppercase tracking-[0.2em] font-black">
             Ensure all receipts correspond strictly to the referenced index numbers.
           </p>
         </div>
