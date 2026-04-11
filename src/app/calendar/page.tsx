@@ -685,7 +685,7 @@ export default function CalendarPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* ── Sidebar ── */}
-      <div className="w-[220px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0 secondary-sidebar">
+      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0 secondary-sidebar">
         {/* Mini calendar */}
         <MiniCalendar selected={current} onSelect={(d) => { setCurrent(d); if (view === "month") setView("day"); }} today={today} />
 
