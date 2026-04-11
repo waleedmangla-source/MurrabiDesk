@@ -8,7 +8,7 @@ import {
   BookOpen, Users, Cake, Activity, Camera, Fingerprint,
   ChevronRight, Clock, Languages, Plug, Info, LogOut,
   Mail, Calendar, StickyNote, LayoutDashboard, Zap,
-  Sun, Moon, Laptop, MailCheck, ArrowUpDown, CloudOff
+  Sun, Moon, Laptop, MailCheck, ArrowUpDown, CloudOff, Sparkles
 } from "lucide-react";
 import { clsx } from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
@@ -488,26 +488,25 @@ function AccountsTab() {
 // TAB: Shortcuts
 // ─────────────────────────────────────────────────────────────
 const SHORTCUTS = [
+  { section: 'Global & System', items: [
+    { keys: ['⌘', 'K'], desc: 'Open Command Palette' },
+    { keys: ['⌘', 'D'], desc: 'Toggle Sidebar Collapse' },
+    { keys: ['⌘', 'P'], desc: 'Open Profile Settings' },
+    { keys: ['Esc'], desc: 'Close Modal / Deselect' },
+  ]},
   { section: 'Navigation', items: [
-    { keys: ['G', 'I'], desc: 'Go to Inbox' },
-    { keys: ['G', 'E'], desc: 'Go to Expenses' },
-    { keys: ['G', 'N'], desc: 'Go to Notes' },
-    { keys: ['G', 'S'], desc: 'Go to Settings' },
+    { keys: ['⌘', '1'], desc: 'Go to Dashboard' },
+    { keys: ['⌘', '2'], desc: 'Go to MurrabiAI' },
+    { keys: ['⌘', '3'], desc: 'Go to Emails' },
+    { keys: ['⌘', '4'], desc: 'Go to Calendar' },
+    { keys: ['⌘', '5'], desc: 'Go to Notes' },
+    { keys: ['⌘', '6'], desc: 'Go to Expenses' },
+    { keys: ['⌘', '7'], desc: 'Go to Beta Tools' },
   ]},
-  { section: 'Email', items: [
-    { keys: ['C'], desc: 'Compose new email' },
-    { keys: ['E'], desc: 'Archive selected email' },
-    { keys: ['#'], desc: 'Delete selected email' },
-    { keys: ['R'], desc: 'Reply to email' },
-    { keys: ['⌘', 'Enter'], desc: 'Send email' },
-  ]},
-  { section: 'Notes', items: [
-    { keys: ['N'], desc: 'Create new note' },
-    { keys: ['⌘', 'F'], desc: 'Search notes' },
-  ]},
-  { section: 'General', items: [
-    { keys: ['?'], desc: 'Show keyboard shortcuts' },
-    { keys: ['Esc'], desc: 'Close modal / deselect' },
+  { section: 'Command Palette', items: [
+    { keys: ['↑', '↓'], desc: 'Navigate Commands' },
+    { keys: ['Enter'], desc: 'Select Command' },
+    { keys: ['Esc'], desc: 'Close Palette' },
   ]},
 ];
 
@@ -634,7 +633,7 @@ function PrivacyTab() {
 // Go to your Google Form → Send → Embed → copy the src value from the <iframe> tag
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScNyE_i3NqCeeqLbjtuu43TA0KI_PnjDvTpCB1uRgFlyf74qA/viewform?embedded=true";
 
-function FeedbackTab() {
+function FeedbackTab({ settings }: { settings: SettingsState }) {
   const isPlaceholder = GOOGLE_FORM_URL.includes('YOUR_FORM_ID');
 
   return (
@@ -668,8 +667,14 @@ function FeedbackTab() {
             </a>
           </div>
         ) : (
-          /* Live embedded Google Form */
-          <div className="rounded-2xl overflow-hidden border border-white/5" style={{ minHeight: 1080 }}>
+          /* Theme-Aware Live embedded Google Form */
+          <div 
+            className={clsx(
+              "rounded-2xl overflow-hidden border border-white/5 bg-white transition-all duration-700",
+              !['creamy', 'flup'].includes(settings.accentColor) && "invert-[0.9] hue-rotate-180 brightness-[1.1] contrast-[0.9]"
+            )} 
+            style={{ minHeight: 1080 }}
+          >
             <iframe
               src={GOOGLE_FORM_URL}
               width="100%"
@@ -679,15 +684,28 @@ function FeedbackTab() {
               marginWidth={0}
               title="Feature Request Form"
               className="block"
-              style={{ background: 'transparent' }}
             >
               Loading form…
             </iframe>
           </div>
         )}
 
-        <p className="text-[9px] font-bold text-[var(--text-dim)] uppercase tracking-widest mt-4 text-center">
-          Powered by Google Forms · Responses reviewed by the dev team
+        <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-3">
+           <div className="p-2 rounded-lg bg-[var(--accent-soft)]">
+              <Sparkles size={16} className="text-[var(--accent-main)]" />
+           </div>
+           <div>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-1">Theme Integration Tip</h4>
+              <p className="text-[10px] text-white/40 leading-relaxed max-w-md">
+                 Google Forms are white by default. We've applied an automatic filter to match your dark theme, 
+                 but for perfect results, you can set your form theme color to a dark shade directly in the 
+                 <a href={GOOGLE_FORM_URL.replace('/viewform?embedded=true', '/edit')} target="_blank" className="text-[var(--accent-main)] hover:underline ml-1">Google Form Editor</a>.
+              </p>
+           </div>
+        </div>
+
+        <p className="text-[9px] font-bold text-[var(--text-dim)] uppercase tracking-widest mt-6 text-center">
+          Powered by Google Forms · Internal Feedback Protocol
         </p>
       </Card>
     </div>
@@ -765,7 +783,7 @@ export default function SettingsPage() {
     accounts:      <AccountsTab />,
     shortcuts:     <ShortcutsTab />,
     privacy:       <PrivacyTab />,
-    feedback:      <FeedbackTab />,
+    feedback:      <FeedbackTab settings={settings} />,
   };
 
   return (
