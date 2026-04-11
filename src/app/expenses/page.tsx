@@ -673,14 +673,7 @@ export default function ExpensesPage() {
         </div>
         
         <div className="flex gap-4">
-           <button 
-             onClick={handleDownload}
-             disabled={isGenerating}
-             className="btn-v4 px-8 flex items-center gap-3 active:scale-95"
-           >
-             <Download size={16} />
-             Export PDF
-           </button>
+           {/* Export PDF removed */}
         </div>
       </div>
 
