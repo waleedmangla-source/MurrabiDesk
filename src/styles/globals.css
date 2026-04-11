@@ -204,6 +204,10 @@
   text-transform: none !important;
 }
 
+[data-theme="flup"] .brand-logo {
+  font-weight: 900 !important;
+}
+
 /* Cards & Surfaces */
 [data-theme="flup"] .glass,
 [data-theme="flup"] .glass-card {

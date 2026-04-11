@@ -251,9 +251,9 @@ export default function RootLayout({
 
             <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
-                <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
+                <span className="font-black text-3xl tracking-tighter leading-none brand-logo" style={{ color: 'var(--foreground)' }}>Murrabi</span>
                 <span className={clsx(
-                  "font-black text-3xl tracking-tighter leading-none",
+                  "font-black text-3xl tracking-tighter leading-none brand-logo",
                   isFlupTheme ? "text-[#10b981]" : "text-red-500"
                 )}>Desk</span>
               </div>
