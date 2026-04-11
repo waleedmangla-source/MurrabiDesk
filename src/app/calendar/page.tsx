@@ -107,7 +107,12 @@ function localDateStr(d: Date) {
 // ─────────────────────────────────────────────────────────────
 // Mini Calendar (sidebar)
 // ─────────────────────────────────────────────────────────────
-function MiniCalendar({ selected, onSelect, today }: { selected: Date; onSelect: (d: Date) => void; today: Date }) {
+function MiniCalendar({ selected, onSelect, today, events = [] }: { 
+  selected: Date; 
+  onSelect: (d: Date) => void; 
+  today: Date;
+  events?: CalendarEvent[];
+}) {
   const [month, setMonth] = useState(new Date(selected.getFullYear(), selected.getMonth(), 1));
 
   useEffect(() => {
@@ -154,19 +159,28 @@ function MiniCalendar({ selected, onSelect, today }: { selected: Date; onSelect:
           if (!d) return <div key={`blank-${i}`} />;
           const isToday = sameDay(d, today);
           const isSelected = sameDay(d, selected);
+          const hasEvents = events.some(e => sameDay(isoToDate(e.start), d));
+
           return (
-            <button
-              key={d.toISOString()}
-              onClick={() => onSelect(d)}
-              className={clsx(
-                "text-[10px] font-bold w-7 h-7 flex items-center justify-center rounded-full mx-auto transition-all",
-                isSelected && !isToday && "bg-[var(--accent-soft)] text-[var(--accent-main)]",
-                isToday && "bg-[var(--accent-main)] text-white font-black",
-                !isSelected && !isToday && "text-[var(--foreground)] hover:bg-white/10"
+            <div key={d.toISOString()} className="relative flex flex-col items-center justify-center py-1">
+              <button
+                onClick={() => onSelect(d)}
+                className={clsx(
+                  "text-[10px] font-bold w-7 h-7 flex items-center justify-center rounded-xl transition-all relative z-10",
+                  isToday && "bg-black/40 border border-accent-main/20 text-[var(--accent-main)] font-black shadow-inner",
+                  isSelected && !isToday && "bg-white/10 text-[var(--accent-main)]",
+                  !isSelected && !isToday && "text-[var(--foreground)] hover:bg-white/10"
+                )}
+              >
+                {d.getDate()}
+              </button>
+              {hasEvents && (
+                <div className={clsx(
+                  "w-1 h-1 rounded-full mt-0.5",
+                  isToday ? "bg-[var(--accent-main)]" : "bg-white/30"
+                )} />
               )}
-            >
-              {d.getDate()}
-            </button>
+            </div>
           );
         })}
       </div>
@@ -694,7 +708,12 @@ export default function CalendarPage() {
       {/* ── Sidebar ── */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0 secondary-sidebar">
         {/* Mini calendar */}
-        <MiniCalendar selected={current} onSelect={(d) => { setCurrent(d); if (view === "month") setView("day"); }} today={today} />
+        <MiniCalendar 
+          selected={current} 
+          onSelect={(d) => { setCurrent(d); if (view === "month") setView("day"); }} 
+          today={today}
+          events={events}
+        />
 
         <div className="border-t border-white/5 mx-4" />
 
