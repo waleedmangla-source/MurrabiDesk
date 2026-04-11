@@ -535,12 +535,8 @@ export default function ExpensesPage() {
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
-        <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
-              Exp<span className="text-[var(--accent-main)]">enses</span>
-            </h1>
-          </div>
+        <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8 min-h-[105px]">
+          {/* Header removed for minimalist layout */}
         </div>
         
         <nav className="flex-1 p-4 space-y-2 no-drag mt-4">
