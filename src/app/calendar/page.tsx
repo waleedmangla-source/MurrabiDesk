@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   ChevronLeft, ChevronRight, Plus, X, Clock, MapPin,
   Calendar, Tag, RefreshCw, Check, Trash2, ExternalLink
@@ -633,6 +633,13 @@ export default function CalendarPage() {
     return d;
   });
 
+  const upcomingEvents = useMemo(() => {
+    return events
+      .filter(e => new Date(e.start).getTime() > Date.now())
+      .sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      .slice(0, 10);
+  }, [events]);
+
   // ── Handle new event ──
   const handleNewEventFromSlot = (date: Date, hour: number) => {
     setDraft({
@@ -703,6 +710,55 @@ export default function CalendarPage() {
               </div>
             );
           })}
+        </div>
+
+        <div className="border-t border-white/5 mx-4 my-2" />
+
+        {/* Upcoming Events */}
+        <div className="px-4 flex-1 flex flex-col min-h-0">
+          <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-3 shrink-0">Upcoming Events</div>
+          <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3 pb-4">
+            {upcomingEvents.length === 0 ? (
+              <div className="text-[10px] font-bold text-[var(--text-muted)] italic">No upcoming events</div>
+            ) : (
+              upcomingEvents.map(ev => {
+                const start = new Date(ev.start);
+                const isToday = sameDay(start, today);
+                const colorClass = COLOR_STYLE[ev.color || "accent"] || COLOR_STYLE["accent"];
+                
+                return (
+                  <div 
+                    key={ev.id} 
+                    className="group cursor-pointer"
+                    onClick={() => {
+                      setCurrent(start);
+                      setView("day");
+                      setSelectedEvent(ev);
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={clsx("w-1 self-stretch rounded-full shrink-0", 
+                        ev.color === "blue" ? "bg-blue-500" :
+                        ev.color === "mint" ? "bg-emerald-400" :
+                        ev.color === "lavender" ? "bg-violet-400" :
+                        ev.color === "peach" ? "bg-orange-400" :
+                        ev.color === "rose" ? "bg-pink-400" : "bg-[var(--accent-main)]"
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-black text-[var(--foreground)] leading-tight truncate group-hover:text-[var(--accent-main)] transition-colors">
+                          {ev.title}
+                        </div>
+                        <div className="text-[9px] font-bold text-[var(--text-dim)] mt-0.5">
+                          {isToday ? "Today" : start.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {" · "}{formatTime(ev.start)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* New Event Button */}

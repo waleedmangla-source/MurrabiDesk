@@ -273,9 +273,9 @@ export default function RootLayout({
                       isFlupTheme ? "text-[#10b981]" : "text-red-500"
                     )}
                   />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
                     This is a volunteer project created for productivity purposes only.
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/80" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/80" />
                   </div>
                 </div>
               </div>
