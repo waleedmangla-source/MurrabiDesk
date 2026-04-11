@@ -668,7 +668,7 @@ export default function ExpensesPage() {
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Mission <span className="text-[var(--accent-main)]">Expenses</span></h1>
           <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
-             Official AMJ Canada Waqfeen Financial Reporting Protocol
+             Expense Management System
           </p>
         </div>
         
