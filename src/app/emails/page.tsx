@@ -460,7 +460,7 @@ export default function EmailsPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* ── Panel 1: Folder Sidebar ── */}
-      <div className="w-[200px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
+      <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
         {/* Account Header */}
         <div className="px-5 pt-12 pb-5 border-b border-white/5">
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1" style={{ background: 'var(--accent-main)' }}>
