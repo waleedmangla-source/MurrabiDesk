@@ -662,11 +662,11 @@ export default function ExpensesPage() {
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
-        <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8 min-h-[105px]">
-          {/* Header removed for minimalist layout */}
+        <div className="no-drag h-[60px] shrink-0">
+          {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 no-drag mt-4 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-4 space-y-2 no-drag overflow-y-auto custom-scrollbar">
            <button 
              onClick={startNewReport}
              className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] bg-[var(--accent-main)]/10 text-[var(--accent-main)] border border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 transition-all text-left mb-6 group"
@@ -674,10 +674,6 @@ export default function ExpensesPage() {
              <Plus size={18} className="group-hover:rotate-90 transition-transform" />
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Report</span>
            </button>
-
-           <div className="px-4 py-2">
-             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em]">Navigation</span>
-           </div>
 
            <button 
              onClick={() => setActiveTab('overview')}
