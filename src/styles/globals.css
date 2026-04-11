@@ -569,8 +569,8 @@ body {
 }
 
 .nav-link.active {
-  @apply bg-accent-main !text-white shadow-lg shadow-accent-soft opacity-100;
-  background-color: var(--accent-main) !important;
+  background-color: rgba(var(--accent-rgb), 0.3) !important;
+  @apply !text-white shadow-lg shadow-accent-soft opacity-100;
   border: 1px solid var(--accent-glow);
 }
 
