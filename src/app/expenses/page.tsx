@@ -536,11 +536,11 @@ export default function ExpensesPage() {
       {/* Navigation Sidebar (Left) */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
         <div className="p-6 border-b border-white/5 flex flex-col no-drag mt-[38px] shrink-0 gap-1 pl-8">
-          <div className="flex items-center">
-            <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--foreground)' }}>Murrabi</span>
-            <span className="font-black text-3xl tracking-tighter leading-none" style={{ color: 'var(--accent-main)' }}>Desk</span>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
+              Exp<span className="text-[var(--accent-main)]">enses</span>
+            </h1>
           </div>
-          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]/50 mt-1 pl-1">Expense Protocol</p>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 no-drag mt-4">
