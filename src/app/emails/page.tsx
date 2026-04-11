@@ -490,26 +490,29 @@ export default function EmailsPage() {
       <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
         {/* Account Header */}
         <div className="px-5 pt-12 pb-5 border-b border-white/5">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1 overflow-hidden" style={{ background: 'var(--accent-main)' }}>
-            <Mail size={14} className="text-white shrink-0" />
+          <div className="flex items-center gap-2 px-0 py-2 mt-1 overflow-hidden border-b border-transparent">
+            <Mail size={13} className="text-[var(--text-dim)] shrink-0" />
             <div className="flex-1 min-w-0 overflow-hidden relative group/email">
-              <div className="whitespace-nowrap inline-block transition-all">
-                <span className="text-xs font-black uppercase tracking-tight text-white group-hover/email:animate-marquee-scroll inline-block">
+              <div className="whitespace-nowrap inline-block animate-marquee-continuous">
+                <span className="text-[11px] font-medium tracking-tight text-[var(--text-dim)]">
+                  {userEmail}
+                </span>
+                {/* For seamless continuous scrolling, we show it twice if it's likely to be long, but for now just single is fine if we use 0% -> -100% */}
+                <span className="text-[11px] font-medium tracking-tight text-[var(--text-dim)] ml-8">
                   {userEmail}
                 </span>
               </div>
             </div>
-            <ChevronDown size={12} className="text-white/60 shrink-0" />
           </div>
 
           <style jsx>{`
-            @keyframes marquee-scroll {
+            @keyframes marquee-continuous {
               0% { transform: translateX(0); }
-              100% { transform: translateX(-100%); margin-left: 100%; }
+              100% { transform: translateX(-50%); }
             }
-            .group-hover\/email\:animate-marquee-scroll:hover {
-              animation: marquee-scroll 10s linear infinite;
-              padding-left: 100%;
+            .animate-marquee-continuous {
+              animation: marquee-continuous 15s linear infinite;
+              display: inline-block;
             }
           `}</style>
 
