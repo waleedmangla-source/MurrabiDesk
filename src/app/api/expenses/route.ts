@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     const stmt = db.prepare(`
-      INSERT INTO expenses (id, fullName, month, date, purpose, total, refunded)
-      VALUES (?, ?, ?, ?, ?, ?, 0)
+      INSERT INTO expenses (id, fullName, month, date, purpose, total, status, data, refunded)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
     `);
     
     const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const totalVal = parseFloat(body.total) || 0;
     
-    stmt.run(id, body.fullName, body.month, body.date, body.purpose, totalVal);
+    stmt.run(id, body.fullName, body.month, body.date, body.purpose, totalVal, body.status || 'sent', body.data || null);
     
     return NextResponse.json({ success: true, id });
   } catch (err: any) {

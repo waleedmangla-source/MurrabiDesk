@@ -18,9 +18,15 @@ export function getDb() {
         date TEXT,
         purpose TEXT,
         total REAL,
+        status TEXT DEFAULT 'sent',
+        data TEXT,
         refunded INTEGER DEFAULT 0
       )
     `);
+
+    // Simple auto-migration for existing tables
+    try { db.exec("ALTER TABLE expenses ADD COLUMN status TEXT DEFAULT 'sent'"); } catch(e) {}
+    try { db.exec("ALTER TABLE expenses ADD COLUMN data TEXT"); } catch(e) {}
     
     global._sqliteCache = db;
     console.log('🧠 [DB] SQLite Initialized at', dbPath);

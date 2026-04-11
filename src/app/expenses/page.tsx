@@ -211,6 +211,8 @@ export default function ExpensesPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   
   // Navigation State
   type Tab = 'overview' | 'create' | 'history';
@@ -237,7 +239,14 @@ export default function ExpensesPage() {
 
   const saveExpenseToHistory = async () => {
     try {
-      await fetch('/api/expenses', {
+      const fullState = {
+        formData,
+        itemData,
+        activeIndices,
+        receipts
+      };
+
+      const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -246,11 +255,67 @@ export default function ExpensesPage() {
           date: formData.date,
           purpose: formData.purpose || 'Monthly Expense Submission',
           total: totals.grand,
+          status: 'sent',
+          data: JSON.stringify(fullState)
         })
       });
+      const data = await res.json();
+      if (data.success) {
+        setCurrentReportId(data.id);
+        setIsReadOnly(true);
+      }
       fetchExpenses();
     } catch (err) {
       console.error('Failed to save to history', err);
+    }
+  };
+
+  const loadFromHistory = (report: any) => {
+    try {
+      if (report.data) {
+        const fullState = JSON.parse(report.data);
+        setFormData(fullState.formData);
+        setItemData(fullState.itemData || {});
+        setActiveIndices(fullState.activeIndices || []);
+        setReceipts(fullState.receipts || []);
+        setIsReadOnly(true);
+        setCurrentReportId(report.id);
+        setActiveTab('create'); // Switch to editor view
+      }
+    } catch (e) {
+      console.error('Failed to load history data', e);
+    }
+  };
+
+  const startNewReport = () => {
+    setFormData({
+      memberCode: '',
+      fullName: '',
+      date: new Date().toISOString().split('T')[0],
+      cheque_num: '',
+      expense_month: months[new Date().getMonth()],
+      posting: 'branch',
+      posting_location: '',
+      purpose: '',
+      fiscal_period: '',
+      date_received: '',
+      other_label: '',
+      comments: '',
+    });
+    setItemData({});
+    setActiveIndices([]);
+    setReceipts([]);
+    setIsReadOnly(false);
+    setCurrentReportId(null);
+    // Trigger prefill again to restore name/code
+    const savedCustom = localStorage.getItem('murrabi_profile_custom');
+    if (savedCustom) {
+      const customData = JSON.parse(savedCustom);
+      setFormData(prev => ({
+        ...prev,
+        fullName: customData.name || '',
+        memberCode: customData.memberCode || ''
+      }));
     }
   };
 
@@ -264,6 +329,15 @@ export default function ExpensesPage() {
         receipts
       };
       localStorage.setItem('murrabi_expense_draft', JSON.stringify(draft));
+      
+      // Cloud Backup (Async)
+      googleSync.uploadFile(
+        `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
+        JSON.stringify(draft),
+        'application/json',
+        'ExpenseDrafts'
+      ).catch(err => console.error('Cloud Draft Sync Failed:', err));
+
       alert("Draft saved successfully! You can resume this anytime.");
     } catch (e) {
       console.error(e);
@@ -511,6 +585,14 @@ export default function ExpensesPage() {
         attachments
       );
 
+      // Cloud Backup (Async)
+      googleSync.uploadFile(
+        `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}.pdf`,
+        pdfBytes,
+        'application/pdf',
+        'Expenses'
+      ).catch(err => console.error('Cloud Report Sync Failed:', err));
+
       alert("Expense report and receipts sent successfully!");
       saveExpenseToHistory();
     } catch (err: any) {
@@ -550,6 +632,14 @@ export default function ExpensesPage() {
         comments: formData.comments
       });
 
+      // Cloud Backup (Async)
+      googleSync.uploadFile(
+        `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}_${Date.now()}.pdf`,
+        pdfBytes,
+        'application/pdf',
+        'Expenses'
+      ).catch(err => console.error('Cloud Download Sync Failed:', err));
+
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -576,28 +666,70 @@ export default function ExpensesPage() {
           {/* Header removed for minimalist layout */}
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 no-drag mt-4">
+        <nav className="flex-1 p-4 space-y-2 no-drag mt-4 overflow-y-auto custom-scrollbar">
+           <button 
+             onClick={startNewReport}
+             className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] bg-[var(--accent-main)]/10 text-[var(--accent-main)] border border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 transition-all text-left mb-6 group"
+           >
+             <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Report</span>
+           </button>
+
+           <div className="px-4 py-2">
+             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em]">Navigation</span>
+           </div>
+
            <button 
              onClick={() => setActiveTab('overview')}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <Briefcase size={16} />
-             <span className="text-xs font-black uppercase tracking-widest">Overview</span>
+             <Zap size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dashboard</span>
            </button>
+
            <button 
              onClick={() => setActiveTab('create')}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'create' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <Plus size={16} />
-             <span className="text-xs font-black uppercase tracking-widest">New Expense</span>
+             <Plus size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Editor</span>
            </button>
+
            <button 
              onClick={() => setActiveTab('history')}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'history' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <History size={16} />
-             <span className="text-xs font-black uppercase tracking-widest">History</span>
+             <History size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats & History</span>
            </button>
+
+           <div className="pt-6 px-4 py-2">
+             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em]">Recent Reports</span>
+           </div>
+
+           <div className="space-y-1">
+             {expensesHistory.slice(0, 10).map((exp) => (
+               <button
+                 key={exp.id}
+                 onClick={() => loadFromHistory(exp)}
+                 className={clsx(
+                   "w-full flex flex-col gap-1 px-4 py-3 rounded-[12px] transition-all text-left border group",
+                   currentReportId === exp.id 
+                    ? "bg-white/10 border-white/10" 
+                    : "border-transparent hover:bg-white/5"
+                 )}
+               >
+                 <div className="flex justify-between items-center w-full">
+                   <span className="text-[10px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month} Report</span>
+                   <Shield size={10} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
+                 </div>
+                 <div className="flex justify-between items-center w-full">
+                   <span className="text-[8px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                   <span className="text-[9px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
+                 </div>
+               </button>
+             ))}
+           </div>
         </nav>
       </div>
 
@@ -700,7 +832,15 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-12">
           <div>
-            <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">Tool</span></h1>
+            <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase flex items-center gap-4">
+              Expense <span className="text-[var(--accent-main)]">Tool</span>
+              {isReadOnly && (
+                <span className="px-4 py-1.5 bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 rounded-full flex items-center gap-2 animate-pulse">
+                  <Shield size={12} className="text-[var(--accent-main)]" />
+                  <span className="text-[9px] font-black text-[var(--accent-main)] tracking-[0.2em]">ARCHIVED / READ-ONLY</span>
+                </span>
+              )}
+            </h1>
           </div>
 
           <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
@@ -713,21 +853,27 @@ export default function ExpensesPage() {
               <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
               <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{formData.expense_month}</span>
             </div>
-            <div className="w-px h-10 bg-white/10" />
-            <button 
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-              className="px-4 py-2 hover:bg-white/5 text-[var(--text-main)] rounded-xl transition-all flex items-center gap-2 group"
-            >
-              {isSaving ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/20 border-t-white" />
-              ) : (
-                <Save size={14} className="text-[var(--accent-main)] group-hover:scale-110 transition-transform" />
-              )}
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] group-hover:text-[var(--text-main)]">Save for later</span>
-            </button>
           </div>
         </div>
+
+        <button 
+          onClick={handleSaveDraft}
+          disabled={isSaving || isReadOnly}
+          className={clsx(
+            "px-6 py-4 glass rounded-[18px] border transition-all flex items-center gap-3 group relative overflow-hidden",
+            isReadOnly ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed" : "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)]"
+          )}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          {isSaving ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-main)]/20 border-t-[var(--accent-main)]" />
+          ) : (
+            isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
+          )}
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
+            {isReadOnly ? "Archived" : "Save for later"}
+          </span>
+        </button>
       </div>
 
 
@@ -752,6 +898,7 @@ export default function ExpensesPage() {
                       type="text" 
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
+                      disabled={isReadOnly}
                       placeholder="e.g. Waleed Ahmad Mangla" 
                     />
                   </div>
@@ -762,6 +909,7 @@ export default function ExpensesPage() {
                         type="text" 
                         value={formData.memberCode}
                         onChange={(e) => handleInputChange('memberCode', e.target.value)}
+                        disabled={isReadOnly}
                         placeholder="5 digits" 
                         maxLength={5} 
                       />
@@ -772,6 +920,7 @@ export default function ExpensesPage() {
                         type="date" 
                         value={formData.date}
                         onChange={(e) => handleInputChange('date', e.target.value)} 
+                        disabled={isReadOnly}
                       />
                     </div>
                   </div>
@@ -785,6 +934,7 @@ export default function ExpensesPage() {
                         type="text" 
                         value={formData.cheque_num}
                         onChange={(e) => handleInputChange('cheque_num', e.target.value)} 
+                        disabled={isReadOnly}
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-2">
@@ -793,6 +943,7 @@ export default function ExpensesPage() {
                         value={formData.expense_month}
                         onChange={(e) => handleInputChange('expense_month', e.target.value)}
                         className="appearance-none"
+                        disabled={isReadOnly}
                       >
                         {months.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
@@ -801,7 +952,7 @@ export default function ExpensesPage() {
                   <div className="grid grid-cols-1 gap-2">
                     <label className="lbl">Posting Location</label>
                     <div className="flex flex-col gap-4 py-2">
-                      <div className="flex items-center gap-6">
+                       <div className="flex items-center gap-6">
                         {['branch', 'national', 'jamia'].map(p => (
                           <label key={p} className="flex items-center gap-2 cursor-pointer">
                             <input 
@@ -810,6 +961,7 @@ export default function ExpensesPage() {
                               value={p}
                               checked={formData.posting === p}
                               onChange={(e) => handleInputChange('posting', e.target.value)}
+                              disabled={isReadOnly}
                               className="accent-stone-800" 
                             />
                             <span className="lbl text-[10px] uppercase font-black">{p}</span>
@@ -820,6 +972,7 @@ export default function ExpensesPage() {
                         type="text" 
                         value={formData.posting_location}
                         onChange={(e) => handleInputChange('posting_location', e.target.value)}
+                        disabled={isReadOnly}
                         placeholder="Department / City" 
                       />
                     </div>

@@ -120,6 +120,10 @@ export class GoogleSyncService {
     return liquid.invoke('sync-mission-notes', { content });
   }
 
+  async uploadFile(name: string, content: any, mimeType: string, folderName?: string) {
+    return liquid.invoke('drive-upload', { name, content, mimeType, folderName });
+  }
+
   static async getUserProfile(): Promise<any> {
     try {
       const info = await liquid.invoke('get-user-info');

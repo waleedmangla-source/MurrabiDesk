@@ -130,9 +130,18 @@ class MainSyncService {
   }
 
   async getSyncFolderId() {
+    return this.ensureFolder('MurrabiDeskSync');
+  }
+
+  async ensureFolder(name, parentId = null) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+    let query = `name = '${name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    if (parentId) {
+      query += ` and '${parentId}' in parents`;
+    }
+    
     const res = await drive.files.list({
-      q: "name = 'MurrabiDeskSync' and mimeType = 'application/vnd.google-apps.folder'",
+      q: query,
       fields: 'files(id)',
     });
 
@@ -140,12 +149,54 @@ class MainSyncService {
 
     const folderRes = await drive.files.create({
       requestBody: {
-        name: 'MurrabiDeskSync',
+        name,
+        parents: parentId ? [parentId] : [],
         mimeType: 'application/vnd.google-apps.folder',
       },
       fields: 'id',
     });
     return folderRes.data.id;
+  }
+
+  async uploadFile(name, content, mimeType, folderName = null) {
+    const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+    const rootFolderId = await this.getSyncFolderId();
+    let targetFolderId = rootFolderId;
+
+    if (folderName) {
+      targetFolderId = await this.ensureFolder(folderName, rootFolderId);
+    }
+
+    // Check if file already exists to update or create
+    const existing = await drive.files.list({
+      q: `name = '${name}' and '${targetFolderId}' in parents and trashed = false`,
+      fields: 'files(id)',
+    });
+
+    const media = {
+      mimeType,
+      body: content, // Can be string or Buffer
+    };
+
+    if (existing.data.files && existing.data.files.length) {
+      const fileId = existing.data.files[0].id;
+      await drive.files.update({
+        fileId,
+        media,
+      });
+      return fileId;
+    } else {
+      const res = await drive.files.create({
+        requestBody: {
+          name,
+          parents: [targetFolderId],
+          mimeType,
+        },
+        media,
+        fields: 'id',
+      });
+      return res.data.id;
+    }
   }
 
   async listNotes() {

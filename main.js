@@ -197,6 +197,7 @@ ipcMain.handle('get-note-content', async (event, fileId) => syncService?.getNote
 ipcMain.handle('save-note', async (event, payload) => syncService?.saveNote(payload.name, payload.content, payload.fileId));
 ipcMain.handle('fetch-mission-notes', async () => syncService?.fetchMissionNotes());
 ipcMain.handle('sync-mission-notes', async (event, content) => syncService?.syncMissionNotes(content));
+ipcMain.handle('drive-upload', async (event, payload) => syncService?.uploadFile(payload.name, payload.content, payload.mimeType, payload.folderName));
 
 // Namaz Sync Protocol
 ipcMain.handle('prayer-times:fetch', async () => {
