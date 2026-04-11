@@ -25,7 +25,8 @@ import {
   ArrowDown,
   Paperclip,
   Send,
-  GripVertical
+  GripVertical,
+  Save
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -209,6 +210,7 @@ export default function ExpensesPage() {
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Navigation State
   type Tab = 'overview' | 'create' | 'history';
@@ -251,6 +253,46 @@ export default function ExpensesPage() {
       console.error('Failed to save to history', err);
     }
   };
+
+  const handleSaveDraft = () => {
+    setIsSaving(true);
+    try {
+      const draft = {
+        formData,
+        itemData,
+        activeIndices,
+        receipts
+      };
+      localStorage.setItem('murrabi_expense_draft', JSON.stringify(draft));
+      alert("Draft saved successfully! You can resume this anytime.");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save draft.");
+    } finally {
+      setTimeout(() => setIsSaving(false), 500);
+    }
+  };
+
+  const loadDraft = () => {
+    try {
+      const savedDraft = localStorage.getItem('murrabi_expense_draft');
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft);
+        if (window.confirm("Found an unfinished draft. Would you like to resume it?")) {
+          setFormData(prev => ({ ...prev, ...draft.formData }));
+          setItemData(draft.itemData || {});
+          setActiveIndices(draft.activeIndices || []);
+          setReceipts(draft.receipts || []);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load draft', e);
+    }
+  };
+
+  useEffect(() => {
+    loadDraft();
+  }, []);
 
   const toggleRefund = async (id: string, currentStatus: number) => {
     try {
@@ -655,13 +697,36 @@ export default function ExpensesPage() {
         {activeTab === 'create' && (
           <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-8 md:px-12 pt-16 max-w-6xl mx-auto">
       {/* Beta Tools Header Section */}
-      <div className="flex items-end justify-between mb-2">
-        <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">Tool</span></h1>
-        </div>
-        
-        <div className="flex gap-4">
-           {/* Export PDF removed */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-12">
+          <div>
+            <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">Tool</span></h1>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Total Claim</span>
+              <span className="text-lg font-black italic text-[var(--accent-main)] tracking-tighter">${totals.grand}</span>
+            </div>
+            <div className="w-px h-10 bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
+              <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{formData.expense_month}</span>
+            </div>
+            <div className="w-px h-10 bg-white/10" />
+            <button 
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+              className="px-4 py-2 hover:bg-white/5 text-[var(--text-main)] rounded-xl transition-all flex items-center gap-2 group"
+            >
+              {isSaving ? (
+                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/20 border-t-white" />
+              ) : (
+                <Save size={14} className="text-[var(--accent-main)] group-hover:scale-110 transition-transform" />
+              )}
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] group-hover:text-[var(--text-main)]">Save for later</span>
+            </button>
+          </div>
         </div>
       </div>
 
