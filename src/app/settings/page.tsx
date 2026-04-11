@@ -1,565 +1,771 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  RefreshCw, 
-  Globe, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  Save, 
-  CheckCircle2, 
-  Lock, 
-  Cloud, 
-  Bell, 
-  FileDigit, 
-  Layout, 
-  Monitor,
-  AlertTriangle
+import {
+  User, Palette, RefreshCw, Bell, Globe, Link2, Keyboard,
+  Shield, CheckCircle2, Eye, EyeOff, Trash2, Lock, FileDigit,
+  Cloud, Monitor, Save, AlertTriangle, MapPin, Award,
+  BookOpen, Users, Cake, Activity, Camera, Fingerprint,
+  ChevronRight, Clock, Languages, Plug, Info, LogOut,
+  Mail, Calendar, StickyNote, LayoutDashboard, Zap,
+  Sun, Moon, Laptop, MailCheck, ArrowUpDown, CloudOff
 } from "lucide-react";
 import { clsx } from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
 import { useRouter } from 'next/navigation';
 
-export default function SettingsPage() {
+// ─────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────
+type Tab =
+  | 'profile'
+  | 'appearance'
+  | 'sync'
+  | 'notifications'
+  | 'language'
+  | 'accounts'
+  | 'shortcuts'
+  | 'privacy';
+
+interface SettingsState {
+  // Appearance
+  accentColor: string;
+  highDensityMode: boolean;
+  defaultLaunchTab: string;
+  // Sync
+  syncFrequency: string;
+  // Notifications
+  showWorldClock: boolean;
+  showPrayerTimes: boolean;
+  showAIPrompts: boolean;
+  emailNotifications: boolean;
+  // Language
+  dateFormat: string;
+  timeFormat: string;
+  weekStart: string;
+  language: string;
+  // Signature
+  signatureData: string | null;
+  // Profile custom
+  missionTitle: string;
+  missionArea: string;
+  graduationYear: string;
+  languages: string;
+  memberCode: string;
+  alias: string;
+  birthday: string;
+  bio: string;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Sidebar nav items
+// ─────────────────────────────────────────────────────────────
+const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType; desc: string }[] = [
+  { id: 'profile',       label: 'Profile',           icon: User,         desc: 'Identity & bio' },
+  { id: 'appearance',    label: 'Appearance',         icon: Palette,      desc: 'Themes & display' },
+  { id: 'sync',          label: 'Sync & Data',        icon: RefreshCw,    desc: 'Google sync settings' },
+  { id: 'notifications', label: 'Notifications',      icon: Bell,         desc: 'Alerts & widgets' },
+  { id: 'language',      label: 'Language & Region',  icon: Languages,    desc: 'Format & locale' },
+  { id: 'accounts',      label: 'Connected Accounts', icon: Plug,         desc: 'Google, OAuth' },
+  { id: 'shortcuts',     label: 'Shortcuts',          icon: Keyboard,     desc: 'Keyboard reference' },
+  { id: 'privacy',       label: 'Privacy & Security', icon: Shield,       desc: 'Cache, wipe, sign out' },
+];
+
+// ─────────────────────────────────────────────────────────────
+// Helper: Toggle Row
+// ─────────────────────────────────────────────────────────────
+function ToggleRow({ icon, label, description, active, onToggle }: {
+  icon: React.ReactNode; label: string; description: string; active: boolean; onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 transition-all">
+      <div className="flex items-center gap-4">
+        <div className={clsx("p-2.5 rounded-xl border transition-all", active ? "bg-[var(--accent-soft)] border-[var(--accent-main)]/20 text-[var(--accent-main)]" : "bg-white/5 border-white/10 text-white/20")}>
+          {icon}
+        </div>
+        <div>
+          <div className="text-xs font-black text-[var(--foreground)] tracking-tight">{label}</div>
+          <div className="text-[9px] font-bold text-[var(--text-dim)] uppercase tracking-widest">{description}</div>
+        </div>
+      </div>
+      <button
+        onClick={onToggle}
+        className={clsx("w-11 h-6 rounded-full relative transition-all duration-300", active ? "bg-[var(--accent-main)]" : "bg-white/10")}
+      >
+        <div className={clsx("absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-lg", active ? "left-6" : "left-1")} />
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Helper: Section Card
+// ─────────────────────────────────────────────────────────────
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={clsx("glass border border-white/5 bg-white/5 rounded-3xl p-8", className)}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
+  return (
+    <div className="flex items-center gap-4 mb-7">
+      <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-2xl flex items-center justify-center text-[var(--accent-main)]">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-sm font-black text-[var(--foreground)] italic tracking-tight">{title}</h3>
+        {subtitle && <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <label className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">{children}</label>;
+}
+
+function FieldInput({ value, onChange, placeholder, type = "text" }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all [color-scheme:dark]"
+    />
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Profile
+// ─────────────────────────────────────────────────────────────
+function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
+  const [googleProfile, setGoogleProfile] = useState<any>(null);
+  useEffect(() => {
+    GoogleSyncService.getUserProfile().then(p => setGoogleProfile(p));
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<User size={18} />} title="Identity" subtitle="Your public profile information" />
+        <div className="flex items-center gap-6 mb-8">
+          <div className="w-20 h-20 rounded-full border-2 border-white/10 overflow-hidden bg-black/40 shrink-0 flex items-center justify-center">
+            {googleProfile?.picture
+              ? <img src={googleProfile.picture} alt="avatar" className="w-full h-full object-cover" />
+              : <User size={32} className="text-white/20" />}
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="space-y-1">
+              <FieldLabel>Full Name</FieldLabel>
+              <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Your name" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="space-y-1">
+            <FieldLabel>Mission Title / Role</FieldLabel>
+            <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Administrative Murrabi" />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel>Member Code</FieldLabel>
+            <FieldInput value={settings.memberCode} onChange={v => setSettings(s => ({ ...s, memberCode: v }))} placeholder="M-XXX" />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel>Mission Area / HQ</FieldLabel>
+            <FieldInput value={settings.missionArea} onChange={v => setSettings(s => ({ ...s, missionArea: v }))} placeholder="Toronto, Canada" />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel>Graduation Year (Jamia)</FieldLabel>
+            <FieldInput value={settings.graduationYear} onChange={v => setSettings(s => ({ ...s, graduationYear: v }))} placeholder="2018" />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel>Protocol Alias</FieldLabel>
+            <FieldInput value={settings.alias} onChange={v => setSettings(s => ({ ...s, alias: v }))} placeholder="Alias..." />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel>Birthday</FieldLabel>
+            <FieldInput type="date" value={settings.birthday} onChange={v => setSettings(s => ({ ...s, birthday: v }))} />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <FieldLabel>Languages</FieldLabel>
+            <FieldInput value={settings.languages} onChange={v => setSettings(s => ({ ...s, languages: v }))} placeholder="English, Urdu, Arabic" />
+          </div>
+        </div>
+      </Card>
+      <Card>
+        <CardHeader icon={<Activity size={18} />} title="Bio / Mission Statement" subtitle="Scholarly focus and objectives" />
+        <textarea
+          value={settings.bio}
+          onChange={e => setSettings(s => ({ ...s, bio: e.target.value }))}
+          className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-xs leading-relaxed text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all h-36 resize-none italic"
+          placeholder="Enter your scholarly mission statement..."
+        />
+      </Card>
+      <Card>
+        <CardHeader icon={<FileDigit size={18} />} title="Signature" subtitle="Used on exported expense reports" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="relative h-40 border-2 border-dashed border-white/10 rounded-2xl bg-black/20 flex flex-col items-center justify-center gap-3 cursor-pointer">
+            <input type="file" onChange={e => {
+              const f = e.target.files?.[0];
+              if (f) { const r = new FileReader(); r.onloadend = () => setSettings(s => ({ ...s, signatureData: r.result as string })); r.readAsDataURL(f); }
+            }} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" />
+            <Cloud size={24} className="text-white/20" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Drop Signature Here</span>
+          </div>
+          <div className="h-40 rounded-2xl bg-white p-4 flex items-center justify-center overflow-hidden" style={{ backgroundImage: 'radial-gradient(#000 0.5px, transparent 0.5px)', backgroundSize: '10px 10px', backgroundColor: '#f8fafc' }}>
+            {settings.signatureData
+              ? <img src={settings.signatureData} alt="Signature" className="max-w-full max-h-full object-contain grayscale" />
+              : <div className="text-[9px] font-black uppercase tracking-[0.2em] text-black/20 text-center italic">No Signature<br />(Protocol Default)</div>}
+          </div>
+        </div>
+        {settings.signatureData && (
+          <button onClick={() => setSettings(s => ({ ...s, signatureData: null }))} className="mt-3 text-[9px] font-black uppercase tracking-widest text-red-500">
+            Remove Signature
+          </button>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Appearance
+// ─────────────────────────────────────────────────────────────
+const THEMES = [
+  { id: 'red',     name: 'Murrabi Red',        hex: '#ef4444' },
+  { id: 'indigo',  name: 'Indigo Mission',      hex: '#6366f1' },
+  { id: 'emerald', name: 'Emerald Scholarly',   hex: '#10b981' },
+  { id: 'amber',   name: 'Amber Prophetic',     hex: '#f59e0b' },
+  { id: 'violet',  name: 'Aura Violet',         hex: '#8b5cf6' },
+  { id: 'creamy',  name: 'Creamy White',        hex: '#a07f5c' },
+  { id: 'flup',    name: 'Flup White',          hex: '#10b981', isLight: true },
+];
+
+function AppearanceTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Palette size={18} />} title="Theme" subtitle="Global color identity" />
+        <div className="flex flex-wrap gap-5">
+          {THEMES.map(t => (
+            <button key={t.id} onClick={() => setSettings(s => ({ ...s, accentColor: t.id }))}
+              className={clsx("flex flex-col items-center gap-2 transition-all", settings.accentColor === t.id ? "scale-110" : "opacity-40")}>
+              <div className="w-14 h-14 rounded-full border-4 shadow-xl relative overflow-hidden transition-all"
+                style={{ backgroundColor: t.isLight ? '#ffffff' : t.hex, borderColor: settings.accentColor === t.id ? 'white' : 'transparent', boxShadow: settings.accentColor === t.id ? `0 0 24px ${t.hex}80` : 'none' }}>
+                {t.isLight && <div className="absolute inset-0 flex items-center justify-center"><div className="w-7 h-7 rounded-full" style={{ background: t.hex }} /></div>}
+                {t.id === 'creamy' && <div className="absolute inset-0 bg-gradient-to-br from-[#fef9f0] to-[#ede8dc]" />}
+              </div>
+              {settings.accentColor === t.id && <span className="text-[8px] font-black uppercase tracking-widest text-white whitespace-nowrap">{t.name}</span>}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader icon={<Monitor size={18} />} title="Display" subtitle="Density and layout preferences" />
+        <div className="space-y-3">
+          <ToggleRow
+            icon={<ArrowUpDown size={16} />}
+            label="High Density Mode"
+            description="Minimize padding for expert users"
+            active={settings.highDensityMode}
+            onToggle={() => setSettings(s => ({ ...s, highDensityMode: !s.highDensityMode }))}
+          />
+        </div>
+        <div className="mt-5 space-y-2">
+          <FieldLabel>Default Launch Tab</FieldLabel>
+          <select
+            value={settings.defaultLaunchTab}
+            onChange={e => setSettings(s => ({ ...s, defaultLaunchTab: e.target.value }))}
+            className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:outline-none [color-scheme:dark]"
+          >
+            {[
+              { v: '/', label: 'Dashboard' },
+              { v: '/emails', label: 'Emails' },
+              { v: '/expenses', label: 'Expenses' },
+              { v: '/notes', label: 'Notes' },
+              { v: '/calendar', label: 'Calendar' },
+            ].map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+          </select>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Sync & Data
+// ─────────────────────────────────────────────────────────────
+function SyncTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
+  const [syncing, setSyncing] = useState(false);
+  const handleForceSync = () => { setSyncing(true); setTimeout(() => setSyncing(false), 2000); };
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Cloud size={18} />} title="Sync Gateway" subtitle="Google Workspace connectivity" />
+        <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Cloud size={16} className="text-white/40" />
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">Protocol Status</div>
+              <div className="text-xs font-bold text-[var(--foreground)]">Encrypted WebSocket Active</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20 text-[8px] font-black uppercase text-green-500">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live
+          </div>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <FieldLabel>Sync Frequency</FieldLabel>
+          <div className="grid grid-cols-3 gap-3">
+            {['5m', '15m', '1h'].map(f => (
+              <button key={f} onClick={() => setSettings(s => ({ ...s, syncFrequency: f }))}
+                className={clsx("py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
+                  settings.syncFrequency === f ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white" : "bg-white/5 border-white/5 text-white/40")}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button onClick={handleForceSync} disabled={syncing}
+          className="w-full h-12 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+          <RefreshCw size={14} className={clsx(syncing && "animate-spin")} />
+          {syncing ? 'Syncing...' : 'Force Protocol Resync'}
+        </button>
+      </Card>
+
+      <Card>
+        <CardHeader icon={<Info size={18} />} title="Local Cache Info" subtitle="Stored data breakdown" />
+        <div className="space-y-3">
+          {[
+            { label: 'Gmail Cache', icon: <Mail size={14} />, key: 'cache_gmail' },
+            { label: 'Calendar Cache', icon: <Calendar size={14} />, key: 'cache_calendar' },
+            { label: 'Notes Cache', icon: <StickyNote size={14} />, key: 'mission_notes_browser_fallback' },
+          ].map(item => {
+            const hasData = typeof window !== 'undefined' && !!localStorage.getItem(item.key);
+            return (
+              <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex items-center gap-3 text-[var(--text-dim)]">
+                  {item.icon}
+                  <span className="text-[11px] font-bold text-[var(--foreground)]">{item.label}</span>
+                </div>
+                <span className={clsx("text-[9px] font-black uppercase tracking-widest", hasData ? "text-green-400" : "text-white/20")}>
+                  {hasData ? 'Cached' : 'Empty'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Notifications
+// ─────────────────────────────────────────────────────────────
+function NotificationsTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Bell size={18} />} title="Dashboard Widgets" subtitle="Toggle which widgets appear on your dashboard" />
+        <div className="space-y-3">
+          <ToggleRow icon={<Globe size={16} />} label="World Clock" description="Show world time zones" active={settings.showWorldClock} onToggle={() => setSettings(s => ({ ...s, showWorldClock: !s.showWorldClock }))} />
+          <ToggleRow icon={<Clock size={16} />} label="Prayer Times" description="Display spiritual alignments" active={settings.showPrayerTimes} onToggle={() => setSettings(s => ({ ...s, showPrayerTimes: !s.showPrayerTimes }))} />
+          <ToggleRow icon={<Zap size={16} />} label="AI Mission Shortcuts" description="Contextual AI action rows" active={settings.showAIPrompts} onToggle={() => setSettings(s => ({ ...s, showAIPrompts: !s.showAIPrompts }))} />
+        </div>
+      </Card>
+      <Card>
+        <CardHeader icon={<MailCheck size={18} />} title="Email & Alerts" subtitle="Notification preferences" />
+        <div className="space-y-3">
+          <ToggleRow icon={<Mail size={16} />} label="Email Notifications" description="New mail alert badge" active={settings.emailNotifications} onToggle={() => setSettings(s => ({ ...s, emailNotifications: !s.emailNotifications }))} />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Language & Region
+// ─────────────────────────────────────────────────────────────
+function LanguageTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
+  const SelectField = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; label: string }[] }) => (
+    <div className="space-y-2">
+      <FieldLabel>{label}</FieldLabel>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:outline-none [color-scheme:dark]">
+        {options.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Languages size={18} />} title="Language" subtitle="Interface language preference" />
+        <SelectField label="Interface Language" value={settings.language} onChange={v => setSettings(s => ({ ...s, language: v }))}
+          options={[{ v: 'en', label: 'English' }, { v: 'ur', label: 'Urdu' }, { v: 'ar', label: 'Arabic' }, { v: 'fr', label: 'French' }]} />
+      </Card>
+      <Card>
+        <CardHeader icon={<Globe size={18} />} title="Region & Formats" subtitle="Date, time, and calendar preferences" />
+        <div className="space-y-5">
+          <SelectField label="Date Format" value={settings.dateFormat} onChange={v => setSettings(s => ({ ...s, dateFormat: v }))}
+            options={[{ v: 'MM/DD/YYYY', label: 'MM/DD/YYYY (US)' }, { v: 'DD/MM/YYYY', label: 'DD/MM/YYYY (International)' }, { v: 'YYYY-MM-DD', label: 'YYYY-MM-DD (ISO)' }]} />
+          <SelectField label="Time Format" value={settings.timeFormat} onChange={v => setSettings(s => ({ ...s, timeFormat: v }))}
+            options={[{ v: '12h', label: '12-hour (2:30 PM)' }, { v: '24h', label: '24-hour (14:30)' }]} />
+          <SelectField label="Week Starts On" value={settings.weekStart} onChange={v => setSettings(s => ({ ...s, weekStart: v }))}
+            options={[{ v: 'sunday', label: 'Sunday' }, { v: 'monday', label: 'Monday' }, { v: 'saturday', label: 'Saturday' }]} />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Connected Accounts
+// ─────────────────────────────────────────────────────────────
+function AccountsTab() {
+  const [profile, setProfile] = useState<any>(null);
+  useEffect(() => { GoogleSyncService.getUserProfile().then(setProfile); }, []);
+
+  const SCOPES = [
+    { label: 'Gmail Read & Send', icon: <Mail size={14} />, granted: true },
+    { label: 'Google Calendar', icon: <Calendar size={14} />, granted: true },
+    { label: 'Google Drive (App Data)', icon: <Cloud size={14} />, granted: true },
+    { label: 'Google Profile', icon: <User size={14} />, granted: true },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Plug size={18} />} title="Google Account" subtitle="Primary connected identity" />
+        <div className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/5 mb-6">
+          {profile?.picture
+            ? <img src={profile.picture} className="w-12 h-12 rounded-full" alt="avatar" />
+            : <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><User size={20} className="text-white/30" /></div>}
+          <div>
+            <div className="text-sm font-black text-[var(--foreground)]">{profile?.name || 'Not connected'}</div>
+            <div className="text-[10px] text-[var(--text-dim)]">{profile?.email || '—'}</div>
+          </div>
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20 text-[8px] font-black uppercase text-green-500">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Authorized
+          </div>
+        </div>
+        <div className="space-y-2 mb-6">
+          <FieldLabel>Granted Permissions</FieldLabel>
+          {SCOPES.map(scope => (
+            <div key={scope.label} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+              <div className="flex items-center gap-3 text-[var(--text-dim)]">
+                {scope.icon}
+                <span className="text-[11px] font-bold text-[var(--foreground)]">{scope.label}</span>
+              </div>
+              <CheckCircle2 size={14} className="text-green-400" />
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => window.location.href = '/onboarding'}
+          className="w-full h-11 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+        >
+          <RefreshCw size={13} /> Re-authorize Google Account
+        </button>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Shortcuts
+// ─────────────────────────────────────────────────────────────
+const SHORTCUTS = [
+  { section: 'Navigation', items: [
+    { keys: ['G', 'I'], desc: 'Go to Inbox' },
+    { keys: ['G', 'E'], desc: 'Go to Expenses' },
+    { keys: ['G', 'N'], desc: 'Go to Notes' },
+    { keys: ['G', 'S'], desc: 'Go to Settings' },
+  ]},
+  { section: 'Email', items: [
+    { keys: ['C'], desc: 'Compose new email' },
+    { keys: ['E'], desc: 'Archive selected email' },
+    { keys: ['#'], desc: 'Delete selected email' },
+    { keys: ['R'], desc: 'Reply to email' },
+    { keys: ['⌘', 'Enter'], desc: 'Send email' },
+  ]},
+  { section: 'Notes', items: [
+    { keys: ['N'], desc: 'Create new note' },
+    { keys: ['⌘', 'F'], desc: 'Search notes' },
+  ]},
+  { section: 'General', items: [
+    { keys: ['?'], desc: 'Show keyboard shortcuts' },
+    { keys: ['Esc'], desc: 'Close modal / deselect' },
+  ]},
+];
+
+function ShortcutsTab() {
+  return (
+    <div className="space-y-6">
+      {SHORTCUTS.map(section => (
+        <Card key={section.section}>
+          <CardHeader icon={<Keyboard size={18} />} title={section.section} />
+          <div className="space-y-2">
+            {section.items.map(item => (
+              <div key={item.desc} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                <span className="text-xs font-bold text-[var(--foreground)]">{item.desc}</span>
+                <div className="flex items-center gap-1">
+                  {item.keys.map((k, i) => (
+                    <kbd key={i} className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 text-[10px] font-black text-[var(--foreground)] font-mono">{k}</kbd>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB: Privacy & Security
+// ─────────────────────────────────────────────────────────────
+function PrivacyTab() {
+  const [wipeLock, setWipeLock] = useState(true);
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+
+  const handleWipe = () => {
+    if (wipeLock) return;
+    ['cache_calendar', 'cache_gmail', 'cache_notes', 'mission_notes_browser_fallback', 'murrabi_profile_custom', 'google_sync_status'].forEach(k => localStorage.removeItem(k));
+    alert('WIPE COMPLETE: Mission Cache Purged.');
+    router.push('/');
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Lock size={18} />} title="Encryption Standard" subtitle="Data protection protocol" />
+        <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex items-center gap-4">
+          <Lock size={16} className="text-amber-400" />
+          <span className="text-xs font-black text-[var(--foreground)] tracking-widest uppercase">AES-256 GCM — All Tokens Encrypted Locally</span>
+        </div>
+        <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/5">
+          <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-1">Session</div>
+          <div className="text-xs font-bold text-[var(--foreground)]">Google OAuth 2.0 — Refresh Token Stored Encrypted</div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader icon={<LogOut size={18} />} title="Sign Out" subtitle="End your current session" />
+        <p className="text-[10px] text-[var(--text-dim)] mb-5 leading-relaxed">
+          Signing out clears your local session token. Your data in Google remains intact. You can sign back in anytime.
+        </p>
+        <button
+          onClick={async () => {
+            if (confirm('Sign out of MurrabiDesk?')) { await GoogleSyncService.logout(); window.location.href = '/onboarding'; }
+          }}
+          className="flex items-center gap-2 px-6 h-11 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest transition-all"
+        >
+          <CloudOff size={14} /> Sign Out
+        </button>
+      </Card>
+
+      <Card>
+        <div className="relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 opacity-10"><AlertTriangle size={80} /></div>
+          <CardHeader icon={<AlertTriangle size={18} />} title="Danger Zone" subtitle="Irreversible destructive actions" />
+          <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-2xl">
+            <h4 className="text-[10px] font-black uppercase tracking-tighter text-red-500 mb-2 flex items-center gap-2">
+              <AlertTriangle size={12} /> Destructive — Wipe Local Cache
+            </h4>
+            <p className="text-[9px] font-bold text-white/40 leading-relaxed mb-5">
+              Clears all local mission cache including emails, calendar, and notes. Cannot be undone.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button onClick={() => setWipeLock(!wipeLock)}
+                className={clsx("w-full h-11 rounded-xl border font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
+                  wipeLock ? "bg-white/5 border-white/5 text-white/40" : "bg-red-600/10 border-red-500/30 text-red-400")}>
+                {wipeLock ? <Eye size={13} /> : <EyeOff size={13} />}
+                {wipeLock ? 'Unlock Wipe Protocol' : 'Wipe Protocol Armed'}
+              </button>
+              <button disabled={wipeLock} onClick={handleWipe}
+                className={clsx("w-full h-11 rounded-xl font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
+                  wipeLock ? "bg-white/5 text-white/10 cursor-not-allowed" : "bg-red-600 text-white shadow-lg shadow-red-900/40")}>
+                <Trash2 size={13} /> Execute Wipe
+              </button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader icon={<Info size={18} />} title="About MurrabiDesk" subtitle="Version info" />
+        <div className="space-y-2 text-xs">
+          {[
+            { label: 'Version', value: '2.0.0' },
+            { label: 'Stack', value: 'Next.js 14 · TypeScript · Tailwind' },
+            { label: 'Auth', value: 'Google OAuth 2.0' },
+            { label: 'Built by', value: 'Waleed Mangla' },
+          ].map(r => (
+            <div key={r.label} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+              <span className="font-black text-[var(--text-dim)] uppercase text-[9px] tracking-widest">{r.label}</span>
+              <span className="font-bold text-[var(--foreground)] text-[11px]">{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main Settings Page
+// ─────────────────────────────────────────────────────────────
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [wipeLock, setWipeLock] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
-  // Settings State
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsState>({
+    accentColor: 'red',
+    highDensityMode: false,
+    defaultLaunchTab: '/',
     syncFrequency: '5m',
     showWorldClock: true,
     showPrayerTimes: true,
     showAIPrompts: true,
-    notificationsEnabled: true,
-    highDensityMode: false,
-    signatureData: null as string | null,
-    accentColor: 'red'
+    emailNotifications: true,
+    dateFormat: 'MM/DD/YYYY',
+    timeFormat: '12h',
+    weekStart: 'sunday',
+    language: 'en',
+    signatureData: null,
+    missionTitle: 'Administrative Murrabi',
+    missionArea: 'Canada HQ / Toronto',
+    graduationYear: '2018',
+    languages: 'English, Urdu, Arabic',
+    memberCode: 'M-777',
+    alias: 'Administrative Proxy',
+    birthday: '1994-01-01',
+    bio: '',
   });
 
   useEffect(() => {
     setMounted(true);
-    // Load Accent preference
-    const saved = localStorage.getItem('murrabi_settings');
+    const saved = localStorage.getItem('murrabi_settings_v2');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.accentColor) setSettings(prev => ({ ...prev, accentColor: parsed.accentColor }));
-      else if (parsed.theme === 'ruby') setSettings(prev => ({ ...prev, accentColor: 'red' }));
+      try { setSettings(prev => ({ ...prev, ...JSON.parse(saved) })); } catch {}
     }
   }, []);
 
   const handleSave = () => {
     setIsSaving(true);
-    localStorage.setItem('murrabi_settings', JSON.stringify(settings));
-    
-    // Specifically trigger dashboard updates if needed
+    localStorage.setItem('murrabi_settings_v2', JSON.stringify(settings));
+    localStorage.setItem('murrabi_settings', JSON.stringify({ accentColor: settings.accentColor }));
     localStorage.setItem('murrabi_show_worldclocks', settings.showWorldClock.toString());
     localStorage.setItem('murrabi_show_prayertimes', settings.showPrayerTimes.toString());
-
-    // Trigger global accent change if needed
-    if (typeof window !== 'undefined') {
-       // We refresh the page or rely on layout state. 
-       // For instant preview in this window:
-       window.location.reload(); 
-    }
-
+    localStorage.setItem('murrabi_profile_custom', JSON.stringify({
+      missionTitle: settings.missionTitle, missionArea: settings.missionArea,
+      graduationYear: settings.graduationYear, languages: settings.languages,
+      memberCode: settings.memberCode, alias: settings.alias, birthday: settings.birthday, bio: settings.bio,
+    }));
     setTimeout(() => {
       setIsSaving(false);
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }, 1200);
-  };
-
-  const handleWipeProtocol = () => {
-    if (wipeLock) return;
-    
-    // Destructive Wipe
-    const keysToWipe = [
-      'cache_calendar', 
-      'cache_gmail', 
-      'cache_notes', 
-      'mission_notes_browser_fallback',
-      'murrabi_profile_custom',
-      'google_sync_status'
-    ];
-    
-    keysToWipe.forEach(key => localStorage.removeItem(key));
-    alert("WIPE COMPLETE: Mission Cache Purged.");
-    router.push('/');
-  };
-
-  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSettings(prev => ({ ...prev, signatureData: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
+      setTimeout(() => { setShowSuccess(false); window.location.reload(); }, 1500);
+    }, 1000);
   };
 
   if (!mounted) return null;
 
+  const TABS: Record<Tab, React.ReactNode> = {
+    profile:       <ProfileTab settings={settings} setSettings={setSettings} />,
+    appearance:    <AppearanceTab settings={settings} setSettings={setSettings} />,
+    sync:          <SyncTab settings={settings} setSettings={setSettings} />,
+    notifications: <NotificationsTab settings={settings} setSettings={setSettings} />,
+    language:      <LanguageTab settings={settings} setSettings={setSettings} />,
+    accounts:      <AccountsTab />,
+    shortcuts:     <ShortcutsTab />,
+    privacy:       <PrivacyTab />,
+  };
+
   return (
-    <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
-      {/* Beta Tools Header Section */}
-      <div className="flex items-end justify-between mb-2">
-        <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Settings</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]">
-             Operational Infrastructure & Protocol Configuration
-          </p>
+    <div className="flex h-screen overflow-hidden bg-transparent">
+      {/* ── Secondary Sidebar ── */}
+      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+        <div className="px-6 pt-14 pb-5 border-b border-white/5">
+          <h2 className="text-lg font-black tracking-tighter text-[var(--foreground)]">Settings</h2>
+          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]/60 mt-0.5">Configuration Protocol</p>
+        </div>
+
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map(item => {
+            const Icon = item.icon;
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={clsx(
+                  "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left group",
+                  active
+                    ? "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                    : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
+                )}
+              >
+                <Icon size={16} className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className={clsx("text-xs font-black truncate", active ? "text-[var(--accent-main)]" : "text-[var(--foreground)]")}>
+                    {item.label}
+                  </div>
+                  <div className="text-[8px] font-bold uppercase tracking-widest truncate text-[var(--text-dim)]">{item.desc}</div>
+                </div>
+                {active && <ChevronRight size={12} className="shrink-0" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Save Button in Sidebar */}
+        <div className="p-4 border-t border-white/5 shrink-0">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 disabled:opacity-50"
+            style={{ background: 'var(--accent-main)' }}
+          >
+            {isSaving ? <RefreshCw size={13} className="animate-spin" /> : showSuccess ? <CheckCircle2 size={13} /> : <Save size={13} />}
+            {isSaving ? 'Saving...' : showSuccess ? 'Saved!' : 'Save Changes'}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-12 no-drag">
-        {/* Sync Protocol Widget */}
-        <div className="col-span-12 lg:col-span-6">
-          <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-full flex flex-col">
-             <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 shadow-xl shadow-red-500/10">
-                   <RefreshCw size={24} />
-                </div>
-                <div>
-                   <h3 className="text-lg font-black text-white italic tracking-tight">Mission Sync Gateway</h3>
-                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Google Workspace Connectivity</p>
-                </div>
-             </div>
-
-             <div className="space-y-8 flex-grow">
-                <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5">
-                   <div className="flex items-center gap-4">
-                      <Cloud size={20} className="text-white/40" />
-                      <div>
-                         <div className="text-[10px] font-black uppercase tracking-widest text-white/20">Protocol Status</div>
-                         <div className="text-sm font-bold text-white">Encrypted WebSocket Active</div>
-                      </div>
-                   </div>
-                   <div className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 rounded-full border border-green-500/20 text-[9px] font-black uppercase text-green-500">
-                      Synchronized
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black uppercase tracking-[0.3em] text-v4-ink-muted">Sync Frequency Pulse</label>
-                   <div className="grid grid-cols-3 gap-3">
-                      {['5m', '15m', '1h'].map(freq => (
-                         <button
-                           key={freq}
-                           onClick={() => setSettings(prev => ({ ...prev, syncFrequency: freq }))}
-                           className={clsx(
-                             "py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
-                             settings.syncFrequency === freq 
-                               ? "bg-red-600 border-red-500/50 text-white shadow-lg shadow-red-500/20" 
-                               : "bg-white/5 border-white/5 text-white/40 "
-                           )}
-                         >
-                            {freq}
-                         </button>
-                      ))}
-                   </div>
-                </div>
-
-                <button className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 text-v4-ink text-[10px] font-black uppercase tracking-[0.3em]   transition-all">
-                   Force Protocol Resync
-                </button>
-             </div>
+      {/* ── Main Content ── */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="max-w-2xl mx-auto px-8 pt-14 pb-16">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">
+              {NAV_ITEMS.find(n => n.id === activeTab)?.label}
+            </h1>
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)] mt-1">
+              {NAV_ITEMS.find(n => n.id === activeTab)?.desc}
+            </p>
           </div>
-        </div>
 
-        {/* Visual Protocol Overrides */}
-        <div className="col-span-12 lg:col-span-6">
-          <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-full">
-             <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 shadow-xl shadow-red-500/10">
-                   <Layout size={24} />
-                </div>
-                <div>
-                   <h3 className="text-lg font-black text-white italic tracking-tight">Display Protocols</h3>
-                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Interface Density & Visibility</p>
-                </div>
-             </div>
-
-             <div className="space-y-4">
-                <ToggleRow 
-                  icon={<Globe size={18} />} 
-                  label="Dashboard WorldClock" 
-                  description="Show world time zones in Dashboard"
-                  active={settings.showWorldClock}
-                  onToggle={() => setSettings(prev => ({ ...prev, showWorldClock: !prev.showWorldClock }))}
-                />
-                <ToggleRow 
-                  icon={<Bell size={18} />} 
-                  label="Prayer Times Widget" 
-                  description="Display spiritual alignments"
-                  active={settings.showPrayerTimes}
-                  onToggle={() => setSettings(prev => ({ ...prev, showPrayerTimes: !prev.showPrayerTimes }))}
-                />
-                <ToggleRow 
-                  icon={<Monitor size={18} />} 
-                  label="Mission Shortcuts" 
-                  description="Contextual AI action rows"
-                  active={settings.showAIPrompts}
-                  onToggle={() => setSettings(prev => ({ ...prev, showAIPrompts: !prev.showAIPrompts }))}
-                />
-                <ToggleRow 
-                  icon={<Monitor size={18} />} 
-                  label="High Density UI" 
-                  description="Minimize padding for expert users"
-                  active={settings.highDensityMode}
-                  onToggle={() => setSettings(prev => ({ ...prev, highDensityMode: !prev.highDensityMode }))}
-                />
-             </div>
+          {/* Tab Content */}
+          <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            {TABS[activeTab]}
           </div>
-        </div>
-
-        {/* Mission Accent Protocol selection */}
-        <div className="col-span-12">
-           <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-full">
-              <div className="flex items-center gap-4 mb-10">
-                 <div className="w-12 h-12 bg-accent-soft rounded-2xl flex items-center justify-center text-accent-main shadow-xl shadow-accent-soft">
-                    <Monitor size={24} />
-                 </div>
-                 <div>
-                    <h3 className="text-lg font-black text-white italic tracking-tight">Mission Accent Protocol</h3>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Global Color Identity Override</p>
-                 </div>
-              </div>
-
-              <div className="space-y-8">
-                 <p className="text-[10px] font-bold text-white/40 leading-relaxed max-w-2xl">
-                    Select a Mission Accent to transform all primary UI elements, interactive states, and glowing auras across the entire Murrabi Desk suite.
-                 </p>
-                 
-                 <div className="flex flex-wrap gap-6 items-end">
-                    {[
-                       { id: 'red', name: 'Murrabi Red', hex: '#ef4444' },
-                       { id: 'indigo', name: 'Indigo Mission', hex: '#6366f1' },
-                       { id: 'emerald', name: 'Emerald Scholarly', hex: '#10b981' },
-                       { id: 'amber', name: 'Amber Prophetic', hex: '#f59e0b' },
-                       { id: 'violet', name: 'Aura Violet', hex: '#8b5cf6' }
-                    ].map(color => (
-                       <button
-                         key={color.id}
-                         onClick={() => setSettings(prev => ({ ...prev, accentColor: color.id }))}
-                         className={clsx(
-                           "group relative flex flex-col items-center gap-3 transition-all",
-                           settings.accentColor === color.id ? "scale-110" : "opacity-40 "
-                         )}
-                       >
-                          <div 
-                            className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl"
-                            style={{ 
-                               backgroundColor: color.hex,
-                               borderColor: settings.accentColor === color.id ? 'white' : 'transparent',
-                               boxShadow: settings.accentColor === color.id ? `0 0 30px ${color.hex}80` : 'none'
-                             }}
-                          />
-                          <div className={clsx(
-                             "text-[9px] font-black uppercase tracking-widest transition-opacity",
-                             settings.accentColor === color.id ? "opacity-100 text-white" : "opacity-0"
-                          )}>
-                             {color.name}
-                          </div>
-                          
-                          {settings.accentColor === color.id && (
-                             <div className="absolute -top-1 -right-1 bg-white text-black p-1 rounded-full shadow-lg">
-                                <CheckCircle2 size={12} />
-                             </div>
-                          )}
-                       </button>
-                    ))}
-
-                    {/* Divider */}
-                    <div className="w-px h-16 bg-white/10 mx-2" />
-
-                    {/* Creamy White Theme */}
-                    <button
-                      onClick={() => setSettings(prev => ({ ...prev, accentColor: 'creamy' }))}
-                      className={clsx(
-                        "group relative flex flex-col items-center gap-3 transition-all",
-                        settings.accentColor === 'creamy' ? "scale-110" : "opacity-40 "
-                      )}
-                    >
-                      <div 
-                        className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl relative overflow-hidden"
-                        style={{ 
-                          backgroundColor: '#faf7f0',
-                          borderColor: settings.accentColor === 'creamy' ? '#44403c' : 'transparent',
-                          boxShadow: settings.accentColor === 'creamy' ? '0 0 30px rgba(68,64,60,0.3)' : 'none'
-                        }}
-                      >
-                        {/* Cream texture gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#fef9f0] to-[#ede8dc]" />
-                      </div>
-                      <div className={clsx(
-                        "text-[9px] font-black uppercase tracking-widest transition-opacity whitespace-nowrap",
-                        settings.accentColor === 'creamy' ? "opacity-100 text-white" : "opacity-0"
-                      )}>
-                        Creamy White
-                      </div>
-                      {settings.accentColor === 'creamy' && (
-                        <div className="absolute -top-1 -right-1 bg-stone-800 text-white p-1 rounded-full shadow-lg">
-                          <CheckCircle2 size={12} />
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Flup White Theme (Emerald) */}
-                    <button
-                      onClick={() => setSettings(prev => ({ ...prev, accentColor: 'flup' }))}
-                      className={clsx(
-                        "group relative flex flex-col items-center gap-3 transition-all",
-                        settings.accentColor === 'flup' ? "scale-110" : "opacity-40 "
-                      )}
-                    >
-                      <div 
-                        className="w-16 h-16 rounded-full border-4 transition-all shadow-2xl relative overflow-hidden flex items-center justify-center bg-white"
-                        style={{ 
-                          borderColor: settings.accentColor === 'flup' ? '#10b981' : 'transparent',
-                          boxShadow: settings.accentColor === 'flup' ? '0 0 30px rgba(16,185,129,0.3)' : 'none'
-                        }}
-                      >
-                        <div className="w-8 h-8 rounded-full bg-[#10b981]" />
-                      </div>
-                      <div className={clsx(
-                        "text-[9px] font-black uppercase tracking-widest transition-opacity whitespace-nowrap",
-                        settings.accentColor === 'flup' ? "opacity-100 text-white" : "opacity-0"
-                      )}>
-                        Flup White
-                      </div>
-                      {settings.accentColor === 'flup' && (
-                        <div className="absolute -top-1 -right-1 bg-[#10b981] text-white p-1 rounded-full shadow-lg">
-                          <CheckCircle2 size={12} />
-                        </div>
-                      )}
-                    </button>
-                 </div>
-              </div>
-           </div>
-        </div>
-
-        {/* Encrypted Storage & Wipe Protocol */}
-        <div className="col-span-12 lg:col-span-4">
-           <div className="glass-card p-10 relative overflow-hidden border border-white/10 bg-white/5 rounded-[32px] h-full flex flex-col group/wipe">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/5 rounded-full blur-[80px]" />
-              
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/30">
-                   <Shield size={24} />
-                </div>
-                <div>
-                   <h3 className="text-lg font-black text-white italic tracking-tight">System Security</h3>
-                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40">Encryption & Data Lifecycle</p>
-                </div>
-             </div>
-
-             <div className="flex-grow space-y-8">
-                <div className="space-y-3">
-                   <div className="flex justify-between text-[10px] uppercase font-black tracking-widest text-white/20">Encryption Standard</div>
-                   <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex items-center gap-4">
-                      <Lock size={16} className="text-v4-gold" />
-                      <span className="text-xs font-black text-white tracking-widest uppercase">AES-256 GCM (Native)</span>
-                   </div>
-                </div>
-
-                <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-2xl relative overflow-hidden">
-                   <div className="absolute -right-4 -bottom-4 opacity-10 group-hover/wipe:rotate-12 transition-transform">
-                      <AlertTriangle size={80} />
-                   </div>
-                   <h4 className="text-[10px] font-black uppercase tracking-tighter text-red-500 mb-3 flex items-center gap-2">
-                      <AlertTriangle size={14} />
-                      Destructive Alpha Sequence
-                   </h4>
-                   <p className="text-[9px] font-bold text-white/40 leading-relaxed mb-6">
-                      Wipe Protocol clears all local mission cache, including emails, calendar, and notes. This cannot be undone.
-                   </p>
-                   
-                   <div className="flex flex-col gap-3">
-                      <button 
-                        onClick={() => setWipeLock(!wipeLock)}
-                        className={clsx(
-                          "w-full h-12 rounded-xl border font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                          wipeLock ? "bg-white/5 border-white/5 text-white/40" : "bg-red-600/10 border-red-500/30 text-red-500"
-                        )}
-                      >
-                         {wipeLock ? <Eye size={14} /> : <EyeOff size={14} />}
-                         {wipeLock ? "Unlock Wipe Protocol" : "Wipe Securely Loaded"}
-                      </button>
-                      
-                      <button 
-                        disabled={wipeLock}
-                        onClick={handleWipeProtocol}
-                        className={clsx(
-                          "w-full h-12 rounded-xl font-black text-[9px] uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 shadow-2xl",
-                          wipeLock ? "bg-white/5 text-white/10 opacity-50 cursor-not-allowed" : "bg-red-600 text-white  shadow-red-900/40"
-                        )}
-                      >
-                         <Trash2 size={14} />
-                         Execute Wipe
-                      </button>
-                   </div>
-                </div>
-             </div>
-           </div>
-        </div>
-
-        {/* Administrative Signature Widget */}
-        <div className="col-span-12 lg:col-span-8">
-           <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-full flex flex-col">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 shadow-xl shadow-red-500/10">
-                   <FileDigit size={24} />
-                </div>
-                <div>
-                   <h3 className="text-lg font-black text-white italic tracking-tight">Signature Portfolio</h3>
-                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40 leading-none mt-1">Official Document Authentication</p>
-                </div>
-             </div>
-
-             <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-6">
-                   <p className="text-[10px] font-bold text-white/40 leading-relaxed">
-                      Upload your digital signature to be automatically appended to SECS Expense Reports, mission letters, and scholarly archives.
-                   </p>
-                   <div className="relative group/upload h-48 border-2 border-dashed border-white/10 rounded-3xl  transition-all bg-black/20 flex flex-col items-center justify-center gap-4 cursor-pointer">
-                      <input 
-                        type="file" 
-                        onChange={handleSignatureUpload}
-                        className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-                        accept="image/*"
-                      />
-                      <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center text-white/20 group-hover/upload:scale-110 transition-transform">
-                         <Cloud size={24} />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Drop Signature Here</span>
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-v4-ink-muted">Preview Archive</label>
-                   <div className="h-48 rounded-3xl bg-white border border-white/5 p-8 flex items-center justify-center overflow-hidden watermark-bg shadow-inner relative">
-                      {settings.signatureData ? (
-                        <img src={settings.signatureData} alt="Signature Preview" className="max-w-full max-h-full object-contain grayscale" />
-                      ) : (
-                        <div className="text-[9px] font-black uppercase tracking-[0.2em] text-black/10 text-center italic">
-                           No Signature Injected<br/>(Protocol Default)
-                        </div>
-                      )}
-                      <div className="absolute top-4 right-4 text-[8px] font-black text-black/20 uppercase tracking-widest">Digital Auth</div>
-                   </div>
-                   {settings.signatureData && (
-                     <button 
-                       onClick={() => setSettings(prev => ({ ...prev, signatureData: null }))}
-                       className="text-[9px] font-black uppercase tracking-widest text-red-500  transition-colors"
-                     >
-                       Remove Signature
-                     </button>
-                   )}
-                </div>
-             </div>
-           </div>
-        </div>
-
-        {/* Global Save Action */}
-        <div className="col-span-12 flex justify-end pt-8">
-           <button 
-             onClick={handleSave}
-             disabled={isSaving}
-             className="group relative overflow-hidden px-16 h-20 rounded-[28px] font-black uppercase tracking-[0.3em] text-[12px] transition-all duration-500 flex items-center gap-4 text-white shadow-2xl  active:scale-95 disabled:opacity-50"
-           >
-              {/* Background Rush Container */}
-              <div className="absolute inset-0 bg-white/5 z-0" />
-              
-              {/* Color Rush Layer */}
-              <div className={clsx(
-                 "absolute inset-0 z-0 transition-all duration-700 ease-out translate-y-full  bg-red-600",
-                 isSaving && "translate-y-0"
-              )} />
-              
-              {/* Content */}
-              <span className="relative z-10 flex items-center gap-3">
-                 {isSaving ? (
-                   <>
-                      <RefreshCw size={20} className="animate-spin" />
-                      Updating Global Protocols...
-                   </>
-                 ) : showSuccess ? (
-                   <>
-                      <CheckCircle2 size={20} className="text-green-300" />
-                      Systems Updated
-                   </>
-                 ) : (
-                   <>
-                      <Save size={20} className=" transition-transform" />
-                      Update Mission Protocol
-                   </>
-                 )}
-              </span>
-
-              {/* Rainbow Aura Glow */}
-              <div className="absolute -inset-1 z-[-1] opacity-0  transition-opacity duration-700 blur-xl">
-                 <div className="w-full h-full bg-[linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] bg-[length:400%_400%] animate-[gradient_3s_linear_infinite] rounded-[30px]" />
-              </div>
-           </button>
         </div>
       </div>
-
-      <style jsx global>{`
-        .watermark-bg {
-           background-image: radial-gradient(#000 0.5px, transparent 0.5px);
-           background-size: 10px 10px;
-           background-color: #f8fafc;
-        }
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function ToggleRow({ icon, label, description, active, onToggle }: { 
-  icon: React.ReactNode, 
-  label: string, 
-  description: string, 
-  active: boolean, 
-  onToggle: () => void 
-}) {
-  return (
-    <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 group/toggle  transition-all">
-       <div className="flex items-center gap-4">
-          <div className={clsx(
-             "p-3 rounded-xl border transition-all",
-             active ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-white/5 border-white/10 text-white/20"
-          )}>
-             {icon}
-          </div>
-          <div>
-             <div className="text-xs font-black text-white italic tracking-tight">{label}</div>
-             <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{description}</div>
-          </div>
-       </div>
-       
-       <button 
-         onClick={onToggle}
-         className={clsx(
-           "w-12 h-6 rounded-full relative transition-all duration-300",
-           active ? "bg-red-600" : "bg-white/10"
-         )}
-       >
-          <div className={clsx(
-             "absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-lg",
-             active ? "left-7" : "left-1"
-          )} />
-       </button>
     </div>
   );
 }
