@@ -25,7 +25,8 @@ type Tab =
   | 'language'
   | 'accounts'
   | 'shortcuts'
-  | 'privacy';
+  | 'privacy'
+  | 'feedback';
 
 interface SettingsState {
   // Appearance
@@ -69,6 +70,7 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType; desc: string
   { id: 'accounts',      label: 'Connected Accounts', icon: Plug,         desc: 'Google, OAuth' },
   { id: 'shortcuts',     label: 'Shortcuts',          icon: Keyboard,     desc: 'Keyboard reference' },
   { id: 'privacy',       label: 'Privacy & Security', icon: Shield,       desc: 'Cache, wipe, sign out' },
+  { id: 'feedback',      label: 'Request a Feature',  icon: Zap,          desc: 'Submit ideas & requests' },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -625,7 +627,76 @@ function PrivacyTab() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// TAB: Request a Feature
+// ─────────────────────────────────────────────────────────────
+// 🔧 Replace the src below with your actual Google Form embed URL
+// Go to your Google Form → Send → Embed → copy the src value from the <iframe> tag
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true";
+
+function FeedbackTab() {
+  const isPlaceholder = GOOGLE_FORM_URL.includes('YOUR_FORM_ID');
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader icon={<Zap size={18} />} title="Request a Feature" subtitle="Submit ideas, bugs, or improvements" />
+        <p className="text-xs text-[var(--text-dim)] leading-relaxed mb-6">
+          Have an idea that would make MurrabiDesk better? Submit a feature request or bug report below. All submissions are reviewed personally.
+        </p>
+
+        {isPlaceholder ? (
+          /* Placeholder UI if no form URL is set */
+          <div className="flex flex-col items-center justify-center gap-5 py-16 border-2 border-dashed border-white/10 rounded-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent-main)]">
+              <Zap size={28} />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-black text-[var(--foreground)]">Google Form Not Configured</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] mt-1">
+                Replace <code className="text-[var(--accent-main)]">YOUR_FORM_ID</code> in settings/page.tsx
+              </p>
+            </div>
+            <a
+              href="https://docs.google.com/forms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95"
+              style={{ background: 'var(--accent-main)' }}
+            >
+              <Plug size={13} /> Create Google Form
+            </a>
+          </div>
+        ) : (
+          /* Live embedded Google Form */
+          <div className="rounded-2xl overflow-hidden border border-white/5" style={{ minHeight: 600 }}>
+            <iframe
+              src={GOOGLE_FORM_URL}
+              width="100%"
+              height="640"
+              frameBorder="0"
+              marginHeight={0}
+              marginWidth={0}
+              title="Feature Request Form"
+              className="block"
+              style={{ background: 'transparent' }}
+            >
+              Loading form…
+            </iframe>
+          </div>
+        )}
+
+        <p className="text-[9px] font-bold text-[var(--text-dim)] uppercase tracking-widest mt-4 text-center">
+          Powered by Google Forms · Responses reviewed by the dev team
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Main Settings Page
+
 // ─────────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
@@ -694,6 +765,7 @@ export default function SettingsPage() {
     accounts:      <AccountsTab />,
     shortcuts:     <ShortcutsTab />,
     privacy:       <PrivacyTab />,
+    feedback:      <FeedbackTab />,
   };
 
   return (
