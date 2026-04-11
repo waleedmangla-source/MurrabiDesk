@@ -162,24 +162,24 @@ function MiniCalendar({ selected, onSelect, today, events = [] }: {
           const hasEvents = events.some(e => sameDay(isoToDate(e.start), d));
 
           return (
-            <div key={d.toISOString()} className="relative flex flex-col items-center justify-center py-1">
+            <div key={d.toISOString()} className="relative flex items-center justify-center py-0.5">
               <button
                 onClick={() => onSelect(d)}
                 className={clsx(
-                  "text-[10px] font-bold w-7 h-7 flex items-center justify-center rounded-xl transition-all relative z-10",
+                  "text-[10px] font-bold w-7 h-7 flex flex-col items-center justify-center rounded-xl transition-all relative",
                   isToday && "bg-black/40 border border-accent-main/20 text-[var(--accent-main)] font-black shadow-inner",
                   isSelected && !isToday && "bg-white/10 text-[var(--accent-main)]",
                   !isSelected && !isToday && "text-[var(--foreground)] hover:bg-white/10"
                 )}
               >
-                {d.getDate()}
+                <span className={clsx(hasEvents && "translate-y-[-1px]")}>{d.getDate()}</span>
+                {hasEvents && (
+                  <div className={clsx(
+                    "w-0.5 h-0.5 rounded-full absolute bottom-1.5",
+                    isToday ? "bg-[var(--accent-main)]" : "bg-white/30"
+                  )} />
+                )}
               </button>
-              {hasEvents && (
-                <div className={clsx(
-                  "w-1 h-1 rounded-full mt-0.5",
-                  isToday ? "bg-[var(--accent-main)]" : "bg-white/30"
-                )} />
-              )}
             </div>
           );
         })}
