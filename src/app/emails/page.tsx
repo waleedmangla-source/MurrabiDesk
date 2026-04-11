@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
+import RichTextEditor from "@/components/RichTextEditor";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -145,13 +146,14 @@ function ComposeModal({ onClose, onSend, initialTo = '' }: { onClose: () => void
           </div>
         </div>
 
-        {/* Body */}
-        <textarea
-          placeholder="Write your message here..."
-          value={form.body}
-          onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-          className="flex-1 bg-transparent px-5 py-4 text-sm text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none resize-none min-h-[200px]"
-        />
+        {/* Body (Rich Text) */}
+        <div className="flex-1 px-5 py-2 overflow-hidden flex flex-col">
+          <RichTextEditor
+            content={form.body}
+            onChange={(html) => setForm(f => ({ ...f, body: html }))}
+            placeholder="Write your premium message..."
+          />
+        </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-white/5">
@@ -371,14 +373,29 @@ export default function EmailsPage() {
         const date = getHeader('Date') || e.internalDate;
         const to = getHeader('To');
 
-        // Extract body - handling multi-part or simple body
+        // Extract body - prioritizing HTML for rich formatting
         let body = '';
-        if (e.payload?.parts) {
-          // Look for text/plain or text/html
-          const textPart = e.payload.parts.find((p: any) => p.mimeType === 'text/plain') || e.payload.parts[0];
-          if (textPart?.body?.data) {
-            body = Buffer.from(textPart.body.data, 'base64').toString();
+        const findBody = (parts: any[]): string => {
+          // 1. Try to find HTML part
+          const htmlPart = parts.find((p: any) => p.mimeType === 'text/html');
+          if (htmlPart?.body?.data) return Buffer.from(htmlPart.body.data, 'base64').toString();
+          
+          // 2. Try to find plain text part
+          const textPart = parts.find((p: any) => p.mimeType === 'text/plain');
+          if (textPart?.body?.data) return Buffer.from(textPart.body.data, 'base64').toString();
+
+          // 3. Recurse into nested parts (e.g. multipart/related)
+          for (const part of parts) {
+            if (part.parts) {
+              const res = findBody(part.parts);
+              if (res) return res;
+            }
           }
+          return '';
+        };
+
+        if (e.payload?.parts) {
+          body = findBody(e.payload.parts);
         } else if (e.payload?.body?.data) {
           body = Buffer.from(e.payload.body.data, 'base64').toString();
         }
