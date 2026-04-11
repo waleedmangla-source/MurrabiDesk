@@ -175,6 +175,95 @@ function ComposeModal({ onClose, onSend }: { onClose: () => void; onSend: (d: Co
 }
 
 // ─────────────────────────────────────────────────────────────
+// Email Body Renderer (renders HTML emails with images & links)
+// ─────────────────────────────────────────────────────────────
+function EmailBody({ body, snippet }: { body: string; snippet: string }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const isHtml = /<[a-z][\s\S]*>/i.test(body);
+  const content = body || snippet || '';
+
+  useEffect(() => {
+    if (!isHtml || !iframeRef.current) return;
+    const doc = iframeRef.current.contentDocument;
+    if (!doc) return;
+
+    // Inject the email HTML with overrides so links open in new tab and it inherits no weird scrollbars
+    const injected = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <base target="_blank"/>
+        <style>
+          * { box-sizing: border-box; }
+          html, body {
+            margin: 0; padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px; line-height: 1.6;
+            color: #e5e7eb;
+            background: transparent;
+            word-break: break-word;
+          }
+          img { max-width: 100%; height: auto; display: inline-block; }
+          a { color: #60a5fa; text-decoration: underline; }
+          a:hover { color: #93c5fd; }
+          pre, code { white-space: pre-wrap; word-break: break-all; }
+          table { max-width: 100%; border-collapse: collapse; }
+          td, th { word-break: break-word; }
+        </style>
+      </head>
+      <body>${content}</body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(injected);
+    doc.close();
+
+    // Auto-resize iframe to fit content
+    const resizeObserver = new ResizeObserver(() => {
+      if (iframeRef.current && doc.body) {
+        iframeRef.current.style.height = doc.body.scrollHeight + 32 + 'px';
+      }
+    });
+    resizeObserver.observe(doc.body);
+    return () => resizeObserver.disconnect();
+  }, [content, isHtml]);
+
+  if (!content) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-[var(--text-dim)] text-sm opacity-50">
+        No content available.
+      </div>
+    );
+  }
+
+  if (isHtml) {
+    return (
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
+        <iframe
+          ref={iframeRef}
+          sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          className="w-full border-0 min-h-[200px]"
+          style={{ background: 'transparent', display: 'block' }}
+          title="Email content"
+        />
+      </div>
+    );
+  }
+
+  // Plain text fallback
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+      <div className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap opacity-80">
+        {content}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Email Detail Panel
 // ─────────────────────────────────────────────────────────────
 function EmailDetail({
@@ -224,10 +313,8 @@ function EmailDetail({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
-        <div className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap opacity-80">
-          {email.body || email.snippet || 'No content available.'}
-        </div>
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <EmailBody body={email.body} snippet={email.snippet} />
       </div>
 
       {/* Reply Bar */}
