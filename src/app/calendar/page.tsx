@@ -109,6 +109,41 @@ function localDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+function isFlightEvent(event: CalendarEvent) {
+  const t = event.title.toLowerCase();
+  const l = (event.location || "").toLowerCase();
+  return t.includes("flight") || t.includes("departure") || t.includes("boarding") || 
+         l.includes("airport") || l.includes("terminal") || /^[A-Z]{3} /.test(event.title) || 
+         / -> /.test(event.title) || / → /.test(event.title);
+}
+
+function parseFlightInfo(event: CalendarEvent) {
+  let from = "SFO", to = "AMS", fromCity = "San Francisco", toCity = "Amsterdam";
+  
+  const title = event.title;
+  if (title.includes(" → ")) {
+    const parts = title.split(" → ");
+    from = parts[0].trim().slice(-3).toUpperCase();
+    to = parts[1].trim().slice(0, 3).toUpperCase();
+  } else if (title.includes(" -> ")) {
+    const parts = title.split(" -> ");
+    from = parts[0].trim().slice(-3).toUpperCase();
+    to = parts[1].trim().slice(0, 3).toUpperCase();
+  } else if (title.toLowerCase().includes("to ")) {
+    const dest = title.split(/to /i)[1].split(" ")[0].toUpperCase();
+    to = dest.length === 3 ? dest : "LHR";
+    if (to === "LON" || to === "LHR") toCity = "London";
+    if (to === "JFK" || to === "NYC") toCity = "New York";
+    if (to === "DXB") toCity = "Dubai";
+  }
+
+  if (event.location && event.location.length === 3) {
+    from = event.location.toUpperCase();
+  }
+  
+  return { from, to, fromCity, toCity };
+}
+
 // ─────────────────────────────────────────────────────────────
 // Mini Calendar (sidebar)
 // ─────────────────────────────────────────────────────────────
@@ -229,9 +264,116 @@ function EventPill({ event, onClick }: { event: CalendarEvent; onClick: () => vo
 // ─────────────────────────────────────────────────────────────
 // Event Detail Modal
 // ─────────────────────────────────────────────────────────────
+function FlightBoardingPass({ event, info, onClose }: { event: CalendarEvent; info: any; onClose: () => void }) {
+  const start = new Date(event.start);
+  const end = new Date(event.end);
+  const isWithin24h = (start.getTime() - Date.now()) < 86400000 && start.getTime() > Date.now();
+  
+  const dateFmt = (d: Date) => d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
+  const timeFmt = (d: Date) => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md" onClick={onClose}>
+      <div 
+        className="glass border border-white/20 rounded-[40px] w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header / Status */}
+        <div className="bg-white/5 border-b border-white/10 px-10 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-[var(--accent-main)] p-2 rounded-xl">
+              <Plus className="text-white rotate-45" size={20} />
+            </div>
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">Electronic Boarding Pass</div>
+              <div className="text-sm font-black text-[var(--foreground)]">Flight {event.id.slice(0, 6).toUpperCase()}</div>
+            </div>
+          </div>
+          {isWithin24h && (
+            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400">On Time</div>
+            </div>
+          )}
+          <button onClick={onClose} className="p-2 rounded-2xl hover:bg-white/10 text-[var(--text-dim)] transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Boarding Pass Body */}
+        <div className="p-12">
+          <div className="flex items-center justify-between relative">
+            {/* Origin */}
+            <div className="flex flex-col items-start gap-1">
+              <div className="text-7xl font-black tracking-tighter text-[var(--foreground)] leading-none">{info.from}</div>
+              <div className="text-lg font-bold text-[var(--text-muted)] opacity-60 ml-1">{info.fromCity}</div>
+              <div className="mt-8 space-y-1 ml-1 text-left">
+                <div className="text-[11px] font-black uppercase tracking-widest text-rose-500">{dateFmt(start)}</div>
+                <div className="text-lg font-black text-rose-500/80">{timeFmt(start)}</div>
+              </div>
+            </div>
+
+            {/* Plane Icon */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-4 flex flex-col items-center">
+              <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent absolute top-1/2" />
+              <div className="bg-transparent border border-white/5 p-4 rounded-full relative z-10 backdrop-blur-sm">
+                <Plus className="text-[var(--text-dim)] rotate-[135deg]" size={32} strokeWidth={1.5} />
+              </div>
+            </div>
+
+            {/* Destination */}
+            <div className="flex flex-col items-end gap-1 text-right">
+              <div className="text-7xl font-black tracking-tighter text-[var(--foreground)] leading-none">{info.to}</div>
+              <div className="text-lg font-bold text-[var(--text-muted)] opacity-60 mr-1">{info.toCity}</div>
+              <div className="mt-8 space-y-1 mr-1 text-right">
+                <div className="text-[11px] font-black uppercase tracking-widest text-rose-500">{dateFmt(end)}</div>
+                <div className="text-lg font-black text-rose-500/80">{timeFmt(end)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Details Row */}
+          <div className="mt-16 grid grid-cols-4 gap-8 pt-10 border-t border-white/5">
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-1.5">Gate</div>
+              <div className="text-lg font-black text-[var(--foreground)]">A24</div>
+            </div>
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-1.5">Seat</div>
+              <div className="text-lg font-black text-[var(--foreground)]">12C</div>
+            </div>
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-1.5">Class</div>
+              <div className="text-lg font-black text-[var(--foreground)]">Business</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-1.5">Zone</div>
+              <div className="text-lg font-black text-[var(--foreground)]">1</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Barcode Mockup */}
+        <div className="bg-white/5 px-10 py-8 flex flex-col items-center gap-4">
+          <div className="h-16 w-full flex gap-1 justify-center opacity-30">
+            {Array.from({ length: 120 }).map((_, i) => (
+              <div key={i} className="h-full bg-white" style={{ width: `${Math.random() * 4 + 1}px`, opacity: Math.random() > 0.3 ? 1 : 0 }} />
+            ))}
+          </div>
+          <div className="text-[9px] font-black uppercase tracking-[0.5em] text-[var(--text-dim)] opacity-40">M D P A S S - {event.id.toUpperCase()}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EventModal({ event, onClose }: { event: CalendarEvent; onClose: () => void }) {
   const color = event.color || "accent";
   const colorClass = COLOR_STYLE[color] || COLOR_STYLE["accent"];
+
+  if (isFlightEvent(event)) {
+    return <FlightBoardingPass event={event} info={parseFlightInfo(event)} onClose={onClose} />;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
@@ -601,6 +743,7 @@ export default function CalendarPage() {
           { id: "3", title: "Lunch Break", start: new Date(y,m,d,13,0).toISOString(), end: new Date(y,m,d,14,0).toISOString(), color: "mint", calendar: "Personal" },
           { id: "4", title: "Friday Khutbah", start: new Date(y,m,d+2,13,0).toISOString(), end: new Date(y,m,d+2,14,0).toISOString(), color: "accent", calendar: "Personal" },
           { id: "5", title: "Product Sprint", start: new Date(y,m,d+1,10,0).toISOString(), end: new Date(y,m,d+1,12,0).toISOString(), color: "peach", calendar: "Work" },
+          { id: "6", title: "Flight: SFO → LHR", start: new Date(y,m,d,18,30).toISOString(), end: new Date(y,m,d+1,7,45).toISOString(), color: "accent", calendar: "Personal", location: "SFO" },
         ]);
         return;
       }
