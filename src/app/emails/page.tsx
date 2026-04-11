@@ -7,6 +7,7 @@ import {
   MailOpen, Mail, User, ArrowLeft
 } from "lucide-react";
 import clsx from "clsx";
+import { GoogleSyncService } from '@/lib/google-sync-service';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -350,6 +351,7 @@ export default function EmailsPage() {
   const [composingTo, setComposingTo] = useState<string>('');
   const [sidebarTab, setSidebarTab] = useState<'folders' | 'quick-mail'>('folders');
   const [query, setQuery] = useState('');
+  const [userEmail, setUserEmail] = useState('Gmail');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
 
@@ -409,6 +411,11 @@ export default function EmailsPage() {
   useEffect(() => {
     if (!isGuest) fetchEmails();
     else setSyncStatus('idle');
+
+    // Fetch profile for header
+    GoogleSyncService.getUserProfile().then(profile => {
+      if (profile?.email) setUserEmail(profile.email);
+    });
   }, [fetchEmails, isGuest]);
 
   // ── Actions ──
@@ -483,11 +490,28 @@ export default function EmailsPage() {
       <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
         {/* Account Header */}
         <div className="px-5 pt-12 pb-5 border-b border-white/5">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1" style={{ background: 'var(--accent-main)' }}>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1 overflow-hidden" style={{ background: 'var(--accent-main)' }}>
             <Mail size={14} className="text-white shrink-0" />
-            <span className="text-xs font-black uppercase tracking-tight text-white truncate">Gmail</span>
-            <ChevronDown size={12} className="text-white/60 ml-auto" />
+            <div className="flex-1 min-w-0 overflow-hidden relative group/email">
+              <div className="whitespace-nowrap inline-block transition-all">
+                <span className="text-xs font-black uppercase tracking-tight text-white group-hover/email:animate-marquee-scroll inline-block">
+                  {userEmail}
+                </span>
+              </div>
+            </div>
+            <ChevronDown size={12} className="text-white/60 shrink-0" />
           </div>
+
+          <style jsx>{`
+            @keyframes marquee-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-100%); margin-left: 100%; }
+            }
+            .group-hover\/email\:animate-marquee-scroll:hover {
+              animation: marquee-scroll 10s linear infinite;
+              padding-left: 100%;
+            }
+          `}</style>
 
           {/* Sidebar Tabs */}
           <div className="flex bg-white/5 rounded-xl p-0.5 mt-4 border border-white/5">
