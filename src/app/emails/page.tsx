@@ -269,26 +269,50 @@ export default function EmailsPage() {
     setSyncStatus('syncing');
     try {
       const data = await callBrain('gmail-list');
-      // Normalize whatever structure the API returns
       const raw: any[] = Array.isArray(data) ? data : (data?.emails || data?.messages || []);
-      const normalized: Email[] = raw.map((e: any) => ({
-        id: e.id || e.threadId || String(Math.random()),
-        threadId: e.threadId || e.id || '',
-        from: e.from || e.sender || '',
-        fromName: e.fromName || e.from?.split('<')[0]?.trim() || e.sender || 'Unknown',
-        to: e.to || '',
-        subject: e.subject || '(no subject)',
-        snippet: e.snippet || e.body?.slice(0, 120) || '',
-        body: e.body || e.snippet || '',
-        date: e.date || e.internalDate || new Date().toISOString(),
-        read: e.read ?? !e.unread ?? true,
-        starred: e.starred ?? false,
-        hasAttachments: e.hasAttachments ?? false,
-        labels: e.labels || [],
-      }));
+      
+      const normalized: Email[] = raw.map((e: any) => {
+        const headers = e.payload?.headers || [];
+        const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+        
+        const fromRaw = getHeader('From');
+        const subject = getHeader('Subject') || '(no subject)';
+        const date = getHeader('Date') || e.internalDate;
+        const to = getHeader('To');
+
+        // Extract body - handling multi-part or simple body
+        let body = '';
+        if (e.payload?.parts) {
+          // Look for text/plain or text/html
+          const textPart = e.payload.parts.find((p: any) => p.mimeType === 'text/plain') || e.payload.parts[0];
+          if (textPart?.body?.data) {
+            body = Buffer.from(textPart.body.data, 'base64').toString();
+          }
+        } else if (e.payload?.body?.data) {
+          body = Buffer.from(e.payload.body.data, 'base64').toString();
+        }
+
+        return {
+          id: e.id || String(Math.random()),
+          threadId: e.threadId || '',
+          from: fromRaw,
+          fromName: fromRaw.split('<')[0]?.trim() || fromRaw || 'Unknown',
+          to: to,
+          subject: subject,
+          snippet: e.snippet || body.slice(0, 120) || '',
+          body: body,
+          date: date,
+          read: !(e.labelIds || []).includes('UNREAD'),
+          starred: (e.labelIds || []).includes('STARRED'),
+          hasAttachments: !!(e.payload?.parts?.some((p: any) => p.filename)),
+          labels: e.labelIds || [],
+        };
+      });
+      
       setEmails(normalized);
       setSyncStatus('synced');
-    } catch {
+    } catch (err) {
+      console.error('[GMAIL FETCH ERROR]', err);
       setSyncStatus('error');
     }
   }, []);
