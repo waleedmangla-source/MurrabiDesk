@@ -702,27 +702,33 @@ export default function ExpensesPage() {
 
            {isHistoryOpen && (
              <div className="space-y-1 mt-2 animate-in slide-in-from-top-2 duration-300">
-               {expensesHistory.slice(0, 10).map((exp) => (
-                 <button
-                   key={exp.id}
-                   onClick={() => loadFromHistory(exp)}
-                   className={clsx(
-                     "w-full flex flex-col gap-1 px-4 py-2 rounded-[10px] transition-all text-left border group ml-2",
-                     currentReportId === exp.id 
-                      ? "bg-white/10 border-white/10" 
-                      : "border-transparent hover:bg-white/5"
-                   )}
-                 >
-                   <div className="flex justify-between items-center w-full">
-                     <span className="text-[9px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month}</span>
-                     <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
-                   </div>
-                   <div className="flex justify-between items-center w-full">
-                     <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                     <span className="text-[8px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
-                   </div>
-                 </button>
-               ))}
+               {expensesHistory.length === 0 ? (
+                 <div className="px-4 py-8 text-center border border-dashed border-white/5 rounded-[12px] ml-2">
+                   <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-dim)]">No completed reports yet</p>
+                 </div>
+               ) : (
+                 expensesHistory.slice(0, 10).map((exp) => (
+                   <button
+                     key={exp.id}
+                     onClick={() => loadFromHistory(exp)}
+                     className={clsx(
+                       "w-full flex flex-col gap-1 px-4 py-2 rounded-[10px] transition-all text-left border group ml-2",
+                       currentReportId === exp.id 
+                        ? "bg-white/10 border-white/10" 
+                        : "border-transparent hover:bg-white/5"
+                     )}
+                   >
+                     <div className="flex justify-between items-center w-full">
+                       <span className="text-[9px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month}</span>
+                       <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
+                     </div>
+                     <div className="flex justify-between items-center w-full">
+                       <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                       <span className="text-[8px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
+                     </div>
+                   </button>
+                 ))
+               )}
              </div>
            )}
         </nav>
