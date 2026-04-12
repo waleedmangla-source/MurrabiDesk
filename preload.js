@@ -32,5 +32,10 @@ contextBridge.exposeInMainWorld('electron', {
   getNoteContent: (fileId) => ipcRenderer.invoke('get-note-content', fileId),
   saveNote: (payload) => ipcRenderer.invoke('save-note', payload),
   fetchMissionNotes: () => ipcRenderer.invoke('fetch-mission-notes'),
-  syncMissionNotes: (content) => ipcRenderer.invoke('sync-mission-notes', content)
+  syncMissionNotes: (content) => ipcRenderer.invoke('sync-mission-notes', content),
+  
+  // Writer Features
+  'drive-upload': (payload) => ipcRenderer.invoke('drive-upload', payload),
+  'create-doc': (payload) => ipcRenderer.invoke('create-doc', payload),
+  'open-external': (url) => ipcRenderer.invoke('open-external', url)
 });
