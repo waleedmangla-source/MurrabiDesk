@@ -348,26 +348,8 @@ export default function ExpensesPage() {
     }
   };
 
-  const loadDraft = () => {
-    try {
-      const savedDraft = localStorage.getItem('murrabi_expense_draft');
-      if (savedDraft) {
-        const draft = JSON.parse(savedDraft);
-        if (window.confirm("Found an unfinished draft. Would you like to resume it?")) {
-          setFormData(prev => ({ ...prev, ...draft.formData }));
-          setItemData(draft.itemData || {});
-          setActiveIndices(draft.activeIndices || []);
-          setReceipts(draft.receipts || []);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load draft', e);
-    }
-  };
+  // Draft recovery disabled per user request
 
-  useEffect(() => {
-    loadDraft();
-  }, []);
 
   const toggleRefund = async (id: string, currentStatus: number) => {
     try {
