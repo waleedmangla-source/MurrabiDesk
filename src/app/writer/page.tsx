@@ -64,8 +64,12 @@ export default function WriterPage() {
       );
       
       if (res && res.documentId) {
-        // Open the document securely in a new native window or tab
-        window.open(`https://docs.google.com/document/d/${res.documentId}/edit`, '_blank');
+        // Open the document securely in the user's default browser (via Electron Shell)
+        import('@/lib/sync/bridge').then(({ liquid }) => {
+          liquid.invoke('open-external', `https://docs.google.com/document/d/${res.documentId}/edit`);
+        }).catch(() => {
+          window.open(`https://docs.google.com/document/d/${res.documentId}/edit`, '_blank');
+        });
       } else {
         throw new Error(res?.error || "Failed to generate document.");
       }

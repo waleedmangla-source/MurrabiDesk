@@ -198,6 +198,8 @@ ipcMain.handle('save-note', async (event, payload) => syncService?.saveNote(payl
 ipcMain.handle('fetch-mission-notes', async () => syncService?.fetchMissionNotes());
 ipcMain.handle('sync-mission-notes', async (event, content) => syncService?.syncMissionNotes(content));
 ipcMain.handle('drive-upload', async (event, payload) => syncService?.uploadFile(payload.name, payload.content, payload.mimeType, payload.folderName));
+ipcMain.handle('create-doc', async (event, payload) => syncService?.createTemplatedDocument(payload.title, payload.templateText));
+ipcMain.handle('open-external', async (event, url) => require('electron').shell.openExternal(url));
 
 // Namaz Sync Protocol
 ipcMain.handle('prayer-times:fetch', async () => {
