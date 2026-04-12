@@ -26,7 +26,10 @@ import {
   Paperclip,
   Send,
   GripVertical,
-  Save
+  Save,
+  AlertCircle,
+  X,
+  Check
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -214,6 +217,7 @@ export default function ExpensesPage() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
   
   // Navigation State
   type Tab = 'overview' | 'create' | 'history';
@@ -505,11 +509,11 @@ export default function ExpensesPage() {
       alert("Please fill in basic member information before exporting.");
       return;
     }
+    setShowSendConfirm(true);
+  };
 
-    if (!window.confirm("Are you sure you want to send this expense report via email?")) {
-      return;
-    }
-
+  const confirmAndSend = async () => {
+    setShowSendConfirm(false);
     setIsSending(true);
     try {
       const fullItems = Array(30).fill(null).map((_, i) => ({
@@ -1220,6 +1224,61 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {showSendConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            onClick={() => setShowSendConfirm(false)}
+          />
+          <div className="relative w-full max-w-lg glass bg-[#0a0a0a]/80 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-8 pt-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center text-red-500 border border-red-600/30 mb-6 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+                <AlertCircle size={32} />
+              </div>
+              
+              <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
+                Confirm <span className="text-red-500">Submission</span>
+              </h3>
+              
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-dim)] leading-relaxed max-w-[320px]">
+                Are you sure you want to send this expense report via email?
+              </p>
+
+              <div className="mt-8 w-full p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                   <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-widest">Recipient Protocol</span>
+                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/10 border border-red-600/20">
+                     <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                     <span className="text-[7px] font-black text-red-400 uppercase tracking-widest">Official Channel</span>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/5">
+                   <Mail size={16} className="text-red-500" />
+                   <span className="text-xs font-black text-[var(--text-main)] tracking-tight">manglawaleed@gmail.com</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 w-full mt-10">
+                <button 
+                  onClick={() => setShowSendConfirm(false)}
+                  className="px-6 py-4 rounded-[18px] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--text-main)] transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmAndSend}
+                  className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <Send size={14} />
+                  Send Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
