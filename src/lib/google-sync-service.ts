@@ -124,6 +124,11 @@ export class GoogleSyncService {
     return liquid.invoke('drive-upload', { name, content, mimeType, folderName });
   }
 
+  // --- WRITER (DOCS) ---
+  async createGoogleDoc(title: string, templateText?: string) {
+    return liquid.invoke('create-doc', { title, templateText });
+  }
+
   static async getUserProfile(): Promise<any> {
     try {
       const info = await liquid.invoke('get-user-info');

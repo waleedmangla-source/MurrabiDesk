@@ -265,6 +265,50 @@ class MainSyncService {
       });
     }
   }
+
+  async createTemplatedDocument(title, templateText) {
+    const docs = google.docs({ version: 'v1', auth: this.oauth2Client });
+    const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+    
+    const res = await docs.documents.create({ requestBody: { title } });
+    const documentId = res.data.documentId;
+    
+    if (templateText) {
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: {
+          requests: [
+            {
+              insertText: {
+                location: { index: 1 },
+                text: templateText
+              }
+            }
+          ]
+        }
+      });
+    }
+
+    try {
+      const folderId = await this.getSyncFolderId();
+      const file = await drive.files.get({
+        fileId: documentId,
+        fields: 'parents'
+      });
+      const previousParents = file.data.parents ? file.data.parents.join(',') : '';
+
+      await drive.files.update({
+        fileId: documentId,
+        addParents: folderId,
+        removeParents: previousParents,
+        fields: 'id, parents'
+      });
+    } catch (err) {
+      console.error('MainSyncService: Could not move spawned document to sync folder:', err.message);
+    }
+    
+    return documentId;
+  }
 }
 
 module.exports = MainSyncService;

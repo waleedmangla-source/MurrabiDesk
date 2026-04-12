@@ -138,6 +138,15 @@ const server = http.createServer(async (req, res) => {
           result = { success: true };
           break;
 
+        case 'create-doc':
+          if (!syncService) {
+             result = { success: false, error: 'Sync service not initialized' };
+          } else {
+             const docId = await syncService.createTemplatedDocument(data.title, data.templateText);
+             result = { success: true, documentId: docId };
+          }
+          break;
+
         default:
           res.writeHead(404);
           res.end(JSON.stringify({ error: 'Not Found' }));

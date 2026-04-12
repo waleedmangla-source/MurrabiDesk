@@ -22,6 +22,7 @@ import {
   Beaker,
   Activity,
   Terminal,
+  PenTool,
   X,
   Minus,
   Maximize2,
@@ -70,6 +71,7 @@ export default function RootLayout({
     { icon: Mail, label: "Emails", href: "/emails" },
     { icon: Calendar, label: "Calendar", href: "/calendar" },
     { icon: FileText, label: "Notes", href: "/notes" },
+    { icon: PenTool, label: "Writer", href: "/writer" },
     { icon: Receipt, label: "Expenses", href: "/expenses" },
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
