@@ -267,47 +267,35 @@ class MainSyncService {
   }
 
   async createTemplatedDocument(title, templateText) {
-    const docs = google.docs({ version: 'v1', auth: this.oauth2Client });
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     
-    const res = await docs.documents.create({ requestBody: { title } });
-    const documentId = res.data.documentId;
-    
-    if (templateText) {
-      await docs.documents.batchUpdate({
-        documentId,
-        requestBody: {
-          requests: [
-            {
-              insertText: {
-                location: { index: 1 },
-                text: templateText
-              }
-            }
-          ]
-        }
-      });
-    }
-
     try {
+      // 1. Get Target Folder
       const folderId = await this.getSyncFolderId();
-      const file = await drive.files.get({
-        fileId: documentId,
-        fields: 'parents'
+      
+      // 2. Wrap the text in basic HTML if it isn't already to ensure clean parsing
+      const isHtml = templateText && templateText.includes('<');
+      const htmlBody = isHtml ? templateText : `<p>${templateText || ''}</p>`;
+      
+      // 3. Create file directly via Drive API which natively converts HTML to Docs
+      const res = await drive.files.create({
+        requestBody: {
+          name: title,
+          mimeType: 'application/vnd.google-apps.document',
+          parents: [folderId]
+        },
+        media: {
+          mimeType: 'text/html',
+          body: htmlBody
+        },
+        fields: 'id'
       });
-      const previousParents = file.data.parents ? file.data.parents.join(',') : '';
-
-      await drive.files.update({
-        fileId: documentId,
-        addParents: folderId,
-        removeParents: previousParents,
-        fields: 'id, parents'
-      });
+      
+      return res.data.id;
     } catch (err) {
-      console.error('MainSyncService: Could not move spawned document to sync folder:', err.message);
+      console.error('MainSyncService: Could not generate and move templated document:', err.message);
+      return null;
     }
-    
-    return documentId;
   }
 }
 

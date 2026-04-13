@@ -1,86 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { PenTool, Loader2, Feather, FileSignature, Mic, BookOpen, FilePlus } from 'lucide-react';
-import { GoogleSyncService } from '@/lib/google-sync-service';
-
-const TEMPLATES = [
-  {
-    id: "huzoor",
-    title: "Letter to Huzoor",
-    description: "Official structured template for correspondence with Hazrat Khalifatul Masih.",
-    icon: FileSignature,
-    color: "var(--accent-main)",
-    templateText: "Bismillahir Rahmanir Raheem\n\nRespected Huzoor,\nAssalamu Alaikum wa Rahmatullah,\n\n[Your message here]\n\n\nHumbly Yours,\n[Your Name]\n"
-  },
-  {
-    id: "amir",
-    title: "Letter to Amir Sb",
-    description: "Standard template for communicating with the National Amir.",
-    icon: Feather,
-    color: "var(--accent-main)",
-    templateText: "Respected Amir Sahib,\nAssalamu Alaikum wa Rahmatullah,\n\n[Your message here]\n\n\nWassalam,\n[Your Name]\n"
-  },
-  {
-    id: "speech",
-    title: "Speech Writer",
-    description: "Organized format for preparing speeches and addresses.",
-    icon: Mic,
-    color: "#f59e0b",
-    templateText: "Speech Title: \nDate: \nAudience: \n\nIntroduction:\n- \n- \n\nMain Points:\n1. \n2. \n3. \n\nConclusion:\n- \n- \n"
-  },
-  {
-    id: "khutba",
-    title: "Khutba",
-    description: "Layout tailored for Friday Sermons or similar addresses.",
-    icon: BookOpen,
-    color: "#10b981",
-    templateText: "Khutba Title: \nDate: \nVerses Recited: \n\n[Sermon Content]\n"
-  },
-  {
-    id: "blank",
-    title: "Blank Document",
-    description: "Start fresh with a clean, empty Google Doc.",
-    icon: FilePlus,
-    color: "#6b7280",
-    templateText: ""
-  }
-];
+import { PenTool, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { TEMPLATES } from './templates';
 
 export default function WriterPage() {
-  const [isGenerating, setIsGenerating] = useState(false);
+  const router = useRouter();
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const handleCreateDocument = async (template: typeof TEMPLATES[0]) => {
-    try {
-      setIsGenerating(true);
-      setActiveId(template.id);
-      
-      const syncService = new GoogleSyncService();
-      
-      const res = await syncService.createGoogleDoc(
-        `${template.title} - Draft`,
-        template.templateText
-      );
-      
-      if (res && res.documentId) {
-        // Open the document securely in the user's default browser (via Electron Shell)
-        import('@/lib/sync/bridge').then(({ liquid }) => {
-          liquid.invoke('open-external', `https://docs.google.com/document/d/${res.documentId}/edit`);
-        }).catch(() => {
-          window.open(`https://docs.google.com/document/d/${res.documentId}/edit`, '_blank');
-        });
-      } else {
-        throw new Error(res?.error || "Failed to generate document.");
-      }
-      
-    } catch (error: any) {
-      alert("Error creating document: " + (error.message || "Unknown error"));
-      console.error(error);
-    } finally {
-      setIsGenerating(false);
-      setActiveId(null);
-    }
+  const handleSelectTemplate = (templateId: string) => {
+    setActiveId(templateId);
+    // Add a slight delay for the animation to look nice, then route
+    setTimeout(() => {
+      router.push(`/writer/editor?templateId=${templateId}`);
+    }, 150);
   };
 
   return (
@@ -105,11 +39,9 @@ export default function WriterPage() {
           return (
             <button
               key={t.id}
-              onClick={() => handleCreateDocument(t)}
-              disabled={isGenerating}
-              className={`text-left p-6 rounded-3xl border border-white/5 glass transition-all duration-300 relative overflow-hidden group hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 hover:bg-white/5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none`}
+              onClick={() => handleSelectTemplate(t.id)}
+              className={`text-left p-6 rounded-3xl border border-white/5 glass transition-all duration-300 relative overflow-hidden group hover:-translate-y-1 hover:shadow-2xl hover:border-white/20 hover:bg-white/5 active:scale-95`}
             >
-              {/* Top Accent Bar */}
               <div 
                 className="absolute top-0 left-0 right-0 h-1 transition-all duration-300 opacity-50 group-hover:opacity-100"
                 style={{ backgroundColor: t.color }}
