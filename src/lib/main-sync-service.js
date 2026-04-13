@@ -297,6 +297,52 @@ class MainSyncService {
       return null;
     }
   }
+
+  async exportDocument(title, templateText, type) {
+    const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+    
+    // 1. Create temporary doc
+    const tempId = await this.createTemplatedDocument(title, templateText);
+    if (!tempId) throw new Error("Failed to generate temporary document for export");
+
+    try {
+      // 2. Export appropriately
+      let mimeType = 'application/pdf';
+      if (type === 'docx') mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+      const exportRes = await drive.files.export(
+        { fileId: tempId, mimeType },
+        { responseType: 'arraybuffer' }
+      );
+      
+      // Return raw buffer to be saved by the host OS
+      return Buffer.from(exportRes.data);
+    } finally {
+      // 3. Cleanup temporary doc asynchronously
+      drive.files.delete({ fileId: tempId }).catch(() => {});
+    }
+  }
+
+  async emailDocument(title, templateText, toEmail) {
+    // 1. Export as PDF
+    const pdfBuffer = await this.exportDocument(title, templateText, 'pdf');
+    
+    // 2. Send via existing sendEmail wrapper
+    const attachment = {
+      filename: `${title}.pdf`,
+      data: pdfBuffer.toString('base64'),
+      mimeType: 'application/pdf'
+    };
+    
+    await this.sendEmail(
+      toEmail,
+      title, // subject
+      `<p>Please find the attached document: <b>${title}</b>.</p><br/><br/><p><i>Sent securely via Murrabi Desk Assistant</i></p>`, // body
+      [attachment]
+    );
+
+    return true;
+  }
 }
 
 module.exports = MainSyncService;

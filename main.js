@@ -203,6 +203,38 @@ ipcMain.handle('create-doc', async (event, payload) => {
   return { success: !!docId, documentId: docId };
 });
 ipcMain.handle('open-external', async (event, url) => require('electron').shell.openExternal(url));
+ipcMain.handle('export-doc', async (event, payload) => {
+  try {
+    const { title, templateText, type } = payload;
+    const buffer = await syncService?.exportDocument(title, templateText, type);
+    if (!buffer) return { success: false, error: 'Export failed at sync service' };
+    
+    const { dialog, BrowserWindow } = require('electron');
+    const win = BrowserWindow.fromWebContents(event.sender);
+    
+    const defaultPath = path.join(app.getPath('downloads'), `${title}.${type}`);
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      defaultPath,
+      filters: [{ name: type.toUpperCase(), extensions: [type] }]
+    });
+    
+    if (canceled || !filePath) return { success: false, error: 'Cancelled' };
+    
+    fs.writeFileSync(filePath, buffer);
+    return { success: true, filePath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+ipcMain.handle('email-doc', async (event, payload) => {
+  try {
+    const { title, templateText, email } = payload;
+    const ok = await syncService?.emailDocument(title, templateText, email);
+    return { success: ok };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
 
 // Namaz Sync Protocol
 ipcMain.handle('prayer-times:fetch', async () => {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, CloudUpload, Loader2, Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Quote, Undo, Redo, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ChevronLeft, CloudUpload, Loader2, Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Quote, Undo, Redo, AlignLeft, AlignCenter, AlignRight, FileDown, FileText, Mail, Send } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -66,6 +66,11 @@ function EditorImpl() {
   
   const [title, setTitle] = useState("Untitled Document");
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isExporting, setIsExporting] = useState<string | null>(null);
+  
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [isEmailing, setIsEmailing] = useState(false);
 
   useEffect(() => {
     const template = TEMPLATES.find(t => t.id === templateId);
@@ -100,9 +105,7 @@ function EditorImpl() {
     try {
       setIsPublishing(true);
       const syncService = new GoogleSyncService();
-      
       const htmlText = editor.getHTML();
-      
       const res = await syncService.createGoogleDoc(title, htmlText);
       
       if (res && res.documentId) {
@@ -116,14 +119,107 @@ function EditorImpl() {
       }
     } catch (err: any) {
       alert("Error publishing: " + (err.message || "Unknown error"));
-      console.error(err);
     } finally {
       setIsPublishing(false);
     }
   };
 
+  const handleExport = async (type: 'pdf' | 'docx') => {
+    if (!editor) return;
+    try {
+      setIsExporting(type);
+      const htmlText = editor.getHTML();
+      const { liquid } = await import('@/lib/sync/bridge');
+      
+      const res = await liquid.invoke('export-doc', {
+        title,
+        templateText: htmlText,
+        type
+      });
+      
+      if (!res?.success) {
+        if (res?.error !== 'Cancelled') alert("Error exporting: " + (res?.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      alert("Error exporting: " + (err.message || "Unknown error"));
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const handleEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editor || !targetEmail) return;
+    if (!targetEmail.includes('@')) return alert("Please enter a valid email address.");
+
+    try {
+      setIsEmailing(true);
+      const htmlText = editor.getHTML();
+      const { liquid } = await import('@/lib/sync/bridge');
+      
+      const res = await liquid.invoke('email-doc', {
+        title,
+        templateText: htmlText,
+        email: targetEmail
+      });
+      
+      if (res?.success) {
+        setEmailModalOpen(false);
+        setTargetEmail("");
+        // Optional: show a toast success here
+      } else {
+        throw new Error(res?.error || "Failed to send email");
+      }
+    } catch (err: any) {
+      alert("Error sending email: " + (err.message || "Unknown error"));
+    } finally {
+      setIsEmailing(false);
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-black/20">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-black/20 relative">
+      {/* Email Modal */}
+      {emailModalOpen && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#111] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col gap-6 scale-in-center">
+            <div>
+              <h2 className="text-2xl font-black text-white italic tracking-tight">Quick Compose PDF</h2>
+              <p className="text-[var(--text-dim)] text-sm mt-1">Send this document directly as a PDF attachment.</p>
+            </div>
+            
+            <form onSubmit={handleEmail} className="flex flex-col gap-4">
+              <input
+                type="email"
+                value={targetEmail}
+                onChange={(e) => setTargetEmail(e.target.value)}
+                placeholder="recipient@example.com"
+                required
+                className="bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--accent-main)] transition-colors"
+              />
+              
+              <div className="flex items-center gap-3 justify-end mt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setEmailModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isEmailing || !targetEmail}
+                  className="px-6 py-2 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white rounded-xl font-bold tracking-wide transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isEmailing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  Send Email
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="h-[72px] flex items-center justify-between px-6 border-b border-white/10 bg-black/40 backdrop-blur-xl shrink-0 z-50">
         <div className="flex items-center gap-4">
@@ -143,14 +239,44 @@ function EditorImpl() {
           />
         </div>
 
-        <button
-          onClick={handlePublish}
-          disabled={isPublishing}
-          className="flex items-center gap-2 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white px-6 py-2.5 rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_var(--accent-glow)] active:scale-95 disabled:opacity-50"
-        >
-          {isPublishing ? <Loader2 size={18} className="animate-spin" /> : <CloudUpload size={18} />}
-          <span>PUBLISH TO DOCS</span>
-        </button>
+        <div className="flex items-center gap-3">
+          
+          <button
+            onClick={() => handleExport('pdf')}
+            disabled={isExporting !== null}
+            title="Download PDF"
+            className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50"
+          >
+            {isExporting === 'pdf' ? <Loader2 size={18} className="animate-spin" /> : <FileDown size={18} />}
+          </button>
+          
+          <button
+            onClick={() => handleExport('docx')}
+            disabled={isExporting !== null}
+            title="Download DOCX"
+            className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50"
+          >
+            {isExporting === 'docx' ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
+          </button>
+          
+          <button
+            onClick={() => setEmailModalOpen(true)}
+            disabled={isExporting !== null || isEmailing}
+            title="Send via Email"
+            className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50 mr-2"
+          >
+            <Mail size={18} />
+          </button>
+
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="flex items-center gap-2 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white px-6 py-2.5 rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_var(--accent-glow)] active:scale-95 disabled:opacity-50"
+          >
+            {isPublishing ? <Loader2 size={18} className="animate-spin" /> : <CloudUpload size={18} />}
+            <span>PUBLISH TO DOCS</span>
+          </button>
+        </div>
       </div>
 
       {/* Formatting Toolbar */}

@@ -37,5 +37,7 @@ contextBridge.exposeInMainWorld('electron', {
   // Writer Features
   'drive-upload': (payload) => ipcRenderer.invoke('drive-upload', payload),
   'create-doc': (payload) => ipcRenderer.invoke('create-doc', payload),
-  'open-external': (url) => ipcRenderer.invoke('open-external', url)
+  'open-external': (url) => ipcRenderer.invoke('open-external', url),
+  'export-doc': (payload) => ipcRenderer.invoke('export-doc', payload),
+  'email-doc': (payload) => ipcRenderer.invoke('email-doc', payload)
 });
