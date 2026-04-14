@@ -419,11 +419,12 @@ export default function ExpensesPage() {
 
   const addCategory = () => {
     if (selectedIdx === -1 || activeIndices.includes(selectedIdx)) return;
+    const nextRef = (activeIndices.length + 1).toString();
     setActiveIndices(prev => [...prev, selectedIdx].sort((a, b) => a - b));
     if (!itemData[selectedIdx]) {
         setItemData(prev => ({
             ...prev,
-            [selectedIdx]: { ref: '0', hst: '', total: '' }
+            [selectedIdx]: { ref: nextRef, hst: '', total: '' }
         }));
     }
   };
