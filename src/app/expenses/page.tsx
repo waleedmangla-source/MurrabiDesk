@@ -1014,13 +1014,16 @@ export default function ExpensesPage() {
                       <tr key={idx} className="border-b border-v4-rule/50 group  transition-colors">
                         <td className="py-2 px-3 font-bold text-v4-ink">{sec.label}</td>
                         <td className="py-2 px-3">
-                          <input 
-                            type="text" 
-                            className="!p-1 !text-[10px] !bg-transparent !border-0 font-mono text-v4-ink-muted focus:!bg-white/10" 
-                            placeholder="0"
-                            value={itemData[idx]?.ref || '0'}
+                          <select 
+                            className="!p-1 !text-[10px] !bg-transparent !border-0 font-mono text-v4-ink-muted focus:!bg-white/10 outline-none cursor-pointer" 
+                            value={itemData[idx]?.ref || '1'}
                             onChange={(e) => handleItemChange(idx, 'ref', e.target.value)}
-                          />
+                          >
+                            {Array.from({ length: 20 }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            ))}
+                            <option value="0">0</option>
+                          </select>
                         </td>
                         <td className="py-2 px-3">
                           <input 
