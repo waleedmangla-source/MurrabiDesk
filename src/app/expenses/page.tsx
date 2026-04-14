@@ -1128,7 +1128,7 @@ export default function ExpensesPage() {
                   </span>
               </div>
               <div className="card-body">
-                  <p className="text-[10px] font-black italic text-red-500/60 uppercase tracking-widest mb-6">
+                  <p className="text-[10px] font-black italic text-black uppercase tracking-widest mb-6">
                     Ensure all receipts correspond strictly to the referenced index numbers.
                   </p>
                   <div className="space-y-4">
@@ -1221,9 +1221,7 @@ export default function ExpensesPage() {
             )}
           </button>
 
-          <p className="col-span-1 md:col-span-2 text-center text-[10px] text-[var(--text-main)]/20 mt-2 uppercase tracking-[0.2em] font-black">
-            Ensure all receipts correspond strictly to the referenced index numbers.
-          </p>
+
         </div>
       </div>
 
