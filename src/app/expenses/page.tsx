@@ -218,6 +218,7 @@ export default function ExpensesPage() {
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showSendConfirm, setShowSendConfirm] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
   // Navigation State
@@ -616,7 +617,7 @@ export default function ExpensesPage() {
         'Expenses'
       ).catch(err => console.error('Cloud Report Sync Failed:', err));
 
-      alert("Expense report and receipts sent successfully!");
+      setShowSuccessModal(true);
       saveExpenseToHistory();
     } catch (err: any) {
       console.error(err);
@@ -1347,6 +1348,38 @@ export default function ExpensesPage() {
                   Send Now
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Custom Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-xl"
+            onClick={() => setShowSuccessModal(false)}
+          />
+          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/90 border border-white/10 rounded-[32px] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
+            <div className="p-10 flex flex-col items-center text-center">
+              <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 border border-emerald-500/30 mb-8 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                <Check size={40} strokeWidth={3} className="animate-in zoom-in duration-500 delay-150" />
+              </div>
+              
+              <h3 className="text-2xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
+                Sent <span className="text-emerald-500">Successfully</span>
+              </h3>
+              
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[var(--text-dim)] leading-relaxed max-w-[240px] mb-10">
+                Your expense report and receipts have been dispatched to the selected recipient.
+              </p>
+
+              <button 
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-4 rounded-2xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/40 hover:bg-emerald-500 hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                Continue
+              </button>
             </div>
           </div>
         </div>
