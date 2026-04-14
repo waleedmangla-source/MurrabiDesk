@@ -819,8 +819,10 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-12">
           <div>
-            <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase flex items-center gap-4">
-              Waqfeen Expense Tool
+            <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase flex flex-col items-start leading-[0.8]">
+              <span>Waqfeen</span>
+              <span>Expense</span>
+              <span>Tool</span>
               {isReadOnly && (
                 <span className="px-4 py-1.5 bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 rounded-full flex items-center gap-2 animate-pulse">
                   <Shield size={12} className="text-[var(--accent-main)]" />
