@@ -289,6 +289,24 @@
 [data-theme="flup"] .bg-accent-main { background-color: #10b981 !important; }
 [data-theme="flup"] .bg-accent-soft { background-color: rgba(16, 185, 129, 0.1) !important; }
 
+/* Input field styling for Flup theme */
+[data-theme="flup"] .form-v4 input,
+[data-theme="flup"] .form-v4 textarea,
+[data-theme="flup"] .form-v4 select {
+  background: #ffffff !important;
+  border: 1px solid rgba(30, 41, 59, 0.15) !important;
+  color: #1e293b !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="flup"] .form-v4 input:focus,
+[data-theme="flup"] .form-v4 textarea:focus,
+[data-theme="flup"] .form-v4 select:focus {
+  background: #ffffff !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
 
 .ruby {
   --foreground: #ffffff;
