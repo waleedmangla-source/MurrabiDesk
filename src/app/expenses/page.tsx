@@ -1266,7 +1266,7 @@ export default function ExpensesPage() {
                      )}>
                         <Mail size={14} />
                      </div>
-                     <span className="text-xs font-black tracking-tight">manglawaleed@gmail.com</span>
+                     <span className="text-xs font-black tracking-tight">manglawaleed@gmail.com (Developer)</span>
                   </button>
 
                   <button 
@@ -1284,7 +1284,7 @@ export default function ExpensesPage() {
                      )}>
                         <Mail size={14} />
                      </div>
-                     <span className="text-xs font-black tracking-tight">ap@ahmadiyya.ca</span>
+                     <span className="text-xs font-black tracking-tight">ap@ahmadiyya.ca (Accounts Payable)</span>
                   </button>
                 </div>
               </div>
