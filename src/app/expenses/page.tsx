@@ -735,7 +735,7 @@ export default function ExpensesPage() {
         )}
 
         {activeTab === 'history' && (
-          <div className="p-8 md:p-12 pt-24 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto w-full">
+          <div className="p-8 md:p-12 pt-24 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-7xl mx-auto w-full">
             <div className="mb-12">
               <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">History</span></h1>
               <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
@@ -814,7 +814,7 @@ export default function ExpensesPage() {
         )}
 
         {activeTab === 'create' && (
-          <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-8 md:px-12 pt-16 max-w-6xl mx-auto">
+          <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-8 md:px-12 pt-16 max-w-7xl mx-auto">
       {/* Beta Tools Header Section */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-12">
