@@ -1248,10 +1248,6 @@ export default function ExpensesPage() {
               <div className="mt-8 w-full p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                    <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-widest">Select Destination</span>
-                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/10 border border-red-600/20">
-                     <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                     <span className="text-[7px] font-black text-red-400 uppercase tracking-widest">Official Channels</span>
-                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-2">
