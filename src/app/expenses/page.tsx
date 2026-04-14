@@ -162,7 +162,7 @@ export default function ExpensesPage() {
 
   // Set Tab Title & Pre-fill Identity
   useEffect(() => {
-    document.title = "Expense Tool";
+    document.title = "Waqfeen Expense Tool";
     
     const prefillProtocol = async () => {
       const googleInfo = await GoogleSyncService.getUserProfile();
@@ -670,7 +670,7 @@ export default function ExpensesPage() {
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'create' && !isReadOnly) ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
              <Plus size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Expense</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Waqfeen Expense</span>
            </button>
 
            <div className="h-px bg-white/5 my-4 mx-2" />
@@ -819,8 +819,8 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-12">
           <div>
-            <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase flex items-center gap-4">
-              Expense <span className="text-[var(--accent-main)]">Tool</span>
+            <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase flex items-center gap-4">
+              Waqfeen Expense Tool
               {isReadOnly && (
                 <span className="px-4 py-1.5 bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 rounded-full flex items-center gap-2 animate-pulse">
                   <Shield size={12} className="text-[var(--accent-main)]" />
