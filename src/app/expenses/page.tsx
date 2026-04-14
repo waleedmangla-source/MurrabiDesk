@@ -104,7 +104,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
 
       <button 
           onClick={() => onRemove(receipt.id)}
-          className="p-1.5  rounded-md text-[var(--accent-main)]/40  transition-all opacity-0 "
+          className="p-1.5 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
       >
           <Trash2 size={14} />
       </button>
