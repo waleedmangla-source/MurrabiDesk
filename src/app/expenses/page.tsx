@@ -1128,6 +1128,9 @@ export default function ExpensesPage() {
                   </span>
               </div>
               <div className="card-body">
+                  <p className="text-[10px] font-black italic text-red-500/60 uppercase tracking-widest mb-6">
+                    Ensure all receipts correspond strictly to the referenced index numbers.
+                  </p>
                   <div className="space-y-4">
                       {receipts.length === 0 ? (
                           <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
