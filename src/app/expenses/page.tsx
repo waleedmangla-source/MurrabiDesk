@@ -218,6 +218,7 @@ export default function ExpensesPage() {
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showSendConfirm, setShowSendConfirm] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
   // Navigation State
   type Tab = 'overview' | 'create' | 'history';
@@ -560,11 +561,9 @@ export default function ExpensesPage() {
           mimeType: r.type
         }))
       ];
-
-      const recipient = "manglawaleed@gmail.com";
-
+      
       await googleSync.sendEmail(
-        recipient,
+        selectedEmail,
         `Expense Report - ${formData.fullName} (${formData.expense_month})`,
         `<p>Please find attached the Expense Report for <b>${formData.fullName}</b> for the month of <b>${formData.expense_month}</b>.</p>
          <p>Total Claimed: <b>$${totals.grand}</b> (HST: $${totals.gst})</p>
@@ -1246,17 +1245,51 @@ export default function ExpensesPage() {
                 Are you sure you want to send this expense report via email?
               </p>
 
-              <div className="mt-8 w-full p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
+              <div className="mt-8 w-full p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                   <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-widest">Recipient Protocol</span>
+                   <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-widest">Select Destination</span>
                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/10 border border-red-600/20">
                      <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                     <span className="text-[7px] font-black text-red-400 uppercase tracking-widest">Official Channel</span>
+                     <span className="text-[7px] font-black text-red-400 uppercase tracking-widest">Official Channels</span>
                    </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/5">
-                   <Mail size={16} className="text-red-500" />
-                   <span className="text-xs font-black text-[var(--text-main)] tracking-tight">manglawaleed@gmail.com</span>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  <button 
+                    onClick={() => setSelectedEmail('manglawaleed@gmail.com')}
+                    className={clsx(
+                      "flex items-center gap-3 p-3 rounded-xl border transition-all duration-300",
+                      selectedEmail === 'manglawaleed@gmail.com' 
+                        ? "bg-red-600/20 border-red-600/50 text-[var(--text-main)] shadow-[0_0_20px_rgba(220,38,38,0.1)]" 
+                        : "bg-black/40 border-white/5 text-[var(--text-dim)] hover:border-white/20"
+                    )}
+                  >
+                     <div className={clsx(
+                       "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                       selectedEmail === 'manglawaleed@gmail.com' ? "bg-red-600 text-white" : "bg-white/5 text-[var(--text-dim)]"
+                     )}>
+                        <Mail size={14} />
+                     </div>
+                     <span className="text-xs font-black tracking-tight">manglawaleed@gmail.com</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setSelectedEmail('ap@ahmadiyya.ca')}
+                    className={clsx(
+                      "flex items-center gap-3 p-3 rounded-xl border transition-all duration-300",
+                      selectedEmail === 'ap@ahmadiyya.ca' 
+                        ? "bg-red-600/20 border-red-600/50 text-[var(--text-main)] shadow-[0_0_20px_rgba(220,38,38,0.1)]" 
+                        : "bg-black/40 border-white/5 text-[var(--text-dim)] hover:border-white/20"
+                    )}
+                  >
+                     <div className={clsx(
+                       "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                       selectedEmail === 'ap@ahmadiyya.ca' ? "bg-red-600 text-white" : "bg-white/5 text-[var(--text-dim)]"
+                     )}>
+                        <Mail size={14} />
+                     </div>
+                     <span className="text-xs font-black tracking-tight">ap@ahmadiyya.ca</span>
+                  </button>
                 </div>
               </div>
 
