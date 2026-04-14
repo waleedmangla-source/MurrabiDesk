@@ -229,13 +229,26 @@ export default function ExpensesPage() {
 
   const fetchExpenses = async () => {
     try {
+      // 1. Load from LocalStorage first for instant results
+      if (typeof window !== 'undefined') {
+        const localHistory = localStorage.getItem('waqfeen_expenses_history');
+        if (localHistory) {
+          setExpensesHistory(JSON.parse(localHistory));
+        }
+      }
+
+      // 2. Fetch from API to get latest/other device data
       const res = await fetch('/api/expenses');
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.expenses) {
         setExpensesHistory(data.expenses);
+        // Sync back to local
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('waqfeen_expenses_history', JSON.stringify(data.expenses));
+        }
       }
     } catch (e) {
-      console.error(e);
+      console.error('History Fetch Error:', e);
     }
   };
 
@@ -252,24 +265,47 @@ export default function ExpensesPage() {
         receipts
       };
 
+      const expenseRecord = {
+        id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        fullName: formData.fullName,
+        month: formData.expense_month || 'Other',
+        date: formData.date,
+        purpose: formData.purpose || 'Monthly Expense Submission',
+        total: totals.grand,
+        status: 'sent',
+        data: JSON.stringify(fullState)
+      };
+
+      // 1. Save to LocalStorage immediately
+      const currentLocal = JSON.parse(localStorage.getItem('waqfeen_expenses_history') || '[]');
+      const updatedLocal = [expenseRecord, ...currentLocal].slice(0, 50); // Keep last 50
+      localStorage.setItem('waqfeen_expenses_history', JSON.stringify(updatedLocal));
+      setExpensesHistory(updatedLocal);
+
+      // 2. Save to API (attempts server-side persistence)
       const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          month: formData.expense_month || 'Other',
-          date: formData.date,
-          purpose: formData.purpose || 'Monthly Expense Submission',
-          total: totals.grand,
-          status: 'sent',
-          data: JSON.stringify(fullState)
-        })
+        body: JSON.stringify(expenseRecord)
       });
       const data = await res.json();
       if (data.success) {
         setCurrentReportId(data.id);
         setIsReadOnly(true);
       }
+
+      // 3. Optional: Cloud Sync of the index file
+      const googleSync = await GoogleSyncService.fromLocalStorage();
+      if (googleSync) {
+        const historyData = new TextEncoder().encode(JSON.stringify(updatedLocal));
+        googleSync.uploadFile(
+          'waqfeen_history.json',
+          historyData,
+          'application/json',
+          'Expenses'
+        ).catch(err => console.warn('Cloud History Sync Failed:', err));
+      }
+
       fetchExpenses();
     } catch (err) {
       console.error('Failed to save to history', err);
