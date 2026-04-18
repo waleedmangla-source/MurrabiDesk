@@ -111,7 +111,7 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
   );
 }
 
-function CardHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
+function CardHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: React.ReactNode; subtitle?: string }) {
   return (
     <div className="flex items-center gap-4 mb-7">
       <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-2xl flex items-center justify-center text-[var(--accent-main)]">
@@ -607,7 +607,16 @@ function PrivacyTab() {
       </Card>
 
       <Card>
-        <CardHeader icon={<Info size={18} />} title="About MurrabiDesk" subtitle="Version info" />
+        <CardHeader 
+          icon={<Info size={18} />} 
+          title={
+            <div className="flex items-center gap-2">
+              <span>About</span>
+              <img src="/logo.png" alt="Murrabi Desk" className="h-4 w-auto object-contain" />
+            </div>
+          } 
+          subtitle="Version info" 
+        />
         <div className="space-y-2 text-xs">
           {[
             { label: 'Version', value: '2.0.0' },

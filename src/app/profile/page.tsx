@@ -356,7 +356,7 @@ export default function ProfilePage() {
              <div className="mt-12 flex items-center justify-between">
                 <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full border border-green-500/20 text-[9px] font-black uppercase tracking-widest text-green-500">
                    <CheckCircle2 size={12} />
-                   Identity Verified by MurrabiDesk HQ
+                   Identity Verified by <img src="/logo.png" alt="Logo" className="h-3 w-auto object-contain inline-block align-middle mx-1" /> HQ
                 </div>
                 
                 <button 
@@ -434,7 +434,7 @@ export default function ProfilePage() {
                  <div className="absolute inset-0 bg-white/5  transition-colors duration-500" />
                  <span className="relative z-10 flex items-center gap-3">
                     <CloudOff size={16} />
-                    Log Out of Murrabi Desk
+                    Log Out of <img src="/logo.png" alt="Logo" className="h-4 w-auto object-contain inline-block align-middle mx-1" />
                  </span>
               </button>
            </div>
