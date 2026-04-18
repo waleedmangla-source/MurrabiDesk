@@ -63,9 +63,8 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center gap-8 p-12">
         <div className="flex flex-col items-center gap-4 max-w-sm w-full">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="font-black text-2xl tracking-tighter text-white">Murrabi</span>
-            <span className="font-black text-2xl tracking-tighter text-white/50">Desk</span>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <img src="/logo.png" alt="Murrabi Desk" className="h-10 w-auto object-contain" />
           </div>
           
           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] animate-pulse">
@@ -168,8 +167,7 @@ export default function OnboardingPage() {
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-6">
-              <span className="font-black text-2xl tracking-tighter text-white">Murrabi</span>
-              <span className="font-black text-2xl tracking-tighter text-white/50">Desk</span>
+              <img src="/logo.png" alt="Murrabi Desk" className="h-10 w-auto object-contain" />
             </div>
             <h1 className="text-3xl font-black text-white leading-tight mb-4 italic">
               Your Mission,<br/>Synchronized.

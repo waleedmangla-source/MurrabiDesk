@@ -247,6 +247,7 @@ const THEMES = [
   { id: 'violet',  name: 'Aura Violet',         hex: '#8b5cf6' },
   { id: 'creamy',  name: 'Creamy White',        hex: '#a07f5c' },
   { id: 'flup',    name: 'Flup White',          hex: '#10b981', isLight: true },
+  { id: 'flup-blue', name: 'Flup Blue',           hex: '#2563eb', isLight: true },
 ];
 
 function AppearanceTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {

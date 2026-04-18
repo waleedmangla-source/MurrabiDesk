@@ -46,6 +46,8 @@ const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string,
   creamy: { main: '#44403c', hover: '#1c1917', glow: 'rgba(68, 64, 60, 0.25)', soft: 'rgba(68, 64, 60, 0.08)', rgb: '68, 64, 60' },
   // Flup White — white dashboard with emerald green accents
   flup: { main: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.25)', soft: 'rgba(16, 185, 129, 0.1)', rgb: '16, 185, 129' },
+  // Flup Blue — white dashboard with blue accents
+  'flup-blue': { main: '#2563eb', hover: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.25)', soft: 'rgba(37, 99, 235, 0.1)', rgb: '37, 99, 235' },
 };
 
 const inter = Inter({ subsets: ["latin"] });
@@ -197,13 +199,14 @@ export default function RootLayout({
   const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.red;
   const isCreamyTheme = accentColor === 'creamy';
   const isFlupTheme = accentColor === 'flup';
-  const isLightTheme = isCreamyTheme || isFlupTheme;
+  const isFlupBlueTheme = accentColor === 'flup-blue';
+  const isLightTheme = isCreamyTheme || isFlupTheme || isFlupBlueTheme;
 
   return (
     <html 
       lang="en" 
       className={isLightTheme ? '' : 'dark'}
-      data-theme={isCreamyTheme ? 'creamy' : (isFlupTheme ? 'flup' : undefined)}
+      data-theme={isCreamyTheme ? 'creamy' : (isFlupTheme ? 'flup' : (isFlupBlueTheme ? 'flup-blue' : undefined))}
       style={{
         '--accent-main': currentAccent.main,
         '--accent-hover': currentAccent.hover,
@@ -254,11 +257,14 @@ export default function RootLayout({
 
             <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
-                <span className="font-black text-3xl tracking-tighter leading-none brand-logo" style={{ color: 'var(--foreground)' }}>Murrabi</span>
-                <span className={clsx(
-                  "font-black text-3xl tracking-tighter leading-none brand-logo",
-                  isFlupTheme ? "text-[#10b981]" : "text-red-500"
-                )}>Desk</span>
+                <img 
+                  src="/logo.png" 
+                  alt="Murrabi Desk" 
+                  className={clsx(
+                    "h-10 w-auto object-contain transition-all duration-300",
+                    isLightTheme ? "invert" : ""
+                  )} 
+                />
               </div>
               <div className="flex items-center justify-center gap-1.5">
                 <p className={clsx(
