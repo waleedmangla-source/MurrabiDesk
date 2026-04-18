@@ -260,10 +260,7 @@ export default function RootLayout({
                 <img 
                   src="/logo.png" 
                   alt="Murrabi Desk" 
-                  className={clsx(
-                    "h-10 w-auto object-contain transition-all duration-300",
-                    isLightTheme ? "invert" : ""
-                  )} 
+                  className="h-10 w-auto object-contain transition-all duration-300"
                 />
               </div>
               <div className="flex items-center justify-center gap-1.5">
