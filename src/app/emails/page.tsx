@@ -490,6 +490,34 @@ export default function EmailsPage() {
     }
   };
 
+  // ── Trackpad/Mouse Wheel Pull to Refresh ──
+  const wheelTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (scrollContainerRef.current?.scrollTop === 0 && e.deltaY < 0) {
+      setIsPulling(true);
+      setPullDistance(prev => Math.min(prev + Math.abs(e.deltaY) * 0.5, 80));
+
+      if (wheelTimeout.current) clearTimeout(wheelTimeout.current);
+      
+      wheelTimeout.current = setTimeout(() => {
+        setPullDistance(prev => {
+          if (prev > 60) {
+            setIsRefreshing(true);
+            fetchEmails();
+          }
+          return 0;
+        });
+        setIsPulling(false);
+      }, 300); // Wait for wheel events to settle
+    } else if (isPulling && e.deltaY > 0) {
+      if (wheelTimeout.current) clearTimeout(wheelTimeout.current);
+      setPullDistance(0);
+      setIsPulling(false);
+    }
+  };
+
+
   // ── Infinite Scroll Observer ──
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -748,6 +776,7 @@ export default function EmailsPage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onWheel={handleWheel}
         >
           {/* Pull to Refresh Indicator */}
           <div 
