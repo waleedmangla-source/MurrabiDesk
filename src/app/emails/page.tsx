@@ -641,8 +641,16 @@ export default function EmailsPage() {
             }
           `}</style>
 
-          {/* Sidebar Tabs */}
-          <div className="flex bg-white/5 rounded-xl p-0.5 mt-4 border border-white/5">
+          {/* Animated Sidebar Tabs */}
+          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
+            {/* Animated Background Pill */}
+            <div 
+              className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
+              style={{
+                left: sidebarTab === 'folders' ? '0.25rem' : 'calc(50%)',
+                background: 'var(--accent-main)'
+              }}
+            />
             {[
               { id: 'folders', label: 'Folders' },
               { id: 'quick-mail', label: 'Quick' }
@@ -651,8 +659,8 @@ export default function EmailsPage() {
                 key={t.id}
                 onClick={() => setSidebarTab(t.id as any)}
                 className={clsx(
-                  "flex-1 py-1.5 rounded-[10px] text-[10px] font-black uppercase tracking-widest transition-all",
-                  sidebarTab === t.id ? "bg-white/10 text-white shadow-sm" : "text-[var(--text-dim)] hover:text-white"
+                  "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
+                  sidebarTab === t.id ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
                 )}
               >
                 {t.label}
