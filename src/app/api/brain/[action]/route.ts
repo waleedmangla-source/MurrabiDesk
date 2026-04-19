@@ -82,7 +82,7 @@ export async function POST(
         break;
 
       case 'gmail-list':
-        result = await syncService.getEmails();
+        result = await syncService.getEmails(body.pageToken, body.query);
         break;
 
       case 'fetch-mission-notes':

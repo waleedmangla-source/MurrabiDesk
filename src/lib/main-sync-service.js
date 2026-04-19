@@ -59,16 +59,23 @@ class MainSyncService {
     return res.data;
   }
 
-  async getEmails() {
+  async getEmails(pageToken = null, query = null) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
-    const res = await gmail.users.messages.list({ userId: 'me', maxResults: 10 });
-    if (!res.data.messages) return [];
+    const params = { userId: 'me', maxResults: 20 };
+    if (pageToken) params.pageToken = pageToken;
+    if (query) params.q = query;
+    
+    const res = await gmail.users.messages.list(params);
+    if (!res.data.messages) return { emails: [], nextPageToken: null };
 
     const details = await Promise.all(
       res.data.messages.map(msg => gmail.users.messages.get({ userId: 'me', id: msg.id }))
     );
 
-    return details.map(d => d.data);
+    return {
+      emails: details.map(d => d.data),
+      nextPageToken: res.data.nextPageToken || null
+    };
   }
 
   async sendEmail(to, subject, body, attachments = []) {

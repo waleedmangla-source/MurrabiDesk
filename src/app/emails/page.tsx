@@ -357,34 +357,48 @@ export default function EmailsPage() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
 
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const startY = useRef(0);
+
   // ── Fetch ──
-  const fetchEmails = useCallback(async () => {
-    setSyncStatus('syncing');
+  const fetchEmails = useCallback(async (token: string | null = null, append = false) => {
+    if (token) setLoadingMore(true);
+    else if (append) return;
+    else setSyncStatus('syncing');
+
     try {
-      const data = await callBrain('gmail-list');
-      const raw: any[] = Array.isArray(data) ? data : (data?.emails || data?.messages || []);
+      // Map folder to Gmail query
+      let gmailQuery = '';
+      if (folder === 'inbox') gmailQuery = 'label:inbox';
+      else if (folder === 'starred') gmailQuery = 'is:starred';
+      else if (folder === 'sent') gmailQuery = 'is:sent';
+      else if (folder === 'drafts') gmailQuery = 'is:draft';
+      else if (folder === 'trash') gmailQuery = 'is:trash';
+      else if (folder === 'archive') gmailQuery = '-label:inbox -is:trash -is:spam';
+
+      // Add user search query if present
+      if (query) gmailQuery += ` ${query}`;
+
+      const data = await callBrain('gmail-list', { pageToken: token, query: gmailQuery });
+      const raw: any[] = data?.emails || [];
+      const newToken = data?.nextPageToken || null;
       
-      const normalized: Email[] = raw.map((e: any) => {
+      const normalizeEmail = (e: any): Email => {
         const headers = e.payload?.headers || [];
         const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
-        
         const fromRaw = getHeader('From');
-        const subject = getHeader('Subject') || '(no subject)';
-        const date = getHeader('Date') || e.internalDate;
-        const to = getHeader('To');
-
-        // Extract body - prioritizing HTML for rich formatting
+        
         let body = '';
         const findBody = (parts: any[]): string => {
-          // 1. Try to find HTML part
           const htmlPart = parts.find((p: any) => p.mimeType === 'text/html');
           if (htmlPart?.body?.data) return Buffer.from(htmlPart.body.data, 'base64').toString();
-          
-          // 2. Try to find plain text part
           const textPart = parts.find((p: any) => p.mimeType === 'text/plain');
           if (textPart?.body?.data) return Buffer.from(textPart.body.data, 'base64').toString();
-
-          // 3. Recurse into nested parts (e.g. multipart/related)
           for (const part of parts) {
             if (part.parts) {
               const res = findBody(part.parts);
@@ -394,46 +408,112 @@ export default function EmailsPage() {
           return '';
         };
 
-        if (e.payload?.parts) {
-          body = findBody(e.payload.parts);
-        } else if (e.payload?.body?.data) {
-          body = Buffer.from(e.payload.body.data, 'base64').toString();
-        }
+        if (e.payload?.parts) body = findBody(e.payload.parts);
+        else if (e.payload?.body?.data) body = Buffer.from(e.payload.body.data, 'base64').toString();
 
         return {
           id: e.id || String(Math.random()),
           threadId: e.threadId || '',
           from: fromRaw,
           fromName: fromRaw.split('<')[0]?.trim() || fromRaw || 'Unknown',
-          to: to,
-          subject: subject,
+          to: getHeader('To'),
+          subject: getHeader('Subject') || '(no subject)',
           snippet: e.snippet || body.slice(0, 120) || '',
           body: body,
-          date: date,
+          date: getHeader('Date') || e.internalDate,
           read: !(e.labelIds || []).includes('UNREAD'),
           starred: (e.labelIds || []).includes('STARRED'),
           hasAttachments: !!(e.payload?.parts?.some((p: any) => p.filename)),
           labels: e.labelIds || [],
         };
-      });
+      };
+
+      const normalized = raw.map(normalizeEmail);
       
-      setEmails(normalized);
+      if (append) {
+        setEmails(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const netNew = normalized.filter(n => !existingIds.has(n.id));
+          return [...prev, ...netNew];
+        });
+      } else {
+        setEmails(normalized);
+      }
+
+      setNextPageToken(newToken);
       setSyncStatus('synced');
     } catch (err) {
       console.error('[GMAIL FETCH ERROR]', err);
       setSyncStatus('error');
+    } finally {
+      setLoadingMore(false);
+      setIsRefreshing(false);
+      setPullDistance(0);
+      setIsPulling(false);
     }
-  }, []);
+  }, [folder, query]); // Added folder and query as deps
+
+  const loadMore = useCallback(() => {
+    if (nextPageToken && !loadingMore && syncStatus !== 'syncing') {
+      fetchEmails(nextPageToken, true);
+    }
+  }, [nextPageToken, loadingMore, syncStatus, fetchEmails]);
+
+  // ── Pull to Refresh Logic ──
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (scrollContainerRef.current?.scrollTop === 0) {
+      startY.current = e.touches[0].pageY;
+      setIsPulling(true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPulling) return;
+    const currentY = e.touches[0].pageY;
+    const diff = currentY - startY.current;
+    if (diff > 0 && scrollContainerRef.current?.scrollTop === 0) {
+      // Damping effect
+      setPullDistance(Math.min(diff * 0.4, 80));
+    } else {
+      setIsPulling(false);
+      setPullDistance(0);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 60) {
+      setIsRefreshing(true);
+      fetchEmails();
+    } else {
+      setPullDistance(0);
+      setIsPulling(false);
+    }
+  };
+
+  // ── Infinite Scroll Observer ──
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollHeight - scrollTop <= clientHeight + 100) {
+        loadMore();
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
 
   useEffect(() => {
     if (!isGuest) fetchEmails();
     else setSyncStatus('idle');
 
-    // Fetch profile for header
     GoogleSyncService.getUserProfile().then(profile => {
       if (profile?.email) setUserEmail(profile.email);
     });
-  }, [fetchEmails, isGuest]);
+  }, [isGuest, folder]); // Added folder to deps to re-fetch on folder change
 
   // ── Actions ──
   async function handleArchive(id: string) {
@@ -639,11 +719,11 @@ export default function EmailsPage() {
               </p>
             </div>
             <button
-              onClick={fetchEmails}
+              onClick={() => fetchEmails()}
               className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
               title="Refresh"
             >
-              <SyncIcon size={15} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
+              <SyncIcon size={15} className={(syncStatus === 'syncing' || isRefreshing) ? 'animate-spin' : ''} />
             </button>
           </div>
 
@@ -662,7 +742,33 @@ export default function EmailsPage() {
         </div>
 
         {/* Email List */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto custom-scrollbar relative"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Pull to Refresh Indicator */}
+          <div 
+            className="flex items-center justify-center overflow-hidden transition-all duration-200 bg-white/5"
+            style={{ height: pullDistance > 0 ? pullDistance : 0, opacity: pullDistance > 0 ? pullDistance / 60 : 0 }}
+          >
+            <div className="flex items-center gap-2">
+              <RefreshCw size={14} className={clsx("text-[var(--accent-main)]", pullDistance > 60 ? "animate-spin" : "")} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+                {pullDistance > 60 ? "Release to refresh" : "Pull to refresh"}
+              </span>
+            </div>
+          </div>
+
+          {isRefreshing && (
+            <div className="py-4 flex flex-col items-center justify-center gap-2 border-b border-white/5">
+              <Loader2 size={16} className="animate-spin text-[var(--accent-main)]" />
+              <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">Refreshing...</p>
+            </div>
+          )}
+
           {syncStatus === 'syncing' && emails.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-[var(--text-dim)]">
               <Loader2 size={24} className="animate-spin" style={{ color: 'var(--accent-main)' }} />
@@ -679,7 +785,7 @@ export default function EmailsPage() {
             </div>
           )}
 
-          {!isGuest && syncStatus !== 'syncing' && filtered.length === 0 && (
+          {!isGuest && syncStatus !== 'syncing' && !isRefreshing && filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
               <Inbox size={32} className="text-[var(--text-dim)] opacity-30" />
               <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)]">No emails found</p>
@@ -718,6 +824,24 @@ export default function EmailsPage() {
               </div>
             </button>
           ))}
+
+          {loadingMore && (
+            <div className="py-8 flex flex-col items-center justify-center gap-3">
+              <Loader2 size={20} className="animate-spin text-[var(--accent-main)]" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Loading more messages...</p>
+            </div>
+          )}
+
+          {!loadingMore && nextPageToken && filtered.length > 0 && (
+            <div className="py-8 flex justify-center">
+              <button 
+                onClick={loadMore}
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:text-[var(--accent-main)] transition-colors px-6 py-2 rounded-full border border-white/5 hover:border-[var(--accent-main)]/20"
+              >
+                Load More
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
