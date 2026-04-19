@@ -260,7 +260,7 @@ export default function RootLayout({
                 <img 
                   src="/text-logo.png" 
                   alt="Murrabi Desk" 
-                  className="h-10 w-auto object-contain transition-all duration-300 invert mix-blend-multiply"
+                  className="h-[50px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply"
                 />
               </div>
               <div className="flex items-center justify-center gap-1.5">
