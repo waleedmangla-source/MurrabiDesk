@@ -258,9 +258,9 @@ export default function RootLayout({
             <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
               <div className="flex items-center justify-center overflow-hidden">
                 <img 
-                  src="/logo.png" 
+                  src="/text-logo.png" 
                   alt="Murrabi Desk" 
-                  className="h-10 w-auto object-contain transition-all duration-300"
+                  className="h-10 w-auto object-contain transition-all duration-300 invert brightness-0"
                 />
               </div>
               <div className="flex items-center justify-center gap-1.5">
