@@ -65,8 +65,9 @@ export async function GET(req: NextRequest) {
     const spawnArgs = binPath === localBinPath ? [binPath, ...args] : args;
     console.log("Spawning yt-dlp with:", spawnCmd, spawnArgs.join(" "));
     const ls = spawn(spawnCmd, spawnArgs, {
-      env: { ...process.env, PATH: `${process.env.PATH}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` }
+      env: { ...process.env, PATH: `${process.env.PATH}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Python.framework/Versions/3.13/bin` }
     });
+
 
     let errorLog = "";
     ls.stderr.on("data", (data) => {
