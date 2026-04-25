@@ -3,11 +3,28 @@ import { spawn, execFile } from "child_process";
 import path from "path";
 import fs from "fs";
 
-const PYTHON3 = "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13";
+const PYTHON_PATHS = [
+  "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+  "/usr/bin/python3",
+  "python3"
+];
+
+function getPythonPath() {
+  for (const p of PYTHON_PATHS) {
+    try {
+      if (p === "python3") return p;
+      if (fs.existsSync(p)) return p;
+    } catch (e) {}
+  }
+  return "python3";
+}
+
+const PYTHON3 = getPythonPath();
 const localBinPath = path.resolve(process.cwd(), "yt-dlp");
 const nodeBinPath = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
 const scriptPath = fs.existsSync(localBinPath) ? localBinPath : nodeBinPath;
-const usesPython = fs.existsSync(localBinPath);
+const usesPython = true; // Always use python for the script version
+
 
 function runYtdlp(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
