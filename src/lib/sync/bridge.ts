@@ -1,14 +1,6 @@
-const BRAIN_URL = 'http://localhost:7780';
 export const liquid = {
   async invoke(action: string, data: any = {}): Promise<any> {
-    if (typeof window !== 'undefined' && (window as any).electron) {
-        const electron = (window as any).electron;
-        if (typeof electron[action] === 'function') {
-            return electron[action](data);
-        }
-    }
-    const isElectron = typeof window !== 'undefined' && navigator.userAgent.toLowerCase().indexOf('electron') > -1;
-    const targetUrl = isElectron ? `${BRAIN_URL}/${action}` : `/api/brain/${action}`;
+    const targetUrl = `/api/brain/${action}`;
     const tokenHeader = typeof window !== 'undefined' ? localStorage.getItem('google_refresh_token_encrypted') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (tokenHeader) headers['x-murrabi-token'] = tokenHeader;

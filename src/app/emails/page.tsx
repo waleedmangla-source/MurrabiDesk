@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
+import { liquid } from '@/lib/sync/bridge';
 import RichTextEditor from "@/components/RichTextEditor";
 
 // ─────────────────────────────────────────────────────────────
@@ -73,15 +74,7 @@ function avatarColor(name: string): string {
 // Brain API caller
 // ─────────────────────────────────────────────────────────────
 async function callBrain(action: string, data: any = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('google_refresh_token_encrypted') : null;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['x-murrabi-token'] = token;
-  const res = await fetch(`/api/brain/${action}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data),
-  });
-  return res.json();
+  return liquid.invoke(action, data);
 }
 
 // ─────────────────────────────────────────────────────────────

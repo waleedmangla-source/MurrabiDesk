@@ -78,15 +78,9 @@ export default function RootLayout({
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
 
-  const [isElectron, setIsElectron] = useState(false);
-
   useEffect(() => {
     setMounted(true);
-    
-    // Detect Electron environment
-    const isEnvElectron = navigator.userAgent.toLowerCase().indexOf('electron') > -1;
-    setIsElectron(isEnvElectron);
-    
+
     // Check Google Sync Status
     const syncStatus = localStorage.getItem('google_sync_status');
     
@@ -225,14 +219,13 @@ export default function RootLayout({
       </head>
       <body className={clsx(
         inter.className, 
-        isElectron ? "bg-transparent is-electron" : "bg-[#020310]", 
+        "bg-[#020310]", 
         "transition-colors duration-500"
       )}>
         <div className="flex h-screen w-full bg-transparent overflow-hidden relative">
           <CommandPalette />
 
-           {/* NATIVE DRAG AREA — allows window dragging from top bar */}
-           <div className="fixed top-0 left-0 w-full h-[38px] z-[1001] pointer-events-none" style={{ WebkitAppRegion: 'drag' } as any} />
+
           
           {/* Sidebar */}
           <aside className={clsx(
@@ -344,7 +337,7 @@ export default function RootLayout({
           </aside>
 
           {/* Integration of PWA Prompt Component */}
-          {!isElectron && <PWAInstallPrompt />}
+          <PWAInstallPrompt />
 
           <main className={clsx(
             "flex-1 h-full overflow-y-auto custom-scrollbar transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",

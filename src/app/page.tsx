@@ -70,9 +70,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     const syncStatus = localStorage.getItem('google_sync_status');
-    const hasElectron = typeof window !== 'undefined' && !!window.electron;
     
-    if (syncStatus === 'connected' || !hasElectron) {
+    if (syncStatus === 'connected') {
       setIsConnected(true);
       fetchDashboardData();
       loadMissionNotes();
@@ -314,7 +313,7 @@ export default function Dashboard() {
                       {isCloudSyncing ? "Syncing..." : (
                         <>
                           <Save size={10} />
-                          {typeof window !== 'undefined' && window.electron ? "Save Mission Data" : "Save Point (Browser)"}
+                          Save Mission Data
                         </>
                       )}
                     </button>
@@ -324,7 +323,7 @@ export default function Dashboard() {
                       <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white animate-pulse">Syncing...</span>
                     ) : isConnected && notes ? (
                       <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white/50">
-                        {typeof window !== 'undefined' && window.electron ? "Stored in Cloud" : "Stored in Browser"}
+                        Stored in Cloud
                       </span>
                     ) : (
                       <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white/40">Local Only</span>

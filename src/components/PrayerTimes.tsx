@@ -37,13 +37,8 @@ export default function PrayerTimes() {
 
   const fetchPrayerTimes = async () => {
     try {
-      let data;
-      if (typeof window !== 'undefined' && (window as any).electron) {
-        data = await (window as any).electron.fetchPrayerTimes();
-      } else {
-        const response = await fetch('/api/prayer-times');
-        data = await response.json();
-      }
+      const response = await fetch('/api/prayer-times');
+      const data = await response.json();
       setTimings(data);
       setLoading(false);
     } catch (err) {

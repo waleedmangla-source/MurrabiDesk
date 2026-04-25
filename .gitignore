@@ -71,3 +71,4 @@ Thumbs.db
 # Project-specific ignored
 scratch/
 test-dir/
+yt-dlp/
