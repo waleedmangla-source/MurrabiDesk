@@ -3,7 +3,7 @@ import { spawn, execFile } from "child_process";
 import path from "path";
 import fs from "fs";
 
-const PYTHON3 = "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3";
+const PYTHON3 = "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13";
 const localBinPath = path.resolve(process.cwd(), "yt-dlp");
 const nodeBinPath = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
 const scriptPath = fs.existsSync(localBinPath) ? localBinPath : nodeBinPath;
