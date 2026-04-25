@@ -136,7 +136,7 @@ export default function ProfilePage() {
       {/* Identity Header */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Identity <span className="text-red-600">Protocol</span></h1>
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Identity Protocol</h1>
           <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[10px]">
              Administrative Clearance / Level 4 Authorization
           </p>
