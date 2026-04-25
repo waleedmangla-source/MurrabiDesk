@@ -3,9 +3,12 @@ import { create as createYtdl } from "youtube-dl-exec";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-const binPath = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
+const localBinPath = path.resolve(process.cwd(), "yt-dlp");
+const nodeBinPath = path.resolve(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
+const binPath = fs.existsSync(localBinPath) ? localBinPath : nodeBinPath;
 const ytdl = createYtdl(binPath);
 export async function POST(req: NextRequest) {
+
   try {
     const { url } = await req.json();
     if (!url) {
@@ -58,10 +61,13 @@ export async function GET(req: NextRequest) {
     } else {
       args.push("-f", "best[ext=mp4]/best");
     }
-    console.log("Spawning yt-dlp with args:", args.join(" "));
-    const ls = spawn(binPath, args, {
+    const spawnCmd = binPath === localBinPath ? "python3" : binPath;
+    const spawnArgs = binPath === localBinPath ? [binPath, ...args] : args;
+    console.log("Spawning yt-dlp with:", spawnCmd, spawnArgs.join(" "));
+    const ls = spawn(spawnCmd, spawnArgs, {
       env: { ...process.env, PATH: `${process.env.PATH}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` }
     });
+
     let errorLog = "";
     ls.stderr.on("data", (data) => {
       errorLog += data.toString();
