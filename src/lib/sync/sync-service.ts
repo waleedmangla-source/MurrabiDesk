@@ -1,16 +1,13 @@
 import { google } from 'googleapis';
 import fs from 'fs';
 import path from 'path';
-
 export class SyncService {
   private oauth2Client: any;
   private tokenPath = path.join(process.cwd(), 'data', 'google_token.json');
-
   constructor(clientId: string, clientSecret: string, redirectUri: string) {
     this.oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
     this.loadToken();
   }
-
   private loadToken() {
     if (fs.existsSync(this.tokenPath)) {
       try {
@@ -21,7 +18,6 @@ export class SyncService {
       }
     }
   }
-
   async saveToken(tokens: any) {
     if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
       fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
@@ -29,12 +25,10 @@ export class SyncService {
     fs.writeFileSync(this.tokenPath, JSON.stringify(tokens, null, 2));
     this.oauth2Client.setCredentials(tokens);
   }
-
   async setRefreshToken(token: string) {
     this.oauth2Client.setCredentials({ refresh_token: token });
     await this.saveToken({ refresh_token: token });
   }
-
   async getUserInfo() {
     try {
       const oauth2 = google.oauth2({ version: 'v2', auth: this.oauth2Client });
@@ -45,8 +39,6 @@ export class SyncService {
       throw error;
     }
   }
-
-  // --- CALENDAR ---
   async getCalendarEvents(timeMin = new Date().toISOString()) {
     const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     const res = await calendar.events.list({
@@ -58,7 +50,6 @@ export class SyncService {
     });
     return res.data.items || [];
   }
-
   async createCalendarEvent(event: any) {
     const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     const res = await calendar.events.insert({
@@ -67,20 +58,15 @@ export class SyncService {
     });
     return res.data;
   }
-
-  // --- GMAIL ---
   async getEmails() {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     const res = await gmail.users.messages.list({ userId: 'me', maxResults: 10 });
     if (!res.data.messages) return [];
-
     const details = await Promise.all(
       res.data.messages.map(msg => gmail.users.messages.get({ userId: 'me', id: msg.id! }))
     );
-
     return details.map(d => d.data);
   }
-
   async sendEmail(to: string, subject: string, body: string) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
@@ -99,23 +85,18 @@ export class SyncService {
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
-
     await gmail.users.messages.send({
       userId: 'me',
       requestBody: { raw: encodedMessage },
     });
   }
-
-  // --- DRIVE (Notes) ---
   private async getSyncFolderId() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const res = await drive.files.list({
       q: "name = 'MurrabiDeskSync' and mimeType = 'application/vnd.google-apps.folder'",
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) return res.data.files[0].id;
-
     const folderRes = await drive.files.create({
       requestBody: {
         name: 'MurrabiDeskSync',
@@ -125,7 +106,6 @@ export class SyncService {
     });
     return folderRes.data.id;
   }
-
   async listNotes() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -135,13 +115,11 @@ export class SyncService {
     });
     return res.data.files || [];
   }
-
   async getNoteContent(fileId: string) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const res = (await drive.files.get({ fileId, alt: 'media' })) as any;
     return res.data;
   }
-
   async saveNote(name: string, content: string, fileId?: string) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -157,7 +135,6 @@ export class SyncService {
       });
     }
   }
-
   async syncMissionNotes(content: string) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -165,7 +142,6 @@ export class SyncService {
       q: `name = 'mission_notes.txt' and '${folderId}' in parents and trashed = false`,
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) {
       await drive.files.update({
         fileId: res.data.files[0].id!,
@@ -178,7 +154,6 @@ export class SyncService {
       });
     }
   }
-
   async fetchMissionNotes() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -186,7 +161,6 @@ export class SyncService {
       q: `name = 'mission_notes.txt' and '${folderId}' in parents and trashed = false`,
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) {
       return this.getNoteContent(res.data.files[0].id!);
     }

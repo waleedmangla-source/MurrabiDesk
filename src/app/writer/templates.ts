@@ -1,5 +1,4 @@
 import { PenTool, Feather, FileSignature, Mic, BookOpen, FilePlus } from 'lucide-react';
-
 export const TEMPLATES = [
   {
     id: "huzoor",

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
@@ -11,23 +10,19 @@ import {
   Command
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
 export default function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const router = useRouter();
-
   const commands = [
     { id: 'dash', label: 'Go to Dashboard', icon: Home, action: () => router.push('/') },
     { id: 'ai', label: 'Ask AI Assistant', icon: Sparkles, action: () => router.push('/chat') },
     { id: 'email', label: 'Compose New Email', icon: Mail, action: () => router.push('/emails') },
     { id: 'expense', label: 'Log New Expense', icon: Receipt, action: () => router.push('/expenses') },
   ];
-
   const filteredCommands = commands.filter(c => 
     c.label.toLowerCase().includes(query.toLowerCase())
   );
-
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -37,23 +32,19 @@ export default function CommandPalette() {
       setIsOpen(false);
     }
   }, []);
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
-
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 pointer-events-none">
-      {/* Backdrop */}
+      {}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
         onClick={() => setIsOpen(false)}
       />
-      
-      {/* Palette */}
+      {}
       <div className="w-full max-w-xl glass-card bg-white/5 backdrop-blur-3xl shadow-2xl pointer-events-auto animate-in fade-in zoom-in-95 duration-200 border border-white/20">
         <div className="relative flex items-center p-6 border-b border-white/10">
           <Search className="text-white/40 mr-4" size={24} />
@@ -75,7 +66,6 @@ export default function CommandPalette() {
              <span>K</span>
           </div>
         </div>
-
         <div className="max-h-[350px] overflow-y-auto p-4 custom-scrollbar">
            {filteredCommands.length === 0 ? (
               <div className="p-10 text-center text-white/30 font-bold italic">No commands found</div>
@@ -97,7 +87,6 @@ export default function CommandPalette() {
               ))
            )}
         </div>
-        
         <div className="p-4 border-t border-white/10 flex justify-between items-center text-[11px] text-white/40 font-black uppercase tracking-widest">
            <span className="flex items-center gap-2">Navigate with <span className="px-1.5 py-0.5 bg-white/10 rounded-[14px]">↑↓</span></span>
            <span className="flex items-center gap-2">Press <span className="px-1.5 py-0.5 bg-red-600 text-white rounded-[14px]">Enter</span> to select</span>

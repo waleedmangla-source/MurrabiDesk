@@ -2,12 +2,10 @@ let electron;
 try {
     electron = require('electron');
 } catch (e) {
-    // Pure Node environment
     electron = { ipcMain: { handle: () => {}, on: () => {} }, safeStorage: { isEncryptionAvailable: () => false } };
 }
 const { ipcMain, safeStorage } = electron;
 const { google } = require('googleapis');
-
 class MainSyncService {
   constructor(clientId, clientSecret, redirectUri) {
     this.clientId = clientId;
@@ -15,11 +13,9 @@ class MainSyncService {
     this.redirectUri = redirectUri;
     this.oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
   }
-
   setRefreshToken(token) {
     this.oauth2Client.setCredentials({ refresh_token: token });
   }
-
   async getUserInfo() {
     try {
       const oauth2 = google.oauth2({ version: 'v2', auth: this.oauth2Client });
@@ -34,7 +30,6 @@ class MainSyncService {
       throw error;
     }
   }
-
   async getCalendarEvents(timeMin = new Date().toISOString(), timeMax) {
     const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     const params = {
@@ -45,11 +40,9 @@ class MainSyncService {
       orderBy: 'startTime',
     };
     if (timeMax) params.timeMax = timeMax;
-
     const res = await calendar.events.list(params);
     return res.data.items || [];
   }
-
   async createCalendarEvent(event) {
     const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
     const res = await calendar.events.insert({
@@ -58,37 +51,29 @@ class MainSyncService {
     });
     return res.data;
   }
-
   async getEmails(pageToken = null, query = null) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     const params = { userId: 'me', maxResults: 20 };
     if (pageToken) params.pageToken = pageToken;
     if (query) params.q = query;
-    
     const res = await gmail.users.messages.list(params);
     if (!res.data.messages) return { emails: [], nextPageToken: null };
-
     const details = await Promise.all(
       res.data.messages.map(msg => gmail.users.messages.get({ userId: 'me', id: msg.id }))
     );
-
     return {
       emails: details.map(d => d.data),
       nextPageToken: res.data.nextPageToken || null
     };
   }
-
   async sendEmail(to, subject, body, attachments = []) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
-    
-    // Use nodemailer for robust MIME generation
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       streamTransport: true,
       newline: 'unix',
       buffer: true
     });
-
     const mailOptions = {
       from: 'me',
       to,
@@ -100,19 +85,16 @@ class MainSyncService {
         contentType: att.mimeType
       }))
     };
-
     const info = await transporter.sendMail(mailOptions);
     const raw = info.message.toString('base64')
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
-
     await gmail.users.messages.send({
       userId: 'me',
       requestBody: { raw },
     });
   }
-
   async archiveEmail(id) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     await gmail.users.messages.modify({
@@ -121,12 +103,10 @@ class MainSyncService {
       requestBody: { removeLabelIds: ['INBOX'] },
     });
   }
-
   async trashEmail(id) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     await gmail.users.messages.trash({ userId: 'me', id });
   }
-
   async markAsRead(id) {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
     await gmail.users.messages.modify({
@@ -135,25 +115,20 @@ class MainSyncService {
       requestBody: { removeLabelIds: ['UNREAD'] },
     });
   }
-
   async getSyncFolderId() {
     return this.ensureFolder('MurrabiDeskSync');
   }
-
   async ensureFolder(name, parentId = null) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     let query = `name = '${name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
     if (parentId) {
       query += ` and '${parentId}' in parents`;
     }
-    
     const res = await drive.files.list({
       q: query,
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) return res.data.files[0].id;
-
     const folderRes = await drive.files.create({
       requestBody: {
         name,
@@ -164,27 +139,21 @@ class MainSyncService {
     });
     return folderRes.data.id;
   }
-
   async uploadFile(name, content, mimeType, folderName = null) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const rootFolderId = await this.getSyncFolderId();
     let targetFolderId = rootFolderId;
-
     if (folderName) {
       targetFolderId = await this.ensureFolder(folderName, rootFolderId);
     }
-
-    // Check if file already exists to update or create
     const existing = await drive.files.list({
       q: `name = '${name}' and '${targetFolderId}' in parents and trashed = false`,
       fields: 'files(id)',
     });
-
     const media = {
       mimeType,
-      body: content, // Can be string or Buffer
+      body: content,
     };
-
     if (existing.data.files && existing.data.files.length) {
       const fileId = existing.data.files[0].id;
       await drive.files.update({
@@ -205,7 +174,6 @@ class MainSyncService {
       return res.data.id;
     }
   }
-
   async listNotes() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -215,13 +183,11 @@ class MainSyncService {
     });
     return res.data.files || [];
   }
-
   async getNoteContent(fileId) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const res = await drive.files.get({ fileId, alt: 'media' });
     return res.data;
   }
-
   async saveNote(name, content, fileId) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -237,7 +203,6 @@ class MainSyncService {
       });
     }
   }
-
   async fetchMissionNotes() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -245,13 +210,11 @@ class MainSyncService {
       q: `name = 'mission_notes.txt' and '${folderId}' in parents and trashed = false`,
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) {
       return this.getNoteContent(res.data.files[0].id);
     }
     return "";
   }
-
   async syncMissionNotes(content) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const folderId = await this.getSyncFolderId();
@@ -259,7 +222,6 @@ class MainSyncService {
       q: `name = 'mission_notes.txt' and '${folderId}' in parents and trashed = false`,
       fields: 'files(id)',
     });
-
     if (res.data.files && res.data.files.length) {
       await drive.files.update({
         fileId: res.data.files[0].id,
@@ -272,19 +234,12 @@ class MainSyncService {
       });
     }
   }
-
   async createTemplatedDocument(title, templateText) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
-    
     try {
-      // 1. Get Target Folder
       const folderId = await this.getSyncFolderId();
-      
-      // 2. Wrap the text in basic HTML if it isn't already to ensure clean parsing
       const isHtml = templateText && templateText.includes('<');
       const htmlBody = isHtml ? templateText : `<p>${templateText || ''}</p>`;
-      
-      // 3. Create file directly via Drive API which natively converts HTML to Docs
       const res = await drive.files.create({
         requestBody: {
           name: title,
@@ -297,59 +252,42 @@ class MainSyncService {
         },
         fields: 'id'
       });
-      
       return res.data.id;
     } catch (err) {
       console.error('MainSyncService: Could not generate and move templated document:', err.message);
       return null;
     }
   }
-
   async exportDocument(title, templateText, type) {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
-    
-    // 1. Create temporary doc
     const tempId = await this.createTemplatedDocument(title, templateText);
     if (!tempId) throw new Error("Failed to generate temporary document for export");
-
     try {
-      // 2. Export appropriately
       let mimeType = 'application/pdf';
       if (type === 'docx') mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
       const exportRes = await drive.files.export(
         { fileId: tempId, mimeType },
         { responseType: 'arraybuffer' }
       );
-      
-      // Return raw buffer to be saved by the host OS
       return Buffer.from(exportRes.data);
     } finally {
-      // 3. Cleanup temporary doc asynchronously
       drive.files.delete({ fileId: tempId }).catch(() => {});
     }
   }
-
   async emailDocument(title, templateText, toEmail) {
-    // 1. Export as PDF
     const pdfBuffer = await this.exportDocument(title, templateText, 'pdf');
-    
-    // 2. Send via existing sendEmail wrapper
     const attachment = {
       filename: `${title}.pdf`,
       data: pdfBuffer.toString('base64'),
       mimeType: 'application/pdf'
     };
-    
     await this.sendEmail(
       toEmail,
-      title, // subject
-      `<p>Please find the attached document: <b>${title}</b>.</p><br/><br/><p><i>Sent securely via Murrabi Desk Assistant</i></p>`, // body
+      title,
+      `<p>Please find the attached document: <b>${title}</b>.</p><br/><br/><p><i>Sent securely via Murrabi Desk Assistant</i></p>`,
       [attachment]
     );
-
     return true;
   }
 }
-
 module.exports = MainSyncService;

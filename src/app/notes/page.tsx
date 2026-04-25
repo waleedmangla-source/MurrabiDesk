@@ -6,10 +6,6 @@ import {
   ChevronDown, Palette, Clock, FileText
 } from "lucide-react";
 import clsx from "clsx";
-
-// ─────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────
 interface Note {
   id: string;
   _driveId?: string;
@@ -21,13 +17,8 @@ interface Note {
   createdAt: string;
   updatedAt: string;
 }
-
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 type ViewMode = 'grid' | 'list';
-
-// ─────────────────────────────────────────────────────────────
-// Note Color Palette — adapts to theme via transparency
-// ─────────────────────────────────────────────────────────────
 const NOTE_COLORS: { key: string; label: string; bg: string; border: string; text: string }[] = [
   { key: 'default',  label: 'Default',   bg: 'bg-white/5',         border: 'border-white/10', text: 'text-white' },
   { key: 'red',      label: 'Berry',     bg: 'bg-red-900/30',      border: 'border-red-500/30', text: 'text-red-100' },
@@ -40,11 +31,9 @@ const NOTE_COLORS: { key: string; label: string; bg: string; border: string; tex
   { key: 'pink',     label: 'Rose',      bg: 'bg-pink-900/30',     border: 'border-pink-500/30', text: 'text-pink-100' },
   { key: 'gray',     label: 'Stone',     bg: 'bg-slate-800/40',    border: 'border-slate-500/30', text: 'text-slate-200' },
 ];
-
 function getColor(key: string) {
   return NOTE_COLORS.find(c => c.key === key) || NOTE_COLORS[0];
 }
-
 function formatNoteDate(dateStr: string) {
   try {
     const date = new Date(dateStr);
@@ -59,26 +48,15 @@ function formatNoteDate(dateStr: string) {
     return 'Recently';
   }
 }
-
-// ─────────────────────────────────────────────────────────────
-// Hook: Google OAuth access token (decrypted via brain)
-// ─────────────────────────────────────────────────────────────
 function useGoogleToken(): string | null {
   const [token, setToken] = useState<string | null>(null);
-
   useEffect(() => {
     async function getToken() {
       if (typeof window === 'undefined') return;
-
-      // 1. Check for guest mode
       if (localStorage.getItem('murrabi_guest_mode') === 'true') return;
-
-      // 2. Get encrypted refresh token
       const encrypted = localStorage.getItem('google_refresh_token_encrypted');
       if (!encrypted) return;
-
       try {
-        // 3. Decrypt via brain API
         const decRes = await fetch('/api/brain/decrypt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-murrabi-token': encrypted },
@@ -87,11 +65,8 @@ function useGoogleToken(): string | null {
         const decData = await decRes.json();
         const refreshToken = decData?.decrypted;
         if (!refreshToken) return;
-
-        // 4. Exchange refresh token for access token
         const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '834945075004-a5rh91gdl55tqcplv91uh8gs3lajaauu.apps.googleusercontent.com';
         const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-
         const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -112,13 +87,8 @@ function useGoogleToken(): string | null {
     }
     getToken();
   }, []);
-
   return token;
 }
-
-// ─────────────────────────────────────────────────────────────
-// Relative time
-// ─────────────────────────────────────────────────────────────
 function relativeTime(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
   const mins = Math.floor(diff / 60000);
@@ -128,14 +98,9 @@ function relativeTime(isoDate: string): string {
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
-
-// ─────────────────────────────────────────────────────────────
-// Color Picker Popover
-// ─────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }: { value: string; onChange: (k: string) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function handle(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -143,7 +108,6 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (k: string)
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, []);
-
   return (
     <div ref={ref} className="relative">
       <button
@@ -176,10 +140,6 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (k: string)
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// Note Card
-// ─────────────────────────────────────────────────────────────
 function NoteCard({
   note, viewMode, onEdit, onPin, onDelete
 }: {
@@ -190,7 +150,6 @@ function NoteCard({
   onDelete: (n: Note) => void;
 }) {
   const color = getColor(note.color);
-
   if (viewMode === 'list') {
     return (
       <div
@@ -232,7 +191,6 @@ function NoteCard({
       </div>
     );
   }
-
   return (
     <div
       className={clsx(
@@ -277,10 +235,6 @@ function NoteCard({
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// Note Edit Modal
-// ─────────────────────────────────────────────────────────────
 function NoteModal({
   note, onClose, onSave, onDelete
 }: {
@@ -292,9 +246,7 @@ function NoteModal({
   const [form, setForm] = useState<Partial<Note>>({ color: 'default', pinned: false, labels: [], ...note });
   const [labelInput, setLabelInput] = useState('');
   const contentRef = useRef<HTMLTextAreaElement>(null);
-
   useEffect(() => { contentRef.current?.focus(); }, []);
-
   function handleLabel(e: React.KeyboardEvent<HTMLInputElement>) {
     if ((e.key === 'Enter' || e.key === ',') && labelInput.trim()) {
       e.preventDefault();
@@ -302,21 +254,18 @@ function NoteModal({
       setLabelInput('');
     }
   }
-
   function removeLabel(tag: string) {
     setForm(f => ({ ...f, labels: (f.labels || []).filter(l => l !== tag) }));
   }
-
   const color = getColor(form.color || 'default');
   const isNew = !note.id;
-
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-12 bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div
         className={clsx("w-full max-w-2xl flex flex-col gap-4 glass border rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto", color.bg, color.border)}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between">
           <h2 className={clsx("text-sm font-black uppercase tracking-widest", color.text)}>
             {isNew ? 'New Note' : 'Edit Note'}
@@ -340,8 +289,7 @@ function NoteModal({
             </button>
           </div>
         </div>
-
-        {/* Title */}
+        {}
         <input
           type="text"
           placeholder="Title"
@@ -349,8 +297,7 @@ function NoteModal({
           onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
           className={clsx("w-full bg-transparent text-lg font-black uppercase tracking-tight outline-none placeholder-white/20 border-b border-white/5 pb-3", color.text)}
         />
-
-        {/* Content */}
+        {}
         <textarea
           ref={contentRef}
           placeholder="Take a note..."
@@ -359,8 +306,7 @@ function NoteModal({
           rows={8}
           className={clsx("w-full bg-transparent text-sm leading-relaxed outline-none resize-none placeholder-white/20", color.text, "opacity-80 focus:opacity-100")}
         />
-
-        {/* Labels */}
+        {}
         <div className="flex flex-wrap gap-2 items-center">
           {(form.labels || []).map(tag => (
             <span key={tag} className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[var(--accent-main)] bg-[var(--accent-soft)] border border-[var(--accent-soft)] px-2 py-0.5 rounded-full">
@@ -382,8 +328,7 @@ function NoteModal({
             />
           </div>
         </div>
-
-        {/* Footer */}
+        {}
         <div className="flex items-center justify-between pt-4 border-t border-white/5">
           <p className={clsx("text-[9px] font-bold uppercase tracking-widest opacity-30", color.text)}>
             {form.updatedAt ? `Last edited ${relativeTime(form.updatedAt)}` : 'New note'}
@@ -401,10 +346,6 @@ function NoteModal({
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// Main Notes Page
-// ─────────────────────────────────────────────────────────────
 export default function NotesPage() {
   const token = useGoogleToken();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -413,14 +354,10 @@ export default function NotesPage() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [editingNote, setEditingNote] = useState<Partial<Note> | null>(null);
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
-
-  // ── Auth headers ──
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }), [token]);
-
-  // ── Fetch notes ──
   const fetchNotes = useCallback(async () => {
     if (!token) { setSyncStatus('offline'); return; }
     setSyncStatus('syncing');
@@ -439,16 +376,11 @@ export default function NotesPage() {
       setSyncStatus('error');
     }
   }, [token, headers]);
-
   useEffect(() => { fetchNotes(); }, [fetchNotes]);
-
-  // ── Save (create or update) ──
   async function handleSave(form: Partial<Note>) {
     setSyncStatus('syncing');
     const isUpdate = !!form._driveId;
     const method = isUpdate ? 'PATCH' : 'POST';
-
-    // Optimistic update
     if (isUpdate) {
       setNotes(prev => prev.map(n => n._driveId === form._driveId ? { ...n, ...form, updatedAt: new Date().toISOString() } as Note : n));
     } else {
@@ -465,7 +397,6 @@ export default function NotesPage() {
       setNotes(prev => [tempNote, ...prev]);
     }
     setEditingNote(null);
-
     try {
       const res = await fetch('/api/notes', { method, headers: headers(), body: JSON.stringify(form) });
       const data = await res.json();
@@ -483,13 +414,9 @@ export default function NotesPage() {
       setSyncStatus('error');
     }
   }
-
-  // ── Pin/Unpin ──
   async function handlePin(note: Note) {
     await handleSave({ ...note, pinned: !note.pinned });
   }
-
-  // ── Delete ──
   async function handleDelete(note: Partial<Note>) {
     setNotes(prev => prev.filter(n => n._driveId !== note._driveId));
     setEditingNote(null);
@@ -501,8 +428,6 @@ export default function NotesPage() {
       setSyncStatus('error');
     }
   }
-
-  // ── Filter ──
   const allLabels = Array.from(new Set(notes.flatMap(n => n.labels)));
   const filtered = notes.filter(n => {
     const q = query.toLowerCase();
@@ -512,21 +437,17 @@ export default function NotesPage() {
   });
   const pinned = filtered.filter(n => n.pinned);
   const unpinned = filtered.filter(n => !n.pinned);
-
-  // ── Sync indicator ──
   const SyncIcon = syncStatus === 'syncing' ? Loader2
     : syncStatus === 'synced' ? CheckCircle
     : syncStatus === 'error' ? AlertCircle
     : RefreshCw;
-
   const syncColor = syncStatus === 'synced' ? 'text-emerald-400'
     : syncStatus === 'error' ? 'text-red-400'
     : syncStatus === 'offline' ? 'text-white/20'
     : 'text-white/30';
-
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* ── Secondary Sidebar: All Notes Inventory ── */}
+      {}
       <div className="w-[240px] shrink-0 h-full border-r border-white/5 glass bg-black/20 flex flex-col animate-in fade-in slide-in-from-left-4 duration-500">
         <div className="px-5 pt-12 pb-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -537,7 +458,6 @@ export default function NotesPage() {
           </div>
           <span className="text-[9px] font-bold text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full">{notes.length}</span>
         </div>
-
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
           <div className="space-y-1">
             {notes.map(note => (
@@ -571,18 +491,15 @@ export default function NotesPage() {
           </div>
         </div>
       </div>
-
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
-      {/* ── Toolbar ── */}
+      {}
       <div className="shrink-0 px-8 pt-12 pb-6 border-b border-white/5">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">
               Mission <span style={{ color: 'var(--accent-main)' }}>Notes</span>
             </h1>
-
           </div>
-
           <div className="flex items-center gap-3">
             <button
               onClick={fetchNotes}
@@ -591,7 +508,6 @@ export default function NotesPage() {
             >
               <SyncIcon size={16} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
             </button>
-
             <div className="flex items-center glass border border-white/10 rounded-xl overflow-hidden">
               <button
                 onClick={() => setViewMode('grid')}
@@ -606,7 +522,6 @@ export default function NotesPage() {
                 <List size={15} />
               </button>
             </div>
-
             <button
               onClick={() => setEditingNote({ color: 'default', pinned: false, labels: [] })}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-lg"
@@ -617,8 +532,7 @@ export default function NotesPage() {
             </button>
           </div>
         </div>
-
-        {/* Search Row */}
+        {}
         <div className="flex items-center gap-4">
           <div className="flex-1 flex items-center gap-3 glass bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
             <Search size={15} className="text-[var(--text-dim)] shrink-0" />
@@ -635,8 +549,7 @@ export default function NotesPage() {
               </button>
             )}
           </div>
-
-          {/* Label Chips */}
+          {}
           {allLabels.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto max-w-sm">
               <Tag size={12} className="text-[var(--text-dim)] shrink-0" />
@@ -658,8 +571,7 @@ export default function NotesPage() {
           )}
         </div>
       </div>
-
-      {/* ── Notes Content ── */}
+      {}
       <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
         {notes.length === 0 && syncStatus !== 'syncing' && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-6 animate-in fade-in zoom-in-95 duration-500">
@@ -684,7 +596,6 @@ export default function NotesPage() {
             </button>
           </div>
         )}
-
         {syncStatus === 'syncing' && notes.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-4">
@@ -695,8 +606,7 @@ export default function NotesPage() {
             </div>
           </div>
         )}
-
-        {/* Pinned Section */}
+        {}
         {pinned.length > 0 && (
           <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-2 mb-4">
@@ -718,8 +628,7 @@ export default function NotesPage() {
             )}
           </div>
         )}
-
-        {/* Unpinned Section */}
+        {}
         {unpinned.length > 0 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             {pinned.length > 0 && (
@@ -743,8 +652,7 @@ export default function NotesPage() {
           </div>
         )}
       </div>
-
-      {/* ── Edit/Create Modal ── */}
+      {}
       {editingNote !== null && (
         <NoteModal
           note={editingNote}

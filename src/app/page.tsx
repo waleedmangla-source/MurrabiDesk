@@ -72,15 +72,12 @@ export default function Dashboard() {
     const syncStatus = localStorage.getItem('google_sync_status');
     const hasElectron = typeof window !== 'undefined' && !!window.electron;
     
-    // In browser mode, we assume "connected" if we have the fallback instance
-    // but we can also check for the login status
     if (syncStatus === 'connected' || !hasElectron) {
       setIsConnected(true);
       fetchDashboardData();
       loadMissionNotes();
     }
 
-    // Load Dashboard Protocol Settings
     const savedSettings = localStorage.getItem('murrabi_settings');
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
@@ -133,7 +130,6 @@ export default function Dashboard() {
         console.error('Cloud sync failed:', err);
       }
     }
-    // Artificial delay for visual confirmation
     setTimeout(() => setIsCloudSyncing(false), 1000);
   };
 
@@ -146,7 +142,6 @@ export default function Dashboard() {
 
   return (
     <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
-      {/* Beta Tools Header Section */}
       <div className="flex items-end justify-between mb-2">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Dashboard</span></h1>
@@ -162,7 +157,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Primary Diagnostic Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {diagnosticChecks.map((check) => (
           <div key={check.label} className="glass p-5 flex flex-col gap-3 relative overflow-hidden group">
@@ -181,7 +175,6 @@ export default function Dashboard() {
       </div>
 
 
-      {/* Global Temporal Protocol (Circular Pods) */}
       {dashboardSettings.showWorldClock && (
         <section className="flex flex-wrap gap-4 no-drag px-2">
           <WorldClock city="London" timezone="Europe/London" />
@@ -192,9 +185,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-12 gap-12 no-drag form-v4">
-        {/* Main Central Core: Calendar & Spiritual Sync (7/5 Split) */}
         <div className="col-span-12 lg:col-span-7 flex flex-col gap-12 overflow-hidden">
-          {/* Calendar Card */}
           <section className="glass rounded-[32px] overflow-hidden flex flex-col h-full border border-white/5 shadow-2xl">
             <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
               <div className="dot !bg-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"></div>
@@ -234,22 +225,21 @@ export default function Dashboard() {
                     liveEvents.map((event: any, i: number) => {
                       const startDate = new Date(event.start?.dateTime || event.start?.date || '');
                       
-                      // Google Calendar Color Mapping (Legacy and Modern)
                       const getGCalColor = (id: string) => {
                         const colors: Record<string, string> = {
-                          '1': '#7986cb', // Lavender
-                          '2': '#33b679', // Sage
-                          '3': '#8e24aa', // Grape
-                          '4': '#e67c73', // Flamingo
-                          '5': '#fbc02d', // Banana
-                          '6': '#f4511e', // Tangerine
-                          '7': '#039be5', // Peacock
-                          '8': '#616161', // Graphite
-                          '9': '#3f51b5', // Blueberry
-                          '10': '#0b8043', // Basil
-                          '11': '#d50000', // Tomato
+                          '1': '#7986cb',
+                          '2': '#33b679',
+                          '3': '#8e24aa',
+                          '4': '#e67c73',
+                          '5': '#fbc02d',
+                          '6': '#f4511e',
+                          '7': '#039be5',
+                          '8': '#616161',
+                          '9': '#3f51b5',
+                          '10': '#0b8043',
+                          '11': '#d50000',
                         };
-                        return colors[id] || '#d4af37'; // Default Waqfeen Gold
+                        return colors[id] || '#d4af37';
                       };
 
                       const eventColor = event.backgroundColor || getGCalColor(event.colorId);
@@ -300,7 +290,6 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Right Core: Spiritual Sync & Notes (Side-by-Side with Calendar) */}
         <div className="col-span-12 lg:col-span-5 flex flex-col gap-6 overflow-hidden">
            {dashboardSettings.showPrayerTimes && <PrayerTimes />}
 
@@ -346,7 +335,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Formatting Toolbar */}
               <div className="bg-white/[0.02] border-b border-white/5 p-2 flex items-center gap-1">
                 <button 
                   onClick={() => editor?.chain().focus().toggleBold().run()} 
@@ -387,7 +375,6 @@ export default function Dashboard() {
             </section>
         </div>
 
-        {/* Mission Bottom Row: Transactions */}
         <div className="col-span-12 h-full">
           <section className="glass rounded-[32px] shadow-xl no-drag h-full border border-white/5 overflow-hidden">
              <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">

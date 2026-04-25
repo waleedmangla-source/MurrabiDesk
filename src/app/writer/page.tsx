@@ -1,25 +1,20 @@
 "use client";
-
 import React, { useState } from 'react';
 import { PenTool, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { TEMPLATES } from './templates';
-
 export default function WriterPage() {
   const router = useRouter();
   const [activeId, setActiveId] = useState<string | null>(null);
-
   const handleSelectTemplate = (templateId: string) => {
     setActiveId(templateId);
-    // Add a slight delay for the animation to look nice, then route
     setTimeout(() => {
       router.push(`/writer/editor?templateId=${templateId}`);
     }, 150);
   };
-
   return (
     <div className="flex-1 flex flex-col h-screen overflow-y-auto px-8 py-12 custom-scrollbar bg-transparent">
-      {/* Header */}
+      {}
       <div className="flex flex-col gap-2 mb-12">
         <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase flex items-center gap-4">
           <PenTool size={36} style={{ color: 'var(--accent-main)' }} />
@@ -29,13 +24,11 @@ export default function WriterPage() {
           Select a template to instantly generate and sync a Google Doc.
         </p>
       </div>
-
-      {/* Templates Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {TEMPLATES.map((t) => {
           const Icon = t.icon;
           const isActive = activeId === t.id;
-          
           return (
             <button
               key={t.id}
@@ -46,7 +39,6 @@ export default function WriterPage() {
                 className="absolute top-0 left-0 right-0 h-1 transition-all duration-300 opacity-50 group-hover:opacity-100"
                 style={{ backgroundColor: t.color }}
               />
-
               <div className="flex flex-col h-full gap-4">
                 <div 
                   className="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/10"
@@ -58,7 +50,6 @@ export default function WriterPage() {
                     <Icon size={24} style={{ color: t.color }} />
                   )}
                 </div>
-                
                 <div>
                   <h3 className="text-lg font-black uppercase tracking-tight text-white group-hover:text-[var(--accent-main)] transition-colors">
                     {t.title}
