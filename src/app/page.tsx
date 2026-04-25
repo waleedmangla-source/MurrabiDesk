@@ -145,9 +145,7 @@ export default function Dashboard() {
       <div className="flex items-end justify-between mb-2">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission <span className="text-red-600">Dashboard</span></h1>
-          <p className="text-white/30 max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
-             Integrated Administrative Command & Intelligence Hub
-          </p>
+
         </div>
         
         {dashboardSettings.showAIPrompts && (
