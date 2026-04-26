@@ -18,6 +18,12 @@ export async function POST(request: Request) {
       let stdoutData = '';
       let stderrData = '';
 
+      // Timeout protection (15 seconds)
+      const timeoutId = setTimeout(() => {
+        pythonProcess.kill();
+        resolve(NextResponse.json({ success: false, error: 'Extraction timed out after 15 seconds' }, { status: 504 }));
+      }, 15000);
+
       pythonProcess.stdout.on('data', (data) => {
         stdoutData += data.toString();
       });
@@ -26,7 +32,17 @@ export async function POST(request: Request) {
         stderrData += data.toString();
       });
 
+      pythonProcess.on('error', (err) => {
+        clearTimeout(timeoutId);
+        console.error('Failed to start python3 process:', err);
+        resolve(NextResponse.json({ 
+          success: false, 
+          error: `Failed to start Python: ${err.message}` 
+        }, { status: 500 }));
+      });
+
       pythonProcess.on('close', (code) => {
+        clearTimeout(timeoutId);
         if (code !== 0) {
           console.error(`Scrapy process exited with code ${code}`);
           console.error(`Stderr: ${stderrData}`);
