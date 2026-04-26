@@ -10,11 +10,14 @@ export const liquid = {
         headers,
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error(`Brain Error: ${response.status}`);
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Brain Error ${response.status}: ${errText}`);
+      }
       return await response.json();
-    } catch (err) {
+    } catch (err: any) {
       console.warn(`[LIQUID] Bridge failed for ${action}:`, err);
-      return null;
+      return { error: err.message };
     }
   }
 };

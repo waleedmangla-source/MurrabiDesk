@@ -11,13 +11,19 @@ export async function POST(request: Request) {
 
     const { timeMin, timeMax } = await request.json().catch(() => ({}));
 
+    const url = new URL(request.url);
+    const redirect_uri = process.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`;
+
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
+      redirect_uri
     );
 
-    oauth2Client.setCredentials({ refresh_token: tokenHeader });
+    oauth2Client.setCredentials({ 
+      refresh_token: tokenHeader,
+      access_token: tokenHeader.startsWith('ya29.') ? tokenHeader : undefined
+    });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     

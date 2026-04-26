@@ -378,6 +378,11 @@ export default function EmailsPage() {
       if (query) gmailQuery += ` ${query}`;
 
       const data = await callBrain('gmail-list', { pageToken: token, query: gmailQuery });
+      
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
       const raw: any[] = data?.emails || [];
       const newToken = data?.nextPageToken || null;
       
@@ -448,9 +453,17 @@ export default function EmailsPage() {
 
       setNextPageToken(newToken);
       setSyncStatus('synced');
-    } catch (err) {
+    } catch (err: any) {
       console.error('[GMAIL FETCH ERROR]', err);
       setSyncStatus('error');
+      
+      const errMsg = err?.message || String(err);
+      if (errMsg.includes('invalid_grant') || errMsg.includes('401') || errMsg.includes('token') || errMsg.includes('Brain Error')) {
+        // Token is likely invalid or old Electron encrypted token
+        localStorage.removeItem('google_refresh_token_encrypted');
+        alert("Your login session has expired or is invalid. Please log in again.");
+        window.location.reload();
+      }
     } finally {
       setLoadingMore(false);
       setIsRefreshing(false);
@@ -739,9 +752,10 @@ export default function EmailsPage() {
       )}>
         {/* List Header */}
         <div className="shrink-0 px-5 pt-12 pb-4 border-b border-white/5">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase mb-4">Email</h1>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-lg font-black uppercase tracking-tight text-[var(--foreground)] capitalize">{folder}</h1>
+              <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] mb-1">{folder}</h1>
               <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                 {filtered.length} messages{unread > 0 ? `, ${unread} unread` : ''}
               </p>
