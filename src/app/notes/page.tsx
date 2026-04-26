@@ -497,7 +497,7 @@ export default function NotesPage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">
-              Mission <span style={{ color: 'var(--accent-main)' }}>Notes</span>
+              Inventory <span style={{ color: 'var(--accent-main)' }}>Notes</span>
             </h1>
           </div>
           <div className="flex items-center gap-3">

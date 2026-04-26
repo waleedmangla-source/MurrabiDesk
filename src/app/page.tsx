@@ -133,7 +133,7 @@ export default function Dashboard() {
   };
 
   const diagnosticChecks = [
-    { label: "Mission Status", status: "OPERATIONAL", val: "Active Duty", icon: Activity, color: "text-emerald-500" },
+    { label: "System Status", status: "OPERATIONAL", val: "Active Duty", icon: Activity, color: "text-emerald-500" },
     { label: "Active Objectives", status: liveEvents.length + " SYNCED", val: `${liveEvents.length} Tasks Today`, icon: Timer, color: "text-v4-gold" },
     { label: "System Sync", status: isSyncing ? "SYNCING" : "STABLE", val: "Cloud Protocol 4.0", icon: RefreshCw, color: "text-blue-500", animate: isSyncing },
     { label: "Field Integrity", status: "VERIFIED", val: "99.9% Readiness", icon: Shield, color: "text-red-500" }
@@ -144,7 +144,6 @@ export default function Dashboard() {
       <div className="flex items-end justify-between mb-2">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Dashboard</h1>
-
         </div>
         
         {dashboardSettings.showAIPrompts && (
@@ -313,7 +312,7 @@ export default function Dashboard() {
                       {isCloudSyncing ? "Syncing..." : (
                         <>
                           <Save size={10} />
-                          Save Mission Data
+                          Save Dashboard Config
                         </>
                       )}
                     </button>
