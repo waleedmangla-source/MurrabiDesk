@@ -833,8 +833,8 @@ export default function SettingsPage() {
           })}
         </nav>
 
-        {/* Save Button in Sidebar */}
-        <div className="p-4 border-t border-white/5 shrink-0">
+        {/* Save & Sign Out Buttons in Sidebar */}
+        <div className="p-4 border-t border-white/5 shrink-0 space-y-2">
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -843,6 +843,19 @@ export default function SettingsPage() {
           >
             {isSaving ? <RefreshCw size={13} className="animate-spin" /> : showSuccess ? <CheckCircle2 size={13} /> : <Save size={13} />}
             {isSaving ? 'Saving...' : showSuccess ? 'Saved!' : 'Save Changes'}
+          </button>
+
+          <button
+            onClick={async () => {
+              if (confirm('Sign out of MurrabiDesk?')) {
+                await GoogleSyncService.logout();
+                window.location.href = '/onboarding';
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20"
+          >
+            <LogOut size={13} />
+            Sign Out
           </button>
         </div>
       </div>
