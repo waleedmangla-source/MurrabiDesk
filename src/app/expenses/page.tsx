@@ -649,17 +649,17 @@ export default function ExpensesPage() {
       const attachments = [
         {
           filename: `Expense_Report_${formData.expense_month || 'Draft'}.pdf`,
-          data: pdfBase64,
+          content: pdfBase64,
           mimeType: 'application/pdf'
         },
         ...receipts.map((r, i) => ({
           filename: `REF_${i + 1}_${r.name}`,
-          data: r.data,
+          content: r.data,
           mimeType: r.type
         }))
       ];
       
-      await googleSync.sendEmail(
+      const emailRes = await googleSync.sendEmail(
         selectedEmail,
         `Expense Report - ${formData.fullName} (${formData.expense_month})`,
         `<p>Please find attached the Expense Report for <b>${formData.fullName}</b> for the month of <b>${formData.expense_month}</b>.</p>
@@ -667,6 +667,10 @@ export default function ExpensesPage() {
          <p>Attached: 1 Report PDF + ${receipts.length} Receipts.</p>`,
         attachments
       );
+
+      if (emailRes?.error) {
+        throw new Error(emailRes.error);
+      }
 
       // --- New Automation: Drive Folder & Sheets ---
       const reportFolderName = `[EXPENSE] ${formData.fullName} - ${formData.expense_month} (${formData.date})`;

@@ -40,13 +40,19 @@ export async function POST(request: Request) {
        from: 'me',
        to: to,
        subject: subject,
-       text: body,
-       attachments: attachments.map((a: any) => ({
-          filename: a.filename,
-          content: a.content.split(',')[1] || a.content,
-          encoding: 'base64',
-          contentType: a.mimeType
-       }))
+       html: body, // Use html instead of text for rich formatting
+       attachments: (attachments || []).map((a: any) => {
+          // Handle different property names (data vs content) and potential data URLs
+          const rawContent = a.content || a.data || '';
+          const base64Data = rawContent.includes(',') ? rawContent.split(',')[1] : rawContent;
+          
+          return {
+             filename: a.filename,
+             content: base64Data,
+             encoding: 'base64',
+             contentType: a.mimeType || a.contentType
+          };
+       })
     };
 
     const info: any = await transporter.sendMail(mailOptions);
