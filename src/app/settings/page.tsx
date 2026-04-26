@@ -290,7 +290,7 @@ function AppearanceTab({ settings, setSettings }: { settings: SettingsState; set
           >
             {[
               { v: '/', label: 'Dashboard' },
-              { v: '/emails', label: 'Emails' },
+              { v: '/emails', label: 'Mail' },
               { v: '/expenses', label: 'Expenses' },
               { v: '/notes', label: 'Notes' },
               { v: '/calendar', label: 'Calendar' },
@@ -498,7 +498,7 @@ const SHORTCUTS = [
   { section: 'Navigation', items: [
     { keys: ['⌘', '1'], desc: 'Go to Dashboard' },
     { keys: ['⌘', '2'], desc: 'Go to MurrabiAI' },
-    { keys: ['⌘', '3'], desc: 'Go to Emails' },
+    { keys: ['⌘', '3'], desc: 'Go to Mail' },
     { keys: ['⌘', '4'], desc: 'Go to Calendar' },
     { keys: ['⌘', '5'], desc: 'Go to Notes' },
     { keys: ['⌘', '6'], desc: 'Go to Expenses' },

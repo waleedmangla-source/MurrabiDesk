@@ -70,7 +70,7 @@ export default function RootLayout({
   const navLinks = [
     { icon: Home, label: "Dashboard", href: "/" },
     { icon: Sparkles, label: "MurrabiAI", href: "/chat" },
-    { icon: Mail, label: "Emails", href: "/emails" },
+    { icon: Mail, label: "Mail", href: "/emails" },
     { icon: Calendar, label: "Calendar", href: "/calendar" },
     { icon: FileText, label: "Notes", href: "/notes" },
     { icon: PenTool, label: "Writer", href: "/writer" },

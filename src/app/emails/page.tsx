@@ -386,12 +386,25 @@ export default function EmailsPage() {
         const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
         const fromRaw = getHeader('From');
         
+        const base64UrlDecode = (str: string) => {
+          if (!str) return '';
+          // Convert base64url to base64
+          const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+          try {
+            return decodeURIComponent(atob(base64).split('').map(c => {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+          } catch (e) {
+            return atob(base64); // Fallback for non-unicode
+          }
+        };
+
         let body = '';
         const findBody = (parts: any[]): string => {
           const htmlPart = parts.find((p: any) => p.mimeType === 'text/html');
-          if (htmlPart?.body?.data) return Buffer.from(htmlPart.body.data, 'base64').toString();
+          if (htmlPart?.body?.data) return base64UrlDecode(htmlPart.body.data);
           const textPart = parts.find((p: any) => p.mimeType === 'text/plain');
-          if (textPart?.body?.data) return Buffer.from(textPart.body.data, 'base64').toString();
+          if (textPart?.body?.data) return base64UrlDecode(textPart.body.data);
           for (const part of parts) {
             if (part.parts) {
               const res = findBody(part.parts);
@@ -402,7 +415,7 @@ export default function EmailsPage() {
         };
 
         if (e.payload?.parts) body = findBody(e.payload.parts);
-        else if (e.payload?.body?.data) body = Buffer.from(e.payload.body.data, 'base64').toString();
+        else if (e.payload?.body?.data) body = base64UrlDecode(e.payload.body.data);
 
         return {
           id: e.id || String(Math.random()),
@@ -611,28 +624,14 @@ export default function EmailsPage() {
           <div className="flex items-center gap-2 px-0 py-2 mt-1 overflow-hidden border-b border-transparent">
             <Mail size={13} className="text-[var(--text-dim)] shrink-0" />
             <div className="flex-1 min-w-0 overflow-hidden relative group/email">
-              <div className="whitespace-nowrap inline-block animate-marquee-continuous">
+              <div className="whitespace-nowrap overflow-hidden text-ellipsis">
                 <span className="text-[11px] font-medium tracking-tight text-[var(--text-dim)]">
-                  {userEmail}
-                </span>
-                {/* For seamless continuous scrolling, we show it twice if it's likely to be long, but for now just single is fine if we use 0% -> -100% */}
-                <span className="text-[11px] font-medium tracking-tight text-[var(--text-dim)] ml-8">
                   {userEmail}
                 </span>
               </div>
             </div>
           </div>
 
-          <style jsx>{`
-            @keyframes marquee-continuous {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .animate-marquee-continuous {
-              animation: marquee-continuous 15s linear infinite;
-              display: inline-block;
-            }
-          `}</style>
 
           {/* Animated Sidebar Tabs */}
           <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
