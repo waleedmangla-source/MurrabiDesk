@@ -38,12 +38,15 @@ export async function POST(request: Request) {
         }
 
         try {
-          // Find the last line which should be our JSON
           const lines = stdoutData.trim().split('\n');
           const lastLine = lines[lines.length - 1];
           const result = JSON.parse(lastLine);
           
-          resolve(NextResponse.json({ success: true, data: result }));
+          if (result.success === false) {
+            resolve(NextResponse.json({ success: false, error: result.error || 'Extraction failed' }));
+          } else {
+            resolve(NextResponse.json({ success: true, data: result }));
+          }
         } catch (e) {
           console.error('Failed to parse Scrapy output:', stdoutData);
           resolve(NextResponse.json({ 
