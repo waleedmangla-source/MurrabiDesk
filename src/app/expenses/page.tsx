@@ -34,6 +34,7 @@ import {
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
 import { GoogleSyncService } from '@/lib/google-sync-service';
+import { liquid } from '@/lib/sync/bridge';
 import { clsx } from 'clsx';
 
 // DND Kit Imports
@@ -227,9 +228,11 @@ export default function ExpensesPage() {
 
   // History State
   const [expensesHistory, setExpensesHistory] = useState<any[]>([]);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
 
   const fetchExpenses = async () => {
     try {
+      setSyncStatus('syncing');
       // 1. Load from LocalStorage first for instant results
       if (typeof window !== 'undefined') {
         const localHistory = localStorage.getItem('waqfeen_expenses_history');
@@ -238,18 +241,74 @@ export default function ExpensesPage() {
         }
       }
 
-      // 2. Fetch from API to get latest/other device data
+      // 2. Fetch from Gmail (The Primary Source for "Sent" reports)
+      const gmailData = await liquid.invoke('gmail-list', { 
+        query: 'from:me subject:"Expense Report"' 
+      });
+
+      let gmailExpenses: any[] = [];
+      if (gmailData?.emails) {
+        gmailExpenses = gmailData.emails.map((e: any) => {
+          const headers = e.payload?.headers || [];
+          const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+          const subject = getHeader('Subject');
+          const dateStr = getHeader('Date');
+          
+          // Parse subject: "Expense Report - Waleed Mangla (April)"
+          const nameMatch = subject.match(/Expense Report - (.*) \((.*)\)/);
+          const fullName = nameMatch ? nameMatch[1] : (subject.split('-')[1]?.trim() || 'User');
+          const monthMatch = subject.match(/\(([^)]+)\)/);
+          const month = monthMatch ? monthMatch[1] : 'Other';
+          
+          // Parse total from snippet: "Total Claimed: $123.45"
+          const totalMatch = e.snippet?.match(/\$([0-9,.]+)/);
+          const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : 0;
+
+          return {
+            id: e.id,
+            fullName,
+            month,
+            date: new Date(dateStr).toISOString().split('T')[0],
+            purpose: 'Monthly Expense Submission',
+            total,
+            status: 'sent',
+            isGmail: true,
+            snippet: e.snippet
+          };
+        });
+      }
+
+      // 3. Fetch from local DB for drafts/local-only records
       const res = await fetch('/api/expenses');
       const data = await res.json();
-      if (data.success && data.expenses) {
-        setExpensesHistory(data.expenses);
-        // Sync back to local
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('waqfeen_expenses_history', JSON.stringify(data.expenses));
+      const localExpenses = (data.success && data.expenses) ? data.expenses : [];
+
+      // 4. Merge and de-duplicate (prefer Gmail versions for sent items)
+      const combined = [...gmailExpenses];
+      const gmailSubjects = new Set(gmailExpenses.map(g => `${g.fullName}-${g.month}`));
+
+      localExpenses.forEach((lexp: any) => {
+        const key = `${lexp.fullName}-${lexp.month}`;
+        // If it's already in Gmail, we skip the local version to avoid duplicates
+        // unless the local version has more "data" (like draft content)
+        if (!gmailSubjects.has(key)) {
+          combined.push(lexp);
         }
+      });
+
+      // Sort by date descending
+      const sorted = combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      setExpensesHistory(sorted);
+      setSyncStatus('synced');
+      
+      // Sync back to local storage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('waqfeen_expenses_history', JSON.stringify(sorted));
       }
     } catch (e) {
       console.error('History Fetch Error:', e);
+      setSyncStatus('error');
     }
   };
 
@@ -743,7 +802,10 @@ export default function ExpensesPage() {
                    >
                      <div className="flex justify-between items-center w-full">
                        <span className="text-[9px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month}</span>
-                       <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
+                       <div className="flex items-center gap-1.5">
+                         {exp.isGmail && <Mail size={8} className="text-[var(--accent-main)]" />}
+                         <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
+                       </div>
                      </div>
                      <div className="flex justify-between items-center w-full">
                        <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
@@ -797,9 +859,19 @@ export default function ExpensesPage() {
                       {monthForms.map(form => (
                         <div key={form.id} className="glass bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col gap-4 relative group transition-all hover:bg-white/10 hover:border-white/10">
                            <div className="flex items-start justify-between">
-                              <div className="pr-4">
-                                <p className="text-[11px] font-black text-[var(--text-main)] uppercase tracking-wider">{form.date} &bull; <span className="text-[var(--text-main)]/40">{form.fullName}</span></p>
-                                <p className="text-sm font-bold text-[var(--text-main)]/50 uppercase mt-2 leading-relaxed">{form.purpose}</p>
+                              <div className="pr-4 flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="text-[11px] font-black text-[var(--text-main)] uppercase tracking-wider">{form.date} &bull; <span className="text-[var(--text-main)]/40">{form.fullName}</span></p>
+                                  {form.isGmail && (
+                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] text-[8px] font-black uppercase tracking-widest border border-[var(--accent-soft)]">
+                                      <Mail size={8} /> Gmail
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm font-bold text-[var(--text-main)]/80 uppercase mt-2 leading-relaxed">{form.purpose}</p>
+                                {form.isGmail && form.snippet && (
+                                  <p className="text-[10px] text-[var(--text-dim)] mt-2 line-clamp-1 italic font-medium">"{form.snippet}"</p>
+                                )}
                               </div>
                               <div className="flex flex-col items-end shrink-0">
                                 <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>

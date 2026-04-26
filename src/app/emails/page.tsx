@@ -889,7 +889,7 @@ export default function EmailsPage() {
       </div>
 
       {/* ── Panel 3: Email Detail ── */}
-      <div className={clsx("flex-1 h-full overflow-hidden", selected ? "flex" : "hidden lg:flex")}>
+      <div className={clsx("flex-1 h-full overflow-hidden bg-black/10", selected ? "flex flex-col" : "hidden lg:flex lg:flex-col")}>
         {selected ? (
           <EmailDetail
             email={selected}
@@ -899,16 +899,16 @@ export default function EmailsPage() {
             onToggleStar={handleToggleStar}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center gap-4">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center border border-[var(--accent-soft)]" style={{ background: 'var(--accent-soft)' }}>
+          <div className="flex flex-col items-center justify-center flex-1 w-full text-center gap-4 animate-in fade-in duration-500">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border border-white/5" style={{ background: 'var(--accent-soft)' }}>
               <MailOpen size={32} style={{ color: 'var(--accent-main)' }} />
             </div>
-            <div>
-              <p className="text-lg font-black italic uppercase tracking-tighter text-[var(--foreground)]">
+            <div className="max-w-xs">
+              <p className="text-xl font-black italic uppercase tracking-tighter text-[var(--foreground)]">
                 Select an <span style={{ color: 'var(--accent-main)' }}>Email</span>
               </p>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] mt-1">
-                Choose a message from the left to read it
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] mt-2 leading-relaxed">
+                Choose a message from the left<br/>to read its full content protocol
               </p>
             </div>
           </div>
