@@ -14,17 +14,28 @@ import {
   Eye,
   CheckCircle2,
   Activity,
-  Terminal
+  Terminal,
+  Globe,
+  Code,
+  FileText,
+  ChevronRight
 } from "lucide-react";
 import { clsx } from "clsx";
 
 export default function BetaToolsPage() {
+  // YT-DLP State
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  // Scrapy State
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [scrapeLoading, setScrapeLoading] = useState(false);
+  const [scrapeData, setScrapeData] = useState<any>(null);
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
 
   const fetchVideoInfo = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -60,10 +71,7 @@ export default function BetaToolsPage() {
     setDownloading(true);
     
     try {
-      // Direct window location change to trigger browser download
       window.location.href = `/api/yt-dlp?url=${encodeURIComponent(url)}&type=${format}`;
-      
-      // Since it's an attachment, the page won't change, we just need to wait a bit
       setTimeout(() => {
         setDownloading(false);
         setDownloadSuccess(true);
@@ -71,6 +79,34 @@ export default function BetaToolsPage() {
     } catch (err) {
       setError("Failed to initialize download sequence.");
       setDownloading(false);
+    }
+  };
+
+  const handleScrape = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!scrapeUrl) return;
+
+    setScrapeLoading(true);
+    setScrapeError(null);
+    setScrapeData(null);
+
+    try {
+      const res = await fetch("/api/scrapy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: scrapeUrl }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setScrapeData(result.data);
+      } else {
+        setScrapeError(result.error || "Extraction failed. Check if Scrapy is installed.");
+      }
+    } catch (err) {
+      setScrapeError("Extraction protocol error.");
+    } finally {
+      setScrapeLoading(false);
     }
   };
 
@@ -87,8 +123,9 @@ export default function BetaToolsPage() {
       </div>
 
       <div className="grid grid-cols-12 gap-8 no-drag overflow-y-auto pr-4 custom-scrollbar">
-        {/* URL Input Area */}
-        <div className="col-span-12 xl:col-span-5">
+        {/* URL Input Areas */}
+        <div className="col-span-12 xl:col-span-5 space-y-8">
+          {/* YT-DLP Card */}
           <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-fit">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-red-600/10 rounded-2xl flex items-center justify-center text-red-600">
@@ -127,43 +164,54 @@ export default function BetaToolsPage() {
                 </div>
               )}
             </form>
+          </div>
 
-            <div className="mt-12 space-y-4">
-                 <div className="flex items-center justify-between text-[10px] font-medium tracking-widest opacity-20 pb-2 border-b border-white/5" style={{ color: 'var(--foreground)' }}>
-                   <span>Active Modules</span>
-                  <span>Security Shield</span>
-                </div>
-              
-              <div className="space-y-3">
-                <div className="p-5 rounded-2xl bg-white/10 border border-white/10 flex items-center gap-4 group cursor-pointer hover:border-red-600/50 transition-all">
-                   <div className="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
-                     <Activity size={18} />
-                   </div>
-                    <div>
-                       <div className="text-[11px] font-medium" style={{ color: 'var(--foreground)' }}>Extraction Diagnostics</div>
-                       <p className="text-[9px] font-medium opacity-30 tracking-widest" style={{ color: 'var(--foreground)' }}>v4.0 Sync System</p>
-                    </div>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 opacity-50 cursor-not-allowed">
-                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center opacity-40" style={{ color: 'var(--foreground)' }}>
-                     <Terminal size={18} />
-                   </div>
-                   <div>
-                      <div className="text-[11px] font-black opacity-40 italic" style={{ color: 'var(--foreground)' }}>System Kernel Access</div>
-                      <p className="text-[9px] font-bold opacity-20 uppercase tracking-widest" style={{ color: 'var(--foreground)' }}>Access Restricted</p>
-                   </div>
-                </div>
+          {/* Scrapy Card */}
+          <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-fit">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-emerald-600/10 rounded-2xl flex items-center justify-center text-emerald-600">
+                <Globe size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black tracking-tight" style={{ color: 'var(--foreground)' }}>Web Scraper</h3>
+                <p className="text-[9px] font-black uppercase tracking-widest leading-none mt-1 opacity-40" style={{ color: 'var(--foreground)' }}>Scrapy Crawler Engine</p>
               </div>
             </div>
+
+            <form onSubmit={handleScrape} className="space-y-6">
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  placeholder="Paste Website URL..."
+                  value={scrapeUrl}
+                  onChange={(e) => setScrapeUrl(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 placeholder:opacity-10 focus:outline-none focus:border-emerald-600/50 transition-all font-bold"
+                  style={{ color: 'var(--foreground)' }}
+                />
+                <button 
+                  type="submit"
+                  disabled={scrapeLoading || !scrapeUrl}
+                  className="absolute right-2 top-2 bottom-2 px-6 bg-emerald-600 hover:bg-emerald-700 disabled:bg-white/5 disabled:text-white/20 text-white rounded-xl font-medium tracking-widest text-[10px] transition-all flex items-center gap-2"
+                >
+                  {scrapeLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                  Scrape
+                </button>
+              </div>
+
+              {scrapeError && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-red-600/10 border border-red-600/20 text-red-500 text-xs font-bold animate-in slide-in-from-top-2">
+                  <AlertCircle size={16} />
+                  {scrapeError}
+                </div>
+              )}
+            </form>
           </div>
         </div>
 
-        {/* Video Preview & Actions */}
+        {/* Output Areas */}
         <div className="col-span-12 xl:col-span-7">
           {videoInfo ? (
             <div className="glass-card p-0 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] animate-in fade-in slide-in-from-right-8 duration-700">
-               {/* Thumbnail Header */}
                <div className="relative aspect-video w-full overflow-hidden">
                   <img 
                     src={videoInfo.thumbnail} 
@@ -228,34 +276,75 @@ export default function BetaToolsPage() {
                        </div>
                     </div>
                   )}
-
-                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
-                           <img src={videoInfo.uploader_url ? `https://ui-avatars.com/api/?name=${videoInfo.uploader}&background=random` : ""} alt={videoInfo.uploader} />
-                        </div>
-                        <span className="text-[11px] font-black uppercase" style={{ color: 'var(--foreground)' }}>{videoInfo.uploader}</span>
+               </div>
+            </div>
+          ) : scrapeData ? (
+            <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] animate-in fade-in slide-in-from-right-8 duration-700 h-full overflow-y-auto custom-scrollbar">
+               <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                     <div className="w-12 h-12 bg-emerald-600/10 rounded-2xl flex items-center justify-center text-emerald-600">
+                        <CheckCircle2 size={24} />
                      </div>
-                     <a 
-                       href={url} 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-20 hover:text-red-600 transition-colors"
-                       style={{ color: 'var(--foreground)' }}
-                     >
-                        Source Link <ExternalLink size={12} />
-                     </a>
+                     <div>
+                        <h2 className="text-xl font-black tracking-tight" style={{ color: 'var(--foreground)' }}>Scrape Successful</h2>
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-40" style={{ color: 'var(--foreground)' }}>Module: Scrapy v2.11</p>
+                     </div>
                   </div>
+               </div>
+
+               <div className="space-y-8">
+                  <div className="space-y-2">
+                     <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Page Title</span>
+                     <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>{scrapeData.title || "No Title Found"}</h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-2 mb-1">
+                           <Code size={12} className="text-emerald-600" />
+                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40" style={{ color: 'var(--foreground)' }}>Links Found</span>
+                        </div>
+                        <div className="text-xl font-black" style={{ color: 'var(--foreground)' }}>{scrapeData.links_count}</div>
+                     </div>
+                     <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-2 mb-1">
+                           <FileText size={12} className="text-emerald-600" />
+                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40" style={{ color: 'var(--foreground)' }}>Headers (H1)</span>
+                        </div>
+                        <div className="text-xl font-black" style={{ color: 'var(--foreground)' }}>{scrapeData.h1?.length || 0}</div>
+                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                     <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Text Content Preview</span>
+                     <div className="p-6 rounded-2xl bg-black/20 border border-white/5 font-mono text-[11px] leading-relaxed opacity-60 italic" style={{ color: 'var(--foreground)' }}>
+                        {scrapeData.text_preview}
+                     </div>
+                  </div>
+
+                  {scrapeData.h1?.length > 0 && (
+                    <div className="space-y-4">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Detected H1 Headers</span>
+                       <div className="space-y-2">
+                          {scrapeData.h1.map((header: string, i: number) => (
+                            <div key={i} className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                               <ChevronRight size={14} className="text-emerald-600" />
+                               <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>{header}</span>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+                  )}
                </div>
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center glass-card border border-white/5 bg-white/5 rounded-[32px] p-20 text-center">
                <div className="w-24 h-24 rounded-[32px] bg-white/5 flex items-center justify-center mb-8 border border-white/10 opacity-10" style={{ color: 'var(--foreground)' }}>
-                  <Youtube size={48} />
+                  <Terminal size={48} />
                </div>
-               <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase" style={{ color: 'var(--foreground)' }}>Awaiting Target URL...</h3>
+               <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase" style={{ color: 'var(--foreground)' }}>Engine Standby</h3>
                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-10 mt-4 leading-relaxed max-w-xs" style={{ color: 'var(--foreground)' }}>
-                  Enter a valid YouTube protocol link to initialize the extraction engine.
+                  Initialize Media Extraction or Web Scraping protocols to view output data.
                </p>
             </div>
           )}

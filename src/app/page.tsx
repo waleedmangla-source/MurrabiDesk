@@ -143,7 +143,7 @@ export default function Dashboard() {
     <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Mission Dashboard</h1>
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Dashboard</h1>
 
         </div>
         
