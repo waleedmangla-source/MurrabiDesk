@@ -683,6 +683,10 @@ export default function ExpensesPage() {
         reportFolderName
       );
 
+      if (driveRes?.error) {
+        console.warn('PDF Upload to Drive failed:', driveRes.error);
+      }
+
       // 2. Upload Summary .txt file
       const summaryText = `
 EXPENSE REPORT SUMMARY
@@ -736,7 +740,12 @@ ${formData.comments || 'None'}
         selectedEmail
       ]];
 
-      await googleSync.appendToSheet(sheetRow).catch(err => console.error('Sheet Sync Failed:', err));
+      const sheetRes = await googleSync.appendToSheet(sheetRow);
+      if (sheetRes?.error) {
+        console.error('Sheet Sync Failed:', sheetRes.error);
+        // We still show success for the email, but notify about the sheet
+        alert("Email sent, but failed to update Google Sheets: " + sheetRes.error);
+      }
 
       setShowSuccessModal(true);
       saveExpenseToHistory();
