@@ -867,7 +867,7 @@ ${formData.comments || 'None'}
                      </div>
                      <div className="flex justify-between items-center w-full">
                        <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                       <span className="text-[8px] font-black text-[var(--text-main)]/80">${exp.total.toFixed(2)}</span>
+                       <span className="text-[8px] font-black text-[var(--text-main)]/80">${parseFloat(exp.total).toFixed(2)}</span>
                      </div>
                    </button>
                  ))
@@ -910,7 +910,7 @@ ${formData.comments || 'None'}
                   <div key={m} className="space-y-6">
                     <div className="flex items-center gap-4 border-b border-white/5 pb-4">
                       <h3 className="text-lg font-black tracking-widest text-[var(--text-main)] uppercase">{m}</h3>
-                      <span className="text-sm font-black text-[var(--accent-main)] uppercase px-3 py-1 bg-[var(--accent-soft)] border border-[var(--accent-soft)] rounded-lg shadow-inner">${monthTotal.toFixed(2)}</span>
+                      <span className="text-sm font-black text-[var(--accent-main)] uppercase px-3 py-1 bg-[var(--accent-soft)] border border-[var(--accent-soft)] rounded-lg shadow-inner">${parseFloat(monthTotal).toFixed(2)}</span>
                     </div>
                     
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -932,7 +932,7 @@ ${formData.comments || 'None'}
                                 )}
                               </div>
                               <div className="flex flex-col items-end shrink-0">
-                                <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${form.total.toFixed(2)}</p>
+                                <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${parseFloat(form.total).toFixed(2)}</p>
                               </div>
                            </div>
                            
