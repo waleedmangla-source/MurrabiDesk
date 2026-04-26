@@ -690,9 +690,9 @@ Purpose: ${formData.purpose}
 Posting: ${formData.posting} (${formData.posting_location})
 
 FINANCIALS:
-Subtotal: $${(totals.grand - totals.gst).toFixed(2)}
-HST: $${totals.gst.toFixed(2)}
-GRAND TOTAL: $${totals.grand.toFixed(2)}
+Subtotal: $${(parseFloat(totals.grand) - parseFloat(totals.gst)).toFixed(2)}
+HST: $${totals.gst}
+GRAND TOTAL: $${totals.grand}
 
 ITEMS:
 ${fullItems.filter(i => i.total).map(i => `- ${i.ref}: $${i.total} (HST: $${i.hst})`).join('\n')}
