@@ -26,7 +26,26 @@ function OnboardingContent() {
         if (data.token) {
           localStorage.setItem('google_refresh_token_encrypted', data.token);
           localStorage.removeItem('murrabi_guest_mode');
-          window.location.href = '/';
+          
+          // Initialize Murrabi Desk Drive folder
+          fetch('/api/brain/init-drive', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-murrabi-token': data.token 
+            }
+          })
+          .then(res => res.json())
+          .then(driveData => {
+            if (driveData.rootId) {
+              localStorage.setItem('murrabi_drive_root_id', driveData.rootId);
+            }
+            window.location.href = '/';
+          })
+          .catch(() => {
+            // Even if drive init fails, we proceed to dashboard
+            window.location.href = '/';
+          });
         } else {
           setError(data.error || 'Failed to authenticate');
           setIsProcessing(false);

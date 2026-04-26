@@ -89,6 +89,9 @@ export class GoogleSyncService {
   async uploadFile(name: string, content: any, mimeType: string, folderName?: string) {
     return liquid.invoke('drive-upload', { name, content, mimeType, folderName });
   }
+  async appendToSheet(values: any[][], spreadsheetId?: string, range?: string) {
+    return liquid.invoke('sheets-append', { values, spreadsheetId, range });
+  }
   async createGoogleDoc(title: string, templateText?: string) {
     return liquid.invoke('create-doc', { title, templateText });
   }
