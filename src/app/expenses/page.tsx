@@ -441,15 +441,15 @@ export default function ExpensesPage() {
       };
       localStorage.setItem('murrabi_expense_draft', JSON.stringify(draft));
       
-      // Cloud Backup (Async)
+      // Cloud Backup (Async JSON)
       googleSync.uploadFile(
         `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
         JSON.stringify(draft),
         'application/json',
-        '', // No subfolder, save directly in category folder
+        '', 
         'Expenses',
         'Drafts'
-      ).catch(err => console.error('Cloud Draft Sync Failed:', err));
+      ).catch(err => console.error('Cloud JSON Draft Sync Failed:', err));
 
       alert("Draft saved successfully!");
     } catch (e) {
