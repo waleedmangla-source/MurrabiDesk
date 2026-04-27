@@ -152,7 +152,7 @@ export default function Dashboard() {
     { label: "System Status", status: "OPERATIONAL", val: "Active Duty", icon: Activity, color: "text-emerald-500" },
     { label: "Active Objectives", status: liveEvents.length + " SYNCED", val: `${liveEvents.length} Tasks Today`, icon: Timer, color: "text-v4-gold" },
     { label: "System Sync", status: isSyncing ? "SYNCING" : "STABLE", val: "Cloud Protocol 4.0", icon: RefreshCw, color: "text-blue-500", animate: isSyncing },
-    { label: "Pending Expenses", status: pendingStats.count + " PENDING", val: `$${pendingStats.total.toFixed(2)}`, icon: Receipt, color: "text-red-500" }
+    { label: "Field Integrity", status: "99.9% READY", val: "Operational Prep", icon: Shield, color: "text-emerald-500" }
   ];
 
   return (

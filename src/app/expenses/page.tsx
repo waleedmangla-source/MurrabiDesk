@@ -66,44 +66,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
-// --- Sidebar Summary Component with Overflow Detection ---
-function SidebarSummary({ text }: { text: string }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (containerRef.current) {
-        const isOverflow = containerRef.current.scrollWidth > containerRef.current.clientWidth;
-        setIsOverflowing(isOverflow);
-      }
-    };
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [text]);
-
-  return (
-    <div ref={containerRef} className="flex-1 overflow-hidden relative mr-2">
-      <div className={clsx(
-        "text-[9px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap inline-block",
-        isOverflowing ? "hover:animate-marquee" : ""
-      )}>
-        <style>{`
-          @keyframes sidebar-marquee-dynamic {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-100% + 140px)); }
-          }
-          .hover\\:animate-marquee:hover {
-            animation: sidebar-marquee-dynamic 5s linear infinite alternate;
-          }
-        `}</style>
-        {text || "No summary provided"}
-      </div>
-    </div>
-  );
-}
-
 // --- Sortable Item Component ---
 function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: number, onRemove: (id: string) => void }) {
   const {
@@ -417,7 +379,6 @@ export default function ExpensesPage() {
         purpose: formData.purpose || 'Monthly Expense Submission',
         total: totals.grand,
         status: 'sent',
-        isSheet: true, // Ensure it shows in Pending sidebar section
         data: JSON.stringify(fullState)
       };
 
@@ -699,24 +660,64 @@ export default function ExpensesPage() {
       return;
     }
 
-    const newReceipts = [...receipts];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-      
-      const fileData = await new Promise<string>((resolve) => {
+    const compressImage = async (file: File): Promise<{ data: string, type: string, name: string }> => {
+      return new Promise((resolve) => {
+        if (!file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve({
+            data: (e.target?.result as string).split(',')[1],
+            type: file.type,
+            name: file.name
+          });
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        const reader = new FileReader();
         reader.onload = (e) => {
-          const result = e.target?.result as string;
-          resolve(result.split(',')[1]); // Get base64 only
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_SIZE = 1600;
+            if (width > height && width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            } else if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            let newName = file.name;
+            if (!newName.toLowerCase().endsWith('.jpg') && !newName.toLowerCase().endsWith('.jpeg')) {
+              newName = newName.replace(/\.[^/.]+$/, "") + ".jpg";
+            }
+            resolve({
+              data: dataUrl.split(',')[1],
+              type: 'image/jpeg',
+              name: newName
+            });
+          };
+          img.src = e.target?.result as string;
         };
         reader.readAsDataURL(file);
       });
+    };
 
+    const newReceipts = [...receipts];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const compressed = await compressImage(file);
       newReceipts.push({
         id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        data: fileData,
-        type: file.type
+        name: compressed.name,
+        data: compressed.data,
+        type: compressed.type
       });
     }
 
@@ -744,14 +745,8 @@ export default function ExpensesPage() {
   };
 
   const handleExportAndSend = async () => {
-    if (!formData.fullName || !formData.memberCode || !formData.date || !formData.purpose) {
-      const missing = [];
-      if (!formData.fullName) missing.push("Full Name");
-      if (!formData.memberCode) missing.push("Member Code");
-      if (!formData.date) missing.push("Report Date");
-      if (!formData.purpose) missing.push("Executive Summary");
-      
-      alert(`The following fields are mandatory: ${missing.join(", ")}`);
+    if (!formData.fullName || !formData.memberCode) {
+      alert("Please fill in basic member information before exporting.");
       return;
     }
     setShowSendConfirm(true);
@@ -897,8 +892,16 @@ ${formData.comments || 'None'}
         'Pending'
       );
 
-      // Receipts are intentionally NOT uploaded to Drive per user request.
-      // They are only sent via email attachments.
+      // 3. Upload Receipts to the SAME folder
+      for (const r of receipts) {
+        await googleSync.uploadFile(
+          `RECEIPT_${r.name}`,
+          r.data,
+          r.type,
+          reportFolderName,
+          'Expenses'
+        );
+      }
 
       // 4. Append to Google Sheets
       const sheetRow = [[
@@ -1008,7 +1011,6 @@ ${formData.comments || 'None'}
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
-
         <div className="no-drag h-[60px] shrink-0">
           {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
@@ -1092,7 +1094,9 @@ ${formData.comments || 'None'}
                          }}
                          className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                        >
-                          <SidebarSummary text={exp.purpose} />
+                         <div className="flex flex-col gap-0.5">
+                           <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                         </div>
                          <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                        </button>
                      ))}
@@ -1144,7 +1148,9 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <SidebarSummary text={exp.purpose} />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                             <div 
@@ -1210,7 +1216,9 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <SidebarSummary text={exp.purpose} />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                          </div>
                           <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                         </button>
                       ))}
@@ -1427,7 +1435,7 @@ ${formData.comments || 'None'}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-2">
-                    <label className="lbl">Full Name <span className="text-red-500">*</span></label>
+                    <label className="lbl">Full Name</label>
                     <input 
                       type="text" 
                       value={formData.fullName}
@@ -1438,7 +1446,7 @@ ${formData.comments || 'None'}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid grid-cols-1 gap-2">
-                      <label className="lbl">Member Code <span className="text-red-500">*</span></label>
+                      <label className="lbl">Member Code</label>
                       <input 
                         type="text" 
                         value={formData.memberCode}
@@ -1449,7 +1457,7 @@ ${formData.comments || 'None'}
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      <label className="lbl">Report Date <span className="text-red-500">*</span></label>
+                      <label className="lbl">Report Date</label>
                       <input 
                         type="date" 
                         value={formData.date}
@@ -1517,7 +1525,7 @@ ${formData.comments || 'None'}
               <div className="mt-8 pt-6 border-t border-dashed border-v4-rule">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="lbl">Executive Summary / Purpose <span className="text-red-500">*</span></label>
+                    <label className="lbl">Executive Summary / Purpose</label>
                     <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
                         {formData.purpose.length} / 300
                     </span>

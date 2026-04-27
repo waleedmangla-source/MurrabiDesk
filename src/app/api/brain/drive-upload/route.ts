@@ -122,10 +122,11 @@ export async function POST(request: Request) {
       targetFolderId = parentId;
     }
 
+    // 2. Upload File
+    // If content is base64 (common for PDFs/Images), we need to convert it
     let body: any = content;
-    // Handle base64 content for any non-JSON file (receipts, PDFs, images, etc.)
-    if (typeof content === 'string' && mimeType !== 'application/json') {
-      const base64Data = content.includes(',') ? content.split(',')[1] : content;
+    if (typeof content === 'string' && (mimeType.startsWith('image/') || mimeType === 'application/pdf')) {
+      const base64Data = content.split(',')[1] || content;
       body = Buffer.from(base64Data, 'base64');
     }
 
