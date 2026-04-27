@@ -705,8 +705,14 @@ export default function ExpensesPage() {
   };
 
   const handleExportAndSend = async () => {
-    if (!formData.fullName || !formData.memberCode) {
-      alert("Please fill in basic member information before exporting.");
+    if (!formData.fullName || !formData.memberCode || !formData.date || !formData.purpose) {
+      const missing = [];
+      if (!formData.fullName) missing.push("Full Name");
+      if (!formData.memberCode) missing.push("Member Code");
+      if (!formData.date) missing.push("Report Date");
+      if (!formData.purpose) missing.push("Executive Summary");
+      
+      alert(`The following fields are mandatory: ${missing.join(", ")}`);
       return;
     }
     setShowSendConfirm(true);
@@ -1394,7 +1400,7 @@ ${formData.comments || 'None'}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-2">
-                    <label className="lbl">Full Name</label>
+                    <label className="lbl">Full Name <span className="text-red-500">*</span></label>
                     <input 
                       type="text" 
                       value={formData.fullName}
@@ -1405,7 +1411,7 @@ ${formData.comments || 'None'}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid grid-cols-1 gap-2">
-                      <label className="lbl">Member Code</label>
+                      <label className="lbl">Member Code <span className="text-red-500">*</span></label>
                       <input 
                         type="text" 
                         value={formData.memberCode}
@@ -1416,7 +1422,7 @@ ${formData.comments || 'None'}
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      <label className="lbl">Report Date</label>
+                      <label className="lbl">Report Date <span className="text-red-500">*</span></label>
                       <input 
                         type="date" 
                         value={formData.date}
@@ -1484,7 +1490,7 @@ ${formData.comments || 'None'}
               <div className="mt-8 pt-6 border-t border-dashed border-v4-rule">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="lbl">Executive Summary / Purpose</label>
+                    <label className="lbl">Executive Summary / Purpose <span className="text-red-500">*</span></label>
                     <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
                         {formData.purpose.length} / 300
                     </span>
