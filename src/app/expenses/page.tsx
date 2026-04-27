@@ -29,7 +29,9 @@ import {
   Save,
   AlertCircle,
   X,
-  Check
+  Check,
+  Folder,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -163,7 +165,7 @@ export default function ExpensesPage() {
 
   // Set Tab Title & Pre-fill Identity
   useEffect(() => {
-    document.title = "Waqfeen Expense Tool";
+    document.title = "Waqfeen Expenses";
     
     const prefillProtocol = async () => {
       const googleInfo = await GoogleSyncService.getUserProfile();
@@ -241,41 +243,40 @@ export default function ExpensesPage() {
         }
       }
 
-      // 2. Fetch from Gmail (The Primary Source for "Sent" reports)
-      const gmailData = await liquid.invoke('gmail-list', { 
-        query: 'from:me subject:"Expense Report"' 
-      });
-
-      let gmailExpenses: any[] = [];
-      if (gmailData?.emails) {
-        gmailExpenses = gmailData.emails.map((e: any) => {
-          const headers = e.payload?.headers || [];
-          const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
-          const subject = getHeader('Subject');
-          const dateStr = getHeader('Date');
-          
-          // Parse subject: "Expense Report - Waleed Mangla (April)"
-          const nameMatch = subject.match(/Expense Report - (.*) \((.*)\)/);
-          const fullName = nameMatch ? nameMatch[1] : (subject.split('-')[1]?.trim() || 'User');
-          const monthMatch = subject.match(/\(([^)]+)\)/);
-          const month = monthMatch ? monthMatch[1] : 'Other';
-          
-          // Parse total from snippet: "Total Claimed: $123.45"
-          const totalMatch = e.snippet?.match(/\$([0-9,.]+)/);
-          const total = totalMatch ? parseFloat(totalMatch[1].replace(/,/g, '')) : 0;
-
-          return {
-            id: e.id,
-            fullName,
-            month,
-            date: new Date(dateStr).toISOString().split('T')[0],
-            purpose: 'Monthly Expense Submission',
-            total,
-            status: 'sent',
-            isGmail: true,
-            snippet: e.snippet
-          };
-        });
+      // 2. Fetch from Google Sheets (Murrabi Expenses Master)
+      const googleSync = await GoogleSyncService.fromLocalStorage();
+      let sheetExpenses: any[] = [];
+      
+      if (googleSync) {
+        const sheetsData = await googleSync.getSheetsData(undefined, 'Sheet1!A2:Z1000');
+        if (sheetsData?.values) {
+          sheetExpenses = sheetsData.values.map((row: any[], index: number) => {
+            const isNewSchema = row.length > 8;
+            
+            // New Schema indices: Date(0), Name(1), Code(2), Month(3), Cheque(4), Total(5), HST(6), Purpose(7), Type(8), Loc(9), Status(10), Comments(11), Folder(12), Email(13)
+            // Old Schema indices: Date(0), Name(1), Month(2), Total(3), Purpose(4), Status(5), Folder(6), Email(7)
+            
+            const date = row[0] || new Date().toISOString().split('T')[0];
+            const fullName = row[1] || 'Unknown';
+            const month = isNewSchema ? (row[3] || 'Other') : (row[2] || 'Other');
+            const totalStr = isNewSchema ? row[5] : row[3];
+            const total = parseFloat(String(totalStr).replace(/[^0-9.]/g, '')) || 0;
+            const purpose = isNewSchema ? (row[7] || 'Expense Submission') : (row[4] || 'Expense Submission');
+            const status = isNewSchema ? (row[10] || 'sent') : (row[5] || 'sent');
+            const folderLink = isNewSchema ? row[12] : row[6];
+            
+            return {
+              id: `sheet_${index}`,
+              fullName,
+              month,
+              date,
+              purpose,
+              total,
+              status: status.toLowerCase(),
+              isSheet: true,
+              folderLink
+            };
+          });
       }
 
       // 3. Fetch from local DB for drafts/local-only records
@@ -283,15 +284,13 @@ export default function ExpensesPage() {
       const data = await res.json();
       const localExpenses = (data.success && data.expenses) ? data.expenses : [];
 
-      // 4. Merge and de-duplicate (prefer Gmail versions for sent items)
-      const combined = [...gmailExpenses];
-      const gmailSubjects = new Set(gmailExpenses.map(g => `${g.fullName}-${g.month}`));
+      // 4. Merge and de-duplicate
+      const combined = [...sheetExpenses];
+      const sheetKeys = new Set(sheetExpenses.map(s => `${s.fullName}-${s.month}-${s.date}`));
 
       localExpenses.forEach((lexp: any) => {
-        const key = `${lexp.fullName}-${lexp.month}`;
-        // If it's already in Gmail, we skip the local version to avoid duplicates
-        // unless the local version has more "data" (like draft content)
-        if (!gmailSubjects.has(key)) {
+        const key = `${lexp.fullName}-${lexp.month}-${lexp.date}`;
+        if (!sheetKeys.has(key)) {
           combined.push(lexp);
         }
       });
@@ -362,6 +361,7 @@ export default function ExpensesPage() {
           'waqfeen_history.json',
           historyData,
           'application/json',
+          undefined,
           'Expenses'
         ).catch(err => console.warn('Cloud History Sync Failed:', err));
       }
@@ -437,7 +437,8 @@ export default function ExpensesPage() {
         `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
         JSON.stringify(draft),
         'application/json',
-        'ExpenseDrafts'
+        'ExpenseDrafts',
+        'Expenses'
       ).catch(err => console.error('Cloud Draft Sync Failed:', err));
 
       alert("Draft saved successfully! You can resume this anytime.");
@@ -680,7 +681,8 @@ export default function ExpensesPage() {
         `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}.pdf`,
         pdfBytes,
         'application/pdf',
-        reportFolderName
+        reportFolderName,
+        'Expenses'
       );
 
       if (driveRes?.error) {
@@ -715,7 +717,8 @@ ${formData.comments || 'None'}
         `Summary_${formData.expense_month}.txt`,
         summaryText,
         'text/plain',
-        reportFolderName
+        reportFolderName,
+        'Expenses'
       );
 
       // 3. Upload Receipts to the SAME folder
@@ -724,7 +727,8 @@ ${formData.comments || 'None'}
           `RECEIPT_${r.name}`,
           r.data,
           r.type,
-          reportFolderName
+          reportFolderName,
+          'Expenses'
         );
       }
 
@@ -732,10 +736,16 @@ ${formData.comments || 'None'}
       const sheetRow = [[
         formData.date,
         formData.fullName,
+        formData.memberCode,
         formData.expense_month,
+        formData.cheque_num,
         totals.grand,
+        totals.gst,
         formData.purpose,
+        formData.posting,
+        formData.posting_location,
         'SENT',
+        formData.comments || '',
         driveRes?.link || 'View in Drive',
         selectedEmail
       ]];
@@ -791,6 +801,7 @@ ${formData.comments || 'None'}
         `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}_${Date.now()}.pdf`,
         pdfBytes,
         'application/pdf',
+        'ManualDownloads',
         'Expenses'
       ).catch(err => console.error('Cloud Download Sync Failed:', err));
 
@@ -933,14 +944,31 @@ ${formData.comments || 'None'}
                               <div className="pr-4 flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <p className="text-[11px] font-black text-[var(--text-main)] uppercase tracking-wider">{form.date} &bull; <span className="text-[var(--text-main)]/40">{form.fullName}</span></p>
-                                  {form.isGmail && (
+                                  {form.isSheet && (
                                     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] text-[8px] font-black uppercase tracking-widest border border-[var(--accent-soft)]">
+                                      <RefreshCw size={8} className="animate-spin-slow" /> Cloud Synced
+                                    </span>
+                                  )}
+                                  {form.isGmail && (
+                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[var(--text-dim)] text-[8px] font-black uppercase tracking-widest border border-white/5">
                                       <Mail size={8} /> Gmail
                                     </span>
                                   )}
                                 </div>
                                 <p className="text-sm font-bold text-[var(--text-main)]/80 uppercase mt-2 leading-relaxed">{form.purpose}</p>
-                                {form.isGmail && form.snippet && (
+                                {form.folderLink && (
+                                  <a 
+                                    href={form.folderLink} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] hover:text-[var(--accent-main)]/80 mt-3 transition-colors group/link"
+                                  >
+                                    <Folder size={10} className="group-hover/link:scale-110 transition-transform" /> 
+                                    View Drive Folder
+                                    <ExternalLink size={8} />
+                                  </a>
+                                )}
+                                {form.snippet && (
                                   <p className="text-[10px] text-[var(--text-dim)] mt-2 line-clamp-1 italic font-medium">"{form.snippet}"</p>
                                 )}
                               </div>
@@ -985,7 +1013,7 @@ ${formData.comments || 'None'}
                    </div>
                    <p className="text-lg font-black uppercase tracking-widest text-[var(--text-main)]/80">No History Found</p>
                    <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)] mt-3 max-w-[300px] leading-relaxed">
-                     Expenses will automatically appear here once exported via the New Expense tool.
+                     Expenses will automatically appear here once exported via the New Expenses section.
                    </p>
                 </div>
               )}
@@ -1001,8 +1029,7 @@ ${formData.comments || 'None'}
           <div>
             <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase flex flex-col items-start leading-[0.8]">
               <span>Waqfeen</span>
-              <span>Expense</span>
-              <span>Tool</span>
+              <span>Expenses</span>
               {isReadOnly && (
                 <span className="px-4 py-1.5 bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 rounded-full flex items-center gap-2 animate-pulse">
                   <Shield size={12} className="text-[var(--accent-main)]" />

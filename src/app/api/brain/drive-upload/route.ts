@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const { name, content, mimeType, folderName, folderId: explicitFolderId } = await request.json();
+    const { name, content, mimeType, folderName, module, folderId: explicitFolderId } = await request.json();
     const tokenHeader = request.headers.get('x-murrabi-token');
     
     if (!tokenHeader) {
@@ -45,12 +45,36 @@ export async function POST(request: Request) {
       rootFolderId = rootCreate.data.id!;
     }
 
+    let parentId = rootFolderId;
+
+    // 1. Resolve Module Folder if provided
+    if (module) {
+      const moduleSearch = await drive.files.list({
+        q: `name = '${module}' and '${rootFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id)',
+      });
+
+      if (moduleSearch.data.files && moduleSearch.data.files.length > 0) {
+        parentId = moduleSearch.data.files[0].id!;
+      } else {
+        const moduleCreate = await drive.files.create({
+          requestBody: {
+            name: module,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [rootFolderId],
+          },
+          fields: 'id',
+        });
+        parentId = moduleCreate.data.id!;
+      }
+    }
+
     let targetFolderId = explicitFolderId;
 
-    // 1. Resolve Sub-Folder if folderName provided
+    // 2. Resolve Sub-Folder if folderName provided
     if (folderName && !targetFolderId) {
       const folderRes = await drive.files.list({
-        q: `name = '${folderName}' and '${rootFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        q: `name = '${folderName}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
         fields: 'files(id, name)',
         spaces: 'drive',
       });
@@ -58,12 +82,12 @@ export async function POST(request: Request) {
       if (folderRes.data.files && folderRes.data.files.length > 0) {
         targetFolderId = folderRes.data.files[0].id;
       } else {
-        // Create sub-folder inside Root
+        // Create sub-folder inside Parent (Module or Root)
         const createFolderRes = await drive.files.create({
           requestBody: {
             name: folderName,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: [rootFolderId],
+            parents: [parentId],
           },
           fields: 'id',
         });
@@ -71,9 +95,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Default to root if no subfolder specified
+    // Default to parent if no subfolder specified
     if (!targetFolderId) {
-      targetFolderId = rootFolderId;
+      targetFolderId = parentId;
     }
 
     // 2. Upload File
