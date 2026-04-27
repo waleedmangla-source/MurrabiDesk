@@ -277,6 +277,7 @@ export default function ExpensesPage() {
               folderLink
             };
           });
+        }
       }
 
       // 3. Fetch from local DB for drafts/local-only records
