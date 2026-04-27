@@ -975,7 +975,17 @@ ${formData.comments || 'None'}
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
-      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+      <div className="w-[320px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+        <style>{`
+          @keyframes sidebar-marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+          }
+          .hover-carousel:hover .marquee-inner {
+            animation: sidebar-marquee 8s linear infinite;
+            padding-left: 100%;
+          }
+        `}</style>
         <div className="no-drag h-[60px] shrink-0">
           {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
@@ -1059,9 +1069,11 @@ ${formData.comments || 'None'}
                          }}
                          className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                        >
-                         <div className="flex flex-col gap-0.5">
-                           <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                         </div>
+                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
+                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
+                              {exp.purpose || "No summary provided"}
+                            </div>
+                          </div>
                          <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                        </button>
                      ))}
@@ -1113,8 +1125,10 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
+                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
+                              {exp.purpose || "No summary provided"}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
@@ -1181,8 +1195,10 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
+                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
+                              {exp.purpose || "No summary provided"}
+                            </div>
                           </div>
                           <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                         </button>
