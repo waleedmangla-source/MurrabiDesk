@@ -35,7 +35,9 @@ import {
   Edit3,
   Clock,
   CheckCircle,
-  CreditCard
+  CreditCard,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -235,6 +237,16 @@ export default function ExpensesPage() {
   // Category Filter State
   type Category = 'Drafts' | 'Pending' | 'Refunded';
   const [activeCategory, setActiveCategory] = useState<Category>('Pending');
+  const [expandedCategories, setExpandedCategories] = useState<Set<Category>>(new Set(['Pending'] as Category[]));
+
+  const toggleCategoryExpand = (cat: Category) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
 
   // History State
   const [expensesHistory, setExpensesHistory] = useState<any[]>([]);
@@ -882,19 +894,30 @@ ${formData.comments || 'None'}
            </div>
 
            <button 
-             onClick={() => { setActiveTab('history'); setActiveCategory('Drafts'); }}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Drafts') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             onClick={() => { 
+               setActiveTab('history'); 
+               setActiveCategory('Drafts'); 
+               toggleCategoryExpand('Drafts');
+             }}
+             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Drafts') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <Edit3 size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drafts</span>
+             <div className="flex items-center gap-3">
+               <Edit3 size={18} />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drafts</span>
+             </div>
+             {expandedCategories.has('Drafts') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
-           {activeCategory === 'Drafts' && activeTab === 'history' && (
+           {expandedCategories.has('Drafts') && (
              <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
                {expensesHistory.filter(f => !f.isSheet && !f.isGmail).slice(0, 5).map(exp => (
                  <button
                    key={exp.id}
-                   onClick={() => loadFromHistory(exp)}
+                   onClick={() => {
+                     setActiveTab('history');
+                     setActiveCategory('Drafts');
+                     loadFromHistory(exp);
+                   }}
                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                  >
                    <div className="flex flex-col gap-0.5">
@@ -908,19 +931,30 @@ ${formData.comments || 'None'}
            )}
 
            <button 
-             onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Pending') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             onClick={() => { 
+               setActiveTab('history'); 
+               setActiveCategory('Pending'); 
+               toggleCategoryExpand('Pending');
+             }}
+             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Pending') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <Clock size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pending</span>
+             <div className="flex items-center gap-3">
+               <Clock size={18} />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pending</span>
+             </div>
+             {expandedCategories.has('Pending') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
-           {activeCategory === 'Pending' && activeTab === 'history' && (
+           {expandedCategories.has('Pending') && (
              <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
                {expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded).slice(0, 5).map(exp => (
                  <button
                    key={exp.id}
-                   onClick={() => loadFromHistory(exp)}
+                   onClick={() => {
+                     setActiveTab('history');
+                     setActiveCategory('Pending');
+                     loadFromHistory(exp);
+                   }}
                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                  >
                    <div className="flex flex-col gap-0.5">
@@ -948,19 +982,30 @@ ${formData.comments || 'None'}
            )}
 
            <button 
-             onClick={() => { setActiveTab('history'); setActiveCategory('Refunded'); }}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Refunded') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             onClick={() => { 
+               setActiveTab('history'); 
+               setActiveCategory('Refunded'); 
+               toggleCategoryExpand('Refunded');
+             }}
+             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Refunded') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <CheckCircle size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Refunded</span>
+             <div className="flex items-center gap-3">
+               <CheckCircle size={18} />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Refunded</span>
+             </div>
+             {expandedCategories.has('Refunded') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
-           {activeCategory === 'Refunded' && activeTab === 'history' && (
+           {expandedCategories.has('Refunded') && (
              <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
                {expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded)).slice(0, 5).map(exp => (
                  <button
                    key={exp.id}
-                   onClick={() => loadFromHistory(exp)}
+                   onClick={() => {
+                     setActiveTab('history');
+                     setActiveCategory('Refunded');
+                     loadFromHistory(exp);
+                   }}
                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                  >
                    <div className="flex flex-col gap-0.5">
