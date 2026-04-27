@@ -300,13 +300,36 @@ export default function ExpensesPage() {
         }
       }
 
-      // 3. Fetch from local DB for drafts/local-only records
+      // 3. Fetch from local DB for local-only records (non-drafts)
       const res = await fetch('/api/expenses');
       const data = await res.json();
-      const localExpenses = (data.success && data.expenses) ? data.expenses : [];
+      const localExpenses = (data.success && data.expenses) ? data.expenses.filter((e: any) => e.status !== 'draft') : [];
 
-      // 4. Merge and de-duplicate
-      const combined = [...sheetExpenses];
+      // 4. Fetch Drafts from Google Drive
+      let driveDrafts: any[] = [];
+      if (googleSync) {
+        try {
+          const files = await (googleSync as any).listDriveFiles('Expenses', 'Drafts');
+          if (files && Array.isArray(files)) {
+            driveDrafts = files.map((file: any) => ({
+              id: file.id,
+              fullName: file.name.split('_')[1] || 'Draft',
+              month: file.name.split('_')[1] || 'Other',
+              date: new Date(file.modifiedTime).toISOString().split('T')[0],
+              purpose: 'Cloud Draft',
+              total: '0.00',
+              status: 'draft',
+              isDriveDraft: true,
+              fileId: file.id
+            }));
+          }
+        } catch (e) {
+          console.error('Failed to fetch Drive drafts:', e);
+        }
+      }
+
+      // 5. Merge and de-duplicate
+      const combined = [...sheetExpenses, ...driveDrafts];
       const sheetKeys = new Set(sheetExpenses.map(s => `${s.fullName}-${s.month}-${s.date}`));
 
       localExpenses.forEach((lexp: any) => {
@@ -393,20 +416,36 @@ export default function ExpensesPage() {
     }
   };
 
-  const loadFromHistory = (report: any) => {
+  const loadFromHistory = async (report: any) => {
     try {
-      if (report.data) {
-        const fullState = JSON.parse(report.data);
+      let fullState: any = null;
+
+      if (report.isDriveDraft) {
+        setIsSaving(true); // Use as loading indicator
+        const googleSync = await GoogleSyncService.fromLocalStorage();
+        if (googleSync) {
+          const res = await (googleSync as any).getDriveFileContent(report.fileId);
+          if (res.content) {
+            fullState = typeof res.content === 'string' ? JSON.parse(res.content) : res.content;
+          }
+        }
+        setIsSaving(false);
+      } else if (report.data) {
+        fullState = JSON.parse(report.data);
+      }
+
+      if (fullState) {
         setFormData(fullState.formData);
         setItemData(fullState.itemData || {});
         setActiveIndices(fullState.activeIndices || []);
         setReceipts(fullState.receipts || []);
-        setIsReadOnly(true);
+        setIsReadOnly(false); // Let them edit the draft
         setCurrentReportId(report.id);
         setActiveTab('create'); // Switch to editor view
       }
     } catch (e) {
       console.error('Failed to load history data', e);
+      setIsSaving(false);
     }
   };
 
@@ -442,31 +481,33 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
-      const draft = {
+      const fullState = {
         formData,
         itemData,
         activeIndices,
         receipts
       };
-      localStorage.setItem('murrabi_expense_draft', JSON.stringify(draft));
       
-      // Cloud Backup (Async JSON)
-      googleSync.uploadFile(
-        `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
-        JSON.stringify(draft),
+      // Cloud Storage ONLY (JSON)
+      const fileName = `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}_${Date.now()}.json`;
+      
+      await googleSync.uploadFile(
+        fileName,
+        JSON.stringify(fullState),
         'application/json',
         '', 
         'Expenses',
         'Drafts'
-      ).catch(err => console.error('Cloud JSON Draft Sync Failed:', err));
+      );
 
-      alert("Draft saved successfully!");
+      fetchExpenses(); // Refresh sidebar from Drive
+      alert("Draft saved to Google Drive successfully!");
     } catch (e) {
       console.error(e);
-      alert("Failed to save draft.");
+      alert("Failed to save draft to Drive.");
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }

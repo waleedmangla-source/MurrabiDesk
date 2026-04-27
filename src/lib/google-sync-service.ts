@@ -98,6 +98,12 @@ export class GoogleSyncService {
   async createGoogleDoc(title: string, templateText?: string) {
     return liquid.invoke('create-doc', { title, templateText });
   }
+  async listDriveFiles(module?: string, category?: string) {
+    return liquid.invoke('drive-list', { module, category });
+  }
+  async getDriveFileContent(fileId: string) {
+    return liquid.invoke('drive-get-content', { fileId });
+  }
   static async getUserProfile(): Promise<any> {
     try {
       const info = await liquid.invoke('get-user-info');
