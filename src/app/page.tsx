@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [notes, setNotes] = useState('');
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [pendingStats, setPendingStats] = useState({ count: 0, total: 0 });
   const [dashboardSettings, setDashboardSettings] = useState({
     showWorldClock: true,
     showPrayerTimes: true,
@@ -86,6 +87,8 @@ export default function Dashboard() {
         showAIPrompts: parsed.showAIPrompts ?? true,
       });
     }
+
+    fetchPendingExpenses();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -100,6 +103,19 @@ export default function Dashboard() {
       }
     }
     setIsSyncing(false);
+  };
+
+  const fetchPendingExpenses = async () => {
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json();
+      const history = data.history || [];
+      const pending = history.filter((f: any) => f.isSheet && f.status !== 'refunded' && !f.refunded);
+      const total = pending.reduce((sum: number, exp: any) => sum + (parseFloat(exp.total) || 0), 0);
+      setPendingStats({ count: pending.length, total });
+    } catch (err) {
+      console.error('Failed to fetch pending expenses:', err);
+    }
   };
 
   const loadMissionNotes = async () => {
@@ -136,7 +152,7 @@ export default function Dashboard() {
     { label: "System Status", status: "OPERATIONAL", val: "Active Duty", icon: Activity, color: "text-emerald-500" },
     { label: "Active Objectives", status: liveEvents.length + " SYNCED", val: `${liveEvents.length} Tasks Today`, icon: Timer, color: "text-v4-gold" },
     { label: "System Sync", status: isSyncing ? "SYNCING" : "STABLE", val: "Cloud Protocol 4.0", icon: RefreshCw, color: "text-blue-500", animate: isSyncing },
-    { label: "Field Integrity", status: "VERIFIED", val: "99.9% Readiness", icon: Shield, color: "text-red-500" }
+    { label: "Pending Expenses", status: pendingStats.count + " PENDING", val: `$${pendingStats.total.toFixed(2)}`, icon: Receipt, color: "text-red-500" }
   ];
 
   return (
