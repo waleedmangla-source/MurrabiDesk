@@ -897,21 +897,8 @@ ${formData.comments || 'None'}
         'Pending'
       );
 
-      // 3. Upload Receipts to the SAME folder
-      for (const r of receipts) {
-        try {
-          await googleSync.uploadFile(
-            `RECEIPT_${r.name}`,
-            r.data,
-            r.type,
-            reportFolderName,
-            'Expenses',
-            'Pending'
-          );
-        } catch (e) {
-          console.warn(`Failed to upload receipt ${r.name}:`, e);
-        }
-      }
+      // Receipts are intentionally NOT uploaded to Drive per user request.
+      // They are only sent via email attachments.
 
       // 4. Append to Google Sheets
       const sheetRow = [[
