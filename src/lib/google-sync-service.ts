@@ -95,6 +95,9 @@ export class GoogleSyncService {
   async getSheetsData(spreadsheetId?: string, range?: string) {
     return liquid.invoke('sheets-get', { spreadsheetId, range });
   }
+  async updateSheetData(range: string, values: any[][], spreadsheetId?: string) {
+    return liquid.invoke('sheets-update', { spreadsheetId, range, values });
+  }
   async createGoogleDoc(title: string, templateText?: string) {
     return liquid.invoke('create-doc', { title, templateText });
   }

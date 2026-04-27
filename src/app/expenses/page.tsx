@@ -295,6 +295,8 @@ export default function ExpensesPage() {
               total,
               status: status.toLowerCase(),
               isSheet: true,
+              isNewSchema,
+              rowIndex: index + 2, // A2 is row 2
               folderLink
             };
           });
@@ -529,6 +531,17 @@ export default function ExpensesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: exp.id, refunded: newStatus })
       });
+
+      // --- NEW: Sync with Google Sheets ---
+      if (exp.isSheet && exp.rowIndex) {
+        try {
+          const statusCol = exp.isNewSchema ? 'K' : 'F';
+          const range = `Sheet1!${statusCol}${exp.rowIndex}`;
+          await googleSync.updateSheetData(range, [[newStatus ? 'REFUNDED' : 'SENT']]);
+        } catch (e) {
+          console.warn('Failed to sync status to Sheets:', e);
+        }
+      }
 
       // --- Trigger Drive Folder Move ---
       if (newStatus) {

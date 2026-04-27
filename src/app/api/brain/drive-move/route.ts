@@ -35,20 +35,36 @@ export async function POST(request: Request) {
       return res.data.files?.[0]?.id;
     };
 
+    const getOrCreateFolderId = async (name: string, parentId?: string) => {
+      let id = await getFolderId(name, parentId);
+      if (!id) {
+        const res = await drive.files.create({
+          requestBody: {
+            name: name,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: parentId ? [parentId] : [],
+          },
+          fields: 'id',
+        });
+        id = res.data.id;
+      }
+      return id;
+    };
+
     // 1. Resolve Root
-    const rootId = await getFolderId(ROOT_NAME);
-    if (!rootId) throw new Error('Root folder not found');
+    const rootId = await getOrCreateFolderId(ROOT_NAME);
+    if (!rootId) throw new Error('Root folder not found/created');
 
     // 2. Resolve Module
-    const moduleId = await getFolderId(module, rootId);
-    if (!moduleId) throw new Error(`Module folder ${module} not found`);
+    const moduleId = await getOrCreateFolderId(module, rootId);
+    if (!moduleId) throw new Error(`Module folder ${module} not found/created`);
 
     // 3. Resolve Source and Target Categories
-    const sourceId = await getFolderId(sourceCategory, moduleId);
-    const targetId = await getFolderId(targetCategory, moduleId);
+    const sourceId = await getOrCreateFolderId(sourceCategory, moduleId);
+    const targetId = await getOrCreateFolderId(targetCategory, moduleId);
 
     if (!sourceId || !targetId) {
-      throw new Error(`Categories ${sourceCategory} or ${targetCategory} not found`);
+      throw new Error(`Categories ${sourceCategory} or ${targetCategory} not found/created`);
     }
 
     // 4. Find the Folder to move
