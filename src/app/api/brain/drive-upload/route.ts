@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const { name, content, mimeType, folderName, module, folderId: explicitFolderId } = await request.json();
+    const { name, content, mimeType, folderName, module, category, folderId: explicitFolderId } = await request.json();
     const tokenHeader = request.headers.get('x-murrabi-token');
     
     if (!tokenHeader) {
@@ -70,7 +70,6 @@ export async function POST(request: Request) {
     }
 
     // 1.5 Resolve Category Folder if provided (e.g., Pending, Refunded, Drafts)
-    const { category } = await request.clone().json();
     if (category) {
       const categorySearch = await drive.files.list({
         q: `name = '${category}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
