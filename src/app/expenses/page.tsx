@@ -446,12 +446,12 @@ export default function ExpensesPage() {
         `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
         JSON.stringify(draft),
         'application/json',
-        'ExpenseDrafts', // specific folder name for the file
-        'Expenses',      // module
-        'Drafts'        // category
+        '', // No subfolder, save directly in category folder
+        'Expenses',
+        'Drafts'
       ).catch(err => console.error('Cloud Draft Sync Failed:', err));
 
-      alert("Draft saved successfully! You can resume this anytime.");
+      alert("Draft saved successfully!");
     } catch (e) {
       console.error(e);
       alert("Failed to save draft.");
@@ -889,6 +889,24 @@ ${formData.comments || 'None'}
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drafts</span>
            </button>
 
+           {activeCategory === 'Drafts' && activeTab === 'history' && (
+             <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+               {expensesHistory.filter(f => !f.isSheet && !f.isGmail).slice(0, 5).map(exp => (
+                 <button
+                   key={exp.id}
+                   onClick={() => loadFromHistory(exp)}
+                   className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
+                 >
+                   <div className="flex flex-col gap-0.5">
+                     <span className="text-[7px] font-black text-[var(--text-main)]/60 uppercase tracking-tight group-hover/item:text-[var(--text-main)] transition-colors">{exp.month}</span>
+                     <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                   </div>
+                   <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
+                 </button>
+               ))}
+             </div>
+           )}
+
            <button 
              onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Pending') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
@@ -897,6 +915,38 @@ ${formData.comments || 'None'}
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pending</span>
            </button>
 
+           {activeCategory === 'Pending' && activeTab === 'history' && (
+             <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+               {expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded).slice(0, 5).map(exp => (
+                 <button
+                   key={exp.id}
+                   onClick={() => loadFromHistory(exp)}
+                   className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
+                 >
+                   <div className="flex flex-col gap-0.5">
+                     <span className="text-[7px] font-black text-[var(--text-main)]/60 uppercase tracking-tight group-hover/item:text-[var(--text-main)] transition-colors">{exp.month}</span>
+                     <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
+                     <div 
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         if (window.confirm(`Mark expense for ${exp.month} ($${exp.total}) as refunded?`)) {
+                           toggleRefund(exp.id, 0); 
+                         }
+                       }}
+                       className="w-3.5 h-3.5 rounded-[4px] border border-white/20 hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center cursor-pointer group/check"
+                       title="Mark as Refunded"
+                     >
+                       <Check size={8} className="text-[var(--accent-main)] opacity-0 group-hover/check:opacity-50" />
+                     </div>
+                   </div>
+                 </button>
+               ))}
+             </div>
+           )}
+
            <button 
              onClick={() => { setActiveTab('history'); setActiveCategory('Refunded'); }}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Refunded') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
@@ -904,6 +954,24 @@ ${formData.comments || 'None'}
              <CheckCircle size={18} />
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Refunded</span>
            </button>
+
+           {activeCategory === 'Refunded' && activeTab === 'history' && (
+             <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+               {expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded)).slice(0, 5).map(exp => (
+                 <button
+                   key={exp.id}
+                   onClick={() => loadFromHistory(exp)}
+                   className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
+                 >
+                   <div className="flex flex-col gap-0.5">
+                     <span className="text-[7px] font-black text-[var(--text-main)]/60 uppercase tracking-tight group-hover/item:text-[var(--text-main)] transition-colors">{exp.month}</span>
+                     <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
+                   </div>
+                   <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
+                 </button>
+               ))}
+             </div>
+           )}
         </nav>
       </div>
 
@@ -1090,7 +1158,7 @@ ${formData.comments || 'None'}
             isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
           )}
           <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
-            {isReadOnly ? "Archived" : "Save for later"}
+            {isReadOnly ? "Archived" : "Save as draft"}
           </span>
         </button>
       </div>
