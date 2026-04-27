@@ -787,11 +787,12 @@ export default function ExpensesPage() {
         comments: formData.comments
       });
 
-      // Browser-compatible Uint8Array to Base64
-      const pdfBase64 = btoa(
-        new Uint8Array(pdfBytes)
-          .reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
+      // Browser-compatible Uint8Array to Base64 (Safer method)
+      const pdfBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+      });
       
       const attachments = [
         {
