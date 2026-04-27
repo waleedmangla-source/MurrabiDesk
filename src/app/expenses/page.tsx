@@ -31,7 +31,11 @@ import {
   X,
   Check,
   Folder,
-  ExternalLink
+  ExternalLink,
+  Edit3,
+  Clock,
+  CheckCircle,
+  CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -225,8 +229,12 @@ export default function ExpensesPage() {
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
   // Navigation State
-  type Tab = 'overview' | 'create' | 'history';
+  type Tab = 'overview' | 'create' | 'history' | 'external';
   const [activeTab, setActiveTab] = useState<Tab>('create');
+
+  // Category Filter State
+  type Category = 'Drafts' | 'Pending' | 'Refunded';
+  const [activeCategory, setActiveCategory] = useState<Category>('Pending');
 
   // History State
   const [expensesHistory, setExpensesHistory] = useState<any[]>([]);
@@ -438,8 +446,9 @@ export default function ExpensesPage() {
         `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}.json`,
         JSON.stringify(draft),
         'application/json',
-        'ExpenseDrafts',
-        'Expenses'
+        'ExpenseDrafts', // specific folder name for the file
+        'Expenses',      // module
+        'Drafts'        // category
       ).catch(err => console.error('Cloud Draft Sync Failed:', err));
 
       alert("Draft saved successfully! You can resume this anytime.");
@@ -683,7 +692,8 @@ export default function ExpensesPage() {
         pdfBytes,
         'application/pdf',
         reportFolderName,
-        'Expenses'
+        'Expenses',
+        'Pending'
       );
 
       if (driveRes?.error) {
@@ -719,7 +729,8 @@ ${formData.comments || 'None'}
         summaryText,
         'text/plain',
         reportFolderName,
-        'Expenses'
+        'Expenses',
+        'Pending'
       );
 
       // 3. Upload Receipts to the SAME folder
@@ -803,7 +814,8 @@ ${formData.comments || 'None'}
         pdfBytes,
         'application/pdf',
         'ManualDownloads',
-        'Expenses'
+        'Expenses',
+        'Pending'
       ).catch(err => console.error('Cloud Download Sync Failed:', err));
 
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
@@ -852,53 +864,46 @@ ${formData.comments || 'None'}
              <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Waqfeen Expense</span>
            </button>
 
-           <div className="h-px bg-white/5 my-4 mx-2" />
-
            <button 
-             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-             className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)] transition-all text-left group"
+             onClick={() => {
+               // No function yet
+               setActiveTab('external');
+             }}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'external' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
            >
-             <div className="flex items-center gap-3">
-               <History size={18} />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Expense History</span>
-             </div>
-             <ChevronLeft size={14} className={clsx("transition-transform duration-300", isHistoryOpen ? "-rotate-90" : "")} />
+             <CreditCard size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Log external expense</span>
            </button>
 
-           {isHistoryOpen && (
-             <div className="space-y-1 mt-2 animate-in slide-in-from-top-2 duration-300">
-               {expensesHistory.length === 0 ? (
-                 <div className="px-4 py-8 text-center border border-dashed border-white/5 rounded-[12px] ml-2">
-                   <p className="text-[7px] font-black uppercase tracking-widest text-[var(--text-dim)]">No completed reports yet</p>
-                 </div>
-               ) : (
-                 expensesHistory.slice(0, 10).map((exp) => (
-                   <button
-                     key={exp.id}
-                     onClick={() => loadFromHistory(exp)}
-                     className={clsx(
-                       "w-full flex flex-col gap-1 px-4 py-2 rounded-[10px] transition-all text-left border group ml-2",
-                       currentReportId === exp.id 
-                        ? "bg-white/10 border-white/10" 
-                        : "border-transparent hover:bg-white/5"
-                     )}
-                   >
-                     <div className="flex justify-between items-center w-full">
-                       <span className="text-[9px] font-black text-[var(--text-main)] uppercase tracking-tight truncate">{exp.month}</span>
-                       <div className="flex items-center gap-1.5">
-                         {exp.isGmail && <Mail size={8} className="text-[var(--accent-main)]" />}
-                         <Shield size={8} className={clsx(exp.status === 'sent' ? "text-[var(--accent-main)]" : "text-amber-500", "opacity-50")} />
-                       </div>
-                     </div>
-                     <div className="flex justify-between items-center w-full">
-                       <span className="text-[7px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                       <span className="text-[8px] font-black text-[var(--text-main)]/80">${parseFloat(exp.total).toFixed(2)}</span>
-                     </div>
-                   </button>
-                 ))
-               )}
-             </div>
-           )}
+           <div className="h-px bg-white/5 my-4 mx-2" />
+
+           <div className="px-4 mb-2 mt-4">
+             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] opacity-50">Log Books</span>
+           </div>
+
+           <button 
+             onClick={() => { setActiveTab('history'); setActiveCategory('Drafts'); }}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Drafts') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+           >
+             <Edit3 size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drafts</span>
+           </button>
+
+           <button 
+             onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Pending') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+           >
+             <Clock size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pending</span>
+           </button>
+
+           <button 
+             onClick={() => { setActiveTab('history'); setActiveCategory('Refunded'); }}
+             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'history' && activeCategory === 'Refunded') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+           >
+             <CheckCircle size={18} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Refunded</span>
+           </button>
         </nav>
       </div>
 
@@ -926,10 +931,39 @@ ${formData.comments || 'None'}
             </div>
             
             <div className="space-y-16 pb-20">
-              {months.map(m => {
-                const monthForms = expensesHistory.filter(e => e.month === m);
-                if (monthForms.length === 0) return null;
-                const monthTotal = monthForms.reduce((sum, e) => sum + e.total, 0);
+              {(() => {
+                const filteredHistory = expensesHistory.filter(form => {
+                  if (activeCategory === 'Drafts') {
+                    // Local records or explicitly un-synced
+                    return !form.isSheet && !form.isGmail;
+                  }
+                  if (activeCategory === 'Pending') {
+                    // Synced records that aren't refunded
+                    return form.isSheet && form.status !== 'refunded' && !form.refunded;
+                  }
+                  if (activeCategory === 'Refunded') {
+                    // Synced records that are marked as refunded
+                    return form.isSheet && (form.status === 'refunded' || form.refunded);
+                  }
+                  return true;
+                });
+
+                if (filteredHistory.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-20 text-center glass bg-white/5 rounded-[32px] border border-dashed border-white/10">
+                      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 opacity-30">
+                        <History size={32} className="text-[var(--text-dim)]" />
+                      </div>
+                      <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-2 italic">No {activeCategory} <span className="text-[var(--accent-main)]">Reports</span></h3>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] max-w-xs">There are no expense records in this category currently.</p>
+                    </div>
+                  );
+                }
+
+                return months.map(m => {
+                  const monthForms = filteredHistory.filter(e => e.month === m);
+                  if (monthForms.length === 0) return null;
+                  const monthTotal = monthForms.reduce((sum, e) => sum + e.total, 0);
 
                 return (
                   <div key={m} className="space-y-6">
@@ -1005,19 +1039,7 @@ ${formData.comments || 'None'}
                     </div>
                   </div>
                 );
-              })}
-              
-              {expensesHistory.length === 0 && (
-                <div className="text-center py-32 flex flex-col items-center">
-                   <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                     <History size={32} className="text-[var(--text-main)]/20" />
-                   </div>
-                   <p className="text-lg font-black uppercase tracking-widest text-[var(--text-main)]/80">No History Found</p>
-                   <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)] mt-3 max-w-[300px] leading-relaxed">
-                     Expenses will automatically appear here once exported via the New Expenses section.
-                   </p>
-                </div>
-              )}
+              })})()}
             </div>
           </div>
         )}

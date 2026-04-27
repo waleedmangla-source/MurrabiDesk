@@ -86,8 +86,8 @@ export class GoogleSyncService {
   async syncMissionNotes(content: string) {
     return liquid.invoke('sync-mission-notes', { content });
   }
-  async uploadFile(name: string, content: any, mimeType: string, folderName?: string, module?: string) {
-    return liquid.invoke('drive-upload', { name, content, mimeType, folderName, module });
+  async uploadFile(name: string, content: any, mimeType: string, folderName?: string, module?: string, category?: string) {
+    return liquid.invoke('drive-upload', { name, content, mimeType, folderName, module, category });
   }
   async appendToSheet(values: any[][], spreadsheetId?: string, range?: string) {
     return liquid.invoke('sheets-append', { values, spreadsheetId, range });

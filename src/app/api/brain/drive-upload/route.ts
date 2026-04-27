@@ -69,6 +69,29 @@ export async function POST(request: Request) {
       }
     }
 
+    // 1.5 Resolve Category Folder if provided (e.g., Pending, Refunded, Drafts)
+    const { category } = await request.clone().json();
+    if (category) {
+      const categorySearch = await drive.files.list({
+        q: `name = '${category}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id)',
+      });
+
+      if (categorySearch.data.files && categorySearch.data.files.length > 0) {
+        parentId = categorySearch.data.files[0].id!;
+      } else {
+        const categoryCreate = await drive.files.create({
+          requestBody: {
+            name: category,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [parentId],
+          },
+          fields: 'id',
+        });
+        parentId = categoryCreate.data.id!;
+      }
+    }
+
     let targetFolderId = explicitFolderId;
 
     // 2. Resolve Sub-Folder if folderName provided
