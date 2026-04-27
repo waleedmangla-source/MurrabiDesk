@@ -519,13 +519,27 @@ export default function ExpensesPage() {
   // Draft recovery disabled per user request
 
 
-  const toggleRefund = async (id: string, currentStatus: number) => {
+  const toggleRefund = async (exp: any) => {
     try {
+      const isRefunded = exp.status === 'refunded' || exp.refunded;
+      const newStatus = !isRefunded;
+
       await fetch('/api/expenses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, refunded: !currentStatus })
+        body: JSON.stringify({ id: exp.id, refunded: newStatus })
       });
+
+      // --- Trigger Drive Folder Move ---
+      if (newStatus) {
+        const folderName = `[EXPENSE] ${exp.fullName} - ${exp.month} (${exp.date})`;
+        try {
+          await googleSync.moveDriveFolder(folderName, 'Expenses', 'Pending', 'Refunded');
+        } catch (e) {
+          console.warn('Failed to move Drive folder:', e);
+        }
+      }
+
       fetchExpenses();
     } catch (err) {
       console.error('Failed to update refund status', err);
@@ -1023,7 +1037,7 @@ ${formData.comments || 'None'}
                        onClick={(e) => {
                          e.stopPropagation();
                          if (window.confirm(`Mark expense for ${exp.month} ($${exp.total}) as refunded?`)) {
-                           toggleRefund(exp.id, 0); 
+                           toggleRefund(exp); 
                          }
                        }}
                        className="w-3.5 h-3.5 rounded-[4px] border border-white/20 hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center cursor-pointer group/check"
@@ -1193,7 +1207,7 @@ ${formData.comments || 'None'}
                                   type="checkbox" 
                                   className="hidden" 
                                   checked={!!form.refunded} 
-                                  onChange={() => toggleRefund(form.id, form.refunded)} 
+                                  onChange={() => toggleRefund(form)} 
                                 />
                                 <span className={clsx(
                                   "text-[10px] font-black uppercase tracking-widest transition-colors",
