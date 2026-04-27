@@ -417,6 +417,7 @@ export default function ExpensesPage() {
         purpose: formData.purpose || 'Monthly Expense Submission',
         total: totals.grand,
         status: 'sent',
+        isSheet: true, // Ensure it shows in Pending sidebar section
         data: JSON.stringify(fullState)
       };
 
@@ -897,13 +898,18 @@ ${formData.comments || 'None'}
 
       // 3. Upload Receipts to the SAME folder
       for (const r of receipts) {
-        await googleSync.uploadFile(
-          `RECEIPT_${r.name}`,
-          r.data,
-          r.type,
-          reportFolderName,
-          'Expenses'
-        );
+        try {
+          await googleSync.uploadFile(
+            `RECEIPT_${r.name}`,
+            r.data,
+            r.type,
+            reportFolderName,
+            'Expenses',
+            'Pending'
+          );
+        } catch (e) {
+          console.warn(`Failed to upload receipt ${r.name}:`, e);
+        }
       }
 
       // 4. Append to Google Sheets
