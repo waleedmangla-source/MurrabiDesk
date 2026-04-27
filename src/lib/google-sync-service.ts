@@ -104,6 +104,9 @@ export class GoogleSyncService {
   async getDriveFileContent(fileId: string) {
     return liquid.invoke('drive-get-content', { fileId });
   }
+  async deleteDriveFile(fileId: string) {
+    return liquid.invoke('drive-delete', { fileId });
+  }
   static async getUserProfile(): Promise<any> {
     try {
       const info = await liquid.invoke('get-user-info');

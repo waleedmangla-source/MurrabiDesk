@@ -225,6 +225,7 @@ export default function ExpensesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [isCurrentDraft, setIsCurrentDraft] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showSendConfirm, setShowSendConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -441,6 +442,7 @@ export default function ExpensesPage() {
         setReceipts(fullState.receipts || []);
         setIsReadOnly(false); // Let them edit the draft
         setCurrentReportId(report.id);
+        setIsCurrentDraft(report.isDriveDraft);
         setActiveTab('create'); // Switch to editor view
       }
     } catch (e) {
@@ -469,6 +471,7 @@ export default function ExpensesPage() {
     setReceipts([]);
     setIsReadOnly(false);
     setCurrentReportId(null);
+    setIsCurrentDraft(false);
     // Trigger prefill again to restore name/code
     const savedCustom = localStorage.getItem('murrabi_profile_custom');
     if (savedCustom) {
@@ -823,6 +826,18 @@ ${formData.comments || 'None'}
       }
 
       setShowSuccessModal(true);
+      
+      // 5. Cleanup Draft if applicable
+      if (isCurrentDraft && currentReportId) {
+        try {
+          await googleSync.deleteDriveFile(currentReportId);
+          setIsCurrentDraft(false);
+          setCurrentReportId(null);
+        } catch (e) {
+          console.warn('Failed to delete source draft:', e);
+        }
+      }
+
       saveExpenseToHistory();
     } catch (err: any) {
       console.error(err);
