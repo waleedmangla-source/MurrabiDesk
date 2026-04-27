@@ -277,13 +277,13 @@ export default function ExpensesPage() {
             // New Schema indices: Date(0), Name(1), Code(2), Month(3), Cheque(4), Total(5), HST(6), Purpose(7), Type(8), Loc(9), Status(10), Comments(11), Folder(12), Email(13)
             // Old Schema indices: Date(0), Name(1), Month(2), Total(3), Purpose(4), Status(5), Folder(6), Email(7)
             
-            const date = row[0] || new Date().toISOString().split('T')[0];
-            const fullName = row[1] || 'Unknown';
-            const month = isNewSchema ? (row[3] || 'Other') : (row[2] || 'Other');
+            const date = (row[0] || new Date().toISOString().split('T')[0]).toString().trim();
+            const fullName = (row[1] || 'Unknown').toString().trim();
+            const month = (isNewSchema ? (row[3] || 'Other') : (row[2] || 'Other')).toString().trim();
             const totalStr = isNewSchema ? row[5] : row[3];
             const total = parseFloat(String(totalStr).replace(/[^0-9.]/g, '')) || 0;
-            const purpose = isNewSchema ? (row[7] || 'Expense Submission') : (row[4] || 'Expense Submission');
-            const status = isNewSchema ? (row[10] || 'sent') : (row[5] || 'sent');
+            const purpose = (isNewSchema ? (row[7] || 'Expense Submission') : (row[4] || 'Expense Submission')).toString().trim();
+            const status = (isNewSchema ? (row[10] || 'sent') : (row[5] || 'sent')).toString().trim();
             const folderLink = isNewSchema ? row[12] : row[6];
             
             return {
@@ -537,7 +537,10 @@ export default function ExpensesPage() {
         try {
           const statusCol = exp.isNewSchema ? 'K' : 'F';
           const range = `Sheet1!${statusCol}${exp.rowIndex}`;
-          await googleSync.updateSheetData(range, [[newStatus ? 'REFUNDED' : 'SENT']]);
+          const sheetRes = await googleSync.updateSheetData(range, [[newStatus ? 'REFUNDED' : 'SENT']]);
+          if (sheetRes && sheetRes.error) {
+            alert(`Sheet sync error: ${sheetRes.error}`);
+          }
         } catch (e) {
           console.warn('Failed to sync status to Sheets:', e);
         }
@@ -547,7 +550,12 @@ export default function ExpensesPage() {
       if (newStatus) {
         const folderName = `[EXPENSE] ${exp.fullName} - ${exp.month} (${exp.date})`;
         try {
-          await googleSync.moveDriveFolder(folderName, 'Expenses', 'Pending', 'Refunded');
+          const moveRes = await googleSync.moveDriveFolder(folderName, 'Expenses', 'Pending', 'Refunded');
+          if (moveRes && moveRes.error) {
+            alert(`Drive move error: ${moveRes.error}`);
+          } else if (moveRes && moveRes.message) {
+            alert(`Drive move info: ${moveRes.message}`);
+          }
         } catch (e) {
           console.warn('Failed to move Drive folder:', e);
         }

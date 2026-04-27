@@ -25,11 +25,42 @@ export async function POST(request: Request) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
     
-    // Default spreadsheet ID if not provided
-    const DEFAULT_SPREADSHEET_ID = '1Z_k5W9_7_7YvY9m_9X7vY9X7vY9X7vY9X7vY9X7vY'; // Placeholder
-    // Actually, we should probably use the one from env or pass it from frontend
-    const sid = spreadsheetId || process.env.GOOGLE_SHEET_ID;
+    let sid = spreadsheetId;
+
+    if (!sid && !process.env.GOOGLE_SHEET_ID) {
+       const rootSearch = await drive.files.list({
+         q: `name = 'Murrabi Desk Drive' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+         fields: 'files(id)',
+       });
+
+       if (rootSearch.data.files && rootSearch.data.files.length > 0) {
+         const rootId = rootSearch.data.files[0].id;
+         const moduleSearch = await drive.files.list({
+           q: `name = 'Expenses' and '${rootId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+           fields: 'files(id)',
+         });
+
+         if (moduleSearch.data.files && moduleSearch.data.files.length > 0) {
+           const expensesFolderId = moduleSearch.data.files[0].id;
+           const searchRes = await drive.files.list({
+             q: `name = 'Murrabi Expenses Master' and '${expensesFolderId}' in parents and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
+             fields: 'files(id)',
+           });
+
+           if (searchRes.data.files && searchRes.data.files.length > 0) {
+             sid = searchRes.data.files[0].id;
+           }
+         }
+       }
+    } else if (!sid) {
+       sid = process.env.GOOGLE_SHEET_ID;
+    }
+
+    if (!sid) {
+      throw new Error('Could not resolve Spreadsheet ID');
+    }
 
     await sheets.spreadsheets.values.update({
       spreadsheetId: sid,
