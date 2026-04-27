@@ -66,6 +66,44 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
+// --- Sidebar Summary Component with Overflow Detection ---
+function SidebarSummary({ text }: { text: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (containerRef.current) {
+        const isOverflow = containerRef.current.scrollWidth > containerRef.current.clientWidth;
+        setIsOverflowing(isOverflow);
+      }
+    };
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [text]);
+
+  return (
+    <div ref={containerRef} className="flex-1 overflow-hidden relative mr-2">
+      <div className={clsx(
+        "text-[9px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap inline-block",
+        isOverflowing ? "hover:animate-marquee" : ""
+      )}>
+        <style>{`
+          @keyframes sidebar-marquee-dynamic {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-100% + 140px)); }
+          }
+          .hover\\:animate-marquee:hover {
+            animation: sidebar-marquee-dynamic 5s linear infinite alternate;
+          }
+        `}</style>
+        {text || "No summary provided"}
+      </div>
+    </div>
+  );
+}
+
 // --- Sortable Item Component ---
 function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: number, onRemove: (id: string) => void }) {
   const {
@@ -975,17 +1013,8 @@ ${formData.comments || 'None'}
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) */}
-      <div className="w-[320px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
-        <style>{`
-          @keyframes sidebar-marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-          }
-          .hover-carousel:hover .marquee-inner {
-            animation: sidebar-marquee 8s linear infinite;
-            padding-left: 100%;
-          }
-        `}</style>
+      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+
         <div className="no-drag h-[60px] shrink-0">
           {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
@@ -1069,11 +1098,7 @@ ${formData.comments || 'None'}
                          }}
                          className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                        >
-                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
-                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
-                              {exp.purpose || "No summary provided"}
-                            </div>
-                          </div>
+                          <SidebarSummary text={exp.purpose} />
                          <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                        </button>
                      ))}
@@ -1125,11 +1150,7 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
-                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
-                              {exp.purpose || "No summary provided"}
-                            </div>
-                          </div>
+                          <SidebarSummary text={exp.purpose} />
                           <div className="flex items-center gap-2">
                             <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                             <div 
@@ -1195,11 +1216,7 @@ ${formData.comments || 'None'}
                           }}
                           className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
                         >
-                          <div className="flex-1 overflow-hidden relative mr-2 hover-carousel">
-                            <div className="text-[7px] font-bold text-[var(--text-dim)] uppercase whitespace-nowrap marquee-inner inline-block">
-                              {exp.purpose || "No summary provided"}
-                            </div>
-                          </div>
+                          <SidebarSummary text={exp.purpose} />
                           <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
                         </button>
                       ))}
