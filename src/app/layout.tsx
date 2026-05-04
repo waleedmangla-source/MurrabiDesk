@@ -27,7 +27,8 @@ import {
   Minus,
   Maximize2,
   Download,
-  Info
+  Info,
+  MessageCircle
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname } from "next/navigation";
@@ -75,6 +76,8 @@ export default function RootLayout({
     { icon: FileText, label: "Notes", href: "/notes" },
     { icon: PenTool, label: "Writer", href: "/writer" },
     { icon: Receipt, label: "Expenses", href: "/expenses" },
+    { icon: MessageCircle, label: "WhatsApp", href: "/whatsapp" },
+    { icon: Activity, label: "Routine", href: "/habits" },
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
 
@@ -119,8 +122,8 @@ export default function RootLayout({
         setIsSidebarCollapsed(prev => !prev);
       }
       
-      // Navigate to tabs CMD+1, 2, 3... 7
-      if ((e.metaKey || e.ctrlKey) && /^[1-7]$/.test(e.key)) {
+      // Navigate to tabs CMD+1, 2, 3... 8
+      if ((e.metaKey || e.ctrlKey) && /^[1-8]$/.test(e.key)) {
         e.preventDefault();
         const index = parseInt(e.key) - 1;
         if (navLinks[index]) {

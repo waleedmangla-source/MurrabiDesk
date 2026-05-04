@@ -50,7 +50,9 @@ export default function Dashboard() {
     showWorldClock: true,
     showPrayerTimes: true,
     showAIPrompts: true,
+    showHabitStats: true,
   });
+  const [habitStats, setHabitStats] = useState({ completed: 0, total: 0 });
 
   const editor = useEditor({
     extensions: [
@@ -89,6 +91,7 @@ export default function Dashboard() {
     }
 
     fetchPendingExpenses();
+    fetchHabitStats();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -115,6 +118,38 @@ export default function Dashboard() {
       setPendingStats({ count: pending.length, total });
     } catch (err) {
       console.error('Failed to fetch pending expenses:', err);
+    }
+  };
+
+  const fetchHabitStats = async () => {
+    const service = await GoogleSyncService.fromLocalStorage();
+    if (service) {
+      try {
+        const configFiles = await service.listDriveFiles('habits', 'config');
+        const logFiles = await service.listDriveFiles('habits', 'logs');
+        
+        let habitsList = [];
+        if (configFiles?.length > 0) {
+          const content = await service.getDriveFileContent(configFiles[0].id);
+          if (content) habitsList = JSON.parse(content);
+        }
+
+        let completedCount = 0;
+        if (logFiles?.length > 0) {
+          const content = await service.getDriveFileContent(logFiles[0].id);
+          if (content) {
+            const logs = JSON.parse(content);
+            const today = new Date().toISOString().split('T')[0];
+            const found = logs.find((l: any) => l.date === today);
+            if (found) {
+              completedCount = Object.values(found.habits || {}).filter(Boolean).length;
+            }
+          }
+        }
+        setHabitStats({ completed: completedCount, total: habitsList.length });
+      } catch (err) {
+        console.error('Failed to fetch habit stats:', err);
+      }
     }
   };
 
@@ -184,6 +219,32 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+        
+        {/* Habit Progress Widget */}
+        <div 
+          onClick={() => router.push('/habits')}
+          className="glass p-5 flex flex-col gap-3 relative overflow-hidden group cursor-pointer hover:bg-white/[0.03] transition-all"
+        >
+          <div className="flex items-center justify-between relative z-10">
+            <Activity className="text-red-500" size={20} />
+            <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-red-600/20 text-red-500">
+              {habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}% INTEGRITY
+            </span>
+          </div>
+          <div className="relative z-10">
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">Discipline Protocol</p>
+            <h3 className="text-xl font-black text-white mt-1 tracking-tighter italic">
+              {habitStats.completed}/{habitStats.total} <span className="text-[10px] opacity-40 not-italic">Nodes Committed</span>
+            </h3>
+            {/* Simple Progress Bar */}
+            <div className="w-full h-1 bg-white/5 rounded-full mt-3 overflow-hidden">
+              <div 
+                className="h-full bg-red-600 transition-all duration-1000" 
+                style={{ width: `${habitStats.total > 0 ? (habitStats.completed / habitStats.total) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
 
