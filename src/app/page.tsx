@@ -142,11 +142,15 @@ export default function Dashboard() {
             const today = new Date().toISOString().split('T')[0];
             const found = logs.find((l: any) => l.date === today);
             if (found) {
-              completedCount = Object.values(found.habits || {}).filter(Boolean).length;
+              const metrics = found.metrics || {};
+              // Count as "completed" if boolean is true, or if number > 0
+              completedCount = Object.values(metrics).filter(val => 
+                (typeof val === 'boolean' && val) || (typeof val === 'number' && val > 0)
+              ).length;
             }
           }
         }
-        setHabitStats({ completed: completedCount, total: habitsList.length });
+        setHabitStats({ completed: completedCount, total: habitsList.length || 4 }); // Default to 4 if empty (for the core protocols)
       } catch (err) {
         console.error('Failed to fetch habit stats:', err);
       }
