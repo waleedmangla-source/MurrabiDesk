@@ -122,7 +122,18 @@ export async function POST(request: Request) {
       targetFolderId = parentId;
     }
 
-    // 2. Upload File
+    // 2. Resolve File (Check if already exists)
+    let existingFileId = '';
+    const fileSearch = await drive.files.list({
+      q: `name = '${name}' and '${targetFolderId}' in parents and trashed = false`,
+      fields: 'files(id)',
+    });
+
+    if (fileSearch.data.files && fileSearch.data.files.length > 0) {
+      existingFileId = fileSearch.data.files[0].id!;
+    }
+
+    // 3. Upload or Update File
     // If content is base64 (common for PDFs/Images), we need to convert it
     let body: any = content;
     if (typeof content === 'string' && (mimeType.startsWith('image/') || mimeType === 'application/pdf')) {
@@ -130,29 +141,38 @@ export async function POST(request: Request) {
       body = Buffer.from(base64Data, 'base64');
     }
 
-    const fileMetadata: any = {
-      name: name,
-    };
-    if (targetFolderId) {
-      fileMetadata.parents = [targetFolderId];
-    }
-
     const media = {
       mimeType: mimeType,
       body: body,
     };
 
-    const file = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id, name, webViewLink',
-    });
+    let file;
+    if (existingFileId) {
+      // Update existing file
+      file = await drive.files.update({
+        fileId: existingFileId,
+        media: media,
+        fields: 'id, name, webViewLink',
+      });
+    } else {
+      // Create new file
+      const fileMetadata: any = {
+        name: name,
+        parents: [targetFolderId],
+      };
+      file = await drive.files.create({
+        requestBody: fileMetadata,
+        media: media,
+        fields: 'id, name, webViewLink',
+      });
+    }
 
     return NextResponse.json({
       success: true,
       fileId: file.data.id,
       link: file.data.webViewLink,
-      folderId: targetFolderId
+      folderId: targetFolderId,
+      updated: !!existingFileId
     });
   } catch (error: any) {
     console.error('Drive Upload Error:', error);

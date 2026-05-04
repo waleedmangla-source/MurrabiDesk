@@ -83,12 +83,11 @@ export default function HabitsPage() {
     if (service) {
       try {
         // Load Config (Custom Habits)
-        const configFiles = await service.listDriveFiles('habits', 'config');
+        const configFiles = await service.listDriveFiles('Habits', 'Config');
         if (configFiles && configFiles.length > 0) {
           const content = await service.getDriveFileContent(configFiles[0].id);
           if (content) {
             const customHabits = JSON.parse(content);
-            // Merge defaults with custom
             const merged = [...DEFAULT_PROTOCOLS];
             customHabits.forEach((ch: Habit) => {
               if (!merged.find(m => m.id === ch.id)) merged.push(ch);
@@ -98,21 +97,19 @@ export default function HabitsPage() {
         }
 
         // Load Logs
-        const logFiles = await service.listDriveFiles('habits', 'logs');
+        const logFiles = await service.listDriveFiles('Habits', 'Logs');
         if (logFiles && logFiles.length > 0) {
           const content = await service.getDriveFileContent(logFiles[0].id);
           if (content) {
             const parsedLogs = JSON.parse(content);
             setLogs(parsedLogs);
             
-            // Check for today's log
             const today = new Date().toISOString().split('T')[0];
             const found = parsedLogs.find((l: HabitLog) => l.date === today);
             if (found) {
               setTodayMetrics(found.metrics || {});
               setTodayNotes(found.notes || '');
             } else {
-              // Initialize empty metrics for today
               const initial: any = {};
               habits.forEach(h => {
                 initial[h.id] = h.type === 'counter' ? 0 : false;
@@ -136,10 +133,10 @@ export default function HabitsPage() {
         if (updatedHabits) {
           // Only save custom habits to config
           const customOnly = updatedHabits.filter(h => !DEFAULT_PROTOCOLS.find(d => d.id === h.id));
-          await service.uploadFile('habit_config.json', JSON.stringify(customOnly), 'application/json', 'Murrabi/Habits', 'habits', 'config');
+          await service.uploadFile('habit_config.json', JSON.stringify(customOnly), 'application/json', undefined, 'Habits', 'Config');
         }
         if (updatedLogs) {
-          await service.uploadFile('habit_logs.json', JSON.stringify(updatedLogs), 'application/json', 'Murrabi/Habits', 'habits', 'logs');
+          await service.uploadFile('habit_logs.json', JSON.stringify(updatedLogs), 'application/json', undefined, 'Habits', 'Logs');
         }
       } catch (err) {
         console.error('Failed to sync data:', err);

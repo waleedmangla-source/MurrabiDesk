@@ -125,8 +125,8 @@ export default function Dashboard() {
     const service = await GoogleSyncService.fromLocalStorage();
     if (service) {
       try {
-        const configFiles = await service.listDriveFiles('habits', 'config');
-        const logFiles = await service.listDriveFiles('habits', 'logs');
+        const configFiles = await service.listDriveFiles('Habits', 'Config');
+        const logFiles = await service.listDriveFiles('Habits', 'Logs');
         
         let habitsList = [];
         if (configFiles?.length > 0) {
