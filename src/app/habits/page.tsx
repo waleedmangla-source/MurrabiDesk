@@ -37,6 +37,7 @@ interface Habit {
   type: HabitType;
   unit?: string;
   max?: number;
+  archived?: boolean;
 }
 
 interface HabitLog {
@@ -125,6 +126,57 @@ export default function HabitsPage() {
     setIsSyncing(false);
   };
 
+  const calculateStats = () => {
+    if (!logs || logs.length === 0) return { streak: 0, integrity: 0 };
+
+    // Calculate Streak
+    let streak = 0;
+    const sortedLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date));
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    
+    let checkDate = (sortedLogs[0]?.date === today) ? today : (sortedLogs[0]?.date === yesterday ? yesterday : null);
+    
+    if (checkDate) {
+      let currentDate = new Date(checkDate);
+      for (const log of sortedLogs) {
+        const logDate = log.date;
+        const expectedDateStr = currentDate.toISOString().split('T')[0];
+        if (logDate === expectedDateStr) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Calculate Integrity (Last 30 days)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const recentLogs = logs.filter(l => l.date >= thirtyDaysAgo);
+    const spiritualHabits = habits.filter(h => h.category === 'Spiritual');
+    
+    let totalScore = 0;
+    recentLogs.forEach(log => {
+      let dailyScore = 0;
+      const relevantSpiritual = spiritualHabits.filter(h => !h.archived || log.metrics[h.id] !== undefined);
+      relevantSpiritual.forEach(h => {
+        const val = log.metrics[h.id];
+        if (typeof val === 'boolean' && val) dailyScore++;
+        else if (typeof val === 'number') {
+          dailyScore += h.max ? Math.min(1, val / h.max) : (val > 0 ? 1 : 0);
+        }
+      });
+      totalScore += relevantSpiritual.length > 0 ? (dailyScore / relevantSpiritual.length) : 0;
+    });
+
+    const integrity = recentLogs.length > 0 ? Math.round((totalScore / recentLogs.length) * 100) : 0;
+
+    return { streak, integrity };
+  };
+
+  const { streak, integrity } = calculateStats();
+
   const saveData = async (updatedHabits?: Habit[], updatedLogs?: HabitLog[]) => {
     setIsSyncing(true);
     const service = await GoogleSyncService.fromLocalStorage();
@@ -171,6 +223,18 @@ export default function HabitsPage() {
     setTodayMetrics(prev => ({ ...prev, [id]: val }));
   };
 
+  const toggleArchiveHabit = async (id: string, archive: boolean = true) => {
+    const msg = archive 
+      ? "Are you sure you want to archive this mission protocol? It will be hidden from daily reports but historical data will be preserved."
+      : "Reactivate this mission protocol?";
+      
+    if (!confirm(msg)) return;
+    
+    const updated = habits.map(h => h.id === id ? { ...h, archived: archive } : h);
+    setHabits(updated);
+    await saveData(updated);
+  };
+
   const addNewHabit = async () => {
     if (!newHabit.name) return;
     const habit: Habit = {
@@ -192,8 +256,8 @@ export default function HabitsPage() {
       {/* Header */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Daily Field Report</h1>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 opacity-60 mt-1">Routine Discipline & Spiritual Integrity Protocol</p>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter italic text-main uppercase">Daily Field Report</h1>
+          <p className="text-micro mt-2">Routine Discipline & Spiritual Integrity Protocol</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -214,7 +278,7 @@ export default function HabitsPage() {
               onClick={() => setActiveTab('form')}
               className={clsx(
                 "px-6 py-2 rounded-[12px] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                activeTab === 'form' ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "text-white/30 hover:bg-white/5"
+                activeTab === 'form' ? "bg-accent-main text-white shadow-lg shadow-accent-glow" : "text-white/30 hover:bg-white/5"
               )}
             >
               <ClipboardCheck size={14} /> Report
@@ -223,7 +287,7 @@ export default function HabitsPage() {
               onClick={() => setActiveTab('table')}
               className={clsx(
                 "px-6 py-2 rounded-[12px] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                activeTab === 'table' ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "text-white/30 hover:bg-white/5"
+                activeTab === 'table' ? "bg-accent-main text-white shadow-lg shadow-accent-glow" : "text-white/30 hover:bg-white/5"
               )}
             >
               <TableIcon size={14} /> Archival
@@ -232,7 +296,7 @@ export default function HabitsPage() {
               onClick={() => setActiveTab('overview')}
               className={clsx(
                 "px-6 py-2 rounded-[12px] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                activeTab === 'overview' ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "text-white/30 hover:bg-white/5"
+                activeTab === 'overview' ? "bg-accent-main text-white shadow-lg shadow-accent-glow" : "text-white/30 hover:bg-white/5"
               )}
             >
               <Activity size={14} /> Matrix
@@ -254,8 +318,8 @@ export default function HabitsPage() {
           <div className="grid grid-cols-12 gap-8 animate-in slide-in-from-bottom-4 duration-500 pb-20">
             <div className="col-span-12 lg:col-span-8 space-y-12">
               {/* Questionnaire Section */}
-              <section className="glass rounded-[40px] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-b from-white/[0.02] to-transparent">
-                <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg flex items-center justify-between p-8">
+              <section className="glass rounded-[24px] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-b from-white/[0.02] to-transparent">
+                <div className="card-hdr !bg-accent-main !text-white border-b-0 shadow-lg flex items-center justify-between p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                     <span className="text-[10px] font-black tracking-[0.2em] uppercase">Status: Initializing Daily Check-in</span>
@@ -266,16 +330,27 @@ export default function HabitsPage() {
                 </div>
                 
                 <div className="p-10 lg:p-16 space-y-16">
-                  {habits.map((habit, idx) => (
+                  {habits.filter(h => !h.archived).map((habit, idx) => (
                     <div key={habit.id} className="space-y-6 animate-in slide-in-from-left duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
                        <div className="flex items-end justify-between border-b border-white/5 pb-4">
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1">{habit.category}</p>
-                            <h3 className="text-2xl font-black italic text-white tracking-tighter">{habit.name}</h3>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-accent-main mb-1">{habit.category}</p>
+                            <h3 className="text-2xl font-black italic text-main tracking-tighter">{habit.name}</h3>
                           </div>
-                          {habit.unit && (
-                            <span className="text-[10px] font-black uppercase text-white/20 tracking-widest mb-1">{habit.unit} recorded</span>
-                          )}
+                          <div className="flex items-center gap-4">
+                            {habit.unit && (
+                              <span className="text-[10px] font-black uppercase text-white/20 tracking-widest mb-1">{habit.unit} recorded</span>
+                            )}
+                            {!DEFAULT_PROTOCOLS.find(d => d.id === habit.id) && (
+                              <button 
+                                onClick={() => toggleArchiveHabit(habit.id)}
+                                className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                                title="Archive Protocol"
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            )}
+                          </div>
                        </div>
 
                        {habit.type === 'counter' ? (
@@ -289,7 +364,7 @@ export default function HabitsPage() {
                                   className={clsx(
                                     "w-16 h-16 rounded-2xl font-black transition-all duration-300 border",
                                     todayMetrics[habit.id] === v 
-                                      ? "bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/40 scale-110" 
+                                      ? "bg-accent-main border-accent-glow text-white shadow-lg shadow-accent-glow scale-110" 
                                       : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
                                   )}
                                 >
@@ -309,11 +384,11 @@ export default function HabitsPage() {
                                   type="number"
                                   value={todayMetrics[habit.id] as number || 0}
                                   onChange={(e) => updateMetric(habit.id, parseInt(e.target.value) || 0)}
-                                  className="bg-transparent text-4xl font-black text-white italic text-center w-24 outline-none"
+                                  className="bg-transparent text-4xl font-black text-main italic text-center w-24 outline-none"
                                 />
                                 <button 
                                   onClick={() => updateMetric(habit.id, (todayMetrics[habit.id] as number || 0) + 1)}
-                                  className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center hover:bg-red-500 text-white transition-all"
+                                  className="w-12 h-12 rounded-xl bg-accent-main flex items-center justify-center hover:bg-accent-hover text-white transition-all"
                                 >
                                   <Plus size={20} />
                                 </button>
@@ -352,18 +427,18 @@ export default function HabitsPage() {
                   ))}
 
                   <div className="pt-12 border-t border-white/5 space-y-6">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Field Observations & Reflections</label>
+                    <label className="text-micro">Field Observations & Reflections</label>
                     <textarea 
                       value={todayNotes}
                       onChange={(e) => setTodayNotes(e.target.value)}
                       placeholder="Enter tactical field notes for today..."
-                      className="w-full bg-white/5 border border-white/5 rounded-[32px] p-10 text-lg italic text-white/80 focus:border-red-600/30 focus:outline-none min-h-[200px] resize-none transition-all shadow-inner"
+                      className="w-full bg-white/5 border border-white/5 rounded-[14px] p-10 text-lg italic text-white/80 focus:border-accent-glow focus:outline-none min-h-[200px] resize-none transition-all shadow-inner"
                     />
                   </div>
 
                   <button 
                     onClick={commitToday}
-                    className="w-full h-24 bg-red-600 rounded-[32px] font-black uppercase tracking-[0.4em] text-[12px] text-white shadow-2xl shadow-red-900/60 active:scale-[0.98] transition-all flex items-center justify-center gap-4 hover:bg-red-500 group"
+                    className="w-full h-24 btn-ruby rounded-[14px] font-black uppercase tracking-[0.4em] text-[12px] transition-all flex items-center justify-center gap-4 group"
                   >
                     <Save size={20} className="group-hover:scale-125 transition-transform" />
                     Commit Mission Report to Cloud Storage
@@ -375,40 +450,40 @@ export default function HabitsPage() {
             <div className="col-span-12 lg:col-span-4 space-y-10">
                {/* Dashboard Link */}
                <button 
-                 onClick={() => window.location.href = '/'}
-                 className="w-full glass p-8 rounded-[32px] border border-white/5 flex items-center gap-6 group hover:border-red-600/30 transition-all"
-               >
-                 <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all text-white/20">
-                    <Home size={28} />
-                 </div>
-                 <div className="text-left">
-                    <h4 className="text-sm font-black text-white italic tracking-tight">Return to HQ</h4>
-                    <p className="text-[9px] font-black uppercase text-white/20 tracking-widest mt-1">Exit Field Report Mode</p>
-                 </div>
-               </button>
+                  onClick={() => window.location.href = '/'}
+                  className="w-full glass p-8 rounded-[14px] border border-white/5 flex items-center gap-6 group hover:border-accent-glow transition-all"
+                >
+                  <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-accent-main group-hover:text-white transition-all text-white/20">
+                     <Home size={28} />
+                  </div>
+                  <div className="text-left">
+                     <h4 className="text-sm font-black text-main italic tracking-tight">Return to HQ</h4>
+                     <p className="text-micro mt-1">Exit Field Report Mode</p>
+                  </div>
+                </button>
 
                {/* Snapshot */}
-               <section className="glass rounded-[40px] p-10 border border-white/5 space-y-8">
-                 <h3 className="text-[10px] font-black uppercase tracking-widest text-red-500 border-b border-white/5 pb-4">Protocol Statistics</h3>
-                 
-                 <div className="space-y-6">
-                    <div className="bg-white/5 p-8 rounded-[28px] border border-white/5 group hover:bg-white/[0.08] transition-all">
+               <section className="glass rounded-[14px] p-10 border border-white/5 space-y-8">
+                  <h3 className="text-micro border-b border-white/5 pb-4">Protocol Statistics</h3>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-white/5 p-8 rounded-[14px] border border-white/5 group hover:bg-white/[0.08] transition-all">
                       <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Archival Streak</p>
-                      <h4 className="text-5xl font-black italic text-white mt-2 flex items-baseline gap-2">
-                        14 <span className="text-[10px] opacity-40 not-italic tracking-[0.2em] uppercase">Solar Days</span>
+                      <h4 className="text-5xl font-black italic text-main mt-2 flex items-baseline gap-2">
+                        {streak} <span className="text-[10px] opacity-40 not-italic tracking-[0.2em] uppercase">Solar Days</span>
                       </h4>
                     </div>
-                    <div className="bg-white/5 p-8 rounded-[28px] border border-white/5 group hover:bg-white/[0.08] transition-all">
+                    <div className="bg-white/5 p-8 rounded-[14px] border border-white/5 group hover:bg-white/[0.08] transition-all">
                       <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Spiritual Integrity</p>
-                      <h4 className="text-5xl font-black italic text-white mt-2 flex items-baseline gap-2">
-                        92<span className="text-2xl opacity-40 italic">%</span>
+                      <h4 className="text-5xl font-black italic text-main mt-2 flex items-baseline gap-2">
+                        {integrity}<span className="text-2xl opacity-40 italic">%</span>
                       </h4>
                     </div>
-                 </div>
-               </section>
+                  </div>
+                </section>
 
                {/* Legend & Help */}
-               <section className="glass rounded-[40px] p-10 border border-white/5 space-y-6">
+               <section className="glass rounded-[14px] p-10 border border-white/5 space-y-6">
                   <h3 className="text-[10px] font-black uppercase tracking-widest text-white/20">Mission Legend</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 group">
@@ -427,20 +502,20 @@ export default function HabitsPage() {
                </section>
 
                {/* Custom Entry Button */}
-               <button 
-                  onClick={() => setIsAddingHabit(true)}
-                  className="w-full h-20 bg-white/5 border border-dashed border-white/10 rounded-[32px] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white hover:border-white/40 transition-all"
-               >
-                 <Plus size={16} />
-                 Initialize Custom Node
-               </button>
+                <button 
+                   onClick={() => setIsAddingHabit(true)}
+                   className="w-full h-20 bg-white/5 border border-dashed border-white/10 rounded-[14px] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-main hover:border-accent-main transition-all"
+                >
+                  <Plus size={16} />
+                  Initialize Custom Node
+                </button>
             </div>
           </div>
         )}
 
         {activeTab === 'table' && (
-          <section className="glass rounded-[40px] overflow-hidden border border-white/5 shadow-2xl animate-in slide-in-from-bottom-4 duration-500">
-             <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg flex items-center gap-3 p-8">
+          <section className="glass rounded-[14px] overflow-hidden border border-white/5 shadow-2xl animate-in slide-in-from-bottom-4 duration-500">
+             <div className="card-hdr !bg-accent-main !text-white border-b-0 shadow-lg flex items-center gap-3 p-8">
                 <div className="dot !bg-white"></div>
                 MISSION ARCHIVE • TIME-SERIES DATA
              </div>
@@ -496,16 +571,16 @@ export default function HabitsPage() {
           <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500 pb-20">
              <div className="grid grid-cols-12 gap-8">
                <div className="col-span-12 lg:col-span-8">
-                 <section className="glass rounded-[40px] p-12 border border-white/5 space-y-12">
+                 <section className="glass rounded-[14px] p-12 border border-white/5 space-y-12">
                    <div className="flex items-center justify-between">
-                     <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">Consistency Matrix</h3>
+                     <h3 className="text-2xl font-black italic text-main uppercase tracking-tighter">Consistency Matrix</h3>
                      <div className="flex items-center gap-6">
                        <div className="flex items-center gap-2">
                          <div className="w-4 h-4 rounded-[4px] bg-white/5" />
                          <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Inactive</span>
                        </div>
                        <div className="flex items-center gap-2">
-                         <div className="w-4 h-4 rounded-[4px] bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.4)]" />
+                         <div className="w-4 h-4 rounded-[4px] bg-accent-main shadow-[0_0_15px_var(--accent-glow)]" />
                          <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Operational</span>
                        </div>
                      </div>
@@ -521,9 +596,10 @@ export default function HabitsPage() {
                         // Calculate score
                         let score = 0;
                         if (log) {
-                          const totalHabits = habits.length;
+                          const relevantHabits = habits.filter(h => !h.archived || (log.metrics?.[h.id] !== undefined));
+                          const totalHabits = relevantHabits.length || 1;
                           let completed = 0;
-                          habits.forEach(h => {
+                          relevantHabits.forEach(h => {
                             const val = log.metrics?.[h.id];
                             if (typeof val === 'boolean' && val) completed++;
                             if (typeof val === 'number' && val > 0) {
@@ -537,28 +613,70 @@ export default function HabitsPage() {
                         return (
                           <div 
                             key={i} 
-                            title={dateStr}
+                            title={`${dateStr} | Integrity: ${Math.round(score * 100)}%`}
                             className={clsx(
                               "w-6 h-6 rounded-[6px] transition-all duration-700 cursor-crosshair hover:scale-125 hover:z-10",
                               score === 0 ? "bg-white/5" : 
-                              score < 0.4 ? "bg-red-600/30" :
-                              score < 0.8 ? "bg-red-600/60" : "bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+                              score < 0.4 ? "bg-accent-main/30" :
+                              score < 0.8 ? "bg-accent-main/60" : "bg-accent-main shadow-[0_0_20px_var(--accent-glow)]"
                             )}
                           />
                         );
                       })}
                    </div>
                  </section>
-               </div>
-               
-               <div className="col-span-12 lg:col-span-4">
-                  <section className="glass rounded-[40px] p-12 border border-white/5 bg-gradient-to-br from-red-600/10 via-transparent to-transparent h-full flex flex-col justify-center">
-                     <TrendingUp size={48} className="text-red-500 mb-6" />
-                     <h3 className="text-3xl font-black italic text-white leading-tight uppercase tracking-tighter">System Integrity: PHASE DELTA</h3>
-                     <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mt-4 leading-loose">Automated analysis confirms continuous discipline expansion across all spiritual and scholarly sectors.</p>
+                 <section className="glass rounded-[14px] p-12 border border-white/5 space-y-12">
+                    <h3 className="text-2xl font-black italic text-main uppercase tracking-tighter">Protocol Inventory</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {habits.map((habit) => (
+                        <div key={habit.id} className={clsx(
+                          "glass p-8 rounded-[14px] border transition-all flex items-center justify-between group",
+                          habit.archived ? "opacity-40 border-white/5" : "border-white/5 hover:border-accent-main"
+                        )}>
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30">{habit.category}</p>
+                            <h4 className="text-lg font-black italic text-main mt-1">{habit.name}</h4>
+                          </div>
+                          <button 
+                            onClick={() => toggleArchiveHabit(habit.id, !habit.archived)}
+                            className={clsx(
+                              "px-6 py-2 rounded-[14px] text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                              habit.archived 
+                                ? "bg-accent-main text-white hover:bg-accent-hover" 
+                                : "bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500"
+                            )}
+                          >
+                            {habit.archived ? 'Reactivate' : 'Archive'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </section>
-               </div>
-             </div>
+                </div>
+                
+                <div className="col-span-12 lg:col-span-4">
+                  <section className="glass rounded-[14px] p-12 border border-white/5 bg-gradient-to-br from-accent-soft via-transparent to-transparent h-full flex flex-col justify-center">
+                    <TrendingUp size={48} className="text-accent-main mb-8" />
+                    <h3 className="text-3xl font-black italic text-main uppercase tracking-tighter leading-tight mb-6">
+                      Tactical<br />Performance<br />Summary
+                    </h3>
+                    <p className="text-micro leading-relaxed text-white/50 mb-8">
+                      Your routine discipline protocols are synchronized across the Murrabi Desk neural network. Maintain consistency to ensure mission success.
+                    </p>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                         <div className="w-2 h-2 rounded-full bg-accent-main shadow-[0_0_10px_var(--accent-glow)]" />
+                         <span className="text-[10px] font-black uppercase tracking-widest text-main">{habits.filter(h => !h.archived).length} Active Nodes</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                         <div className="w-2 h-2 rounded-full bg-white/10" />
+                         <span className="text-[10px] font-black uppercase tracking-widest text-white/20">{habits.filter(h => h.archived).length} Archived Nodes</span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
           </div>
         )}
       </div>
@@ -567,62 +685,62 @@ export default function HabitsPage() {
       {isAddingHabit && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsAddingHabit(false)} />
-           <div className="relative z-[110] glass p-12 rounded-[48px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] w-full max-w-lg animate-in zoom-in-95">
+           <div className="relative z-[110] glass p-12 rounded-[24px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] w-full max-w-lg animate-in zoom-in-95">
               <div className="flex items-center justify-between mb-12">
                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-900/40">
+                    <div className="w-16 h-16 bg-accent-main rounded-2xl flex items-center justify-center text-white shadow-lg shadow-accent-glow">
                        <Plus size={32} />
                     </div>
                     <div>
-                       <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">Initialize Protocol</h3>
-                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Define New Discipline Objective</p>
+                       <h3 className="text-2xl font-black text-main italic tracking-tighter uppercase">Initialize Protocol</h3>
+                       <p className="text-micro mt-1">Define New Discipline Objective</p>
                     </div>
                  </div>
               </div>
 
-              <div className="space-y-8 form-v4">
-                 <div className="space-y-3">
-                    <label className="lbl">Protocol Identifier (Name)</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Exercise, Reading, Research"
-                      value={newHabit.name}
-                      onChange={(e) => setNewHabit({ ...newHabit, name: e.target.value })}
-                      autoFocus
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-lg font-bold text-white focus:border-red-600 transition-all shadow-inner"
-                    />
-                 </div>
-                 
-                 <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                        <label className="lbl">Sector Alignment</label>
-                        <select 
-                          value={newHabit.category}
-                          onChange={(e) => setNewHabit({ ...newHabit, category: e.target.value as any })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-sm font-bold text-white focus:border-red-600 transition-all appearance-none"
-                        >
-                          <option value="Spiritual">Spiritual</option>
-                          <option value="Scholarly">Scholarly</option>
-                          <option value="Health">Health</option>
-                          <option value="Admin">Admin</option>
-                        </select>
-                    </div>
-                    <div className="space-y-3">
-                        <label className="lbl">Telemetry Type</label>
-                        <select 
-                          value={newHabit.type}
-                          onChange={(e) => setNewHabit({ ...newHabit, type: e.target.value as any })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-sm font-bold text-white focus:border-red-600 transition-all appearance-none"
-                        >
-                          <option value="toggle">Toggle (Yes/No)</option>
-                          <option value="counter">Counter (Numeric)</option>
-                        </select>
-                    </div>
-                 </div>
-                 
+              <div className="space-y-8">
+                  <div className="space-y-3">
+                     <label className="lbl">Protocol Identifier (Name)</label>
+                     <input 
+                       type="text" 
+                       placeholder="e.g. Exercise, Reading, Research"
+                       value={newHabit.name}
+                       onChange={(e) => setNewHabit({ ...newHabit, name: e.target.value })}
+                       autoFocus
+                       className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-lg font-bold text-main focus:border-accent-main transition-all shadow-inner"
+                     />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="space-y-3">
+                         <label className="lbl">Sector Alignment</label>
+                         <select 
+                           value={newHabit.category}
+                           onChange={(e) => setNewHabit({ ...newHabit, category: e.target.value as any })}
+                           className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-sm font-bold text-main focus:border-accent-main transition-all appearance-none"
+                         >
+                           <option value="Spiritual">Spiritual</option>
+                           <option value="Scholarly">Scholarly</option>
+                           <option value="Health">Health</option>
+                           <option value="Admin">Admin</option>
+                         </select>
+                     </div>
+                     <div className="space-y-3">
+                         <label className="lbl">Telemetry Type</label>
+                         <select 
+                           value={newHabit.type}
+                           onChange={(e) => setNewHabit({ ...newHabit, type: e.target.value as any })}
+                           className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-sm font-bold text-main focus:border-accent-main transition-all appearance-none"
+                         >
+                           <option value="toggle">Toggle (Yes/No)</option>
+                           <option value="counter">Counter (Numeric)</option>
+                         </select>
+                     </div>
+                  </div>
+      
                  <button 
                    onClick={addNewHabit}
-                   className="w-full h-20 mt-8 bg-red-600 rounded-[32px] font-black uppercase tracking-[0.4em] text-[12px] text-white shadow-2xl shadow-red-900/40 active:scale-[0.98] transition-all hover:bg-red-500"
+                   className="w-full h-20 mt-8 btn-ruby rounded-[14px] font-black uppercase tracking-[0.4em] text-[12px] transition-all"
                  >
                    Establish Mission Node
                  </button>
