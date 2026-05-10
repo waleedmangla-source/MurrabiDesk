@@ -36,6 +36,7 @@ import WorldClock from '@/components/WorldClock';
 import DashboardCalendar from '@/components/DashboardCalendar';
 import PrayerTimes from '@/components/PrayerTimes';
 import QuickLinks from '@/components/QuickLinks';
+import { Button } from '@/components/ui/Button';
 
 export default function Dashboard() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -275,24 +276,28 @@ export default function Dashboard() {
                   Operational Log
                 </h2>
                 <div className="flex bg-black/20 p-1.5 rounded-[14px] border border-white/5">
-                  <button 
+                  <Button 
                     onClick={() => setViewMode('list')}
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
                     className={clsx(
-                      "text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-[14px] transition-all border shrink-0",
-                      viewMode === 'list' ? "bg-red-600 text-white border-red-500 shadow-lg" : "text-white/30 border-transparent hover:bg-white/5"
+                      "text-[8px] font-black uppercase tracking-widest h-auto py-1",
+                      viewMode !== 'list' && "text-white/30"
                     )}
                   >
                     List
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={() => setViewMode('calendar')}
+                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                    size="sm"
                     className={clsx(
-                      "text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-[14px] transition-all border shrink-0",
-                      viewMode === 'calendar' ? "bg-red-600 text-white border-red-500 shadow-lg" : "text-white/30 border-transparent hover:bg-white/5"
+                      "text-[8px] font-black uppercase tracking-widest h-auto py-1",
+                      viewMode !== 'calendar' && "text-white/30"
                     )}
                   >
                     Grid
-                  </button>
+                  </Button>
                 </div>
               </div>
               
@@ -382,21 +387,20 @@ export default function Dashboard() {
 
                 <div className="flex items-center gap-4">
                   {isConnected && (
-                    <button 
+                    <Button 
                       onClick={handleManualSync}
                       disabled={isCloudSyncing}
-                      className={clsx(
-                        "px-6 h-12 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95",
-                        isCloudSyncing ? "bg-accent-soft text-accent-main" : "bg-accent-main text-white shadow-lg shadow-accent-soft hover:bg-accent-hover"
-                      )}
+                      variant="default"
+                      size="lg"
+                      className="text-[10px] font-black uppercase tracking-[0.2em] gap-3"
                     >
                       {isCloudSyncing ? "Syncing..." : (
                         <>
-                          <Save size={10} />
+                          <Save size={12} />
                           Save Dashboard Config
                         </>
                       )}
-                    </button>
+                    </Button>
                   )}
                   <div className="flex items-center gap-2 pr-2 border-l border-white/20 pl-4 ml-2">
                     {isCloudSyncing ? (
