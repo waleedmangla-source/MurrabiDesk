@@ -278,7 +278,7 @@ export default function RootLayout({
 
             </div>
 
-            <nav className="flex-grow sidebar-radio-container relative z-10 flex flex-col gap-0">
+            <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0">
               <div className="sidebar-glider-container">
                 <div 
                   className="sidebar-glider"
