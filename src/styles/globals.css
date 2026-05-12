@@ -590,9 +590,9 @@ body {
   border-color: transparent !important;
 }
 .nav-link:hover:not(.active) {
-  background-color: var(--accent-soft);
+  background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 100%);
   color: var(--text-main);
-  box-shadow: inset 0 0 15px var(--accent-soft);
+  box-shadow: inset 8px 0 20px -10px var(--accent-glow);
   text-shadow: 0 0 8px var(--accent-glow);
 }
 .draggable-header {
