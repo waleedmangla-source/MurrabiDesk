@@ -8,7 +8,7 @@ import {
   BookOpen, Users, Cake, Activity, Camera, Fingerprint,
   ChevronRight, Clock, Languages, Plug, Info, LogOut,
   Mail, Calendar, StickyNote, LayoutDashboard, Zap,
-  Sun, Moon, Laptop, MailCheck, ArrowUpDown, CloudOff, Sparkles
+  Sun, Moon, Laptop, MailCheck, ArrowUpDown, CloudOff, Sparkles, Navigation
 } from "lucide-react";
 import { clsx } from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
@@ -785,6 +785,7 @@ export default function SettingsPage() {
 // TAB: UI Library
 // ─────────────────────────────────────────────────────────────
 function UILibraryTab() {
+  const [activePreviewTab, setActivePreviewTab] = useState('home');
   const THEMES = [
     { 
       id: 'creamy', 
@@ -850,6 +851,57 @@ function UILibraryTab() {
                   </div>
                   <ToggleRow icon={<Bell size={14} />} label="Active Toggle" description="Enabled" active={true} onToggle={() => {}} />
                   <ToggleRow icon={<Bell size={14} />} label="Inactive Toggle" description="Disabled" active={false} onToggle={() => {}} />
+                </div>
+              </Card>
+
+              {/* Glider Navigation */}
+              <Card className="glass-card xl:col-span-2">
+                <CardHeader icon={<Navigation size={18} />} title="Glider Navigation" />
+                <div className="p-6 bg-black/5 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10">
+                  <div className="flex flex-col md:flex-row gap-12 items-start">
+                    <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0 w-64">
+                      <div className="sidebar-glider-container">
+                        <div 
+                          className="sidebar-glider"
+                          style={{
+                            height: `calc(100% / 3)`,
+                            transform: `translateY(${['home', 'vault', 'intel'].indexOf(activePreviewTab) * 100}%)`,
+                            opacity: 1
+                          }}
+                        />
+                      </div>
+                      {[
+                        { id: 'home', label: 'Command Center', icon: LayoutDashboard },
+                        { id: 'vault', label: 'Secure Vault', icon: Shield },
+                        { id: 'intel', label: 'Field Intel', icon: Globe }
+                      ].map((item) => (
+                        <button 
+                          key={item.id}
+                          onClick={() => setActivePreviewTab(item.id)}
+                          className={clsx(
+                            "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3 px-5 font-bold tracking-tight z-10 w-full text-left",
+                            activePreviewTab === item.id ? "active" : "text-[var(--text-muted)]"
+                          )}
+                        >
+                          <item.icon size={18} className="transition-all duration-300" />
+                          <span className="text-sm tracking-wide">{item.label}</span>
+                        </button>
+                      ))}
+                    </nav>
+
+                    <div className="flex-1 space-y-4">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-black uppercase tracking-tighter text-[var(--foreground)]">System Logic</h4>
+                        <p className="text-xs font-bold text-[var(--text-muted)] leading-relaxed">
+                          The <span className="text-[var(--accent-main)] font-black">Glider Protocol</span> implements a dynamic indicator system. It calculates vertical offset based on item index, ensuring a fluid, uninterrupted transition between states without legacy background flashes.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[var(--accent-main)] text-[9px] font-black uppercase tracking-widest">0.4s Smooth Ease</div>
+                        <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[var(--accent-main)] text-[9px] font-black uppercase tracking-widest">Dynamic CSS Vars</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </Card>
 
