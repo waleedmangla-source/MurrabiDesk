@@ -879,7 +879,7 @@ function UILibraryTab() {
                           key={item.id}
                           onClick={() => setActivePreviewTab(item.id)}
                           className={clsx(
-                            "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3 px-5 font-bold tracking-tight z-10 w-full text-left",
+                            "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10 w-full text-left",
                             activePreviewTab === item.id ? "active" : "text-[var(--text-muted)]"
                           )}
                         >

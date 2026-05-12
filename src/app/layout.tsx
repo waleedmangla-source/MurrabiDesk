@@ -293,7 +293,7 @@ export default function RootLayout({
                 <Link 
                    key={link.label} 
                    className={clsx(
-                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3 px-5 font-bold tracking-tight z-10",
+                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10",
                      pathname === link.href ? "active" : "text-gray-400"
                   )}
                   href={link.href}
