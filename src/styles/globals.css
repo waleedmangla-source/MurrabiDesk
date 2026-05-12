@@ -728,7 +728,7 @@ body {
     var(--accent-main) 50%,
     transparent 100%
   );
-  transition: transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56);
+  transition: transform 0.4s cubic-bezier(0.2, 1, 0.4, 1);
 }
 .sidebar-glider::before {
   content: "";

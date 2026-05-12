@@ -294,7 +294,8 @@ export default function RootLayout({
                    key={link.label} 
                    className={clsx(
                      "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10",
-                    pathname === link.href ? "active !text-white" : "text-gray-400"
+                     "hover:bg-white/[0.04] hover:text-white",
+                     pathname === link.href ? "active !text-white" : "text-gray-400"
                   )}
                   href={link.href}
                 >
