@@ -94,9 +94,9 @@
 [data-theme="creamy"] .bg-black\/20,
 [data-theme="creamy"] .bg-black\/40 { background-color: rgba(26, 18, 9, 0.05) !important; }
 [data-theme="creamy"] .nav-link.active {
-  background-color: #44403c !important;
-  color: #faf7f0 !important;
-  border-color: rgba(68, 64, 60, 0.3) !important;
+  background-color: transparent !important;
+  color: #44403c !important;
+  border-color: transparent !important;
 }
 [data-theme="creamy"] ::-webkit-scrollbar-thumb {
   background: rgba(26, 18, 9, 0.15) !important;
@@ -211,13 +211,13 @@
 [data-theme="flup"] .border-white\/5, [data-theme="flup"] .border-white\/10 { border-color: rgba(0, 0, 0, 0.05) !important; }
 [data-theme="flup"] .border-white\/20 { border-color: rgba(0, 0, 0, 0.1) !important; }
 [data-theme="flup"] .nav-link.active {
-  background-color: #10b981 !important;
-  color: #ffffff !important;
-  border-color: rgba(16, 185, 129, 0.3) !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+  background-color: transparent !important;
+  color: #10b981 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
-[data-theme="flup"] .nav-link.active svg { color: #ffffff !important; }
-[data-theme="flup"] .nav-link.active span { color: #ffffff !important; }
+[data-theme="flup"] .nav-link.active svg { color: #10b981 !important; }
+[data-theme="flup"] .nav-link.active span { color: #10b981 !important; }
 [data-theme="flup"] ::-webkit-scrollbar-thumb {
   background: rgba(30, 41, 59, 0.1) !important;
 }
@@ -337,13 +337,13 @@
   box-shadow: none !important;
 }
 [data-theme="flup-blue"] .nav-link.active {
-  background-color: #2563eb !important;
-  color: #ffffff !important;
-  border-color: rgba(37, 99, 235, 0.3) !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+  background-color: transparent !important;
+  color: #2563eb !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
-[data-theme="flup-blue"] .nav-link.active svg { color: #ffffff !important; }
-[data-theme="flup-blue"] .nav-link.active span { color: #ffffff !important; }
+[data-theme="flup-blue"] .nav-link.active svg { color: #2563eb !important; }
+[data-theme="flup-blue"] .nav-link.active span { color: #2563eb !important; }
 [data-theme="flup-blue"] .text-accent-main { color: #2563eb !important; }
 [data-theme="flup-blue"] .bg-accent-main { background-color: #2563eb !important; }
 [data-theme="flup-blue"] .bg-accent-soft { background-color: rgba(37, 99, 235, 0.1) !important; }
@@ -584,9 +584,9 @@ body {
   @apply p-4;
 }
 .nav-link.active {
-  background-color: rgba(var(--accent-rgb), 0.3) !important;
-  @apply !text-white shadow-lg shadow-accent-soft opacity-100;
-  border: 1px solid var(--accent-glow);
+  background-color: transparent !important;
+  @apply !text-accent-main opacity-100;
+  border-color: transparent !important;
 }
 .draggable-header {
   -webkit-app-region: drag;
@@ -697,3 +697,59 @@ body {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* Sidebar Glider Nav */
+.sidebar-radio-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 0.5rem;
+}
+.sidebar-glider-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  width: 1px;
+}
+.sidebar-glider {
+  position: absolute;
+  width: 100%;
+  background: linear-gradient(
+    0deg,
+    transparent 0%,
+    var(--accent-main) 50%,
+    transparent 100%
+  );
+  transition: transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56);
+}
+.sidebar-glider::before {
+  content: "";
+  position: absolute;
+  height: 60%;
+  width: 300%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent-main);
+  filter: blur(10px);
+}
+.sidebar-glider::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-soft) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+

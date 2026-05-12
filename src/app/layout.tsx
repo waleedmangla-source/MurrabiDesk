@@ -278,13 +278,23 @@ export default function RootLayout({
 
             </div>
 
-            <nav className="flex-grow space-y-2 relative z-10">
+            <nav className="flex-grow sidebar-radio-container relative z-10 flex flex-col gap-0">
+              <div className="sidebar-glider-container">
+                <div 
+                  className="sidebar-glider"
+                  style={{
+                    height: `calc(100% / ${navLinks.length})`,
+                    transform: `translateY(${Math.max(0, navLinks.findIndex(l => pathname === l.href)) * 100}%)`,
+                    opacity: navLinks.some(l => pathname === l.href) ? 1 : 0
+                  }}
+                />
+              </div>
               {navLinks.map((link) => (
                 <Link 
                    key={link.label} 
                    className={clsx(
-                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3.5 px-5 font-bold tracking-tight   ",
-                    pathname === link.href && "active !text-white !shadow-2xl !shadow-red-900/40"
+                     "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10",
+                    pathname === link.href ? "active !text-white" : "text-gray-400"
                   )}
                   href={link.href}
                 >
