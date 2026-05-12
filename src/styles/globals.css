@@ -585,7 +585,8 @@ body {
 }
 .nav-link.active {
   background-color: transparent !important;
-  @apply !text-accent-main opacity-100;
+  color: var(--accent-main) !important;
+  opacity: 1 !important;
   border-color: transparent !important;
 }
 .draggable-header {
