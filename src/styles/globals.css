@@ -19,6 +19,8 @@
   --ruby: #9B111E;
   --sidebar-width: 256px;
 }
+
+
 [data-theme="creamy"] {
   --foreground: #1a1209;
   --text-main: #1a1209;
@@ -106,6 +108,7 @@
 [data-theme="creamy"] .bg-accent-main { background-color: #44403c !important; }
 [data-theme="creamy"] .bg-accent-soft { background-color: rgba(68, 64, 60, 0.08) !important; }
 [data-theme="creamy"] .border-accent-glow { border-color: rgba(68, 64, 60, 0.25) !important; }
+
 [data-theme="flup"] {
   --foreground: #1e293b;
   --text-main: #1e293b;

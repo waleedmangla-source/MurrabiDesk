@@ -38,14 +38,9 @@ import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { liquid } from '@/lib/sync/bridge';
 
 const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string, soft: string, rgb: string }> = {
-  red: { main: '#ef4444', hover: '#dc2626', glow: 'rgba(239, 68, 68, 0.5)', soft: 'rgba(239, 68, 68, 0.1)', rgb: '239, 68, 68' },
-  indigo: { main: '#6366f1', hover: '#4f46e5', glow: 'rgba(99, 102, 241, 0.5)', soft: 'rgba(99, 102, 241, 0.1)', rgb: '99, 102, 241' },
-  emerald: { main: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.5)', soft: 'rgba(16, 185, 129, 0.1)', rgb: '16, 185, 129' },
-  amber: { main: '#f59e0b', hover: '#d97706', glow: 'rgba(245, 158, 11, 0.5)', soft: 'rgba(245, 158, 11, 0.1)', rgb: '245, 158, 11' },
-  violet: { main: '#8b5cf6', hover: '#7c3aed', glow: 'rgba(139, 92, 246, 0.5)', soft: 'rgba(139, 92, 246, 0.1)', rgb: '139, 92, 246' },
   // Creamy White — full light theme; accent vars overridden via data-theme CSS
   creamy: { main: '#44403c', hover: '#1c1917', glow: 'rgba(68, 64, 60, 0.25)', soft: 'rgba(68, 64, 60, 0.08)', rgb: '68, 64, 60' },
-  // Flup White — white dashboard with emerald green accents
+  // Flup Emerald — white dashboard with emerald green accents
   flup: { main: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.25)', soft: 'rgba(16, 185, 129, 0.1)', rgb: '16, 185, 129' },
   // Flup Blue — white dashboard with blue accents
   'flup-blue': { main: '#2563eb', hover: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.25)', soft: 'rgba(37, 99, 235, 0.1)', rgb: '37, 99, 235' },
@@ -64,7 +59,7 @@ export default function RootLayout({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [accentColor, setAccentColor] = useState("red");
+  const [accentColor, setAccentColor] = useState("flup");
   const pathname = usePathname();
   const router = useRouter();
 
@@ -193,7 +188,7 @@ export default function RootLayout({
     </html>
   );
 
-  const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.red;
+  const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.flup;
   const isCreamyTheme = accentColor === 'creamy';
   const isFlupTheme = accentColor === 'flup';
   const isFlupBlueTheme = accentColor === 'flup-blue';

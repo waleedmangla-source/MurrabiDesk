@@ -26,7 +26,8 @@ type Tab =
   | 'accounts'
   | 'shortcuts'
   | 'privacy'
-  | 'feedback';
+  | 'feedback'
+  | 'uilibrary';
 
 interface SettingsState {
   // Appearance
@@ -71,6 +72,7 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType; desc: string
   { id: 'shortcuts',     label: 'Shortcuts',          icon: Keyboard,     desc: 'Keyboard reference' },
   { id: 'privacy',       label: 'Privacy & Security', icon: Shield,       desc: 'Cache, wipe, sign out' },
   { id: 'feedback',      label: 'Request a Feature',  icon: Zap,          desc: 'Submit ideas & requests' },
+  { id: 'uilibrary',     label: 'UI Components',      icon: LayoutDashboard, desc: 'Design system preview' },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -240,13 +242,8 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
 // TAB: Appearance
 // ─────────────────────────────────────────────────────────────
 const THEMES = [
-  { id: 'red',     name: 'Murrabi Red',        hex: '#ef4444' },
-  { id: 'indigo',  name: 'Indigo Mission',      hex: '#6366f1' },
-  { id: 'emerald', name: 'Emerald Scholarly',   hex: '#10b981' },
-  { id: 'amber',   name: 'Amber Prophetic',     hex: '#f59e0b' },
-  { id: 'violet',  name: 'Aura Violet',         hex: '#8b5cf6' },
   { id: 'creamy',  name: 'Creamy White',        hex: '#a07f5c' },
-  { id: 'flup',    name: 'Flup White',          hex: '#10b981', isLight: true },
+  { id: 'flup',    name: 'Flup Emerald',          hex: '#10b981', isLight: true },
   { id: 'flup-blue', name: 'Flup Blue',           hex: '#2563eb', isLight: true },
 ];
 
@@ -784,6 +781,106 @@ export default function SettingsPage() {
 
   if (!mounted) return null;
 
+// ─────────────────────────────────────────────────────────────
+// TAB: UI Library
+// ─────────────────────────────────────────────────────────────
+function UILibraryTab() {
+  const THEMES = [
+    { 
+      id: 'creamy', 
+      label: 'Creamy (Light)', 
+      type: 'creamy', 
+      bg: 'radial-gradient(at 0% 0%, rgba(245, 235, 220, 0.9), transparent 50%), radial-gradient(at 50% 0%, rgba(255, 249, 235, 0.8), transparent 50%), #faf7f0', 
+      color: '#44403c',
+      rgb: '68, 64, 60'
+    },
+    { id: 'flup', label: 'Flup Emerald (Light)', type: 'flup', bg: '#f8fafc', color: '#10b981', rgb: '16, 185, 129' },
+    { id: 'flup-blue', label: 'Flup Blue (Light)', type: 'flup-blue', bg: '#f8fafc', color: '#2563eb', rgb: '37, 99, 235' },
+  ];
+
+  return (
+    <div className="space-y-12">
+      {THEMES.map(theme => (
+        <div 
+          key={theme.id}
+          className="rounded-3xl overflow-hidden border border-white/10 shadow-xl"
+          data-theme={theme.type !== 'dark' ? theme.type : undefined}
+          style={{
+            background: theme.bg,
+            '--accent-main': theme.color,
+            '--accent-rgb': theme.rgb || '239, 68, 68',
+            '--accent-soft': `rgba(${theme.rgb || '239, 68, 68'}, 0.1)`,
+            '--accent-glow': `rgba(${theme.rgb || '239, 68, 68'}, 0.25)`,
+          } as React.CSSProperties}
+        >
+          {/* Theme Preview Content */}
+          <div className="p-8 relative">
+            <div className="mb-8 border-b border-black/5 dark:border-white/10 pb-4">
+              <h2 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)]">Theme: <span className="text-[var(--accent-main)]">{theme.label}</span></h2>
+            </div>
+            
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              
+              {/* Typography */}
+              <Card className="glass-card">
+                <CardHeader icon={<LayoutDashboard size={18} />} title="Typography" />
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">Heading 1</h1>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)] mt-1">Subtitle Details</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--foreground)]">Standard Text (<span className="text-[var(--accent-main)]">accent color</span>)</p>
+                    <p className="text-xs font-medium text-[var(--text-muted)]">Muted description text for secondary information.</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Toggles & Buttons */}
+              <Card className="glass-card">
+                <CardHeader icon={<Zap size={18} />} title="Interactives" />
+                <div className="space-y-4">
+                  <div className="flex gap-4 mb-6">
+                    <button className="px-6 py-2.5 rounded-2xl bg-[var(--accent-main)] text-white text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg">
+                      Primary
+                    </button>
+                    <button className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[var(--foreground)] text-xs font-black uppercase tracking-widest hover:bg-white/10 active:scale-95 transition-all">
+                      Secondary
+                    </button>
+                  </div>
+                  <ToggleRow icon={<Bell size={14} />} label="Active Toggle" description="Enabled" active={true} onToggle={() => {}} />
+                  <ToggleRow icon={<Bell size={14} />} label="Inactive Toggle" description="Disabled" active={false} onToggle={() => {}} />
+                </div>
+              </Card>
+
+              {/* Form Elements */}
+              <div className="xl:col-span-2">
+                <Card className="glass-card">
+                  <CardHeader icon={<LayoutDashboard size={18} />} title="Form V4" />
+                  <div className="form-v4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <FieldLabel>Standard Input</FieldLabel>
+                      <FieldInput value="Sample Input" onChange={() => {}} placeholder="Text..." />
+                    </div>
+                    <div className="space-y-2">
+                      <FieldLabel>Select Menu</FieldLabel>
+                      <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all appearance-none cursor-pointer">
+                        <option>Option 1</option>
+                        <option>Option 2</option>
+                      </select>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
   const TABS: Record<Tab, React.ReactNode> = {
     profile:       <ProfileTab settings={settings} setSettings={setSettings} />,
     appearance:    <AppearanceTab settings={settings} setSettings={setSettings} />,
@@ -794,6 +891,7 @@ export default function SettingsPage() {
     shortcuts:     <ShortcutsTab />,
     privacy:       <PrivacyTab />,
     feedback:      <FeedbackTab settings={settings} />,
+    uilibrary:     <UILibraryTab />,
   };
 
   return (
