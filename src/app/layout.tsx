@@ -11,6 +11,7 @@ import {
   Receipt, 
   Settings,
   ChevronLeft,
+  ChevronRight,
   Menu,
   Globe,
   FileText,
