@@ -418,7 +418,7 @@ export default function EmailsPage() {
   const [sidebarTab, setSidebarTab] = useState<'folders' | 'quick-mail'>('folders');
   const [query, setQuery] = useState('');
   const [composingInitial, setComposingInitial] = useState<Partial<ComposeData>>({});
-  const [userEmail, setUserEmail] = useState('Gmail');
+  const [userEmail, setUserEmail] = useState('...');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
 
@@ -798,7 +798,7 @@ export default function EmailsPage() {
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           {sidebarTab === 'folders' ? (
-            <nav className="px-3 py-4 space-y-0.5">
+            <nav className="py-4 space-y-px">
               {FOLDERS.map(f => {
                 const count = f.id === 'inbox' ? unread : 0;
                 const Icon = f.icon;
@@ -808,12 +808,12 @@ export default function EmailsPage() {
                     key={f.id}
                     onClick={() => { setFolder(f.id); setSelected(null); }}
                     className={clsx(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left",
+                      "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
                       active
-                        ? "font-black text-white"
-                        : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
+                        ? "font-black text-white border-[var(--accent-main)]"
+                        : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                     )}
-                    style={active ? { background: 'var(--accent-main)' } : {}}
+                    style={active ? { background: 'rgba(0, 0, 0, 0.3)' } : {}}
                   >
                     <Icon size={15} className="shrink-0" />
                     <span className="text-xs font-bold flex-1">{f.label}</span>
