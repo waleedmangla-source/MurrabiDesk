@@ -355,10 +355,10 @@ export default function RootLayout({
              {isSidebarCollapsed && (
                <button 
                  onClick={() => setIsSidebarCollapsed(false)}
-                 className="fixed top-1/2 -translate-y-1/2 left-0 z-[100] w-2 h-32 bg-[var(--accent-main)] rounded-r-xl border border-l-0 border-white/10 transition-all duration-500 hover:w-3 shadow-[4px_0_20px_rgba(var(--accent-rgb),0.3)] group/lip flex items-center justify-center cursor-pointer animate-in fade-in slide-in-from-left-4"
+                 className="fixed left-4 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-[100] animate-in fade-in slide-in-from-left-4"
                  title="Open Sidebar (Cmd+D)"
                >
-                 <div className="w-1 h-8 bg-white/30 rounded-full group-hover:bg-white/60 transition-all" />
+                 <ChevronRight size={18} />
                </button>
              )}
              {children}
