@@ -859,7 +859,7 @@ function UILibraryTab() {
                 <CardHeader icon={<Navigation size={18} />} title="Glider Navigation" />
                 <div className="p-6 bg-black/5 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10">
                   <div className="flex flex-col md:flex-row gap-12 items-start">
-                    <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0 w-64">
+                    <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0 w-60">
                       <div className="sidebar-glider-container">
                         <div 
                           className="sidebar-glider"

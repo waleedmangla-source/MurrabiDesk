@@ -227,8 +227,8 @@ export default function RootLayout({
           
           {/* Sidebar */}
           <aside className={clsx(
-            "h-full w-64 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
-            isSidebarCollapsed ? "-ml-64" : "ml-0"
+            "h-full w-60 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
+            isSidebarCollapsed ? "-ml-60" : "ml-0"
           )}>
             {/* Ambient Animated Sidebar Background — Only for Dark/Ruby themes */}
             {!isLightTheme && (
