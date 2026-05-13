@@ -17,6 +17,8 @@ import RichTextEditor from "@/components/RichTextEditor";
 interface Email {
   id: string;
   threadId: string;
+  messageId?: string;
+  references?: string;
   from: string;
   fromName: string;
   to: string;
@@ -37,6 +39,9 @@ interface ComposeData {
   to: string;
   subject: string;
   body: string;
+  threadId?: string;
+  inReplyTo?: string;
+  references?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -92,8 +97,32 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg'
 // ─────────────────────────────────────────────────────────────
 // Compose Modal
 // ─────────────────────────────────────────────────────────────
-function ComposeModal({ onClose, onSend, initialTo = '' }: { onClose: () => void; onSend: (d: ComposeData) => Promise<void>; initialTo?: string }) {
-  const [form, setForm] = useState<ComposeData>({ to: initialTo, subject: '', body: '' });
+function ComposeModal({ 
+  onClose, 
+  onSend, 
+  initialTo = '', 
+  initialSubject = '', 
+  initialBody = '', 
+  threadId, 
+  inReplyTo 
+}: { 
+  onClose: () => void; 
+  onSend: (d: ComposeData) => Promise<void>; 
+  initialTo?: string;
+  initialSubject?: string;
+  initialBody?: string;
+  threadId?: string;
+  inReplyTo?: string;
+  references?: string;
+}) {
+  const [form, setForm] = useState<ComposeData>({ 
+    to: initialTo, 
+    subject: initialSubject, 
+    body: initialBody,
+    threadId,
+    inReplyTo,
+    references
+  });
   const [sending, setSending] = useState(false);
 
   async function handleSend() {
@@ -108,11 +137,13 @@ function ComposeModal({ onClose, onSend, initialTo = '' }: { onClose: () => void
     <div className="fixed inset-0 z-[999] flex items-end justify-end p-6 pointer-events-none">
       <div className="pointer-events-auto w-full max-w-lg glass border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ maxHeight: '80vh' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5" style={{ background: 'var(--accent-main)' }}>
-          <span className="text-xs font-black uppercase tracking-widest text-white">New Message</span>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/20 transition-all">
-            <X size={14} className="text-white" />
-          </button>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-white/5 backdrop-blur-md">
+          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">Protocol: Compose</span>
+          <div className="flex items-center gap-1">
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]">
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Fields */}
@@ -263,13 +294,16 @@ function EmailBody({ body, snippet }: { body: string; snippet: string }) {
 // Email Detail Panel
 // ─────────────────────────────────────────────────────────────
 function EmailDetail({
-  email, onBack, onArchive, onTrash, onToggleStar
+  email, onBack, onArchive, onTrash, onToggleStar, onReply, onForward, onMarkUnread
 }: {
   email: Email;
   onBack: () => void;
   onArchive: (id: string) => void;
   onTrash: (id: string) => void;
   onToggleStar: (id: string) => void;
+  onReply: (email: Email, all?: boolean) => void;
+  onForward: (email: Email) => void;
+  onMarkUnread: (id: string) => void;
 }) {
   return (
     <div className="flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
@@ -286,6 +320,13 @@ function EmailDetail({
           >
             <Star size={15} fill={email.starred ? 'currentColor' : 'none'} />
           </button>
+          <button
+            onClick={() => onMarkUnread(email.id)}
+            className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
+            title="Mark as Unread"
+          >
+            <Mail size={15} />
+          </button>
           <button onClick={() => onArchive(email.id)} className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]" title="Archive">
             <Archive size={15} />
           </button>
@@ -299,12 +340,33 @@ function EmailDetail({
       <div className="shrink-0 px-6 py-5 border-b border-white/5 flex items-start gap-4">
         <Avatar name={email.fromName || email.from} size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-[var(--foreground)] truncate">{email.fromName || email.from}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-black text-[var(--foreground)] truncate">{email.fromName || email.from}</p>
+            {email.hasAttachments && <Paperclip size={12} className="text-[var(--text-dim)]" />}
+          </div>
           <p className="text-xs text-[var(--text-dim)] truncate mt-0.5">{email.from}</p>
           <p className="text-xs text-[var(--text-dim)] mt-0.5">to {email.to}</p>
         </div>
-        <div className="text-[10px] text-[var(--text-dim)] shrink-0 mt-1 font-bold">
-          {new Date(email.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="text-[10px] text-[var(--text-dim)] font-bold">
+            {new Date(email.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </div>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => onReply(email)}
+              className="p-1.5 rounded-lg hover:bg-white/5 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+              title="Reply"
+            >
+              <Reply size={14} />
+            </button>
+            <button 
+              onClick={() => onForward(email)}
+              className="p-1.5 rounded-lg hover:bg-white/5 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+              title="Forward"
+            >
+              <Send size={14} className="rotate-[-45deg] translate-y-[-1px]" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -315,12 +377,22 @@ function EmailDetail({
 
       {/* Reply Bar */}
       <div className="shrink-0 px-6 py-4 border-t border-white/5">
-        <button
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl glass border border-white/10 text-sm text-[var(--text-dim)] hover:text-[var(--foreground)] hover:border-white/20 transition-all text-left"
-        >
-          <Reply size={14} />
-          <span className="text-xs font-bold uppercase tracking-widest">Reply to {email.fromName || email.from}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onReply(email)}
+            className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl glass border border-white/10 text-sm text-[var(--text-dim)] hover:text-[var(--foreground)] hover:border-white/20 transition-all text-left"
+          >
+            <Reply size={14} />
+            <span className="text-xs font-bold uppercase tracking-widest">Reply to {email.fromName || email.from}</span>
+          </button>
+          <button
+            onClick={() => onForward(email)}
+            className="p-3 rounded-xl glass border border-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] hover:border-white/20 transition-all"
+            title="Forward"
+          >
+            <Send size={14} className="rotate-[-45deg]" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -343,9 +415,9 @@ export default function EmailsPage() {
   const [folder, setFolder] = useState<Folder>('inbox');
   const [selected, setSelected] = useState<Email | null>(null);
   const [composing, setComposing] = useState(false);
-  const [composingTo, setComposingTo] = useState<string>('');
   const [sidebarTab, setSidebarTab] = useState<'folders' | 'quick-mail'>('folders');
   const [query, setQuery] = useState('');
+  const [composingInitial, setComposingInitial] = useState<Partial<ComposeData>>({});
   const [userEmail, setUserEmail] = useState('Gmail');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
@@ -425,6 +497,8 @@ export default function EmailsPage() {
         return {
           id: e.id || String(Math.random()),
           threadId: e.threadId || '',
+          messageId: getHeader('Message-ID'),
+          references: getHeader('References'),
           from: fromRaw,
           fromName: fromRaw.split('<')[0]?.trim() || fromRaw || 'Unknown',
           to: getHeader('To'),
@@ -575,9 +649,13 @@ export default function EmailsPage() {
     await callBrain('gmail-trash', { id });
   }
 
-  function handleToggleStar(id: string) {
-    setEmails(prev => prev.map(e => e.id === id ? { ...e, starred: !e.starred } : e));
-    if (selected?.id === id) setSelected(prev => prev ? { ...prev, starred: !prev.starred } : null);
+  async function handleToggleStar(id: string) {
+    const email = emails.find(e => e.id === id);
+    if (!email) return;
+    const newState = !email.starred;
+    setEmails(prev => prev.map(e => e.id === id ? { ...e, starred: newState } : e));
+    if (selected?.id === id) setSelected(prev => prev ? { ...prev, starred: newState } : null);
+    await callBrain('gmail-star', { id, starred: newState });
   }
 
   async function handleSelect(email: Email) {
@@ -589,7 +667,45 @@ export default function EmailsPage() {
   }
 
   async function handleSend(data: ComposeData) {
-    await callBrain('gmail-send', { to: data.to, subject: data.subject, body: data.body, attachments: [] });
+    await callBrain('gmail-send', { 
+      to: data.to, 
+      subject: data.subject, 
+      body: data.body, 
+      attachments: [],
+      threadId: data.threadId,
+      inReplyTo: data.inReplyTo,
+      references: data.references
+    });
+  }
+
+  function handleReply(email: Email) {
+    const subject = email.subject.toLowerCase().startsWith('re:') ? email.subject : `Re: ${email.subject}`;
+    const quotedBody = `<br/><br/><blockquote>On ${new Date(email.date).toLocaleString()}, ${email.from} wrote:<br/>${email.body}</blockquote>`;
+    setComposingInitial({
+      to: email.from,
+      subject,
+      body: quotedBody,
+      threadId: email.threadId,
+      inReplyTo: email.messageId,
+      references: email.references ? `${email.references} ${email.messageId}` : email.messageId
+    });
+    setComposing(true);
+  }
+
+  function handleForward(email: Email) {
+    const subject = email.subject.toLowerCase().startsWith('fwd:') ? email.subject : `Fwd: ${email.subject}`;
+    const forwardBody = `<br/><br/>---------- Forwarded message ---------<br/>From: ${email.from}<br/>Date: ${new Date(email.date).toLocaleString()}<br/>Subject: ${email.subject}<br/>To: ${email.to}<br/><br/>${email.body}`;
+    setComposingInitial({
+      subject,
+      body: forwardBody
+    });
+    setComposing(true);
+  }
+
+  async function handleMarkUnread(id: string) {
+    setEmails(prev => prev.map(e => e.id === id ? { ...e, read: false } : e));
+    if (selected?.id === id) setSelected(null);
+    await callBrain('gmail-mark-read', { id, read: false });
   }
 
   // ── Filter ──
@@ -632,14 +748,19 @@ export default function EmailsPage() {
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* ── Panel 1: Folder Sidebar ── */}
       <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
+        {/* Sidebar Title */}
+        <div className="px-5 pt-12 pb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Email</h1>
+        </div>
+        
         {/* Account Header */}
-        <div className="px-5 pt-12 pb-5 border-b border-white/5">
-          <div className="flex items-center gap-2 px-0 py-2 mt-1 overflow-hidden border-b border-transparent">
-            <Mail size={13} className="text-[var(--text-dim)] shrink-0" />
-            <div className="flex-1 min-w-0 overflow-hidden relative group/email">
+        <div className="px-5 pt-2 pb-5 border-b border-white/5">
+          <div className="flex items-center gap-2 px-0 py-2 mt-1 overflow-hidden border-b border-transparent opacity-60">
+            <Mail size={12} className="text-[var(--text-dim)] shrink-0" />
+            <div className="flex-1 min-w-0 overflow-hidden">
               <div className="whitespace-nowrap overflow-hidden text-ellipsis">
-                <span className="text-[11px] font-medium tracking-tight text-[var(--text-dim)]">
-                  {userEmail}
+                <span className="text-[10px] font-medium tracking-tight text-[var(--text-dim)]">
+                  Session Active
                 </span>
               </div>
             </div>
@@ -717,7 +838,7 @@ export default function EmailsPage() {
                   frequentRecipients.map(recipient => (
                     <button
                       key={recipient.email}
-                      onClick={() => handleQuickMail(recipient.email)}
+                      onClick={() => { setComposingInitial({ to: recipient.email }); setComposing(true); }}
                       className="aspect-square flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group"
                     >
                       <Avatar name={recipient.name} size="md" />
@@ -735,7 +856,7 @@ export default function EmailsPage() {
         {/* Compose */}
         <div className="p-4 border-t border-white/5">
           <button
-            onClick={() => setComposing(true)}
+            onClick={() => { setComposingInitial({}); setComposing(true); }}
             className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95"
             style={{ background: 'var(--accent-main)' }}
           >
@@ -752,7 +873,7 @@ export default function EmailsPage() {
       )}>
         {/* List Header */}
         <div className="shrink-0 px-5 pt-12 pb-4 border-b border-white/5">
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase mb-4">Email</h1>
+          <h1 className="text-2xl font-black tracking-tighter text-white uppercase mb-4 truncate">{userEmail}</h1>
           <div className="flex items-center justify-between mb-3">
             <div>
               <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] mb-1">{folder}</h1>
@@ -897,6 +1018,9 @@ export default function EmailsPage() {
             onArchive={handleArchive}
             onTrash={handleTrash}
             onToggleStar={handleToggleStar}
+            onReply={handleReply}
+            onForward={handleForward}
+            onMarkUnread={handleMarkUnread}
           />
         ) : (
           <div className="flex flex-col items-center justify-center flex-1 w-full text-center gap-4 animate-in fade-in duration-500">
@@ -918,9 +1042,14 @@ export default function EmailsPage() {
       {/* ── Compose Modal ── */}
       {composing && (
         <ComposeModal
-          onClose={() => { setComposing(false); setComposingTo(''); }}
+          onClose={() => { setComposing(false); setComposingInitial({}); }}
           onSend={handleSend}
-          initialTo={composingTo}
+          initialTo={composingInitial.to}
+          initialSubject={composingInitial.subject}
+          initialBody={composingInitial.body}
+          threadId={composingInitial.threadId}
+          inReplyTo={composingInitial.inReplyTo}
+          references={composingInitial.references}
         />
       )}
     </div>

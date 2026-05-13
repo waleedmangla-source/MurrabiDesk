@@ -72,3 +72,5 @@ Thumbs.db
 scratch/
 test-dir/
 yt-dlp/
+*.sqlite
+*.db

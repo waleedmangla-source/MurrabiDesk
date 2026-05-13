@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const { to, subject, body, attachments } = await request.json();
+    const { to, subject, body, attachments, threadId, inReplyTo, references } = await request.json();
     const tokenHeader = request.headers.get('x-murrabi-token');
     
     if (!tokenHeader) {
@@ -36,13 +36,12 @@ export async function POST(request: Request) {
        buffer: true,
     });
 
-    const mailOptions = {
+    const mailOptions: any = {
        from: 'me',
        to: to,
        subject: subject,
-       html: body, // Use html instead of text for rich formatting
+       html: body,
        attachments: (attachments || []).map((a: any) => {
-          // Handle different property names (data vs content) and potential data URLs
           const rawContent = a.content || a.data || '';
           const base64Data = rawContent.includes(',') ? rawContent.split(',')[1] : rawContent;
           
@@ -55,13 +54,19 @@ export async function POST(request: Request) {
        })
     };
 
+    if (inReplyTo) {
+      mailOptions.inReplyTo = inReplyTo;
+      mailOptions.references = references || inReplyTo;
+    }
+
     const info: any = await transporter.sendMail(mailOptions);
     const raw = info.message.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
     const res = await gmail.users.messages.send({
        userId: 'me',
        requestBody: {
-          raw: raw
+          raw: raw,
+          threadId: threadId
        }
     });
 
