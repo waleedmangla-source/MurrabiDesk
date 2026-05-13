@@ -227,8 +227,8 @@ export default function RootLayout({
           
           {/* Sidebar */}
           <aside className={clsx(
-            "h-full w-60 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden group/sidebar",
-            isSidebarCollapsed ? "-ml-60" : "ml-0"
+            "h-full w-60 flex flex-col gap-3 glass border-r border-white/5 px-4 pb-4 pt-10 z-50 shrink-0 select-none transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.4,1)] relative overflow-hidden group/sidebar",
+            isSidebarCollapsed ? "-ml-60 opacity-0 pointer-events-none" : "ml-0 opacity-100"
           )}>
             {/* Ambient Animated Sidebar Background — Only for Dark/Ruby themes */}
             {!isLightTheme && (
@@ -355,10 +355,10 @@ export default function RootLayout({
              {isSidebarCollapsed && (
                <button 
                  onClick={() => setIsSidebarCollapsed(false)}
-                 className="fixed top-1/2 -translate-y-1/2 left-0 z-[100] w-1.5 h-32 bg-red-600 rounded-r-[6px]  transition-all duration-300 shadow-[2px_0_15px_rgba(239,68,68,0.4)] group/lip flex items-center justify-center cursor-pointer animate-in fade-in slide-in-from-left-2"
+                 className="fixed top-1/2 -translate-y-1/2 left-0 z-[100] w-2 h-32 bg-[var(--accent-main)] rounded-r-xl border border-l-0 border-white/10 transition-all duration-500 hover:w-3 shadow-[4px_0_20px_rgba(var(--accent-rgb),0.3)] group/lip flex items-center justify-center cursor-pointer animate-in fade-in slide-in-from-left-4"
                  title="Open Sidebar (Cmd+D)"
                >
-                 <div className="w-0.5 h-12 bg-white/20 rounded-full opacity-0 group-hover/lip:opacity-100 transition-opacity" />
+                 <div className="w-1 h-8 bg-white/30 rounded-full group-hover:bg-white/60 transition-all" />
                </button>
              )}
              {children}
