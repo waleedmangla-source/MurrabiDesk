@@ -221,7 +221,7 @@ export default function RootLayout({
         "bg-[#020310]", 
         "transition-colors duration-500"
       )}>
-        <div className="flex h-screen w-full bg-transparent overflow-hidden relative">
+        <div className="flex h-full w-full bg-transparent overflow-hidden relative">
           <CommandPalette />
 
 
@@ -349,7 +349,7 @@ export default function RootLayout({
           <PWAInstallPrompt />
 
           <main className={clsx(
-            "flex-1 h-full overflow-y-auto custom-scrollbar transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",
+            "flex-1 overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",
             isSidebarCollapsed ? "pl-0" : "pl-0" // Flexible for future padding logic
           )}>
              {/* MISSION LIP (Vertical Sidebar Handle) */}

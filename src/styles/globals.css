@@ -400,8 +400,6 @@ body {
   overflow: hidden;
   height: 100vh;
   transition: color 0.5s ease;
-  min-height: 1000px;
-  min-width: 800px;
 }
 .glass {
   background: rgba(15, 23, 42, 0.1); 

@@ -4,7 +4,7 @@ import {
   Inbox, Star, Send, FileText, Trash2, Archive,
   Search, Edit3, RefreshCw, Loader2, CheckCircle,
   AlertCircle, X, Paperclip, ChevronDown, Reply,
-  MailOpen, Mail, User, ArrowLeft, Shield
+  MailOpen, Mail, User, ArrowLeft, Shield, Download, ExternalLink, Copy, Check
 } from "lucide-react";
 import clsx from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
@@ -14,6 +14,13 @@ import RichTextEditor from "@/components/RichTextEditor";
 // ─────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────
+interface EmailAttachment {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
 interface Email {
   id: string;
   threadId: string;
@@ -29,6 +36,7 @@ interface Email {
   read: boolean;
   starred: boolean;
   hasAttachments: boolean;
+  attachments?: EmailAttachment[];
   labels: string[];
 }
 
@@ -73,6 +81,15 @@ function avatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
+}
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -294,7 +311,7 @@ function EmailBody({ body, snippet }: { body: string; snippet: string }) {
 // Email Detail Panel
 // ─────────────────────────────────────────────────────────────
 function EmailDetail({
-  email, onBack, onArchive, onTrash, onToggleStar, onReply, onForward, onMarkUnread
+  email, onBack, onArchive, onTrash, onToggleStar, onReply, onForward, onMarkUnread, onDownloadAttachment
 }: {
   email: Email;
   onBack: () => void;
@@ -304,6 +321,7 @@ function EmailDetail({
   onReply: (email: Email, all?: boolean) => void;
   onForward: (email: Email) => void;
   onMarkUnread: (id: string) => void;
+  onDownloadAttachment: (msgId: string, attId: string, filename: string, mimeType: string, open?: boolean) => void;
 }) {
   return (
     <div className="flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
@@ -373,6 +391,42 @@ function EmailDetail({
       {/* Body */}
       <div className="flex-1 overflow-hidden flex flex-col">
         <EmailBody body={email.body} snippet={email.snippet} />
+        
+        {/* Attachments */}
+        {email.attachments && email.attachments.length > 0 && (
+          <div className="shrink-0 px-6 py-4 bg-black/10 border-t border-white/5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] mb-3">Attachments ({email.attachments.length})</p>
+            <div className="flex flex-wrap gap-2">
+              {email.attachments.map(att => (
+                <div key={att.id} className="flex items-center gap-3 p-2 pl-3 rounded-xl glass border border-white/10 hover:border-white/20 transition-all min-w-[200px] max-w-[300px]">
+                  <div className="p-2 rounded-lg bg-white/5 text-[var(--accent-main)]">
+                    <FileText size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-[var(--foreground)] truncate">{att.filename}</p>
+                    <p className="text-[9px] text-[var(--text-dim)] font-medium mt-0.5">{formatBytes(att.size)}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => onDownloadAttachment(email.id, att.id, att.filename, att.mimeType, true)}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+                      title="Open in new tab"
+                    >
+                      <ExternalLink size={12} />
+                    </button>
+                    <button 
+                      onClick={() => onDownloadAttachment(email.id, att.id, att.filename, att.mimeType, false)}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+                      title="Download"
+                    >
+                      <Download size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Reply Bar */}
@@ -498,6 +552,26 @@ export default function EmailsPage() {
         if (e.payload?.parts) body = findBody(e.payload.parts);
         else if (e.payload?.body?.data) body = base64UrlDecode(e.payload.body.data);
 
+        const findAttachments = (parts: any[]): EmailAttachment[] => {
+          let attached: EmailAttachment[] = [];
+          for (const part of parts) {
+            if (part.filename && part.body?.attachmentId) {
+              attached.push({
+                id: part.body.attachmentId,
+                filename: part.filename,
+                mimeType: part.mimeType,
+                size: part.body.size || 0
+              });
+            }
+            if (part.parts) {
+              attached = [...attached, ...findAttachments(part.parts)];
+            }
+          }
+          return attached;
+        };
+
+        const attachments = e.payload?.parts ? findAttachments(e.payload.parts) : [];
+
         return {
           id: e.id || String(Math.random()),
           threadId: e.threadId || '',
@@ -512,7 +586,8 @@ export default function EmailsPage() {
           date: getHeader('Date') || e.internalDate,
           read: !(e.labelIds || []).includes('UNREAD'),
           starred: (e.labelIds || []).includes('STARRED'),
-          hasAttachments: !!(e.payload?.parts?.some((p: any) => p.filename)),
+          hasAttachments: attachments.length > 0,
+          attachments: attachments,
           labels: e.labelIds || [],
         };
       };
@@ -748,24 +823,65 @@ export default function EmailsPage() {
 
   const SyncIcon = syncStatus === 'syncing' ? Loader2 : syncStatus === 'synced' ? CheckCircle : syncStatus === 'error' ? AlertCircle : RefreshCw;
 
+  const handleDownloadAttachment = async (messageId: string, attachmentId: string, filename: string, mimeType: string, open = false) => {
+    try {
+      const data = await callBrain('gmail-get-attachment', { messageId, attachmentId });
+      if (data?.error) throw new Error(data.error);
+      
+      const base64 = data.data.replace(/-/g, '+').replace(/_/g, '/');
+      const binStr = atob(base64);
+      const len = binStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
+      
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
+      if (open) {
+        window.open(url, '_blank');
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (err: any) {
+      console.error('Download failed:', err);
+      alert('Failed to download attachment');
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
       {/* ── Panel 1: Folder Sidebar ── */}
       <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
         {/* Sidebar Title */}
-        <div className="px-5 pt-12 pb-2">
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Email</h1>
+        <div className="px-5 pt-8 pb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Email</h1>
         </div>
         
         {/* Account Header */}
-        <div className="px-5 pt-2 pb-5 border-b border-white/5">
-          <div className="flex items-center gap-2 px-0 py-2 mt-1 overflow-hidden border-b border-transparent opacity-60">
-            <Mail size={12} className="text-[var(--text-dim)] shrink-0" />
+        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
+          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
+            <Mail size={12} className="text-[var(--accent-main)] shrink-0" />
             <div className="flex-1 min-w-0 overflow-hidden">
-              <div className="whitespace-nowrap overflow-hidden text-ellipsis">
-                <span className="text-[10px] font-medium tracking-tight text-[var(--text-dim)]">
-                  Session Active
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
+                  {userEmail}
                 </span>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(userEmail);
+                  }}
+                  className="p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
+                  title="Copy email address"
+                >
+                  <Copy size={10} />
+                </button>
               </div>
             </div>
           </div>
@@ -876,11 +992,13 @@ export default function EmailsPage() {
         selected ? "hidden lg:flex lg:w-[340px] xl:w-[380px] shrink-0" : "flex-1 lg:w-[340px] xl:w-[380px] lg:flex-none lg:shrink-0"
       )}>
         {/* List Header */}
-        <div className="shrink-0 px-5 pt-12 pb-4 border-b border-white/5">
-          <h1 className="text-2xl font-black tracking-tighter text-white uppercase mb-4 truncate">{userEmail}</h1>
+        <div className="shrink-0 px-5 pt-8 pb-4 border-b border-white/5">
+          <h1 className="text-2xl font-black tracking-tighter text-white uppercase mb-4 truncate">
+            {FOLDERS.find(f => f.id === folder)?.label || folder}
+          </h1>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] mb-1">{folder}</h1>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)] truncate opacity-60">{userEmail}</p>
               <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">
                 {filtered.length} messages{unread > 0 ? `, ${unread} unread` : ''}
               </p>
@@ -1026,6 +1144,7 @@ export default function EmailsPage() {
             onReply={handleReply}
             onForward={handleForward}
             onMarkUnread={handleMarkUnread}
+            onDownloadAttachment={handleDownloadAttachment}
           />
         ) : (
           <div className="flex flex-col items-center justify-center flex-1 w-full text-center gap-4 animate-in fade-in duration-500">
