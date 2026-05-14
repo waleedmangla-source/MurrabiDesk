@@ -4,7 +4,7 @@ import {
   Inbox, Star, Send, FileText, Trash2, Archive,
   Search, Edit3, RefreshCw, Loader2, CheckCircle,
   AlertCircle, X, Paperclip, ChevronDown, Reply,
-  MailOpen, Mail, User, ArrowLeft
+  MailOpen, Mail, User, ArrowLeft, Shield
 } from "lucide-react";
 import clsx from "clsx";
 import { GoogleSyncService } from '@/lib/google-sync-service';
@@ -32,7 +32,7 @@ interface Email {
   labels: string[];
 }
 
-type Folder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'trash' | 'archive';
+type Folder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'trash' | 'archive' | 'gs' | 'mic';
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
 
 interface ComposeData {
@@ -140,7 +140,7 @@ function ComposeModal({
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-white/5 backdrop-blur-md">
           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">Protocol: Compose</span>
           <div className="flex items-center gap-1">
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]">
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]">
               <X size={14} />
             </button>
           </div>
@@ -182,7 +182,7 @@ function ComposeModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-white/5">
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]">
+            <button className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]">
               <Paperclip size={15} />
             </button>
           </div>
@@ -309,25 +309,25 @@ function EmailDetail({
     <div className="flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
       {/* Detail Header */}
       <div className="shrink-0 px-6 py-4 border-b border-white/5 flex items-center justify-between">
-        <button onClick={onBack} className="lg:hidden p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)] mr-2">
+        <button onClick={onBack} className="lg:hidden p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)] mr-2">
           <ArrowLeft size={16} />
         </button>
         <h2 className="text-sm font-black text-[var(--foreground)] flex-1 truncate pr-4">{email.subject}</h2>
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onToggleStar(email.id)}
-            className={clsx("p-2 rounded-xl hover:bg-white/5 transition-all", email.starred ? "text-amber-400" : "text-[var(--text-dim)]")}
+            className={clsx("p-2 rounded-xl hover:bg-black/10 transition-all", email.starred ? "text-amber-400" : "text-[var(--text-dim)]")}
           >
             <Star size={15} fill={email.starred ? 'currentColor' : 'none'} />
           </button>
           <button
             onClick={() => onMarkUnread(email.id)}
-            className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
+            className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
             title="Mark as Unread"
           >
             <Mail size={15} />
           </button>
-          <button onClick={() => onArchive(email.id)} className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]" title="Archive">
+          <button onClick={() => onArchive(email.id)} className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]" title="Archive">
             <Archive size={15} />
           </button>
           <button onClick={() => onTrash(email.id)} className="p-2 rounded-xl hover:bg-red-500/20 transition-all text-[var(--text-dim)] hover:text-red-400" title="Delete">
@@ -354,14 +354,14 @@ function EmailDetail({
           <div className="flex items-center gap-1">
             <button 
               onClick={() => onReply(email)}
-              className="p-1.5 rounded-lg hover:bg-white/5 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+              className="p-1.5 rounded-lg hover:bg-black/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
               title="Reply"
             >
               <Reply size={14} />
             </button>
             <button 
               onClick={() => onForward(email)}
-              className="p-1.5 rounded-lg hover:bg-white/5 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
+              className="p-1.5 rounded-lg hover:bg-black/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
               title="Forward"
             >
               <Send size={14} className="rotate-[-45deg] translate-y-[-1px]" />
@@ -408,6 +408,8 @@ const FOLDERS: { id: Folder; label: string; icon: React.ElementType }[] = [
   { id: 'drafts',  label: 'Drafts',  icon: FileText },
   { id: 'trash',   label: 'Deleted', icon: Trash2 },
   { id: 'archive', label: 'Archive', icon: Archive },
+  { id: 'gs',      label: 'General Secretary', icon: User },
+  { id: 'mic',     label: 'Missionary In-Charge', icon: Shield },
 ];
 
 export default function EmailsPage() {
@@ -445,6 +447,8 @@ export default function EmailsPage() {
       else if (folder === 'drafts') gmailQuery = 'is:draft';
       else if (folder === 'trash') gmailQuery = 'is:trash';
       else if (folder === 'archive') gmailQuery = '-label:inbox -is:trash -is:spam';
+      else if (folder === 'gs') gmailQuery = 'from:gs@ahmadiyya.ca';
+      else if (folder === 'mic') gmailQuery = 'from:missionary.incharge@ahmadiyya.ca';
 
       // Add user search query if present
       if (query) gmailQuery += ` ${query}`;
@@ -811,9 +815,9 @@ export default function EmailsPage() {
                       "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
                       active
                         ? "font-black text-white border-[var(--accent-main)]"
-                        : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
+                        : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
                     )}
-                    style={active ? { background: 'rgba(0, 0, 0, 0.3)' } : {}}
+                    style={active ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
                   >
                     <Icon size={15} className="shrink-0" />
                     <span className="text-xs font-bold flex-1">{f.label}</span>
@@ -839,7 +843,7 @@ export default function EmailsPage() {
                     <button
                       key={recipient.email}
                       onClick={() => { setComposingInitial({ to: recipient.email }); setComposing(true); }}
-                      className="aspect-square flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group"
+                      className="aspect-square flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group"
                     >
                       <Avatar name={recipient.name} size="md" />
                       <div className="mt-2 text-[10px] font-black tracking-tight text-[var(--foreground)] truncate w-full text-center group-hover:text-[var(--accent-main)] transition-colors">
@@ -883,7 +887,7 @@ export default function EmailsPage() {
             </div>
             <button
               onClick={() => fetchEmails()}
-              className="p-2 rounded-xl hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
+              className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
               title="Refresh"
             >
               <SyncIcon size={15} className={(syncStatus === 'syncing' || isRefreshing) ? 'animate-spin' : ''} />
@@ -962,9 +966,10 @@ export default function EmailsPage() {
               onClick={() => handleSelect(email)}
               className={clsx(
                 "w-full flex items-start gap-3 px-4 py-4 border-b border-white/5 text-left transition-all group",
-                selected?.id === email.id ? "bg-[var(--accent-soft)]" : "hover:bg-white/5",
+                selected?.id === email.id ? "" : "hover:bg-black/10",
                 !email.read && "border-l-2 border-l-[var(--accent-main)]"
               )}
+              style={selected?.id === email.id ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
             >
               <Avatar name={email.fromName || email.from} size="sm" />
               <div className="flex-1 min-w-0">
