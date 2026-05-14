@@ -993,7 +993,7 @@ export default function EmailsPage() {
       )}>
         {/* List Header */}
         <div className="shrink-0 px-5 pt-8 pb-4 border-b border-white/5">
-          <h1 className="text-2xl font-black tracking-tighter text-white uppercase mb-4 truncate">
+          <h1 className="text-4xl font-black tracking-tighter text-white uppercase mb-4 truncate leading-none">
             {FOLDERS.find(f => f.id === folder)?.label || folder}
           </h1>
           <div className="flex items-center justify-between mb-3">
