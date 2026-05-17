@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Inter } from "next/font/google";
-import { useRouter } from "next/navigation";
+
 import "../styles/globals.css";
 import { 
   Home, 
@@ -49,9 +48,9 @@ const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string,
   'flup-blue': { main: '#2563eb', hover: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.25)', soft: 'rgba(37, 99, 235, 0.1)', rgb: '37, 99, 235' },
 };
 
-const inter = Inter({ subsets: ["latin"] });
-
+import { useRouter } from "next/navigation";
 import { GoogleSyncService } from '@/lib/google-sync-service';
+
 
 export default function RootLayout({
   children,
@@ -191,11 +190,12 @@ export default function RootLayout({
 
   if (!mounted) return (
     <html lang="en" className="dark">
-      <body className={clsx(inter.className, "bg-transparent")}>
+      <body className="bg-[#020310]">
         {children}
       </body>
     </html>
   );
+
 
   const currentAccent = ACCENT_COLORS[accentColor] || ACCENT_COLORS.flup;
   const isCreamyTheme = accentColor === 'creamy';
@@ -219,6 +219,10 @@ export default function RootLayout({
         <title>Murrabi Desk OS</title>
         <meta name="description" content="Premium Islamic Administrative Desktop Suite" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -228,10 +232,11 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="MurrabiDesk" />
       </head>
       <body className={clsx(
-        inter.className, 
+        "font-sans", 
         "bg-[#020310]", 
         "transition-colors duration-500"
       )}>
+
         {/* Mobile/Tablet sidebar drawer — hidden on desktop via CSS */}
         <SidebarDrawer
           open={isDrawerOpen}
