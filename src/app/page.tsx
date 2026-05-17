@@ -196,10 +196,10 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
-      <div className="flex items-end justify-between mb-2">
+    <div className="main-content flex flex-col gap-6 lg:gap-8 pb-8 lg:pb-12 animate-in fade-in duration-700 lg:h-screen lg:overflow-hidden">
+      <div className="flex items-end justify-between mb-1 lg:mb-2">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">Dashboard</h1>
+          <h1 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-white uppercase">Dashboard</h1>
         </div>
         
         {dashboardSettings.showAIPrompts && (
@@ -209,18 +209,18 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
         {diagnosticChecks.map((check) => (
-          <div key={check.label} className="glass p-5 flex flex-col gap-3 relative overflow-hidden group">
+          <div key={check.label} className="glass p-4 lg:p-5 flex flex-col gap-3 relative overflow-hidden group">
             <div className="flex items-center justify-between relative z-10">
-              <check.icon className={clsx(check.color, check.animate && "animate-spin")} size={20} />
-              <span className={clsx("text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-black/40", check.color)}>
+              <check.icon className={clsx(check.color, check.animate && "animate-spin")} size={18} />
+              <span className={clsx("text-[8px] lg:text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-black/40", check.color)}>
                 {check.status}
               </span>
             </div>
             <div className="relative z-10">
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">{check.label}</p>
-              <h3 className="text-xl font-black text-white mt-1 tracking-tighter italic">{check.val}</h3>
+              <p className="text-white/20 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">{check.label}</p>
+              <h3 className="text-lg lg:text-xl font-black text-white mt-1 tracking-tighter italic">{check.val}</h3>
             </div>
           </div>
         ))}
@@ -228,7 +228,7 @@ export default function Dashboard() {
         {/* Habit Progress Widget */}
         <div 
           onClick={() => router.push('/habits')}
-          className="glass p-5 flex flex-col gap-3 relative overflow-hidden group cursor-pointer hover:bg-white/[0.03] transition-all"
+          className="glass p-4 lg:p-5 flex flex-col gap-3 relative overflow-hidden group cursor-pointer hover:bg-white/[0.03] transition-all col-span-2 md:col-span-1"
         >
           <div className="flex items-center justify-between relative z-10">
             <Activity className="text-red-500" size={20} />
@@ -254,23 +254,23 @@ export default function Dashboard() {
 
 
       {dashboardSettings.showWorldClock && (
-        <section className="flex flex-wrap gap-4 no-drag px-2">
-          <WorldClock city="London" timezone="Europe/London" />
-          <WorldClock city="New York" timezone="America/New_York" />
-          <WorldClock city="Rabwah" timezone="Asia/Karachi" />
-          <WorldClock city="Toronto" timezone="America/Toronto" />
+        <section className="flex gap-3 lg:gap-4 no-drag overflow-x-auto pb-1 snap-x snap-mandatory lg:flex-wrap">
+          <div className="snap-start shrink-0"><WorldClock city="London" timezone="Europe/London" /></div>
+          <div className="snap-start shrink-0"><WorldClock city="New York" timezone="America/New_York" /></div>
+          <div className="snap-start shrink-0"><WorldClock city="Rabwah" timezone="Asia/Karachi" /></div>
+          <div className="snap-start shrink-0 hidden sm:block"><WorldClock city="Toronto" timezone="America/Toronto" /></div>
         </section>
       )}
 
-      <div className="grid grid-cols-12 gap-12 no-drag form-v4">
-        <div className="col-span-12 lg:col-span-7 flex flex-col gap-12 overflow-hidden">
-          <section className="glass rounded-[32px] overflow-hidden flex flex-col h-full border border-white/5 shadow-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 no-drag form-v4">
+        <div className="lg:col-span-7 flex flex-col gap-6 lg:gap-12 overflow-hidden">
+          <section className="glass rounded-[32px] overflow-hidden flex flex-col border border-white/5 shadow-2xl">
             <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
               <div className="dot !bg-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"></div>
               MISSION PROTOCOL • CALENDAR GRID
             </div>
             <div className="card-body">
-              <div className="flex justify-between items-center mb-10 pb-6 border-b border-v4-rule/30">
+              <div className="flex justify-between items-center mb-6 lg:mb-10 pb-4 lg:pb-6 border-b border-v4-rule/30">
                 <h2 className="text-xl font-black flex items-center gap-3 text-v4-ink">
                   <Calendar className="text-red-500" size={24} />
                   Operational Log
@@ -372,7 +372,7 @@ export default function Dashboard() {
           </section>
         </div>
 
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-6 overflow-hidden">
+        <div className="lg:col-span-5 flex flex-col gap-4 lg:gap-6 overflow-hidden">
            {dashboardSettings.showPrayerTimes && <PrayerTimes />}
 
             <section className="glass rounded-[32px] flex flex-col !p-0 overflow-hidden shadow-2xl group hover:border-red-500/30 transition-all flex-1 border border-white/5">

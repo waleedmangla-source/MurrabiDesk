@@ -28,8 +28,7 @@ import {
   Minus,
   Maximize2,
   Download,
-  Info,
-  MessageCircle
+  Info
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname } from "next/navigation";
@@ -37,6 +36,9 @@ import Link from "next/link";
 import { clsx } from "clsx";
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { liquid } from '@/lib/sync/bridge';
+import MobileHeader from '@/components/MobileHeader';
+import SidebarDrawer from '@/components/SidebarDrawer';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 
 const ACCENT_COLORS: Record<string, { main: string, hover: string, glow: string, soft: string, rgb: string }> = {
   // Creamy White — full light theme; accent vars overridden via data-theme CSS
@@ -58,11 +60,13 @@ export default function RootLayout({
 }>) {
   const [mounted, setMounted] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accentColor, setAccentColor] = useState("flup");
   const pathname = usePathname();
   const router = useRouter();
+  const { isNarrow } = useDeviceLayout();
 
   const navLinks = [
     { icon: Home, label: "Dashboard", href: "/" },
@@ -72,7 +76,6 @@ export default function RootLayout({
     { icon: FileText, label: "Notes", href: "/notes" },
     { icon: PenTool, label: "Writer", href: "/writer" },
     { icon: Receipt, label: "Expenses", href: "/expenses" },
-    { icon: MessageCircle, label: "WhatsApp", href: "/whatsapp" },
     { icon: Activity, label: "Routine", href: "/habits" },
     { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
   ];
@@ -107,6 +110,11 @@ export default function RootLayout({
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
       if (parsed.accentColor) setAccentColor(parsed.accentColor);
+    }
+
+    // Auto-collapse sidebar on narrow screens
+    if (window.innerWidth < 1024) {
+      setIsSidebarCollapsed(true);
     }
   }, []);
 
@@ -210,18 +218,30 @@ export default function RootLayout({
       <head>
         <title>Murrabi Desk OS</title>
         <meta name="description" content="Premium Islamic Administrative Desktop Suite" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#020310" />
         <link rel="apple-touch-icon" href="/icons/icon.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="MurrabiDesk" />
       </head>
       <body className={clsx(
         inter.className, 
         "bg-[#020310]", 
         "transition-colors duration-500"
       )}>
-        <div className="flex h-full w-full bg-transparent overflow-hidden relative">
+        {/* Mobile/Tablet sidebar drawer — hidden on desktop via CSS */}
+        <SidebarDrawer
+          open={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          userProfile={userProfile}
+          isLightTheme={isLightTheme}
+          accentColor={accentColor}
+        />
+
+        <div className="flex h-full lg:h-screen w-full bg-transparent lg:overflow-hidden relative flex-col lg:flex-row">
           <CommandPalette />
 
 
@@ -349,19 +369,24 @@ export default function RootLayout({
           <PWAInstallPrompt />
 
           <main className={clsx(
-            "flex-1 overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",
-            isSidebarCollapsed ? "pl-0" : "pl-0" // Flexible for future padding logic
+            "flex-1 lg:overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col",
           )}>
-             {/* MISSION LIP (Vertical Sidebar Handle) */}
+             {/* MISSION LIP (Vertical Sidebar Handle) — desktop only */}
              {isSidebarCollapsed && (
                <button 
                  onClick={() => setIsSidebarCollapsed(false)}
-                 className="fixed left-4 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-[100] animate-in fade-in slide-in-from-left-4"
+                 className="hidden lg:flex fixed left-4 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-[100] animate-in fade-in slide-in-from-left-4"
                  title="Open Sidebar (Cmd+D)"
                >
                  <ChevronRight size={18} />
                </button>
              )}
+             {/* Mobile/Tablet sticky top header */}
+             <MobileHeader
+               onMenuClick={() => setIsDrawerOpen(true)}
+               userProfile={userProfile}
+               isLightTheme={isLightTheme}
+             />
              {children}
           </main>
         </div>

@@ -446,9 +446,9 @@ export default function NotesPage() {
     : syncStatus === 'offline' ? 'text-white/20'
     : 'text-white/30';
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
-      {}
-      <div className="w-[240px] shrink-0 h-full border-r border-white/5 glass bg-black/20 flex flex-col animate-in fade-in slide-in-from-left-4 duration-500">
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
+      {/* Sidebar — desktop only */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full border-r border-white/5 glass bg-black/20 flex-col animate-in fade-in slide-in-from-left-4 duration-500">
         <div className="px-5 pt-12 pb-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md flex items-center justify-center bg-[var(--accent-main)] text-white">
@@ -491,10 +491,10 @@ export default function NotesPage() {
           </div>
         </div>
       </div>
-      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
-      {}
-      <div className="shrink-0 px-8 pt-12 pb-6 border-b border-white/5">
-        <div className="flex items-start justify-between mb-6">
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      {/* Header */}
+      <div className="shrink-0 px-4 lg:px-8 pt-4 lg:pt-12 pb-4 lg:pb-6 border-b border-white/5">
+        <div className="flex items-start justify-between mb-4 lg:mb-6">
           <div>
             <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">
               Inventory <span style={{ color: 'var(--accent-main)' }}>Notes</span>

@@ -859,9 +859,9 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* ── Sidebar ── */}
-      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0 secondary-sidebar">
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
+      {/* ── Sidebar — desktop only ── */}
+      <div className="hidden lg:flex w-[240px] glass bg-black/20 border-r border-white/5 flex-col h-full shrink-0 secondary-sidebar">
         {/* Mini calendar */}
         <MiniCalendar 
           selected={current} 
@@ -974,8 +974,33 @@ export default function CalendarPage() {
 
       {/* ── Main Calendar ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Toolbar */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5 shrink-0">
+        {/* Mobile toolbar — shown only on mobile/tablet */}
+        <div className="lg:hidden flex items-center gap-2 px-3 py-2 border-b border-white/5 glass bg-black/10 shrink-0 overflow-x-auto no-scrollbar">
+          <div className="flex bg-white/5 rounded-xl p-0.5 gap-0.5 border border-white/5 shrink-0">
+            {(["month","week","day"] as CalendarView[]).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={clsx(
+                  "px-3 py-1.5 rounded-[10px] text-[9px] font-black uppercase tracking-widest transition-all",
+                  view === v ? "bg-[var(--accent-main)] text-white shadow-sm" : "text-[var(--text-dim)] hover:text-[var(--foreground)]"
+                )}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl hover:bg-white/10 text-[var(--text-dim)] transition-colors"><ChevronLeft size={14} /></button>
+            <span className="text-[10px] font-black text-[var(--foreground)] whitespace-nowrap px-1">{headerLabel()}</span>
+            <button onClick={() => navigate(1)} className="p-1.5 rounded-xl hover:bg-white/10 text-[var(--text-dim)] transition-colors"><ChevronRight size={14} /></button>
+          </div>
+          <button onClick={() => setCurrent(today)} className="shrink-0 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/10 text-[var(--foreground)] hover:bg-white/5 transition-all ml-auto">Today</button>
+          <button onClick={() => { setDraft({ title: "", date: localDateStr(current), startTime: "09:00", endTime: "10:00", location: "", color: "accent" }); setShowNewEvent(true); }} className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest text-white transition-all active:scale-95" style={{ background: 'var(--accent-main)' }}><Plus size={11} />Event</button>
+        </div>
+
+        {/* Desktop toolbar */}
+        <div className="hidden lg:flex items-center gap-3 px-6 py-4 border-b border-white/5 shrink-0">
           {/* View switcher */}
           <div className="flex bg-white/5 rounded-xl p-0.5 gap-0.5 border border-white/5">
             {(["month","week","day"] as CalendarView[]).map(v => (

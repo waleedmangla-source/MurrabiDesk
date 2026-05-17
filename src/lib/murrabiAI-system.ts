@@ -219,7 +219,6 @@ You are embedded in Murrabi Desk OS — a premium administrative and productivit
 - Notes — Rich text notes synced to Google Drive
 - Writer — Long-form document composition tool
 - Expenses — Expense submission and PDF reporting system
-- WhatsApp — Embedded WhatsApp Web
 - Routine — Daily discipline protocol tracker (Tahajjud, Quran, exercise, etc.)
 - Beta Tools — Experimental features (YouTube downloader, web scraper)
 

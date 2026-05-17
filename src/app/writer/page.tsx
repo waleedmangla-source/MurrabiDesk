@@ -13,7 +13,7 @@ export default function WriterPage() {
     }, 150);
   };
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-y-auto px-8 py-12 custom-scrollbar bg-transparent">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto px-4 lg:px-8 py-6 lg:py-12 custom-scrollbar bg-transparent">
       {}
       <div className="flex flex-col gap-2 mb-12">
         <h1 className="text-4xl font-black italic tracking-tighter text-[var(--foreground)] uppercase flex items-center gap-4">

@@ -8,6 +8,7 @@ import {
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murrabiAI-system";
 import { GoogleSyncService } from "@/lib/google-sync-service";
+import SoftAurora from "@/components/SoftAurora";
 
 interface Message {
   id: string;
@@ -225,31 +226,41 @@ export default function MurrabiAIPage() {
     <div className="flex h-full w-full overflow-hidden">
       {/* ── MAIN CHAT AREA ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {/* Aurora Background */}
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+          <SoftAurora
+            speed={0.6}
+            color1="#4f11bd"
+            color2="#9c57d6"
+            brightness={1.2}
+          />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-8 pb-4 shrink-0">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between px-4 lg:px-8 pt-4 lg:pt-8 pb-3 lg:pb-4 shrink-0 relative z-10">
+          <div className="flex items-center gap-3 lg:gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center shadow-lg shadow-red-900/40">
-                <Sparkles size={22} className={clsx("text-white transition-all", isLoading && "animate-pulse")} />
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center shadow-lg shadow-red-900/40">
+                <Sparkles size={20} className={clsx("text-white transition-all", isLoading && "animate-pulse")} />
               </div>
               <span className={clsx("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#020310] transition-colors", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
             </div>
             <div>
-              <h1 className="text-2xl font-black italic tracking-tighter text-white uppercase">MurrabiAI</h1>
+              <h1 className="text-xl lg:text-2xl font-black italic tracking-tighter text-white uppercase">MurrabiAI</h1>
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-red-500/60">
                 {isLoading ? "Generating..." : "Ahmadiyya Intelligence Protocol"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3">
             {messages.length > 0 && (
               <button onClick={clearChat} className="p-2 rounded-xl text-white/20 hover:text-red-400 hover:bg-red-600/10 transition-all" title="Clear conversation">
                 <Trash2 size={16} />
               </button>
             )}
-            <button onClick={() => setIsPanelOpen(p => !p)} className="flex items-center gap-2 px-3 py-2 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all text-xs font-black">
+            <button onClick={() => setIsPanelOpen(p => !p)} className="flex items-center gap-2 px-2.5 lg:px-3 py-2 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all text-xs font-black">
               {isPanelOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-              {isPanelOpen ? "Hide" : "Prompts"}
+              <span className="hidden sm:inline">{isPanelOpen ? "Hide" : "Prompts"}</span>
             </button>
           </div>
         </div>
@@ -267,7 +278,7 @@ export default function MurrabiAIPage() {
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-4 space-y-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 pb-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-20 select-none">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-600/20 to-red-900/5 border border-red-500/20 flex items-center justify-center mb-6 shadow-2xl shadow-red-900/20">
@@ -337,7 +348,7 @@ export default function MurrabiAIPage() {
         </div>
 
         {/* Input */}
-        <div className="px-8 pb-6 pt-4 shrink-0">
+        <div className="px-4 lg:px-8 pb-4 lg:pb-6 pt-3 lg:pt-4 shrink-0 relative z-10">
           <div className="relative glass rounded-2xl border border-white/10 overflow-hidden focus-within:border-red-500/30 transition-all">
             {activeContexts.size > 0 && (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1 border-b border-white/5">
@@ -383,7 +394,8 @@ export default function MurrabiAIPage() {
       {/* ── RIGHT PANEL ── */}
       <div className={clsx(
         "min-h-0 glass border-l border-white/5 flex flex-col shrink-0 transition-all duration-500 overflow-hidden",
-        isPanelOpen ? "w-[300px] opacity-100" : "w-0 opacity-0 pointer-events-none"
+        "fixed lg:relative right-0 top-0 h-full z-[200] lg:z-auto shadow-2xl lg:shadow-none",
+        isPanelOpen ? "w-[280px] lg:w-[300px] opacity-100" : "w-0 opacity-0 pointer-events-none"
       )}>
         <div className="px-5 pt-8 pb-4 border-b border-white/5 shrink-0">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Mission Prompts</h3>

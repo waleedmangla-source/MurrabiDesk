@@ -856,9 +856,9 @@ export default function EmailsPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* ── Panel 1: Folder Sidebar ── */}
-      <div className="w-[240px] shrink-0 h-full flex flex-col border-r border-white/5 glass bg-black/20">
+    <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
+      {/* ── Panel 1: Folder Sidebar — Desktop only ── */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Email</h1>
@@ -986,14 +986,50 @@ export default function EmailsPage() {
         </div>
       </div>
 
+      {/* ── Mobile Folder Strip — shown only on mobile/tablet ── */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar">
+        <button
+          onClick={() => { setComposingInitial({}); setComposing(true); }}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95"
+          style={{ background: 'var(--accent-main)' }}
+        >
+          <Edit3 size={12} />
+          Compose
+        </button>
+        {FOLDERS.map(f => {
+          const count = f.id === 'inbox' ? unread : 0;
+          const Icon = f.icon;
+          const active = folder === f.id;
+          return (
+            <button
+              key={f.id}
+              onClick={() => { setFolder(f.id); setSelected(null); }}
+              className={clsx(
+                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                active
+                  ? "text-white"
+                  : "text-[var(--text-muted)] border border-white/10"
+              )}
+              style={active ? { background: 'var(--accent-main)' } : {}}
+            >
+              <Icon size={11} />
+              {f.label}
+              {count > 0 && <span className="ml-1 text-[8px] font-black">{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+
       {/* ── Panel 2: Email List ── */}
       <div className={clsx(
-        "flex flex-col border-r border-white/5 bg-transparent h-full overflow-hidden",
-        selected ? "hidden lg:flex lg:w-[340px] xl:w-[380px] shrink-0" : "flex-1 lg:w-[340px] xl:w-[380px] lg:flex-none lg:shrink-0"
+        "flex flex-col border-b lg:border-b-0 lg:border-r border-white/5 bg-transparent overflow-hidden",
+        selected
+          ? "hidden lg:flex lg:w-[340px] xl:w-[380px] lg:shrink-0 lg:h-full"
+          : "flex w-full lg:w-[340px] xl:w-[380px] lg:flex-none lg:shrink-0 lg:h-full"
       )}>
         {/* List Header */}
-        <div className="shrink-0 px-5 pt-8 pb-4 border-b border-white/5">
-          <h1 className="text-4xl font-black tracking-tighter text-white uppercase mb-4 truncate leading-none">
+        <div className="shrink-0 px-4 lg:px-5 pt-4 lg:pt-8 pb-4 border-b border-white/5">
+          <h1 className="text-2xl lg:text-4xl font-black tracking-tighter text-white uppercase mb-3 truncate leading-none">
             {FOLDERS.find(f => f.id === folder)?.label || folder}
           </h1>
           <div className="flex items-center justify-between mb-3">
@@ -1133,7 +1169,10 @@ export default function EmailsPage() {
       </div>
 
       {/* ── Panel 3: Email Detail ── */}
-      <div className={clsx("flex-1 h-full overflow-hidden bg-black/10", selected ? "flex flex-col" : "hidden lg:flex lg:flex-col")}>
+      <div className={clsx(
+        "flex-1 overflow-hidden bg-black/10",
+        selected ? "flex flex-col" : "hidden lg:flex lg:flex-col"
+      )}>
         {selected ? (
           <EmailDetail
             email={selected}

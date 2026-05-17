@@ -1008,9 +1008,9 @@ ${formData.comments || 'None'}
   const availableSECS = useMemo(() => SECS.filter(s => !s.isH && !activeIndices.includes(s.idx!)), [activeIndices]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* Navigation Sidebar (Left) */}
-      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
+      {/* Navigation Sidebar (Left) — desktop only */}
+      <div className="hidden lg:flex w-[240px] glass bg-black/20 border-r border-white/5 flex-col h-full shrink-0">
         <div className="no-drag h-[60px] shrink-0">
           {/* Header removed for minimalist layout - space reserved for drag area */}
         </div>
@@ -1230,7 +1230,46 @@ ${formData.comments || 'None'}
         </nav>
       </div>
 
-      <div className="flex-1 main-content flex flex-col h-screen overflow-y-auto scroll-smooth">
+      <div className="flex-1 main-content flex flex-col h-full overflow-y-auto scroll-smooth">
+        {/* Mobile tab strip */}
+        <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto px-3 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar">
+          {[
+            { id: 'overview', label: 'Overview', icon: '⚡' },
+            { id: 'create', label: 'New Expense', icon: '+' },
+            { id: 'external', label: 'External', icon: '💳' },
+            { id: 'history-Drafts', label: 'Drafts', icon: '📝' },
+            { id: 'history-Pending', label: 'Pending', icon: '⏳' },
+            { id: 'history-Refunded', label: 'Refunded', icon: '✅' },
+          ].map(tab => {
+            const isActive = tab.id.startsWith('history')
+              ? activeTab === 'history' && activeCategory === tab.id.split('-')[1]
+              : activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id.startsWith('history')) {
+                    setActiveTab('history');
+                    setActiveCategory(tab.id.split('-')[1] as any);
+                  } else if (tab.id === 'create') {
+                    startNewReport(); setActiveTab('create');
+                  } else {
+                    setActiveTab(tab.id as any);
+                  }
+                }}
+                className={clsx(
+                  "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                  isActive
+                    ? "text-white"
+                    : "text-white/40 border border-white/10 hover:text-white/70"
+                )}
+                style={isActive ? { background: 'var(--accent-main)' } : undefined}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
         {activeTab === 'overview' && (
           <div className="p-12 flex flex-col items-center justify-center h-full text-center animate-in fade-in zoom-in-95 duration-500">
              <div className="w-20 h-20 rounded-full bg-[var(--accent-soft)] flex items-center justify-center mb-6 border border-[var(--accent-soft)] relative group">

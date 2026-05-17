@@ -20,6 +20,93 @@
   --sidebar-width: 240px;
 }
 
+/* ═══════════════════════════════════════════════
+   MOBILE & TABLET RESPONSIVE FOUNDATION
+   ═══════════════════════════════════════════════ */
+
+/* Dynamic viewport height — avoids browser chrome issues on iOS */
+.h-dvh  { height: 100dvh; }
+.min-h-dvh { min-height: 100dvh; }
+
+/* Mobile header bar */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* Sidebar drawer overlay */
+.sidebar-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 199;
+  animation: fadeIn 0.2s ease;
+}
+.sidebar-drawer-panel {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  width: 280px;
+  max-width: 85vw;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(0);
+  transition: transform 0.35s cubic-bezier(0.2, 1, 0.4, 1);
+}
+.sidebar-drawer-panel.closed {
+  transform: translateX(-100%);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Unlock body scroll on mobile/tablet — desktop keeps overflow:hidden */
+@media (max-width: 1023px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100dvh;
+  }
+  .main-content {
+    height: auto !important;
+    min-height: calc(100dvh - 56px); /* subtract mobile header height */
+    overflow-y: visible;
+    padding: 1rem !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .main-content {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Safe-area support for notches and home indicators */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .mobile-header {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .sidebar-drawer-panel {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
 
 [data-theme="creamy"] {
   --foreground: #1a1209;
@@ -758,3 +845,7 @@ body {
   pointer-events: none;
 }
 
+
+/* Hide scrollbar while keeping scroll — used for mobile horizontal strips */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

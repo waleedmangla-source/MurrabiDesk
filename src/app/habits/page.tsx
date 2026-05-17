@@ -252,15 +252,15 @@ export default function HabitsPage() {
   };
 
   return (
-    <div className="main-content flex flex-col gap-8 pb-12 animate-in fade-in duration-700 h-screen overflow-hidden">
+    <div className="main-content flex flex-col gap-4 lg:gap-8 pb-12 animate-in fade-in duration-700 h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-end justify-between mb-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-0 lg:mb-2">
         <div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter italic text-main uppercase">Daily Field Report</h1>
-          <p className="text-micro mt-2">Routine Discipline & Spiritual Integrity Protocol</p>
+          <h1 className="text-4xl lg:text-5xl xl:text-7xl font-black tracking-tighter italic text-main uppercase">Daily Field Report</h1>
+          <p className="text-micro mt-2">Routine Discipline &amp; Spiritual Integrity Protocol</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
           {isGuest ? (
             <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2">
               <CloudOff size={12} className="text-amber-500" />
@@ -273,7 +273,7 @@ export default function HabitsPage() {
             </div>
           )}
           
-          <div className="flex bg-black/20 p-1 rounded-[14px] border border-white/5 no-drag">
+          <div className="flex bg-black/20 p-1 rounded-[14px] border border-white/5 no-drag overflow-x-auto no-scrollbar">
             <button 
               onClick={() => setActiveTab('form')}
               className={clsx(
@@ -306,9 +306,9 @@ export default function HabitsPage() {
           <button 
             onClick={loadData}
             disabled={isSyncing}
-            className="p-3 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all active:scale-95"
+            className="p-2.5 lg:p-3 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all active:scale-95"
           >
-            <Save size={18} className={clsx(isSyncing && "animate-spin")} />
+            <Save size={16} className={clsx(isSyncing && "animate-spin")} />
           </button>
         </div>
       </div>
