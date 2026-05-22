@@ -94,12 +94,10 @@ export default function SidebarDrawer({
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        {/* Ambient glow for dark theme */}
-        {!isLightTheme && (
-          <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)]" />
-          </div>
-        )}
+        {/* Ambient glow — always emerald */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_50%)]" />
+        </div>
 
         {/* Header row */}
         <div className="relative z-10 flex items-center justify-between mb-2">
@@ -122,19 +120,13 @@ export default function SidebarDrawer({
 
         {/* Tagline */}
         <div className="flex items-center gap-1.5 relative z-10 mb-1">
-          <p className={clsx(
-            "text-[9px] font-black uppercase tracking-[0.3em]",
-            isFlupTheme ? "text-[#10b981]/60" : "text-red-500/60"
-          )}>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]/60">
             CREATED BY WALEED M.
           </p>
           <div className="relative group/tooltip">
             <Info
               size={10}
-              className={clsx(
-                "cursor-pointer transition-opacity hover:opacity-100 opacity-50",
-                isFlupTheme ? "text-[#10b981]" : "text-red-500"
-              )}
+              className="cursor-pointer transition-opacity hover:opacity-100 opacity-50 text-[#10b981]"
             />
             <div className="absolute left-0 mt-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
               This is a volunteer project created for productivity purposes only.
@@ -156,7 +148,7 @@ export default function SidebarDrawer({
               <link.icon size={20} className="transition-all duration-300 shrink-0" />
               <span className="text-sm tracking-wide">{link.label}</span>
               {link.label === "MurrabiAI" && (
-                <div className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
               )}
             </Link>
           ))}
@@ -170,7 +162,7 @@ export default function SidebarDrawer({
               className={clsx(
                 "flex-grow flex items-center gap-3 p-1.5 px-3 rounded-2xl border transition-all",
                 pathname === "/profile"
-                  ? "bg-red-600/10 border-red-500/30"
+                  ? "bg-emerald-500/10 border-emerald-500/30"
                   : "border-white/10 bg-white/5 shadow-sm"
               )}
             >
@@ -185,7 +177,7 @@ export default function SidebarDrawer({
                 <h4 className="text-[11px] font-black text-v4-ink truncate leading-none mb-1">
                   {userProfile?.name || "Waleed Mangla"}
                 </h4>
-                <p className="text-[8px] font-black text-red-500/40 uppercase tracking-widest truncate">
+                <p className="text-[8px] font-black text-emerald-500/40 uppercase tracking-widest truncate">
                   HQ Protocol
                 </p>
               </div>
