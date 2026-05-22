@@ -8,7 +8,7 @@ import {
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murrabiAI-system";
 import { GoogleSyncService } from "@/lib/google-sync-service";
-import SoftAurora from "@/components/SoftAurora";
+import Noise from "@/components/ui/Noise";
 
 interface Message {
   id: string;
@@ -226,14 +226,17 @@ export default function MurrabiAIPage() {
     <div className="flex h-full w-full overflow-hidden">
       {/* ── MAIN CHAT AREA ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Aurora Background */}
-        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-          <SoftAurora
-            speed={0.6}
-            color1="#4f11bd"
-            color2="#9c57d6"
-            brightness={1.2}
-          />
+        {/* Noise Background */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
+            <Noise
+              patternSize={25}
+              patternScaleX={0.9}
+              patternScaleY={0.9}
+              patternRefreshInterval={8}
+              patternAlpha={25}
+            />
+          </div>
         </div>
 
         {/* Header */}

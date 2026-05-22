@@ -17,6 +17,7 @@ import {
   User,
   X,
   Info,
+  HardDrive,
 } from "lucide-react";
 
 const navLinks = [
@@ -28,6 +29,7 @@ const navLinks = [
   { icon: PenTool, label: "Writer", href: "/writer" },
   { icon: Receipt, label: "Expenses", href: "/expenses" },
   { icon: Activity, label: "Routine", href: "/habits" },
+  { icon: HardDrive, label: "Drive", href: "/drive" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 

@@ -15,6 +15,7 @@ import {
   Activity,
   PenTool,
   Info,
+  HardDrive,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,26 +31,12 @@ const ACCENT_COLORS: Record<
   string,
   { main: string; hover: string; glow: string; soft: string; rgb: string }
 > = {
-  creamy: {
-    main: "#44403c",
-    hover: "#1c1917",
-    glow: "rgba(68, 64, 60, 0.25)",
-    soft: "rgba(68, 64, 60, 0.08)",
-    rgb: "68, 64, 60",
-  },
   flup: {
     main: "#10b981",
     hover: "#059669",
     glow: "rgba(16, 185, 129, 0.25)",
     soft: "rgba(16, 185, 129, 0.1)",
     rgb: "16, 185, 129",
-  },
-  "flup-blue": {
-    main: "#2563eb",
-    hover: "#1d4ed8",
-    glow: "rgba(37, 99, 235, 0.25)",
-    soft: "rgba(37, 99, 235, 0.1)",
-    rgb: "37, 99, 235",
   },
 };
 
@@ -62,6 +49,7 @@ const navLinks = [
   { icon: PenTool, label: "Writer", href: "/writer" },
   { icon: Receipt, label: "Expenses", href: "/expenses" },
   { icon: Activity, label: "Routine", href: "/habits" },
+  { icon: HardDrive, label: "Drive", href: "/drive" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 
@@ -118,16 +106,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     root.style.setProperty("--accent-soft", accent.soft);
     root.style.setProperty("--accent-rgb", accent.rgb);
 
-    const isLight = ["creamy", "flup", "flup-blue"].includes(accentColor);
-    const isCreamyTheme = accentColor === "creamy";
-    const isFlupTheme = accentColor === "flup";
-    const isFlupBlueTheme = accentColor === "flup-blue";
-
-    root.className = isLight ? "" : "dark";
-    root.removeAttribute("data-theme");
-    if (isCreamyTheme) root.setAttribute("data-theme", "creamy");
-    else if (isFlupTheme) root.setAttribute("data-theme", "flup");
-    else if (isFlupBlueTheme) root.setAttribute("data-theme", "flup-blue");
+    root.className = "";
+    root.setAttribute("data-theme", "flup");
   }, [accentColor, mounted]);
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
@@ -183,8 +163,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [mounted, pathname, router]);
 
   // ── Derived theme values ──────────────────────────────────────────────────
-  const isFlupTheme = accentColor === "flup";
-  const isLightTheme = ["creamy", "flup", "flup-blue"].includes(accentColor);
+  const isFlupTheme = true;
+  const isLightTheme = true;
 
   // ── Before mount: render children inside a dark shell (no sidebar flash) ──
   if (!mounted) {
@@ -216,13 +196,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             isSidebarCollapsed ? "-ml-60 opacity-0 pointer-events-none" : "ml-0 opacity-100"
           )}
         >
-          {/* Ambient background */}
-          {!isLightTheme && (
-            <div className="absolute inset-0 pointer-events-none z-0">
-              <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15)_0%,transparent_50%)]" />
-              <div className="absolute inset-0 animate-[pulse_4s_ease-in-out_infinite] bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
-            </div>
-          )}
+          {/* Ambient background — emerald glow */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08)_0%,transparent_50%)]" />
+          </div>
 
           {/* Collapse button */}
           <button
@@ -242,19 +219,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               />
             </div>
             <div className="flex items-center justify-center gap-1.5">
-              <p className={clsx(
-                "text-[9px] font-black uppercase tracking-[0.3em]",
-                isFlupTheme ? "text-[#10b981]/60" : "text-red-500/60"
-              )}>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#10b981]/60">
                 CREATED BY WALEED M.
               </p>
               <div className="relative group/tooltip">
                 <Info
                   size={10}
-                  className={clsx(
-                    "cursor-pointer transition-opacity hover:opacity-100 opacity-50",
-                    isFlupTheme ? "text-[#10b981]" : "text-red-500"
-                  )}
+                  className="cursor-pointer transition-opacity hover:opacity-100 opacity-50 text-[#10b981]"
                 />
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
                   This is a volunteer project created for productivity purposes only.
@@ -288,7 +259,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <link.icon size={20} className="transition-all duration-300" />
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
                 {link.label === "MurrabiAI" && (
-                  <div className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                  <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                 )}
               </Link>
             ))}
@@ -302,7 +273,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 className={clsx(
                   "flex-grow flex items-center gap-3 p-1.5 px-3 rounded-2xl border transition-all",
                   pathname === "/profile"
-                    ? "bg-red-600/10 border-red-500/30"
+                    ? "bg-emerald-500/10 border-emerald-500/30"
                     : "border-white/10 bg-white/5 shadow-sm"
                 )}
               >
@@ -317,7 +288,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <h4 className="text-[11px] font-black text-v4-ink truncate leading-none mb-1">
                     {userProfile?.name || "Waleed Mangla"}
                   </h4>
-                  <p className="text-[8px] font-black text-red-500/40 uppercase tracking-widest truncate">
+                  <p className="text-[8px] font-black text-emerald-500/40 uppercase tracking-widest truncate">
                     HQ Protocol
                   </p>
                 </div>
