@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 
-type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'terminal';
+type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper';
 
 const Sparkles = ({ size, className }: { size: number, className: string }) => (
   <svg 
@@ -226,8 +226,7 @@ export default function BetaToolsPage() {
     { id: 'overview', label: 'Lab Overview', icon: LayoutDashboard, color: 'text-blue-500', desc: 'System Diagnostic' },
     { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurrabiAI Beta' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
-    { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' },
-    { id: 'terminal', label: 'Mission Console', icon: TerminalIcon, color: 'text-gray-400', desc: 'Root Access' }
+    { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' }
   ];
 
   return (
@@ -572,64 +571,6 @@ export default function BetaToolsPage() {
           </div>
         )}
 
-        {activeTab === 'terminal' && (
-          <div className="h-full flex flex-col">
-            <div className="mb-8 flex items-center justify-between">
-              <div>
-                <h2 className="text-4xl font-black tracking-tighter mb-2">Mission Console</h2>
-                <div className="flex items-center gap-3">
-                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/40 text-[8px] font-black uppercase tracking-widest">Root Access Granted</span>
-                  <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">Kernel v6.2.0-murrabi</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => setTerminalLogs(["[SYSTEM] Terminal Reset."])}
-                className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-red-600/10 hover:border-red-600/50 transition-all text-white/40 hover:text-red-500"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-
-            <div className="flex-1 glass border border-white/5 bg-black/40 rounded-[32px] overflow-hidden flex flex-col font-mono relative">
-              <div className="absolute top-4 right-6 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald-500/60 tracking-widest">LIVE</span>
-              </div>
-
-              <div 
-                ref={terminalRef}
-                className="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-1 text-sm"
-              >
-                {terminalLogs.map((log, i) => (
-                  <div key={i} className={clsx(
-                    "transition-all duration-300",
-                    log.startsWith('$') ? "text-emerald-400 font-bold mt-4" : 
-                    log.includes('[ERROR]') ? "text-red-500" :
-                    log.includes('[SYSTEM]') ? "text-blue-400" :
-                    "text-white/60"
-                  )}>
-                    {log}
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-4 bg-black/40 border-t border-white/5">
-                <form onSubmit={handleTerminalSubmit} className="flex items-center gap-3 px-4">
-                  <span className="text-emerald-500 font-black">$</span>
-                  <input
-                    type="text"
-                    value={terminalInput}
-                    onChange={(e) => setTerminalInput(e.target.value)}
-                    className="flex-1 bg-transparent border-none outline-none text-emerald-400 font-mono text-sm"
-                    placeholder="Enter command..."
-                    autoFocus
-                  />
-                  <CornerDownLeft size={14} className="text-white/20" />
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <style jsx>{`

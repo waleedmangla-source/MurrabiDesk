@@ -1373,6 +1373,66 @@ ${formData.comments || 'None'}
                                 <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${parseFloat(form.total).toFixed(2)}</p>
                               </div>
                            </div>
+
+                           {(() => {
+                             let parsedData: any = null;
+                             if (form.data) {
+                               try {
+                                 parsedData = typeof form.data === 'string' ? JSON.parse(form.data) : form.data;
+                               } catch (e) {
+                                 console.warn(e);
+                               }
+                             }
+
+                             const hasBreakdown = parsedData && parsedData.activeIndices && parsedData.activeIndices.length > 0;
+                             const commentsToShow = form.comments || parsedData?.formData?.comments || '';
+                             const otherLabelToShow = parsedData?.formData?.other_label || '';
+
+                             if (!hasBreakdown && !commentsToShow && !otherLabelToShow) return null;
+
+                             return (
+                               <div className="pt-3 border-t border-white/5 space-y-3">
+                                 {hasBreakdown && (
+                                   <div className="space-y-1.5">
+                                     <span className="text-[9px] font-black uppercase text-[var(--text-dim)] tracking-wider">Itemized Claims</span>
+                                     <div className="grid grid-cols-1 gap-1.5 bg-black/20 rounded-xl p-3 border border-white/5">
+                                       {parsedData.activeIndices.map((idx: number) => {
+                                         const sec = SECS.find(s => s.idx === idx);
+                                         if (!sec) return null;
+                                         const item = parsedData.itemData?.[idx];
+                                         const hasHST = item?.hst && parseFloat(item.hst) > 0;
+                                         return (
+                                           <div key={idx} className="flex justify-between items-center text-[11px] text-[var(--text-main)]">
+                                             <div className="flex flex-col">
+                                               <span className="font-bold">{sec.label}</span>
+                                               {(idx === 5 || idx === 15 || idx === 21) && otherLabelToShow && (
+                                                 <span className="text-[10px] text-[var(--accent-main)] italic">Desc: "{otherLabelToShow}"</span>
+                                               )}
+                                             </div>
+                                             <div className="flex items-center gap-4 text-right">
+                                               {hasHST && (
+                                                 <span className="text-[10px] text-[var(--text-dim)]">HST: ${parseFloat(item.hst).toFixed(2)}</span>
+                                               )}
+                                               <span className="font-black text-[var(--text-main)]">${parseFloat(item?.total || '0').toFixed(2)}</span>
+                                             </div>
+                                           </div>
+                                         );
+                                       })}
+                                     </div>
+                                   </div>
+                                 )}
+
+                                 {commentsToShow && (
+                                   <div className="space-y-1">
+                                     <span className="text-[9px] font-black uppercase text-[var(--text-dim)] tracking-wider">Executive Comments</span>
+                                     <p className="text-[11px] leading-relaxed text-[var(--text-main)] bg-black/10 rounded-xl p-3 border border-white/5 italic">
+                                       "{commentsToShow}"
+                                     </p>
+                                   </div>
+                                 )}
+                               </div>
+                             );
+                           })()}
                            
                            <div className="mt-2 pt-4 border-t border-white/5 flex items-center justify-between">
                               <label className="flex items-center gap-3 cursor-pointer group/chk select-none">
