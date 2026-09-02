@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, context } = await req.json();
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY || "AIzaSyCLWj-231eihsQNUQQafjKrczPu5d6jl2g";
     if (!apiKey) {
       return NextResponse.json({ 
         error: 'GOOGLE_AI_API_KEY not configured. Please add it to your .env.local file from Google AI Studio (aistudio.google.com).',
