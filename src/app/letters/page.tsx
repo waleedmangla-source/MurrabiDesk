@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollText,
   Crown,
@@ -15,11 +15,12 @@ import {
   Loader2,
   AlertCircle,
   Mail,
-  User,
-  Hash,
-  Briefcase,
   FileText,
   Sparkles,
+  Calendar,
+  Globe,
+  Heart,
+  Building,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -41,7 +42,7 @@ const CATEGORIES: LetterCategory[] = [
     recipient: "His Holiness Hazrat Mirza Masroor Ahmad (aba)",
     recipientEmail: "private.secretary@ahmadiyya.org.uk",
     icon: Crown,
-    description: "Official correspondence & prayers request addressed to Huzoor (aba)",
+    description: "Official correspondence & petitions addressed directly to Huzoor (aba)",
     tag: "HQ Protocol",
   },
   {
@@ -82,18 +83,61 @@ const CATEGORIES: LetterCategory[] = [
   },
 ];
 
+// Sub-categories for Letter to Huzoor
+type HuzoorSubCategory = "prayers" | "leave_international" | "uk_accommodation";
+
+const HUZOOR_SUB_CATEGORIES: { id: HuzoorSubCategory; label: string; icon: React.ElementType }[] = [
+  { id: "prayers", label: "Letter for Prayers", icon: Heart },
+  { id: "leave_international", label: "Leave Request (International)", icon: Globe },
+  { id: "uk_accommodation", label: "Request for Accommodation (UK Only)", icon: Building },
+];
+
+// Country list excluding Canada
+const COUNTRIES_EXCLUDING_CANADA = [
+  "United Kingdom",
+  "Pakistan",
+  "United States",
+  "Germany",
+  "India",
+  "Turkey",
+  "Saudi Arabia",
+  "United Arab Emirates",
+  "Ghana",
+  "Nigeria",
+  "Kenya",
+  "Tanzania",
+  "Australia",
+  "Spain",
+  "France",
+  "Switzerland",
+  "Norway",
+  "Sweden",
+  "Denmark",
+  "Netherlands",
+  "Belgium",
+  "Japan",
+  "Malaysia",
+  "Indonesia",
+  "Other",
+];
+
 export default function LettersPage() {
   const [activeCategoryId, setActiveCategoryId] = useState<string>("huzoor");
+  const [huzoorSubCat, setHuzoorSubCat] = useState<HuzoorSubCategory>("prayers");
 
-  // Form Fields
+  // General Form Fields
   const [name, setName] = useState("ولید احمد منگلا");
   const [code, setCode] = useState("12878");
   const [designation, setDesignation] = useState("مربی سلسلہ");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState(
-    "خدا تعالیٰ سے دعا ہے کہ خدا تعالیٰ آپ کو صحت والی زندگی عطا فرمائے۔ آمین۔"
-  );
+  const [customMessage, setCustomMessage] = useState("");
+
+  // Leave Request (International) Specific Fields
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("United Kingdom");
+  const [includeWifePermission, setIncludeWifePermission] = useState(false);
 
   // States
   const [sending, setSending] = useState(false);
@@ -104,18 +148,83 @@ export default function LettersPage() {
   const currentCategory = CATEGORIES.find((c) => c.id === activeCategoryId)!;
   const CategoryIcon = currentCategory.icon;
 
-  // Sync recipient email whenever category changes
+  // Compute final Urdu text body dynamically based on sub-category selection
+  const computedUrduBody = React.useMemo(() => {
+    if (activeCategoryId !== "huzoor") {
+      return customMessage || "خدا تعالیٰ سے دعا ہے کہ خدا تعالیٰ آپ کو صحت والی زندگی عطا فرمائے۔ آمین۔";
+    }
+
+    if (huzoorSubCat === "prayers") {
+      return (
+        customMessage ||
+        "حضور انور ایدہ اللہ تعالیٰ بنصرہ العزیز کی خدمت اقدس میں عاجزانہ درخواست دعا ہے کہ اللہ تعالیٰ حضور انور کو صحت، سلامتی اور لمبی عمر بالخیر عطا فرمائے اور حضور انور کا بابرکت سایہ ہمارے سروں پر قائم رکھے۔ آمین۔\n\nخدا تعالیٰ سے دعا ہے کہ خدا تعالیٰ آپ کو صحت والی زندگی عطا فرمائے۔ آمین۔"
+      );
+    }
+
+    if (huzoorSubCat === "leave_international") {
+      const datesText =
+        fromDate && toDate
+          ? `تاریخ ${fromDate} تا ${toDate}`
+          : "مقررہ تواریخ";
+      const countryText = selectedCountry || "بیرون ملک";
+
+      let text = `عاجزانہ درخواست ہے کہ خاکسار کو ${countryText} کا سفر اختیار کرنے کی اجازت مرحمت فرمائی جائے۔ خاکسار کی رخصت کی تواریخ ${datesText} تک مطلوب ہیں۔`;
+
+      if (includeWifePermission) {
+        text += ` نیز خاکسار کی اہلیہ محترمہ کو بھی ساتھ سفر کرنے کی اجازت مرحمت فرمائی جائے۔`;
+      }
+
+      text += `\n\nحضور انور ایدہ اللہ تعالیٰ کی خدمت میں عاجزانہ دعا کی درخواست ہے۔ اللہ تعالیٰ حضور انور کا سایہ ہمارے سروں پر دراز فرمائے۔ آمین۔`;
+
+      if (customMessage) {
+        text += `\n\n${customMessage}`;
+      }
+
+      return text;
+    }
+
+    if (huzoorSubCat === "uk_accommodation") {
+      let text = `عاجزانہ درخواست ہے کہ خاکسار کے یوکے (UK) کے دورہ کے دوران رہا ئش (Accommodation) کا انتظام فرمانے کی اجازت و سہولت مرحمت فرمائی جائے۔`;
+
+      if (fromDate && toDate) {
+        text += ` خاکسار کا قیام مورخہ ${fromDate} تا ${toDate} تک ہوگا۔`;
+      }
+
+      text += `\n\nحضور انور ایدہ اللہ تعالیٰ کی خدمت میں عاجزانہ دعا کی درخواست ہے۔ آمین۔`;
+
+      if (customMessage) {
+        text += `\n\n${customMessage}`;
+      }
+
+      return text;
+    }
+
+    return customMessage;
+  }, [
+    activeCategoryId,
+    huzoorSubCat,
+    customMessage,
+    fromDate,
+    toDate,
+    selectedCountry,
+    includeWifePermission,
+  ]);
+
+  // Sync recipient email & subject whenever category/sub-category changes
   useEffect(() => {
     setRecipientEmail(currentCategory.recipientEmail);
-    setSubject(`Letter to ${currentCategory.recipient} - ${name || "Murrabi Desk"}`);
-  }, [activeCategoryId, currentCategory, name]);
+    if (activeCategoryId === "huzoor") {
+      const subLabel = HUZOOR_SUB_CATEGORIES.find((s) => s.id === huzoorSubCat)?.label;
+      setSubject(`Letter to Huzoor (aba) - ${subLabel} - ${name || "Murrabi Desk"}`);
+    } else {
+      setSubject(`Letter to ${currentCategory.recipient} - ${name || "Murrabi Desk"}`);
+    }
+  }, [activeCategoryId, huzoorSubCat, currentCategory, name]);
 
-  // Handle PDF Export / Print
   const handlePrintPdf = () => {
     window.print();
   };
 
-  // Handle Send via Email
   const handleSendEmail = async () => {
     if (!recipientEmail) {
       setErrorMessage("Please specify a recipient email address.");
@@ -125,7 +234,6 @@ export default function LettersPage() {
     setErrorMessage("");
     setSendSuccess(false);
 
-    // Build formatted HTML version of the letter
     const htmlBody = `
       <div style="font-family: 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif; direction: rtl; text-align: right; padding: 30px; background-color: #ffffff; color: #111827; max-width: 650px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold; line-height: 1.8;">
@@ -139,7 +247,7 @@ export default function LettersPage() {
         </div>
         
         <div style="font-size: 18px; margin-bottom: 40px; line-height: 2.2; white-space: pre-wrap;">
-          ${message}
+          ${computedUrduBody}
         </div>
         
         <div style="font-size: 18px; line-height: 1.8; margin-top: 30px;">
@@ -306,7 +414,6 @@ export default function LettersPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* View Mode Switcher */}
             <div className="flex bg-black/30 p-1 rounded-xl border border-white/10">
               <button
                 onClick={() => setViewMode("edit")}
@@ -334,7 +441,6 @@ export default function LettersPage() {
               </button>
             </div>
 
-            {/* Download / Print PDF */}
             <button
               onClick={handlePrintPdf}
               className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white/80 hover:text-white glass border border-white/10 hover:border-white/20 transition-all"
@@ -344,7 +450,6 @@ export default function LettersPage() {
               <span>Export PDF</span>
             </button>
 
-            {/* Send Button */}
             <button
               onClick={handleSendEmail}
               disabled={sending || !recipientEmail}
@@ -375,7 +480,7 @@ export default function LettersPage() {
           </div>
         )}
 
-        {/* Form vs Preview Content Split / View */}
+        {/* Form vs Preview Workspace */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
           {viewMode === "edit" ? (
             <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -385,6 +490,127 @@ export default function LettersPage() {
                   <FileText size={18} className="text-[var(--accent-main)]" />
                   <span>Letter Details</span>
                 </h3>
+
+                {/* --- Huzoor Sub-Category Dropdown --- */}
+                {activeCategoryId === "huzoor" && (
+                  <div className="p-4 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 space-y-3">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                      Select Request Category (قسم کا انتخاب)
+                    </label>
+                    <select
+                      value={huzoorSubCat}
+                      onChange={(e) => setHuzoorSubCat(e.target.value as HuzoorSubCategory)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white outline-none focus:border-[var(--accent-main)] transition-all"
+                    >
+                      {HUZOOR_SUB_CATEGORIES.map((sub) => (
+                        <option key={sub.id} value={sub.id} className="bg-gray-900 text-white">
+                          {sub.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Specific Fields for "Leave Request (International)" */}
+                    {huzoorSubCat === "leave_international" && (
+                      <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+                        {/* Dates */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
+                              <Calendar size={11} className="text-[var(--accent-main)]" />
+                              <span>From Date (کب سے)</span>
+                            </label>
+                            <input
+                              type="date"
+                              value={fromDate}
+                              onChange={(e) => setFromDate(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
+                              <Calendar size={11} className="text-[var(--accent-main)]" />
+                              <span>To Date (کب تک)</span>
+                            </label>
+                            <input
+                              type="date"
+                              value={toDate}
+                              onChange={(e) => setToDate(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Country selector (Excluding Canada) */}
+                        <div>
+                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
+                            <Globe size={11} className="text-[var(--accent-main)]" />
+                            <span>Destination Country (ملک جہاں سفر کرنا ہے)</span>
+                          </label>
+                          <select
+                            value={selectedCountry}
+                            onChange={(e) => setSelectedCountry(e.target.value)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-[var(--accent-main)]"
+                          >
+                            {COUNTRIES_EXCLUDING_CANADA.map((c) => (
+                              <option key={c} value={c} className="bg-gray-900 text-white">
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Wife Permission Checkbox */}
+                        <div className="flex items-center gap-2.5 pt-1">
+                          <input
+                            type="checkbox"
+                            id="wifePermission"
+                            checked={includeWifePermission}
+                            onChange={(e) => setIncludeWifePermission(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-black/40 text-[var(--accent-main)] focus:ring-0 cursor-pointer"
+                          />
+                          <label
+                            htmlFor="wifePermission"
+                            className="text-xs font-bold text-white/80 cursor-pointer select-none"
+                          >
+                            Request permission for Wife to accompany (اہلیہ کے ساتھ سفر کی اجازت)
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Specific Fields for "Request for Accommodation (UK Only)" */}
+                    {huzoorSubCat === "uk_accommodation" && (
+                      <div className="space-y-3 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
+                              <Calendar size={11} className="text-[var(--accent-main)]" />
+                              <span>Arrival Date</span>
+                            </label>
+                            <input
+                              type="date"
+                              value={fromDate}
+                              onChange={(e) => setFromDate(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
+                              <Calendar size={11} className="text-[var(--accent-main)]" />
+                              <span>Departure Date</span>
+                            </label>
+                            <input
+                              type="date"
+                              value={toDate}
+                              onChange={(e) => setToDate(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   {/* Recipient Email */}
@@ -421,17 +647,17 @@ export default function LettersPage() {
                     />
                   </div>
 
-                  {/* Urdu Message Body */}
+                  {/* Additional Urdu Text */}
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-white/50 mb-1.5">
-                      Letter Content (Urdu Text)
+                      Additional Message / Prayers Details (مضمون میں اضافی باتیں)
                     </label>
                     <textarea
-                      rows={7}
+                      rows={5}
                       dir="rtl"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="مضمون لکھیں۔۔۔"
+                      value={customMessage}
+                      onChange={(e) => setCustomMessage(e.target.value)}
+                      placeholder="اضافی مضمون یا دعائیہ جملے تحریر کریں۔۔۔"
                       className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all font-serif leading-relaxed"
                       style={{
                         fontFamily:
@@ -517,7 +743,7 @@ export default function LettersPage() {
                           "'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                       }}
                     >
-                      {message || "مضمون دراج کریں..."}
+                      {computedUrduBody}
                     </div>
                   </div>
 
@@ -555,7 +781,7 @@ export default function LettersPage() {
                         "'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                     }}
                   >
-                    {message}
+                    {computedUrduBody}
                   </div>
                 </div>
 
