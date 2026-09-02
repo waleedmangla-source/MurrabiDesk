@@ -235,22 +235,22 @@ export default function LettersPage() {
     setSendSuccess(false);
 
     const htmlBody = `
-      <div style="font-family: 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif; direction: rtl; text-align: right; padding: 30px; background-color: #ffffff; color: #111827; max-width: 650px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold; line-height: 1.8;">
+      <div style="font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif; direction: rtl; text-align: right; padding: 30px; background-color: #ffffff; color: #111827; max-width: 650px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold; line-height: 1.8; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif;">
           <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
           <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
           <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
         </div>
         
-        <div style="font-size: 18px; margin-bottom: 20px; line-height: 2;">
+        <div style="font-size: 18px; margin-bottom: 20px; line-height: 2; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif;">
           السلام علیکم ورحمۃ اللہ وبرکاته
         </div>
         
-        <div style="font-size: 18px; margin-bottom: 40px; line-height: 2.2; white-space: pre-wrap;">
+        <div style="font-size: 18px; margin-bottom: 40px; line-height: 2.2; white-space: pre-wrap; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif;">
           ${computedUrduBody}
         </div>
         
-        <div style="font-size: 18px; line-height: 1.8; margin-top: 30px;">
+        <div style="font-size: 18px; line-height: 1.8; margin-top: 30px; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif;">
           <div>والسلام</div>
           <div>خاکسار</div>
           <div style="font-weight: bold;">${name}</div>
@@ -658,10 +658,10 @@ export default function LettersPage() {
                       value={customMessage}
                       onChange={(e) => setCustomMessage(e.target.value)}
                       placeholder="اضافی مضمون یا دعائیہ جملے تحریر کریں۔۔۔"
-                      className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all font-serif leading-relaxed"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all font-urdu leading-relaxed"
                       style={{
                         fontFamily:
-                          "'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
+                          "'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                       }}
                     />
                   </div>
@@ -723,9 +723,9 @@ export default function LettersPage() {
                 </div>
 
                 {/* Simulated A4 Paper */}
-                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[480px] border border-gray-200 dir-rtl text-right">
+                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[480px] border border-gray-200 dir-rtl text-right font-urdu">
                   {/* Bismillah Header */}
-                  <div className="text-center space-y-1 text-sm font-bold text-gray-800 border-b pb-4 border-gray-100 font-serif">
+                  <div className="text-center space-y-1 text-sm font-bold text-gray-800 border-b pb-4 border-gray-100 font-urdu">
                     <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
                     <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
                     <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
@@ -733,14 +733,14 @@ export default function LettersPage() {
 
                   {/* Greeting & Body */}
                   <div className="my-6 space-y-4 flex-1">
-                    <div className="text-xs font-semibold text-gray-700">
+                    <div className="text-xs font-semibold text-gray-700 font-urdu">
                       السلام علیکم ورحمۃ اللہ وبرکاته
                     </div>
                     <div
-                      className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap font-serif"
+                      className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap font-urdu"
                       style={{
                         fontFamily:
-                          "'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
+                          "'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                       }}
                     >
                       {computedUrduBody}
@@ -748,22 +748,22 @@ export default function LettersPage() {
                   </div>
 
                   {/* Sign-off */}
-                  <div className="text-xs space-y-1 text-gray-800 border-t pt-4 border-gray-100 font-serif">
+                  <div className="text-xs space-y-1 text-gray-800 border-t pt-4 border-gray-100 font-urdu">
                     <div>والسلام</div>
                     <div>خاکسار</div>
-                    <div className="font-bold text-gray-950">{name}</div>
-                    <div className="text-[11px] text-gray-600">{code}</div>
-                    <div className="text-[11px] text-gray-600">{designation}</div>
+                    <div className="font-bold text-gray-950 font-urdu">{name}</div>
+                    <div className="text-[11px] text-gray-600 font-sans">{code}</div>
+                    <div className="text-[11px] text-gray-600 font-urdu">{designation}</div>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
             /* Full Page PDF Document View (Print-ready A4) */
-            <div className="max-w-3xl mx-auto my-4">
-              <div className="bg-white text-gray-900 rounded-none shadow-2xl p-12 md:p-16 min-h-[900px] flex flex-col justify-between border border-gray-300 print:border-none print:shadow-none print:m-0 text-right">
+            <div className="max-w-3xl mx-auto my-4 font-urdu">
+              <div className="bg-white text-gray-900 rounded-none shadow-2xl p-12 md:p-16 min-h-[900px] flex flex-col justify-between border border-gray-300 print:border-none print:shadow-none print:m-0 text-right font-urdu">
                 {/* Header */}
-                <div className="text-center space-y-2 text-base md:text-lg font-bold text-gray-900 border-b pb-6 border-gray-200">
+                <div className="text-center space-y-2 text-base md:text-lg font-bold text-gray-900 border-b pb-6 border-gray-200 font-urdu">
                   <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
                   <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
                   <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
@@ -771,14 +771,14 @@ export default function LettersPage() {
 
                 {/* Content */}
                 <div className="my-8 flex-1 space-y-6">
-                  <div className="text-base font-bold text-gray-800">
+                  <div className="text-base font-bold text-gray-800 font-urdu">
                     السلام علیکم ورحمۃ اللہ وبرکاته
                   </div>
                   <div
-                    className="text-base md:text-lg text-gray-900 leading-loose whitespace-pre-wrap"
+                    className="text-base md:text-lg text-gray-900 leading-loose whitespace-pre-wrap font-urdu"
                     style={{
                       fontFamily:
-                        "'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
+                        "'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                     }}
                   >
                     {computedUrduBody}
@@ -786,12 +786,12 @@ export default function LettersPage() {
                 </div>
 
                 {/* Footer Signoff */}
-                <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200">
+                <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu">
                   <div>والسلام</div>
                   <div>خاکسار</div>
-                  <div className="font-bold text-lg">{name}</div>
-                  <div className="text-sm text-gray-700">{code}</div>
-                  <div className="text-sm text-gray-700">{designation}</div>
+                  <div className="font-bold text-lg font-urdu">{name}</div>
+                  <div className="text-sm text-gray-700 font-sans">{code}</div>
+                  <div className="text-sm text-gray-700 font-urdu">{designation}</div>
                 </div>
               </div>
             </div>

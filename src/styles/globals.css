@@ -1,6 +1,20 @@
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq Regular';
+  src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-urdu {
+  font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif !important;
+  line-height: 2.2;
+}
+
 :root {
   --foreground: #ffffff;
   --text-main: #ffffff;
