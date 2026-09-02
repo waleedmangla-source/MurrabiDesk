@@ -228,32 +228,42 @@ function GoogleFlightsDatePickerModal({
       const isInRange = tempStart && tempEnd && dateStr > tempStart && dateStr < tempEnd;
 
       days.push(
-        <button
-          key={dateStr}
-          onClick={() => handleDateClick(dateStr)}
-          className={clsx(
-            "w-9 h-9 rounded-full text-xs font-bold transition-all relative flex items-center justify-center",
-            isStart || isEnd
-              ? "bg-[var(--accent-main)] text-white shadow-lg z-10 scale-105"
-              : isInRange
-              ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black"
-              : "text-white/80 hover:bg-white/10"
-          )}
-        >
-          {d}
-        </button>
+        <div key={dateStr} className="relative flex items-center justify-center py-0.5">
+          <button
+            key={dateStr}
+            onClick={() => handleDateClick(dateStr)}
+            className={clsx(
+              "text-[10px] font-bold w-7 h-7 flex flex-col items-center justify-center rounded-xl transition-all relative",
+              (isStart || isEnd) && "bg-[var(--accent-main)] text-white shadow-md font-black z-10 scale-105",
+              isInRange && "bg-white/10 text-[var(--accent-main)] font-black border border-[var(--accent-main)]/30",
+              !isStart && !isEnd && !isInRange && "text-[var(--foreground)] hover:bg-white/10"
+            )}
+          >
+            <span>{d}</span>
+            {(isStart || isEnd) && (
+              <div className="w-1 h-1 rounded-full bg-white absolute bottom-0.5" />
+            )}
+          </button>
+        </div>
       );
     }
 
     return (
-      <div className="w-full">
-        <div className="text-sm font-black text-white text-center mb-3">
+      <div className="w-full select-none">
+        <div className="text-xs font-black text-[var(--foreground)] tracking-tight text-center mb-3">
           {monthNames[month]} {year}
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-white/40 mb-2">
-          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        <div className="grid grid-cols-7 mb-1">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div
+              key={d}
+              className="text-[8px] font-black uppercase tracking-widest text-[var(--text-dim)] text-center py-1"
+            >
+              {d}
+            </div>
+          ))}
         </div>
-        <div className="grid grid-cols-7 gap-1 justify-items-center">
+        <div className="grid grid-cols-7 gap-y-0.5 justify-items-center">
           {days}
         </div>
       </div>
