@@ -1,0 +1,184 @@
+"use client";
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Upload, Users, Search, MapPin, Loader2, Navigation } from "lucide-react";
+import dynamic from "next/dynamic";
+import Papa from "papaparse";
+import clsx from "clsx";
+import type { Contact } from "@/components/TajnidMap";
+
+const TajnidMap = dynamic(() => import("@/components/TajnidMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-black/10 text-white/50">
+      <Loader2 size={24} className="animate-spin" />
+    </div>
+  ),
+});
+
+export default function TajnidPage() {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [query, setQuery] = useState("");
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [geocodingProgress, setGeocodingProgress] = useState(0);
+
+  // Request user location on mount
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+        }
+      );
+    }
+  }, []);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const parsed = results.data as any[];
+        
+        let loadedContacts: Contact[] = parsed.map((row, index) => {
+          return {
+            id: String(index),
+            name: row.Name || row.name || "Unknown",
+            phone: row.Phone || row.phone || "",
+            email: row.Email || row.email || "",
+            address: row.Address || row.address || "",
+            lat: row.lat ? parseFloat(row.lat) : (row.latitude ? parseFloat(row.latitude) : undefined),
+            lng: row.lng ? parseFloat(row.lng) : (row.longitude ? parseFloat(row.longitude) : undefined),
+          };
+        });
+
+        // Basic geocoding for contacts missing lat/lng (simple fallback)
+        const toGeocode = loadedContacts.filter(c => !c.lat && !c.lng && c.address);
+        if (toGeocode.length > 0) {
+          // Warning: Nominatim is rate-limited to 1 request per second.
+          // For large lists, this will be very slow.
+          for (let i = 0; i < Math.min(toGeocode.length, 10); i++) { // Limit to 10 for demo/safety
+            const c = toGeocode[i];
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(c.address)}`);
+              const data = await res.json();
+              if (data && data.length > 0) {
+                c.lat = parseFloat(data[0].lat);
+                c.lng = parseFloat(data[0].lon);
+              }
+            } catch (err) {
+              console.error("Geocoding failed for", c.address);
+            }
+            setGeocodingProgress(Math.round(((i + 1) / Math.min(toGeocode.length, 10)) * 100));
+            await new Promise(r => setTimeout(r, 1000)); // 1 sec delay
+          }
+        }
+        
+        setContacts(loadedContacts);
+        setIsUploading(false);
+        setGeocodingProgress(0);
+      },
+      error: (error) => {
+        console.error("CSV Parse Error:", error);
+        setIsUploading(false);
+      }
+    });
+  };
+
+  const filteredContacts = contacts.filter(c => {
+    const q = query.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.phone.includes(q);
+  });
+
+  return (
+    <div className="flex-1 flex overflow-hidden">
+      {/* Left Pane - List & Upload */}
+      <div className="w-1/3 min-w-[320px] max-w-md border-r border-white/5 flex flex-col bg-black/20">
+        <div className="p-6 border-b border-white/5 shrink-0">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] flex items-center gap-2">
+              <Users className="text-[var(--accent-main)]" />
+              Tajnid
+            </h1>
+            <label className="cursor-pointer p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--accent-main)] flex items-center gap-2">
+              {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Upload CSV</span>
+              <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+            </label>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
+            <input
+              type="text"
+              placeholder="Search members..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-[var(--foreground)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] transition-all"
+            />
+          </div>
+          
+          {geocodingProgress > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-between text-[10px] text-[var(--text-dim)] mb-1 uppercase font-bold tracking-wider">
+                <span>Geocoding Addresses</span>
+                <span>{geocodingProgress}%</span>
+              </div>
+              <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[var(--accent-main)] transition-all duration-300" 
+                  style={{ width: `${geocodingProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+          {filteredContacts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-[var(--text-dim)] opacity-50 p-6 text-center">
+              <Users size={32} className="mb-3" />
+              <p className="text-sm">No contacts found.</p>
+              <p className="text-xs mt-1">Upload a CSV file containing Name, Phone, and Address.</p>
+            </div>
+          ) : (
+            filteredContacts.map(contact => (
+              <div key={contact.id} className="p-4 rounded-xl glass border border-white/5 hover:border-[var(--accent-main)]/30 transition-all flex flex-col gap-2">
+                <div className="flex items-start justify-between">
+                  <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
+                  {contact.lat && contact.lng ? (
+                    <MapPin size={12} className="text-emerald-400 mt-0.5" title="Location verified" />
+                  ) : (
+                    <MapPin size={12} className="text-red-400 mt-0.5" title="Location missing" />
+                  )}
+                </div>
+                {contact.phone && <div className="text-xs text-[var(--text-dim)]">{contact.phone}</div>}
+                {contact.email && <div className="text-xs text-[var(--text-dim)]">{contact.email}</div>}
+                {contact.address && <div className="text-xs text-[var(--text-dim)] truncate" title={contact.address}>{contact.address}</div>}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right Pane - Map */}
+      <div className="flex-1 p-4 relative bg-black/10">
+        <div className="absolute top-6 left-6 z-10 pointer-events-none">
+          <div className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-white/10 text-xs font-bold text-white shadow-xl flex items-center gap-2">
+            <Navigation size={12} className="text-[var(--accent-main)]" />
+            Tajnid Map View
+          </div>
+        </div>
+        <TajnidMap contacts={contacts} userLocation={userLocation} />
+      </div>
+    </div>
+  );
+}

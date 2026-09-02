@@ -17,6 +17,7 @@ import {
   Info,
   HardDrive,
   ScrollText,
+  Users,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -51,6 +52,7 @@ const navLinks = [
   { icon: Activity, label: "Routine", href: "/habits" },
   { icon: HardDrive, label: "Drive", href: "/drive" },
   { icon: ScrollText, label: "Letters", href: "/letters" },
+  { icon: Users, label: "Tajnid", href: "/tajnid" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 
