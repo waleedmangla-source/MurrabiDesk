@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ScrollText,
   Crown,
@@ -17,10 +17,13 @@ import {
   Mail,
   FileText,
   Sparkles,
-  Calendar,
+  Calendar as CalendarIcon,
   Globe,
   Heart,
   Building,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -83,7 +86,6 @@ const CATEGORIES: LetterCategory[] = [
   },
 ];
 
-// Sub-categories for Letter to Huzoor
 type HuzoorSubCategory = "prayers" | "leave_international" | "uk_accommodation";
 
 const HUZOOR_SUB_CATEGORIES: { id: HuzoorSubCategory; label: string; icon: React.ElementType }[] = [
@@ -121,6 +123,251 @@ const COUNTRIES_EXCLUDING_CANADA = [
   "Other",
 ];
 
+// Format date into "September 11, 2026"
+function formatPrettyDate(dateStr: string): string {
+  if (!dateStr) return "";
+  // Split YYYY-MM-DD to avoid timezone off-by-one errors
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const year = parseInt(parts[0], 10);
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  if (monthIdx < 0 || monthIdx > 11) return dateStr;
+
+  return `${months[monthIdx]} ${day}, ${year}`;
+}
+
+// ── Google Flights Style Dual Month Date Picker Modal ──
+function GoogleFlightsDatePickerModal({
+  isOpen,
+  onClose,
+  fromDate,
+  toDate,
+  onSelectRange,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  fromDate: string;
+  toDate: string;
+  onSelectRange: (start: string, end: string) => void;
+}) {
+  const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date(2026, 8, 1)); // September 2026
+  const [tempStart, setTempStart] = useState<string>(fromDate);
+  const [tempEnd, setTempEnd] = useState<string>(toDate);
+  const [selectingStep, setSelectingStep] = useState<"start" | "end">("start");
+
+  useEffect(() => {
+    setTempStart(fromDate);
+    setTempEnd(toDate);
+  }, [fromDate, toDate, isOpen]);
+
+  if (!isOpen) return null;
+
+  const nextMonthDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1);
+
+  const handlePrevMonth = () => {
+    setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1));
+  };
+
+  const handleDateClick = (dateStr: string) => {
+    if (selectingStep === "start" || (tempStart && tempEnd) || (tempStart && dateStr < tempStart)) {
+      setTempStart(dateStr);
+      setTempEnd("");
+      setSelectingStep("end");
+    } else {
+      setTempEnd(dateStr);
+      setSelectingStep("start");
+    }
+  };
+
+  const handleApply = () => {
+    if (tempStart && tempEnd) {
+      onSelectRange(tempStart, tempEnd);
+    } else if (tempStart) {
+      onSelectRange(tempStart, tempStart);
+    }
+    onClose();
+  };
+
+  const renderMonthCalendar = (monthDate: Date) => {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const days = [];
+    for (let i = 0; i < firstDayIndex; i++) {
+      days.push(<div key={`empty-${i}`} className="w-9 h-9" />);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const monthStr = String(month + 1).padStart(2, "0");
+      const dayStr = String(d).padStart(2, "0");
+      const dateStr = `${year}-${monthStr}-${dayStr}`;
+
+      const isStart = tempStart === dateStr;
+      const isEnd = tempEnd === dateStr;
+      const isInRange = tempStart && tempEnd && dateStr > tempStart && dateStr < tempEnd;
+
+      days.push(
+        <button
+          key={dateStr}
+          onClick={() => handleDateClick(dateStr)}
+          className={clsx(
+            "w-9 h-9 rounded-full text-xs font-bold transition-all relative flex items-center justify-center",
+            isStart || isEnd
+              ? "bg-[var(--accent-main)] text-white shadow-lg z-10 scale-105"
+              : isInRange
+              ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black"
+              : "text-white/80 hover:bg-white/10"
+          )}
+        >
+          {d}
+        </button>
+      );
+    }
+
+    return (
+      <div className="w-full">
+        <div className="text-sm font-black text-white text-center mb-3">
+          {monthNames[month]} {year}
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-white/40 mb-2">
+          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        </div>
+        <div className="grid grid-cols-7 gap-1 justify-items-center">
+          {days}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in">
+      <div className="glass-card rounded-[24px] p-6 max-w-2xl w-full border border-white/10 shadow-2xl space-y-6 bg-[#0c0d1e]/95 text-white">
+        {/* Header Tabs */}
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/20">
+              <CalendarIcon size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-black italic tracking-tight text-white">
+                Select Departure & Return Dates
+              </h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
+                Google Flights Date Picker
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white p-2 rounded-xl glass border border-white/10"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Selected Date Summary Pills */}
+        <div className="grid grid-cols-2 gap-4 bg-black/40 p-3 rounded-2xl border border-white/5">
+          <div
+            onClick={() => setSelectingStep("start")}
+            className={clsx(
+              "p-3 rounded-xl border transition-all cursor-pointer",
+              selectingStep === "start"
+                ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-white"
+                : "bg-white/5 border-white/5 text-white/60"
+            )}
+          >
+            <span className="block text-[9px] font-black uppercase tracking-widest text-white/50">
+              Departure Date
+            </span>
+            <span className="text-xs font-bold text-white mt-1 block">
+              {tempStart ? formatPrettyDate(tempStart) : "Select date"}
+            </span>
+          </div>
+          <div
+            onClick={() => setSelectingStep("end")}
+            className={clsx(
+              "p-3 rounded-xl border transition-all cursor-pointer",
+              selectingStep === "end"
+                ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-white"
+                : "bg-white/5 border-white/5 text-white/60"
+            )}
+          >
+            <span className="block text-[9px] font-black uppercase tracking-widest text-white/50">
+              Return Date
+            </span>
+            <span className="text-xs font-bold text-white mt-1 block">
+              {tempEnd ? formatPrettyDate(tempEnd) : "Select date"}
+            </span>
+          </div>
+        </div>
+
+        {/* Dual Month Calendar View */}
+        <div className="relative">
+          <div className="flex items-center justify-between absolute top-0 left-0 right-0 z-10 px-2 pointer-events-none">
+            <button
+              onClick={handlePrevMonth}
+              className="p-2 rounded-xl glass border border-white/10 text-white/70 hover:text-white pointer-events-auto hover:bg-white/10"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={handleNextMonth}
+              className="p-2 rounded-xl glass border border-white/10 text-white/70 hover:text-white pointer-events-auto hover:bg-white/10"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+            {renderMonthCalendar(currentMonthDate)}
+            <div className="hidden md:block">
+              {renderMonthCalendar(nextMonthDate)}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+          <button
+            onClick={() => {
+              setTempStart("");
+              setTempEnd("");
+            }}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white/60 hover:text-white transition-all"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleApply}
+            className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
+            style={{ background: "var(--accent-main)" }}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LettersPage() {
   const [activeCategoryId, setActiveCategoryId] = useState<string>("huzoor");
   const [huzoorSubCat, setHuzoorSubCat] = useState<HuzoorSubCategory>("prayers");
@@ -134,10 +381,11 @@ export default function LettersPage() {
   const [customMessage, setCustomMessage] = useState("");
 
   // Leave Request (International) Specific Fields
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState("2026-09-11");
+  const [toDate, setToDate] = useState("2026-09-25");
   const [selectedCountry, setSelectedCountry] = useState("United Kingdom");
   const [includeWifePermission, setIncludeWifePermission] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   // States
   const [sending, setSending] = useState(false);
@@ -162,9 +410,11 @@ export default function LettersPage() {
     }
 
     if (huzoorSubCat === "leave_international") {
+      const fromPretty = formatPrettyDate(fromDate);
+      const toPretty = formatPrettyDate(toDate);
       const datesText =
-        fromDate && toDate
-          ? `تاریخ ${fromDate} تا ${toDate}`
+        fromPretty && toPretty
+          ? `تاریخ ${fromPretty} تا ${toPretty}`
           : "مقررہ تواریخ";
       const countryText = selectedCountry || "بیرون ملک";
 
@@ -184,10 +434,12 @@ export default function LettersPage() {
     }
 
     if (huzoorSubCat === "uk_accommodation") {
+      const fromPretty = formatPrettyDate(fromDate);
+      const toPretty = formatPrettyDate(toDate);
       let text = `عاجزانہ درخواست ہے کہ خاکسار کے یوکے (UK) کے دورہ کے دوران رہا ئش (Accommodation) کا انتظام فرمانے کی اجازت و سہولت مرحمت فرمائی جائے۔`;
 
-      if (fromDate && toDate) {
-        text += ` خاکسار کا قیام مورخہ ${fromDate} تا ${toDate} تک ہوگا۔`;
+      if (fromPretty && toPretty) {
+        text += ` خاکسار کا قیام مورخہ ${fromPretty} تا ${toPretty} تک ہوگا۔`;
       }
 
       text += `\n\nحضور انور ایدہ اللہ تعالیٰ کی خدمت میں عاجزانہ دعا کی درخواست ہے۔ آمین۔`;
@@ -283,6 +535,18 @@ export default function LettersPage() {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
+      {/* Google Flights Style Date Picker Modal */}
+      <GoogleFlightsDatePickerModal
+        isOpen={isDatePickerOpen}
+        onClose={() => setIsDatePickerOpen(false)}
+        fromDate={fromDate}
+        toDate={toDate}
+        onSelectRange={(start, end) => {
+          setFromDate(start);
+          setRequestedToDate(end);
+        }}
+      />
+
       {/* ── Left Category Navigation Sidebar ── */}
       <div className="hidden lg:flex w-[280px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 print:hidden">
         <div className="px-5 pt-8 pb-4 border-b border-white/5">
@@ -512,31 +776,30 @@ export default function LettersPage() {
                     {/* Specific Fields for "Leave Request (International)" */}
                     {huzoorSubCat === "leave_international" && (
                       <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
-                        {/* Dates */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
-                              <Calendar size={11} className="text-[var(--accent-main)]" />
-                              <span>From Date (کب سے)</span>
-                            </label>
-                            <input
-                              type="date"
-                              value={fromDate}
-                              onChange={(e) => setFromDate(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
-                              <Calendar size={11} className="text-[var(--accent-main)]" />
-                              <span>To Date (کب تک)</span>
-                            </label>
-                            <input
-                              type="date"
-                              value={toDate}
-                              onChange={(e) => setToDate(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
-                            />
+                        {/* Google Flights Style Range Picker Bar */}
+                        <div>
+                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1.5 flex items-center gap-1">
+                            <CalendarIcon size={11} className="text-[var(--accent-main)]" />
+                            <span>Travel & Leave Dates Range (تاریخِ رخصت)</span>
+                          </label>
+                          <div
+                            onClick={() => setIsDatePickerOpen(true)}
+                            className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
+                          >
+                            <div className="flex items-center gap-3 text-xs">
+                              <div>
+                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">From</span>
+                                <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                              </div>
+                              <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
+                              <div>
+                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">To</span>
+                                <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
+                              Change
+                            </span>
                           </div>
                         </div>
 
@@ -581,30 +844,29 @@ export default function LettersPage() {
                     {/* Specific Fields for "Request for Accommodation (UK Only)" */}
                     {huzoorSubCat === "uk_accommodation" && (
                       <div className="space-y-3 pt-3 border-t border-white/10 animate-in fade-in duration-200">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
-                              <Calendar size={11} className="text-[var(--accent-main)]" />
-                              <span>Arrival Date</span>
-                            </label>
-                            <input
-                              type="date"
-                              value={fromDate}
-                              onChange={(e) => setFromDate(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
-                              <Calendar size={11} className="text-[var(--accent-main)]" />
-                              <span>Departure Date</span>
-                            </label>
-                            <input
-                              type="date"
-                              value={toDate}
-                              onChange={(e) => setToDate(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
-                            />
+                        <div>
+                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1.5 flex items-center gap-1">
+                            <CalendarIcon size={11} className="text-[var(--accent-main)]" />
+                            <span>Stay Dates Range (تاریخِ قیام)</span>
+                          </label>
+                          <div
+                            onClick={() => setIsDatePickerOpen(true)}
+                            className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
+                          >
+                            <div className="flex items-center gap-3 text-xs">
+                              <div>
+                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Arrival</span>
+                                <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                              </div>
+                              <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
+                              <div>
+                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Departure</span>
+                                <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
+                              Change
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -677,7 +939,7 @@ export default function LettersPage() {
                         dir="rtl"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-serif"
+                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-urdu"
                       />
                     </div>
                     <div>
@@ -688,7 +950,7 @@ export default function LettersPage() {
                         type="text"
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-sans"
                       />
                     </div>
                     <div>
@@ -700,7 +962,7 @@ export default function LettersPage() {
                         dir="rtl"
                         value={designation}
                         onChange={(e) => setDesignation(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-serif"
+                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-urdu"
                       />
                     </div>
                   </div>
