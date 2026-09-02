@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollText,
   Crown,
@@ -24,6 +24,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
+  User,
+  Hash,
+  Briefcase,
+  Save,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -126,7 +130,6 @@ const COUNTRIES_EXCLUDING_CANADA = [
 // Format date into "September 11, 2026"
 function formatPrettyDate(dateStr: string): string {
   if (!dateStr) return "";
-  // Split YYYY-MM-DD to avoid timezone off-by-one errors
   const parts = dateStr.split("-");
   if (parts.length !== 3) return dateStr;
   const year = parseInt(parts[0], 10);
@@ -157,7 +160,7 @@ function GoogleFlightsDatePickerModal({
   toDate: string;
   onSelectRange: (start: string, end: string) => void;
 }) {
-  const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date(2026, 8, 1)); // September 2026
+  const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date(2026, 8, 1));
   const [tempStart, setTempStart] = useState<string>(fromDate);
   const [tempEnd, setTempEnd] = useState<string>(toDate);
   const [selectingStep, setSelectingStep] = useState<"start" | "end">("start");
@@ -260,7 +263,6 @@ function GoogleFlightsDatePickerModal({
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in">
       <div className="glass-card rounded-[24px] p-6 max-w-2xl w-full border border-white/10 shadow-2xl space-y-6 bg-[#0c0d1e]/95 text-white">
-        {/* Header Tabs */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/20">
@@ -283,7 +285,6 @@ function GoogleFlightsDatePickerModal({
           </button>
         </div>
 
-        {/* Selected Date Summary Pills */}
         <div className="grid grid-cols-2 gap-4 bg-black/40 p-3 rounded-2xl border border-white/5">
           <div
             onClick={() => setSelectingStep("start")}
@@ -319,7 +320,6 @@ function GoogleFlightsDatePickerModal({
           </div>
         </div>
 
-        {/* Dual Month Calendar View */}
         <div className="relative">
           <div className="flex items-center justify-between absolute top-0 left-0 right-0 z-10 px-2 pointer-events-none">
             <button
@@ -344,7 +344,6 @@ function GoogleFlightsDatePickerModal({
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
           <button
             onClick={() => {
@@ -543,7 +542,7 @@ export default function LettersPage() {
         toDate={toDate}
         onSelectRange={(start, end) => {
           setFromDate(start);
-          setRequestedToDate(end);
+          setToDate(end);
         }}
       />
 
@@ -747,226 +746,233 @@ export default function LettersPage() {
         {/* Form vs Preview Workspace */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
           {viewMode === "edit" ? (
-            <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Form Input Card */}
-              <div className="lg:col-span-7 glass-card rounded-[20px] p-6 border border-white/10 space-y-5">
-                <h3 className="text-lg font-black italic tracking-tight text-white flex items-center gap-2">
-                  <FileText size={18} className="text-[var(--accent-main)]" />
-                  <span>Letter Details</span>
-                </h3>
-
-                {/* --- Huzoor Sub-Category Dropdown --- */}
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 form-v4">
+              {/* Form Input Cards Container (Form V4 Layout matching Expenses tab) */}
+              <div className="lg:col-span-7 space-y-6">
+                
+                {/* --- Huzoor Sub-Category Card --- */}
                 {activeCategoryId === "huzoor" && (
-                  <div className="p-4 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 space-y-3">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                      Select Request Category (قسم کا انتخاب)
-                    </label>
-                    <select
-                      value={huzoorSubCat}
-                      onChange={(e) => setHuzoorSubCat(e.target.value as HuzoorSubCategory)}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white outline-none focus:border-[var(--accent-main)] transition-all"
-                    >
-                      {HUZOOR_SUB_CATEGORIES.map((sub) => (
-                        <option key={sub.id} value={sub.id} className="bg-gray-900 text-white">
-                          {sub.label}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      REQUEST CATEGORY & TRAVEL PARAMS
+                    </div>
+                    <div className="card-body space-y-4">
+                      <div>
+                        <label className="lbl">Select Request Category (قسم کا انتخاب)</label>
+                        <select
+                          value={huzoorSubCat}
+                          onChange={(e) => setHuzoorSubCat(e.target.value as HuzoorSubCategory)}
+                          className="mt-1"
+                        >
+                          {HUZOOR_SUB_CATEGORIES.map((sub) => (
+                            <option key={sub.id} value={sub.id} className="bg-gray-900 text-white">
+                              {sub.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                    {/* Specific Fields for "Leave Request (International)" */}
-                    {huzoorSubCat === "leave_international" && (
-                      <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
-                        {/* Google Flights Style Range Picker Bar */}
-                        <div>
-                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1.5 flex items-center gap-1">
-                            <CalendarIcon size={11} className="text-[var(--accent-main)]" />
-                            <span>Travel & Leave Dates Range (تاریخِ رخصت)</span>
-                          </label>
-                          <div
-                            onClick={() => setIsDatePickerOpen(true)}
-                            className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
-                          >
-                            <div className="flex items-center gap-3 text-xs">
-                              <div>
-                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">From</span>
-                                <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                      {/* Specific Fields for "Leave Request (International)" */}
+                      {huzoorSubCat === "leave_international" && (
+                        <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+                          <div>
+                            <label className="lbl flex items-center gap-1 mb-1.5">
+                              <CalendarIcon size={11} className="text-[var(--accent-main)]" />
+                              <span>Travel & Leave Dates Range (تاریخِ رخصت)</span>
+                            </label>
+                            <div
+                              onClick={() => setIsDatePickerOpen(true)}
+                              className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
+                            >
+                              <div className="flex items-center gap-3 text-xs">
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">From</span>
+                                  <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                                </div>
+                                <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">To</span>
+                                  <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
+                                </div>
                               </div>
-                              <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
-                              <div>
-                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">To</span>
-                                <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
-                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
+                                Change
+                              </span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
-                              Change
-                            </span>
+                          </div>
+
+                          <div>
+                            <label className="lbl flex items-center gap-1 mb-1.5">
+                              <Globe size={11} className="text-[var(--accent-main)]" />
+                              <span>Destination Country (ملک جہاں سفر کرنا ہے)</span>
+                            </label>
+                            <select
+                              value={selectedCountry}
+                              onChange={(e) => setSelectedCountry(e.target.value)}
+                            >
+                              {COUNTRIES_EXCLUDING_CANADA.map((c) => (
+                                <option key={c} value={c} className="bg-gray-900 text-white">
+                                  {c}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 pt-1">
+                            <input
+                              type="checkbox"
+                              id="wifePermission"
+                              checked={includeWifePermission}
+                              onChange={(e) => setIncludeWifePermission(e.target.checked)}
+                              className="w-4 h-4 rounded border-white/20 bg-black/40 text-[var(--accent-main)] focus:ring-0 cursor-pointer"
+                            />
+                            <label
+                              htmlFor="wifePermission"
+                              className="text-xs font-bold text-white/80 cursor-pointer select-none"
+                            >
+                              Request permission for Wife to accompany (اہلیہ کے ساتھ سفر کی اجازت)
+                            </label>
                           </div>
                         </div>
+                      )}
 
-                        {/* Country selector (Excluding Canada) */}
-                        <div>
-                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1">
-                            <Globe size={11} className="text-[var(--accent-main)]" />
-                            <span>Destination Country (ملک جہاں سفر کرنا ہے)</span>
-                          </label>
-                          <select
-                            value={selectedCountry}
-                            onChange={(e) => setSelectedCountry(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-[var(--accent-main)]"
-                          >
-                            {COUNTRIES_EXCLUDING_CANADA.map((c) => (
-                              <option key={c} value={c} className="bg-gray-900 text-white">
-                                {c}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Wife Permission Checkbox */}
-                        <div className="flex items-center gap-2.5 pt-1">
-                          <input
-                            type="checkbox"
-                            id="wifePermission"
-                            checked={includeWifePermission}
-                            onChange={(e) => setIncludeWifePermission(e.target.checked)}
-                            className="w-4 h-4 rounded border-white/20 bg-black/40 text-[var(--accent-main)] focus:ring-0 cursor-pointer"
-                          />
-                          <label
-                            htmlFor="wifePermission"
-                            className="text-xs font-bold text-white/80 cursor-pointer select-none"
-                          >
-                            Request permission for Wife to accompany (اہلیہ کے ساتھ سفر کی اجازت)
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Specific Fields for "Request for Accommodation (UK Only)" */}
-                    {huzoorSubCat === "uk_accommodation" && (
-                      <div className="space-y-3 pt-3 border-t border-white/10 animate-in fade-in duration-200">
-                        <div>
-                          <label className="block text-[9px] font-black uppercase tracking-widest text-white/60 mb-1.5 flex items-center gap-1">
-                            <CalendarIcon size={11} className="text-[var(--accent-main)]" />
-                            <span>Stay Dates Range (تاریخِ قیام)</span>
-                          </label>
-                          <div
-                            onClick={() => setIsDatePickerOpen(true)}
-                            className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
-                          >
-                            <div className="flex items-center gap-3 text-xs">
-                              <div>
-                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Arrival</span>
-                                <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                      {/* Specific Fields for "Request for Accommodation (UK Only)" */}
+                      {huzoorSubCat === "uk_accommodation" && (
+                        <div className="space-y-3 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+                          <div>
+                            <label className="lbl flex items-center gap-1 mb-1.5">
+                              <CalendarIcon size={11} className="text-[var(--accent-main)]" />
+                              <span>Stay Dates Range (تاریخِ قیام)</span>
+                            </label>
+                            <div
+                              onClick={() => setIsDatePickerOpen(true)}
+                              className="w-full bg-black/40 border border-white/10 hover:border-[var(--accent-main)] rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer transition-all group"
+                            >
+                              <div className="flex items-center gap-3 text-xs">
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Arrival</span>
+                                  <span className="font-bold text-white">{fromDate ? formatPrettyDate(fromDate) : "Select date"}</span>
+                                </div>
+                                <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Departure</span>
+                                  <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
+                                </div>
                               </div>
-                              <ArrowRight size={14} className="text-[var(--accent-main)] group-hover:translate-x-1 transition-transform" />
-                              <div>
-                                <span className="block text-[8px] font-black uppercase tracking-widest text-white/40">Departure</span>
-                                <span className="font-bold text-white">{toDate ? formatPrettyDate(toDate) : "Select date"}</span>
-                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
+                                Change
+                              </span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] bg-[var(--accent-soft)] px-2.5 py-1 rounded-lg">
-                              Change
-                            </span>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
-                <div className="space-y-4">
-                  {/* Recipient Email */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/50 mb-1.5">
-                      Send To (Email Address)
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        size={14}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40"
-                      />
-                      <input
-                        type="email"
-                        value={recipientEmail}
-                        onChange={(e) => setRecipientEmail(e.target.value)}
-                        placeholder="recipient@email.com"
-                        className="w-full bg-black/30 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all font-mono"
-                      />
+                {/* Card 1: Recipient & Dispatch Parameters */}
+                <div className="card">
+                  <div className="card-hdr">
+                    <div className="dot"></div>
+                    DISPATCH & RECIPIENT INFORMATION
+                  </div>
+                  <div className="card-body">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                      <div>
+                        <label className="lbl">Send To (Email Address)</label>
+                        <div className="relative mt-1">
+                          <Mail
+                            size={14}
+                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40"
+                          />
+                          <input
+                            type="email"
+                            value={recipientEmail}
+                            onChange={(e) => setRecipientEmail(e.target.value)}
+                            placeholder="recipient@email.com"
+                            className="pl-9 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="lbl">Subject Line</label>
+                        <input
+                          type="text"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                          placeholder="Letter Subject"
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Subject */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/50 mb-1.5">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      placeholder="Letter Subject"
-                      className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all"
-                    />
+                {/* Card 2: Letter Content & Additional Text */}
+                <div className="card">
+                  <div className="card-hdr">
+                    <div className="dot"></div>
+                    LETTER CONTENT (مضمون میں اضافی باتیں)
                   </div>
-
-                  {/* Additional Urdu Text */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/50 mb-1.5">
-                      Additional Message / Prayers Details (مضمون میں اضافی باتیں)
-                    </label>
+                  <div className="card-body">
                     <textarea
                       rows={5}
                       dir="rtl"
                       value={customMessage}
                       onChange={(e) => setCustomMessage(e.target.value)}
                       placeholder="اضافی مضمون یا دعائیہ جملے تحریر کریں۔۔۔"
-                      className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)] transition-all font-urdu leading-relaxed"
+                      className="w-full p-4 font-urdu leading-relaxed text-sm text-white"
                       style={{
                         fontFamily:
                           "'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
                       }}
                     />
                   </div>
+                </div>
 
-                  {/* Sender Details */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/5">
-                    <div>
-                      <label className="block text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">
-                        Name (نام)
-                      </label>
-                      <input
-                        type="text"
-                        dir="rtl"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-urdu"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">
-                        Code (کوڈ)
-                      </label>
-                      <input
-                        type="text"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-sans"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">
-                        Designation (عہدہ)
-                      </label>
-                      <input
-                        type="text"
-                        dir="rtl"
-                        value={designation}
-                        onChange={(e) => setDesignation(e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[var(--accent-main)] font-urdu"
-                      />
+                {/* Card 3: Sender Identity */}
+                <div className="card">
+                  <div className="card-hdr">
+                    <div className="dot"></div>
+                    SENDER IDENTIFICATION (دستخط و معلوماتی ریکارڈ)
+                  </div>
+                  <div className="card-body">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="lbl">Full Name (نام)</label>
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="mt-1 font-urdu"
+                        />
+                      </div>
+                      <div>
+                        <label className="lbl">Member Code (کوڈ)</label>
+                        <input
+                          type="text"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                          className="mt-1 font-sans"
+                        />
+                      </div>
+                      <div>
+                        <label className="lbl">Designation (عہدہ)</label>
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={designation}
+                          onChange={(e) => setDesignation(e.target.value)}
+                          className="mt-1 font-urdu"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
+
               </div>
 
               {/* Real-time Document Card Preview */}
