@@ -18,6 +18,7 @@ import {
   X,
   Info,
   HardDrive,
+  ScrollText,
 } from "lucide-react";
 
 const navLinks = [
@@ -29,6 +30,7 @@ const navLinks = [
   { icon: Receipt, label: "Expenses", href: "/expenses" },
   { icon: Activity, label: "Routine", href: "/habits" },
   { icon: HardDrive, label: "Drive", href: "/drive" },
+  { icon: ScrollText, label: "Letters", href: "/letters" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 
