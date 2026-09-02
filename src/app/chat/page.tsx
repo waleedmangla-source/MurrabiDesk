@@ -361,7 +361,7 @@ export default function MurrabiAIPage() {
               onKeyDown={handleKeyDown}
               placeholder="Ask about Ahmadiyyat, Murrabi duties, draft documents... (Enter to send)"
               rows={2}
-              className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-white/90 placeholder:text-white/20 resize-none focus:outline-none custom-scrollbar"
+              className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar"
               style={{ maxHeight: "120px" }}
             />
             <div className="flex items-center justify-between px-4 pb-3">
