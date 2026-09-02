@@ -16,8 +16,56 @@ const TajnidMap = dynamic(() => import("@/components/TajnidMap"), {
   ),
 });
 
+const MOCK_CONTACTS: Contact[] = [
+  {
+    id: "mock-1",
+    name: "Waleed Mangla",
+    phone: "416-555-0101",
+    email: "waleed@example.com",
+    address: "10610 Jane St, Maple, ON L6A 3A2",
+    lat: 43.8643,
+    lng: -79.5298,
+  },
+  {
+    id: "mock-2",
+    name: "Ahmad Khan",
+    phone: "416-555-0202",
+    email: "ahmad@example.com",
+    address: "100 Melville Rd, Maple, ON L6A 1Z5",
+    lat: 43.8587,
+    lng: -79.5089,
+  },
+  {
+    id: "mock-3",
+    name: "Tahir Ahmad",
+    phone: "905-555-0303",
+    email: "tahir@example.com",
+    address: "1 Canada's Wonderland Dr, Vaughan, ON",
+    lat: 43.8430,
+    lng: -79.5390,
+  },
+  {
+    id: "mock-4",
+    name: "Usman Ali",
+    phone: "905-555-0404",
+    email: "usman@example.com",
+    address: "1 Bass Pro Mills Dr, Vaughan, ON",
+    lat: 43.8258,
+    lng: -79.5385,
+  },
+  {
+    id: "mock-5",
+    name: "Ibrahim Syed",
+    phone: "647-555-0505",
+    email: "ibrahim@example.com",
+    address: "225 High Tech Rd, Richmond Hill, ON",
+    lat: 43.8428,
+    lng: -79.4303,
+  }
+];
+
 export default function TajnidPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>(MOCK_CONTACTS);
   const [query, setQuery] = useState("");
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
