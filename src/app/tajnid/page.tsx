@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Users, Search, MapPin, Loader2, Navigation } from "lucide-react";
 import dynamic from "next/dynamic";
 import Papa from "papaparse";
-import clsx from "clsx";
 import type { Contact } from "@/components/TajnidMap";
 
+// Dynamic import with no SSR to avoid window is not defined
 const TajnidMap = dynamic(() => import("@/components/TajnidMap"), {
   ssr: false,
   loading: () => (
@@ -22,6 +22,7 @@ export default function TajnidPage() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState(0);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   // Request user location on mount
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function TajnidPage() {
       complete: async (results) => {
         const parsed = results.data as any[];
         
-        let loadedContacts: Contact[] = parsed.map((row, index) => {
+        const loadedContacts: Contact[] = parsed.map((row, index) => {
           return {
             id: String(index),
             name: row.Name || row.name || "Unknown",
@@ -60,25 +61,27 @@ export default function TajnidPage() {
           };
         });
 
-        // Basic geocoding for contacts missing lat/lng (simple fallback)
+        // Basic geocoding for contacts missing lat/lng using Google Maps Geocoding API
         const toGeocode = loadedContacts.filter(c => !c.lat && !c.lng && c.address);
-        if (toGeocode.length > 0) {
-          // Warning: Nominatim is rate-limited to 1 request per second.
-          // For large lists, this will be very slow.
-          for (let i = 0; i < Math.min(toGeocode.length, 10); i++) { // Limit to 10 for demo/safety
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        
+        if (toGeocode.length > 0 && apiKey) {
+          for (let i = 0; i < toGeocode.length; i++) { 
             const c = toGeocode[i];
             try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(c.address)}`);
+              const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(c.address)}&key=${apiKey}`);
               const data = await res.json();
-              if (data && data.length > 0) {
-                c.lat = parseFloat(data[0].lat);
-                c.lng = parseFloat(data[0].lon);
+              if (data.status === "OK" && data.results.length > 0) {
+                const loc = data.results[0].geometry.location;
+                c.lat = loc.lat;
+                c.lng = loc.lng;
               }
             } catch (err) {
               console.error("Geocoding failed for", c.address);
             }
-            setGeocodingProgress(Math.round(((i + 1) / Math.min(toGeocode.length, 10)) * 100));
-            await new Promise(r => setTimeout(r, 1000)); // 1 sec delay
+            setGeocodingProgress(Math.round(((i + 1) / toGeocode.length) * 100));
+            // Small delay to prevent hitting rate limits (though Google is more generous)
+            await new Promise(r => setTimeout(r, 200)); 
           }
         }
         
@@ -129,7 +132,7 @@ export default function TajnidPage() {
           {geocodingProgress > 0 && (
             <div className="mt-4">
               <div className="flex justify-between text-[10px] text-[var(--text-dim)] mb-1 uppercase font-bold tracking-wider">
-                <span>Geocoding Addresses</span>
+                <span>Geocoding via Google Maps</span>
                 <span>{geocodingProgress}%</span>
               </div>
               <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
@@ -151,7 +154,13 @@ export default function TajnidPage() {
             </div>
           ) : (
             filteredContacts.map(contact => (
-              <div key={contact.id} className="p-4 rounded-xl glass border border-white/5 hover:border-[var(--accent-main)]/30 transition-all flex flex-col gap-2">
+              <div 
+                key={contact.id} 
+                onClick={() => setSelectedContactId(contact.id)}
+                className={`p-4 rounded-xl glass border transition-all flex flex-col gap-2 cursor-pointer ${
+                  selectedContactId === contact.id ? 'border-[var(--accent-main)] bg-[var(--accent-main)]/10' : 'border-white/5 hover:border-[var(--accent-main)]/30'
+                }`}
+              >
                 <div className="flex items-start justify-between">
                   <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
                   {contact.lat && contact.lng ? (
@@ -174,10 +183,15 @@ export default function TajnidPage() {
         <div className="absolute top-6 left-6 z-10 pointer-events-none">
           <div className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-white/10 text-xs font-bold text-white shadow-xl flex items-center gap-2">
             <Navigation size={12} className="text-[var(--accent-main)]" />
-            Tajnid Map View
+            Tajnid Google Maps View
           </div>
         </div>
-        <TajnidMap contacts={contacts} userLocation={userLocation} />
+        <TajnidMap 
+          contacts={contacts} 
+          userLocation={userLocation} 
+          selectedContactId={selectedContactId}
+          onSelectContact={setSelectedContactId}
+        />
       </div>
     </div>
   );
