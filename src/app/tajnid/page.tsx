@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Users, Search, MapPin, Loader2, Navigation } from "lucide-react";
+import { Upload, Users, Search, MapPin, Loader2, Navigation, Info } from "lucide-react";
 import dynamic from "next/dynamic";
 import Papa from "papaparse";
 import type { Contact } from "@/components/TajnidMap";
@@ -111,11 +111,20 @@ export default function TajnidPage() {
               <Users className="text-[var(--accent-main)]" />
               Tajnid
             </h1>
-            <label className="cursor-pointer p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--accent-main)] flex items-center gap-2">
-              {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Upload CSV</span>
-              <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
-            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative group/tooltip flex items-center">
+                <Info size={16} className="text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all cursor-help" />
+                <div className="absolute right-0 top-full mt-2 w-64 p-3 rounded-xl text-[10px] leading-relaxed font-medium text-white/90 bg-black/90 backdrop-blur-md border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  <span className="font-bold block mb-1 text-[var(--accent-main)]">Prompt your LLM:</span>
+                  "Create a CSV from the uploaded files with the following headers: Name, Phone, Email, Address. Ensure all members are included."
+                </div>
+              </div>
+              <label className="cursor-pointer p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--accent-main)] flex items-center gap-2">
+                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Upload CSV</span>
+                <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+              </label>
+            </div>
           </div>
 
           <div className="relative">
