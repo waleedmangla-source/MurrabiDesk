@@ -226,18 +226,6 @@ export default function MurrabiAIPage() {
     <div className="flex h-full w-full overflow-hidden">
       {/* ── MAIN CHAT AREA ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Noise Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div style={{ width: '1080px', height: '1080px', position: 'relative' }}>
-            <Noise
-              patternSize={25}
-              patternScaleX={0.9}
-              patternScaleY={0.9}
-              patternRefreshInterval={8}
-              patternAlpha={25}
-            />
-          </div>
-        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 lg:px-8 pt-4 lg:pt-8 pb-3 lg:pb-4 shrink-0 relative z-10">
