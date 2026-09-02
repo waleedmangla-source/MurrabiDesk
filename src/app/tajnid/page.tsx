@@ -23,6 +23,8 @@ const MOCK_CONTACTS: Contact[] = [
     phone: "416-555-0101",
     email: "waleed@example.com",
     address: "10610 Jane St, Maple, ON L6A 3A2",
+    age: 30,
+    auxiliary: "Khuddam",
     lat: 43.8643,
     lng: -79.5298,
   },
@@ -32,6 +34,8 @@ const MOCK_CONTACTS: Contact[] = [
     phone: "416-555-0202",
     email: "ahmad@example.com",
     address: "100 Melville Rd, Maple, ON L6A 1Z5",
+    age: 45,
+    auxiliary: "Ansar",
     lat: 43.8587,
     lng: -79.5089,
   },
@@ -41,24 +45,30 @@ const MOCK_CONTACTS: Contact[] = [
     phone: "905-555-0303",
     email: "tahir@example.com",
     address: "1 Canada's Wonderland Dr, Vaughan, ON",
+    age: 12,
+    auxiliary: "Atfal",
     lat: 43.8430,
     lng: -79.5390,
   },
   {
     id: "mock-4",
-    name: "Usman Ali",
+    name: "Ayesha Ali",
     phone: "905-555-0404",
-    email: "usman@example.com",
+    email: "ayesha@example.com",
     address: "1 Bass Pro Mills Dr, Vaughan, ON",
+    age: 28,
+    auxiliary: "Lajna",
     lat: 43.8258,
     lng: -79.5385,
   },
   {
     id: "mock-5",
-    name: "Ibrahim Syed",
+    name: "Fatima Syed",
     phone: "647-555-0505",
-    email: "ibrahim@example.com",
+    email: "fatima@example.com",
     address: "225 High Tech Rd, Richmond Hill, ON",
+    age: 14,
+    auxiliary: "Nasirat",
     lat: 43.8428,
     lng: -79.4303,
   }
@@ -104,6 +114,8 @@ export default function TajnidPage() {
             phone: row.Phone || row.phone || "",
             email: row.Email || row.email || "",
             address: row.Address || row.address || "",
+            age: row.Age ? parseInt(row.Age, 10) : (row.age ? parseInt(row.age, 10) : undefined),
+            auxiliary: row.Auxiliary || row.auxiliary || "",
             lat: row.lat ? parseFloat(row.lat) : (row.latitude ? parseFloat(row.latitude) : undefined),
             lng: row.lng ? parseFloat(row.lng) : (row.longitude ? parseFloat(row.longitude) : undefined),
           };
@@ -164,7 +176,7 @@ export default function TajnidPage() {
                 <Info size={16} className="text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all cursor-help" />
                 <div className="absolute right-0 top-full mt-2 w-64 p-3 rounded-xl text-[10px] leading-relaxed font-medium text-white/90 bg-black/90 backdrop-blur-md border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                   <span className="font-bold block mb-1 text-[var(--accent-main)]">Prompt your LLM:</span>
-                  "Create a CSV from the uploaded files with the following headers: Name, Phone, Email, Address. Ensure all members are included."
+                  "Create a CSV from the uploaded files with the following headers: Name, Phone, Email, Address, Age, Auxiliary. (Auxiliary should be one of Khuddam, Ansar, Atfal, Lajna, or Nasirat). Ensure all members are included."
                 </div>
               </div>
               <label className="cursor-pointer p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--accent-main)] flex items-center gap-2">
@@ -176,10 +188,10 @@ export default function TajnidPage() {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
-            <input
-              type="text"
-              placeholder="Search members..."
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
+                <input
+                  type="text"
+                  placeholder="Search members..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-[var(--foreground)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] transition-all"
@@ -219,11 +231,19 @@ export default function TajnidPage() {
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
+                  <div className="flex flex-col">
+                    <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
+                    {(contact.auxiliary || contact.age) && (
+                      <span className="text-[10px] font-bold text-[var(--accent-main)] uppercase tracking-wider mt-0.5">
+                        {contact.auxiliary}{contact.auxiliary && contact.age ? ' • ' : ''}
+                        {contact.age ? `${contact.age} YRS` : ''}
+                      </span>
+                    )}
+                  </div>
                   {contact.lat && contact.lng ? (
-                    <MapPin size={12} className="text-emerald-400 mt-0.5" title="Location verified" />
+                    <MapPin size={12} className="text-emerald-400 mt-0.5 shrink-0" title="Location verified" />
                   ) : (
-                    <MapPin size={12} className="text-red-400 mt-0.5" title="Location missing" />
+                    <MapPin size={12} className="text-red-400 mt-0.5 shrink-0" title="Location missing" />
                   )}
                 </div>
                 {contact.phone && <div className="text-xs text-[var(--text-dim)]">{contact.phone}</div>}

@@ -10,6 +10,8 @@ export interface Contact {
   phone: string;
   email: string;
   address: string;
+  age?: number;
+  auxiliary?: string;
   lat?: number;
   lng?: number;
 }
@@ -186,6 +188,12 @@ export default function TajnidMap({ contacts, userLocation, selectedContactId, o
           >
             <div className="text-black p-1 max-w-[200px]">
               <strong className="block mb-1 text-sm">{selectedContact.name}</strong>
+              {(selectedContact.auxiliary || selectedContact.age) && (
+                <div className="text-xs font-bold text-blue-600 mb-1">
+                  {selectedContact.auxiliary}{selectedContact.auxiliary && selectedContact.age ? ', ' : ''}
+                  {selectedContact.age ? `${selectedContact.age} yrs` : ''}
+                </div>
+              )}
               <div className="text-xs text-gray-700">{selectedContact.phone}</div>
               <div className="text-xs text-gray-700 leading-tight mt-1">{selectedContact.address}</div>
             </div>
