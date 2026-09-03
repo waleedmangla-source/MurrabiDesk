@@ -396,7 +396,11 @@ export default function LettersPage() {
   const [toDate, setToDate] = useState("2026-09-25");
   const [selectedCountry, setSelectedCountry] = useState("United Kingdom");
   const [includeWifePermission, setIncludeWifePermission] = useState(false);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  // States
+  const [sending, setSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
 
   // AI Assistant States
   const [isAiDraftOpen, setIsAiDraftOpen] = useState(false);
