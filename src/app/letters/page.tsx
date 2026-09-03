@@ -769,7 +769,7 @@ export default function LettersPage() {
                     </div>
                     <div className="card-body space-y-4">
                       <div>
-                        <label className="lbl">Select Request Category (قسم کا انتخاب)</label>
+                        <label className="lbl">Select Request Category</label>
                         <select
                           value={huzoorSubCat}
                           onChange={(e) => setHuzoorSubCat(e.target.value as HuzoorSubCategory)}
@@ -789,7 +789,7 @@ export default function LettersPage() {
                           <div>
                             <label className="lbl flex items-center gap-1 mb-1.5">
                               <CalendarIcon size={11} className="text-[var(--accent-main)]" />
-                              <span>Travel & Leave Dates Range (تاریخِ رخصت)</span>
+                              <span>Travel & Leave Dates Range</span>
                             </label>
                             <div
                               onClick={() => setIsDatePickerOpen(true)}
@@ -815,7 +815,7 @@ export default function LettersPage() {
                           <div>
                             <label className="lbl flex items-center gap-1 mb-1.5">
                               <Globe size={11} className="text-[var(--accent-main)]" />
-                              <span>Destination Country (ملک جہاں سفر کرنا ہے)</span>
+                              <span>Destination Country</span>
                             </label>
                             <select
                               value={selectedCountry}
@@ -841,7 +841,7 @@ export default function LettersPage() {
                               htmlFor="wifePermission"
                               className="text-xs font-bold text-white/80 cursor-pointer select-none"
                             >
-                              Request permission for Wife to accompany (اہلیہ کے ساتھ سفر کی اجازت)
+                              Request permission for Wife to accompany
                             </label>
                           </div>
                         </div>
@@ -853,7 +853,7 @@ export default function LettersPage() {
                           <div>
                             <label className="lbl flex items-center gap-1 mb-1.5">
                               <CalendarIcon size={11} className="text-[var(--accent-main)]" />
-                              <span>Stay Dates Range (تاریخِ قیام)</span>
+                              <span>Stay Dates Range</span>
                             </label>
                             <div
                               onClick={() => setIsDatePickerOpen(true)}
@@ -924,7 +924,7 @@ export default function LettersPage() {
                 <div className="card">
                   <div className="card-hdr">
                     <div className="dot"></div>
-                    LETTER CONTENT (مضمون میں اضافی باتیں)
+                    LETTER CONTENT
                   </div>
                   <div className="card-body">
                     <textarea
@@ -946,12 +946,12 @@ export default function LettersPage() {
                 <div className="card">
                   <div className="card-hdr">
                     <div className="dot"></div>
-                    SENDER IDENTIFICATION (دستخط و معلوماتی ریکارڈ)
+                    SENDER IDENTIFICATION
                   </div>
                   <div className="card-body">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="lbl">Full Name (نام)</label>
+                        <label className="lbl">Full Name</label>
                         <input
                           type="text"
                           dir="rtl"
@@ -961,7 +961,7 @@ export default function LettersPage() {
                         />
                       </div>
                       <div>
-                        <label className="lbl">Member Code (کوڈ)</label>
+                        <label className="lbl">Member Code</label>
                         <input
                           type="text"
                           value={code}
@@ -970,7 +970,7 @@ export default function LettersPage() {
                         />
                       </div>
                       <div>
-                        <label className="lbl">Designation (عہدہ)</label>
+                        <label className="lbl">Designation</label>
                         <input
                           type="text"
                           dir="rtl"
