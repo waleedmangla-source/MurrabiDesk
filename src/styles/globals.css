@@ -605,6 +605,7 @@ body {
   text-transform: uppercase;
 }
 .form-v4 input[type=text],
+.form-v4 input[type=email],
 .form-v4 input[type=date],
 .form-v4 input[type=number],
 .form-v4 input[type=month],
