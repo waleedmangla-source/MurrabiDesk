@@ -408,6 +408,7 @@ export default function LettersPage() {
   const [isAiDraftOpen, setIsAiDraftOpen] = useState(false);
   const [aiPromptTopic, setAiPromptTopic] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMode, setAiMode] = useState<"translate" | "draft" | null>(null);
   // Search & Recent Categories State
   const [searchQuery, setSearchQuery] = useState("");
   const [recentCategoryKeys, setRecentCategoryKeys] = useState<string[]>([
@@ -648,8 +649,8 @@ export default function LettersPage() {
       />
 
       {/* ── Left Category Navigation Sidebar ── */}
-      <div className="hidden lg:flex w-[280px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 print:hidden">
-        <div className="px-5 pt-8 pb-4 border-b border-white/5">
+      <div className="hidden lg:flex w-[300px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 print:hidden">
+        <div className="px-5 pt-7 pb-4 border-b border-white/5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20">
               <ScrollText size={20} className="text-[var(--accent-main)]" />
@@ -663,51 +664,187 @@ export default function LettersPage() {
               </p>
             </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
-          <div className="px-5 py-2">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
-              Select Category
-            </p>
+          {/* Search Box */}
+          <div className="relative">
+            <Search
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search categories & templates..."
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-white/40 outline-none focus:border-[var(--accent-main)] transition-all font-sans"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs"
+              >
+                ✕
+              </button>
+            )}
           </div>
-          <nav className="space-y-1">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const active = activeCategoryId === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategoryId(cat.id)}
-                  className={clsx(
-                    "w-full flex items-center gap-3 px-5 py-3.5 transition-all text-left border-l-2",
-                    active
-                      ? "font-black text-white border-[var(--accent-main)] bg-black/30"
-                      : "text-white/60 hover:bg-black/10 hover:text-white border-transparent"
-                  )}
-                >
-                  <Icon
-                    size={16}
-                    className={clsx(
-                      "shrink-0",
-                      active ? "text-[var(--accent-main)]" : "text-white/40"
-                    )}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold truncate leading-snug">
-                      {cat.label}
-                    </p>
-                    <p className="text-[9px] text-white/40 truncate mt-0.5">
-                      {cat.tag}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </nav>
         </div>
 
+        <div className="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-6">
+          {/* ── Recent Categories Section (if no active search) ── */}
+          {!searchQuery && recentCategoryKeys.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="px-5">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-80">
+                  ⚡ Recent Categories
+                </span>
+              </div>
+              <div className="space-y-0.5">
+                {recentCategoryKeys.slice(0, 3).map((key) => {
+                  const [catId, subId] = key.split("-");
+                  const cat = CATEGORIES.find((c) => c.id === catId);
+                  if (!cat) return null;
+                  const Icon = cat.icon;
+                  const subLabel =
+                    catId === "huzoor" && subId !== "main"
+                      ? HUZOOR_SUB_CATEGORIES.find((s) => s.id === subId)?.label
+                      : null;
+                  const isSelected =
+                    activeCategoryId === catId &&
+                    (catId !== "huzoor" || huzoorSubCat === subId);
 
+                  return (
+                    <button
+                      key={`recent-${key}`}
+                      onClick={() =>
+                        handleSelectCategoryItem(
+                          catId,
+                          subId !== "main" ? (subId as HuzoorSubCategory) : undefined
+                        )
+                      }
+                      className={clsx(
+                        "w-full flex items-center gap-2.5 px-5 py-2 transition-all text-left group",
+                        isSelected
+                          ? "bg-[var(--accent-soft)] text-white font-bold"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                      )}
+                    >
+                      <Icon
+                        size={13}
+                        className={clsx(
+                          "shrink-0",
+                          isSelected ? "text-[var(--accent-main)]" : "text-white/40"
+                        )}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs truncate">
+                          {cat.label} {subLabel ? `• ${subLabel}` : ""}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── All Categories & Sub-Categories ── */}
+          <div className="space-y-2">
+            <div className="px-5">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                All Letter Categories
+              </span>
+            </div>
+            <nav className="space-y-1">
+              {CATEGORIES.filter((cat) => {
+                if (!searchQuery) return true;
+                const q = searchQuery.toLowerCase();
+                const matchesCat =
+                  cat.label.toLowerCase().includes(q) ||
+                  cat.tag.toLowerCase().includes(q) ||
+                  cat.description.toLowerCase().includes(q);
+
+                if (cat.id === "huzoor") {
+                  const matchesSub = HUZOOR_SUB_CATEGORIES.some((sub) =>
+                    sub.label.toLowerCase().includes(q)
+                  );
+                  return matchesCat || matchesSub;
+                }
+                return matchesCat;
+              }).map((cat) => {
+                const Icon = cat.icon;
+                const active = activeCategoryId === cat.id;
+                return (
+                  <div key={cat.id} className="space-y-0.5">
+                    <button
+                      onClick={() => handleSelectCategoryItem(cat.id)}
+                      className={clsx(
+                        "w-full flex items-center gap-3 px-5 py-3 transition-all text-left border-l-2",
+                        active
+                          ? "font-black text-white border-[var(--accent-main)] bg-black/30"
+                          : "text-white/60 hover:bg-black/10 hover:text-white border-transparent"
+                      )}
+                    >
+                      <Icon
+                        size={16}
+                        className={clsx(
+                          "shrink-0",
+                          active ? "text-[var(--accent-main)]" : "text-white/40"
+                        )}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate leading-snug">
+                          {cat.label}
+                        </p>
+                        <p className="text-[9px] text-white/40 truncate mt-0.5">
+                          {cat.tag}
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Show Sub-Categories nested under Letter to Huzoor */}
+                    {cat.id === "huzoor" && (
+                      <div className="pl-9 pr-3 space-y-0.5 py-1">
+                        {HUZOOR_SUB_CATEGORIES.filter((sub) => {
+                          if (!searchQuery) return true;
+                          return sub.label
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase());
+                        }).map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive =
+                            activeCategoryId === "huzoor" && huzoorSubCat === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => handleSelectCategoryItem("huzoor", sub.id)}
+                              className={clsx(
+                                "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
+                                isSubActive
+                                  ? "bg-[var(--accent-soft)] text-white font-black border border-[var(--accent-main)]/30"
+                                  : "text-white/50 hover:bg-white/5 hover:text-white"
+                              )}
+                            >
+                              <SubIcon
+                                size={12}
+                                className={clsx(
+                                  "shrink-0",
+                                  isSubActive
+                                    ? "text-[var(--accent-main)]"
+                                    : "text-white/30"
+                                )}
+                              />
+                              <span className="truncate">{sub.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Horizontal Category Tabs */}

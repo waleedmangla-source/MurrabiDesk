@@ -57,6 +57,39 @@ const PROMPT_CATEGORIES = [
   { id: "islamic", label: "Islamic", icon: Globe, color: "text-amber-400" },
 ];
 
+
+const HoverMarquee = ({ text, className }: { text: string; className?: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [shiftX, setShiftX] = useState(0);
+
+  useEffect(() => {
+    if (containerRef.current && textRef.current) {
+      const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
+      setIsOverflowing(diff > 0);
+      setShiftX(diff > 0 ? diff + 20 : 0);
+    }
+  }, [text]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className={`overflow-hidden whitespace-nowrap group/marquee ${className || ''}`}
+    >
+      <div 
+        ref={textRef} 
+        className="inline-block transition-transform duration-[3000ms] ease-linear"
+        style={{ transform: 'translateX(0px)' }}
+        onMouseEnter={(e) => { if (isOverflowing) e.currentTarget.style.transform = `translateX(-${shiftX}px)`; }}
+        onMouseLeave={(e) => { if (isOverflowing) e.currentTarget.style.transform = 'translateX(0px)'; }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+};
+
 export default function MurrabiAIPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConvId, setCurrentConvId] = useState<string | null>(null);
@@ -159,7 +192,7 @@ export default function MurrabiAIPage() {
       if (c.id === currentConvId) {
         const updatedMessages = typeof newMessages === "function" ? newMessages(c.messages) : newMessages;
         const newTitle = c.title === "New Chat" && updatedMessages.length > 0
-          ? updatedMessages.find(m => m.role === "user")?.content.slice(0, 30) + "..." || "New Chat"
+          ? updatedMessages.find(m => m.role === "user")?.content.split("\n")[0].trim() || "New Chat"
           : c.title;
         return { ...c, messages: updatedMessages, title: newTitle, updatedAt: Date.now() };
       }
@@ -332,7 +365,7 @@ export default function MurrabiAIPage() {
               >
                 <MessageSquare size={13} className={clsx("shrink-0", conv.isTemporary && "text-red-400")} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs truncate">{conv.title}</p>
+                  <HoverMarquee text={conv.title} className="text-xs w-full block" />
                   <p className="text-[9px] uppercase tracking-widest opacity-60">
                     {new Date(conv.updatedAt).toLocaleDateString()} {conv.isTemporary && "(Temp)"}
                   </p>
@@ -363,15 +396,15 @@ export default function MurrabiAIPage() {
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 lg:px-8 pt-4 lg:pt-8 pb-3 lg:pb-4 shrink-0 relative z-10 border-b border-white/5 lg:border-none">
-          <div className="flex items-center gap-3 lg:gap-4">
+          <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0 overflow-hidden pr-4">
             <div className="relative">
               <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center shadow-lg shadow-red-900/40">
                 <Sparkles size={20} className={clsx("text-black transition-all", isLoading && "animate-pulse")} />
               </div>
               <span className={clsx("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#020310] transition-colors", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
             </div>
-            <div>
-              <h2 className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase">{currentConversation?.title}</h2>
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <HoverMarquee text={currentConversation?.title || ""} className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase block" />
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-red-500/60">
                 {isLoading ? "Generating..." : currentConversation?.isTemporary ? "Temporary Protocol" : "Ahmadiyya Intelligence Protocol"}
               </p>
