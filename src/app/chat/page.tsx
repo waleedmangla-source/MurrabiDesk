@@ -300,7 +300,7 @@ export default function MurrabiAIPage() {
       {/* ── LEFT PANEL (CONVERSATIONS) ── */}
       <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         <div className="px-5 pt-8 pb-4 border-b border-white/5">
-          <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase leading-none">Chat</h1>
+          <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase leading-none">MurrabiAI</h1>
         </div>
         
         <div className="p-3 border-b border-white/5 flex flex-col gap-2">
@@ -371,7 +371,7 @@ export default function MurrabiAIPage() {
               <span className={clsx("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#020310] transition-colors", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
             </div>
             <div>
-              <h2 className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase">{currentConversation?.title || "MurrabiAI"}</h2>
+              <h2 className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase">{currentConversation?.title}</h2>
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-red-500/60">
                 {isLoading ? "Generating..." : currentConversation?.isTemporary ? "Temporary Protocol" : "Ahmadiyya Intelligence Protocol"}
               </p>
