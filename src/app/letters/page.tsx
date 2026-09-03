@@ -616,12 +616,7 @@ export default function LettersPage() {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-white/5 bg-black/10">
-          <div className="flex items-center gap-2 text-white/40 text-[10px] font-bold">
-            <Sparkles size={12} className="text-[var(--accent-main)]" />
-            <span>HQ Protocol Generator</span>
-          </div>
-        </div>
+
       </div>
 
       {/* Mobile Horizontal Category Tabs */}
