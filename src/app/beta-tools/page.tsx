@@ -208,16 +208,24 @@ export default function BetaToolsPage() {
     setIsChatLoading(true);
 
     try {
-      // Mock AI response for now since /api/chat might not be ready
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: "I am the Murrabi Neural Engine. This interface is currently in developmental beta. Integration with core cognitive modules is pending Phase 3 deployment." 
-        }]);
-        setIsChatLoading(false);
+      const res = await fetch("/api/beta/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [...chatMessages, { role: 'user', content: userMsg }] })
+      });
+      const data = await res.json();
+      
+      if (data.text) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
         addTerminalLog(`[NEURAL] Processed query: ${userMsg.substring(0, 20)}...`);
-      }, 1500);
+      } else {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: "[ERROR] " + (data.error || "Unknown error") }]);
+        addTerminalLog(`[ERROR] Neural Engine: ${data.error || "Unknown error"}`);
+      }
+      setIsChatLoading(false);
     } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: "[ERROR] Connection failed" }]);
+      addTerminalLog(`[ERROR] Neural Engine connection failed`);
       setIsChatLoading(false);
     }
   };

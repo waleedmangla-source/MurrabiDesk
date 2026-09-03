@@ -882,22 +882,22 @@ export default function LettersPage() {
                       className={clsx(
                         "w-full flex items-center gap-3 px-5 py-3 transition-all text-left border-l-2",
                         active
-                          ? "font-black text-white border-[var(--accent-main)] bg-black/30"
-                          : "text-white/60 hover:bg-black/10 hover:text-white border-transparent"
+                          ? "font-black text-[var(--accent-main)] border-[var(--accent-main)] bg-black/30"
+                          : "text-slate-300 hover:bg-white/5 hover:text-white border-transparent"
                       )}
                     >
                       <Icon
                         size={16}
                         className={clsx(
                           "shrink-0",
-                          active ? "text-[var(--accent-main)]" : "text-white/40"
+                          active ? "text-[var(--accent-main)]" : "text-slate-400"
                         )}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold truncate leading-snug">
                           {cat.label}
                         </p>
-                        <p className="text-[9px] text-white/40 truncate mt-0.5">
+                        <p className="text-[9px] text-slate-400 truncate mt-0.5">
                           {cat.tag}
                         </p>
                       </div>
@@ -922,8 +922,8 @@ export default function LettersPage() {
                               className={clsx(
                                 "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
                                 isSubActive
-                                  ? "bg-[var(--accent-soft)] text-white font-black border border-[var(--accent-main)]/30"
-                                  : "text-white/50 hover:bg-white/5 hover:text-white"
+                                  ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black border border-[var(--accent-main)]/30"
+                                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                               )}
                             >
                               <SubIcon
@@ -932,7 +932,7 @@ export default function LettersPage() {
                                   "shrink-0",
                                   isSubActive
                                     ? "text-[var(--accent-main)]"
-                                    : "text-white/30"
+                                    : "text-slate-500"
                                 )}
                               />
                               <span className="truncate">{sub.label}</span>
