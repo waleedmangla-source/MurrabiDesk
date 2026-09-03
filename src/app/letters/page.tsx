@@ -28,6 +28,8 @@ import {
   Hash,
   Briefcase,
   Save,
+  Languages,
+  Wand2,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -396,11 +398,78 @@ export default function LettersPage() {
   const [includeWifePermission, setIncludeWifePermission] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  // States
-  const [sending, setSending] = useState(false);
-  const [sendSuccess, setSendSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
+  // AI Assistant States
+  const [isAiDraftOpen, setIsAiDraftOpen] = useState(false);
+  const [aiPromptTopic, setAiPromptTopic] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMode, setAiMode] = useState<"translate" | "draft" | null>(null);
+
+  // AI Translate Handler
+  const handleAiTranslate = async () => {
+    if (!customMessage.trim()) return;
+    setIsAiLoading(true);
+    setAiMode("translate");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/letters/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "translate",
+          text: customMessage,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (data.result) {
+        setCustomMessage(data.result);
+      }
+    } catch (err: any) {
+      console.error("AI Translation Error:", err);
+      setErrorMessage(err.message || "Failed to translate text.");
+    } finally {
+      setIsAiLoading(false);
+      setAiMode(null);
+    }
+  };
+
+  // AI Generate Draft Handler
+  const handleAiGenerateDraft = async () => {
+    if (!aiPromptTopic.trim()) return;
+    setIsAiLoading(true);
+    setAiMode("draft");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/letters/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "draft",
+          prompt: aiPromptTopic,
+          recipient: currentCategory.recipient,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (data.result) {
+        setCustomMessage(data.result);
+        setIsAiDraftOpen(false);
+        setAiPromptTopic("");
+      }
+    } catch (err: any) {
+      console.error("AI Draft Generation Error:", err);
+      setErrorMessage(err.message || "Failed to generate AI draft.");
+    } finally {
+      setIsAiLoading(false);
+      setAiMode(null);
+    }
+  };
 
   const currentCategory = CATEGORIES.find((c) => c.id === activeCategoryId)!;
   const CategoryIcon = currentCategory.icon;
@@ -915,13 +984,82 @@ export default function LettersPage() {
                   </div>
                 </div>
 
-                {/* Card 2: Letter Content & Additional Text */}
+                {/* Card 2: Letter Content & AI Tools */}
                 <div className="card">
-                  <div className="card-hdr">
-                    <div className="dot"></div>
-                    LETTER CONTENT
+                  <div className="card-hdr flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="dot"></div>
+                      <span>LETTER CONTENT</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleAiTranslate}
+                        disabled={isAiLoading || !customMessage}
+                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] border border-white/10 flex items-center gap-1 transition-all disabled:opacity-40"
+                        title="Translate text to formal Urdu"
+                      >
+                        {aiMode === "translate" && isAiLoading ? (
+                          <Loader2 size={10} className="animate-spin" />
+                        ) : (
+                          <Languages size={10} />
+                        )}
+                        <span>AI Translate</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsAiDraftOpen(!isAiDraftOpen)}
+                        className="px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-main)]/20 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] border border-[var(--accent-main)]/30 flex items-center gap-1 transition-all"
+                        title="Generate draft using AI"
+                      >
+                        <Wand2 size={10} />
+                        <span>AI Generator</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="card-body">
+
+                  <div className="card-body space-y-4">
+                    {/* Expandable AI Generator Prompt Modal / Bar */}
+                    {isAiDraftOpen && (
+                      <div className="p-4 rounded-xl bg-black/40 border border-[var(--accent-main)]/30 space-y-3 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <label className="lbl flex items-center gap-1.5 text-[var(--accent-main)]">
+                            <Sparkles size={12} />
+                            <span>AI Letter Writer — Topic / Key Notes</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setIsAiDraftOpen(false)}
+                            className="text-white/40 hover:text-white text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={aiPromptTopic}
+                          onChange={(e) => setAiPromptTopic(e.target.value)}
+                          placeholder="e.g. Requesting prayers for father's surgery next week..."
+                          className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-[var(--accent-main)]"
+                        />
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={handleAiGenerateDraft}
+                            disabled={isAiLoading || !aiPromptTopic}
+                            className="px-4 py-1.5 rounded-lg bg-[var(--accent-main)] text-white text-xs font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40 transition-all"
+                          >
+                            {aiMode === "draft" && isAiLoading ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <Sparkles size={12} />
+                            )}
+                            <span>Compose Letter</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <textarea
                       rows={5}
                       dir="rtl"
