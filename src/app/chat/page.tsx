@@ -139,7 +139,10 @@ export default function MurrabiAIPage() {
       isTemporary,
       updatedAt: Date.now()
     };
-    setConversations(prev => [newConv, ...prev]);
+    setConversations(prev => {
+      const filtered = isTemporary ? prev.filter(c => !c.isTemporary) : prev;
+      return [newConv, ...filtered];
+    });
     setCurrentConvId(newConv.id);
     setApiError(null);
   };
