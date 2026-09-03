@@ -7,7 +7,21 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, context } = await req.json();
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    let apiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const envPath = path.join(process.cwd(), '.env.local');
+        if (fs.existsSync(envPath)) {
+          const envFile = fs.readFileSync(envPath, 'utf8');
+          const match = envFile.match(/^GOOGLE_AI_API_KEY=(.*)$/m);
+          if (match && match[1]) apiKey = match[1].trim();
+        }
+      } catch (e) {
+        console.error('Error reading .env.local', e);
+      }
+    }
     if (!apiKey) {
       return NextResponse.json({ 
         error: 'GOOGLE_AI_API_KEY not configured. Please add it to your .env.local file from Google AI Studio (aistudio.google.com).',
