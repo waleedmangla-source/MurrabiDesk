@@ -2,26 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MURRABI_AI_SYSTEM_PROMPT } from '@/lib/murrabiAI-system';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    let apiKey = process.env.NVIDIA_API_KEY;
-    if (!apiKey) {
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const envPath = path.join(process.cwd(), '.env.local');
-        if (fs.existsSync(envPath)) {
-          const envFile = fs.readFileSync(envPath, 'utf8');
-          const match = envFile.match(/^NVIDIA_API_KEY=(.*)$/m);
-          if (match && match[1]) apiKey = match[1].trim();
-        }
-      } catch (e) {
-        console.error('Error reading .env.local', e);
-      }
-    }
+    let apiKey = process.env.NVIDIA_API_KEY || "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";
     
     if (!apiKey) {
       return NextResponse.json({ 
@@ -39,7 +26,7 @@ Your purpose is to engage in natural, spoken conversations.
 `;
 
     const requestBody = {
-      model: "nvidia/nemotron-4-340b-instruct",
+      model: "nvidia/nemotron-voicechat",
       messages: [
         { role: "system", content: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
         ...messages

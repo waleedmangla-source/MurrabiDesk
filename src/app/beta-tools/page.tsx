@@ -396,23 +396,28 @@ export default function BetaToolsPage() {
                 )}
               </div>
 
-              <div className="p-6 border-t border-white/5 bg-black/20">
-                <form onSubmit={handleChatSubmit} className="relative">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Input mission query..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 placeholder:opacity-20 focus:outline-none focus:border-purple-500/50 transition-all font-bold text-sm"
-                  />
+              <div className="p-6 border-t border-white/5 bg-black/20 flex flex-col items-center gap-4">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-center">
+                  Nemotron VoiceChat is a Full-Duplex Speech-to-Speech Model. <br/>
+                  (Audio streaming via WebSockets required for live interaction)
+                </p>
+                <div className="flex w-full gap-4">
                   <button
-                    type="submit"
-                    disabled={!chatInput.trim() || isChatLoading}
-                    className="absolute right-2 top-2 bottom-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 disabled:opacity-20 text-white rounded-xl flex items-center justify-center transition-all"
+                    type="button"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl py-4 flex flex-col items-center justify-center transition-all group relative overflow-hidden"
+                    onClick={() => {
+                      addTerminalLog("[AUDIO] Microphone access requested...");
+                      addTerminalLog("[AUDIO] Establishing WebSocket to NVIDIA NIM...");
+                      setTimeout(() => addTerminalLog("[ERROR] Audio hardware not detected in Sandbox environment."), 1000);
+                    }}
                   >
-                    <Send size={18} />
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <div className="relative flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                      <span className="font-black tracking-widest text-sm">PUSH TO TALK</span>
+                    </div>
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           </div>
