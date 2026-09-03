@@ -77,6 +77,9 @@ export default function BetaToolsPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   // Terminal State
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
@@ -92,6 +95,71 @@ export default function BetaToolsPage() {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [terminalLogs]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setChatInput(transcript);
+          setIsListening(false);
+          addTerminalLog(`[AUDIO] Voice input detected: "${transcript}"`);
+          // Automatically submit after speaking
+          setTimeout(() => {
+             const form = document.getElementById('chat-form');
+             if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }, 500);
+        };
+
+        recognitionRef.current.onerror = (event: any) => {
+          addTerminalLog(`[ERROR] Microphone error: ${event.error}`);
+          setIsListening(false);
+        };
+        
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
+      }
+    }
+  }, []);
+
+  const speakText = (text: string) => {
+    if (typeof window !== "undefined" && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      // Optional: change voice or rate here
+      utterance.rate = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      addTerminalLog("[AUDIO] Microphone turned off.");
+    } else {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+          setIsListening(true);
+          addTerminalLog("[AUDIO] Listening for voice input...");
+        } catch (e) {
+          addTerminalLog("[ERROR] Microphone access denied or already listening.");
+        }
+      } else {
+        addTerminalLog("[ERROR] Speech Recognition API not supported in this browser.");
+      }
+    }
+  };
 
   const fetchVideoInfo = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -218,6 +286,7 @@ export default function BetaToolsPage() {
       if (data.text) {
         setChatMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
         addTerminalLog(`[NEURAL] Processed query: ${userMsg.substring(0, 20)}...`);
+        speakText(data.text);
       } else {
         setChatMessages(prev => [...prev, { role: 'assistant', content: "[ERROR] " + (data.error || "Unknown error") }]);
         addTerminalLog(`[ERROR] Neural Engine: ${data.error || "Unknown error"}`);
@@ -396,23 +465,40 @@ export default function BetaToolsPage() {
                 )}
               </div>
 
-              <div className="p-6 border-t border-white/5 bg-black/20">
-                <form onSubmit={handleChatSubmit} className="relative">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Input mission query (Text Mode for Nemotron)..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 placeholder:opacity-20 focus:outline-none focus:border-purple-500/50 transition-all font-bold text-sm"
-                  />
+              <div className="p-6 border-t border-white/5 bg-black/20 flex flex-col gap-4">
+                <form id="chat-form" onSubmit={handleChatSubmit} className="relative flex gap-2">
                   <button
-                    type="submit"
-                    disabled={!chatInput.trim() || isChatLoading}
-                    className="absolute right-2 top-2 bottom-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 disabled:opacity-20 text-white rounded-xl flex items-center justify-center transition-all"
+                    type="button"
+                    onClick={toggleListening}
+                    className={clsx(
+                      "flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
+                      isListening ? "bg-red-500 animate-pulse text-white" : "bg-white/5 hover:bg-white/10 text-white/50"
+                    )}
                   >
-                    <Send size={18} />
+                    <div className={clsx("w-3 h-3 rounded-full", isListening ? "bg-white" : "bg-red-500")}></div>
                   </button>
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder={isListening ? "Listening..." : "Input mission query (or press Mic to talk)..."}
+                      className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-6 pr-14 placeholder:opacity-20 focus:outline-none focus:border-purple-500/50 transition-all font-bold text-sm"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!chatInput.trim() || isChatLoading}
+                      className="absolute right-2 top-2 bottom-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 disabled:opacity-20 text-white rounded-xl flex items-center justify-center transition-all"
+                    >
+                      <Send size={18} />
+                    </button>
+                  </div>
                 </form>
+                {isSpeaking && (
+                  <div className="flex items-center justify-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest animate-pulse">
+                    <Activity size={14} /> Agent Speaking
+                  </div>
+                )}
               </div>
             </div>
           </div>
