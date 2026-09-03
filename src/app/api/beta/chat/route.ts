@@ -29,10 +29,19 @@ export async function POST(req: NextRequest) {
       }, { status: 503 });
     }
 
+    const VOICECHAT_PERSONA = `
+Additionally, you are now operating as a real-time, full-duplex VoiceChat engine.
+Your purpose is to engage in natural, spoken conversations.
+- Keep your responses highly concise, avoiding long paragraphs.
+- Use a natural, conversational tone as if you are speaking aloud.
+- Do not use markdown formatting (like bolding, bullet points, or complex tables) as this will be read by a text-to-speech system.
+- Be prepared for interruptions and keep dialogue flowing naturally.
+`;
+
     const requestBody = {
       model: "nvidia/nemotron-4-340b-instruct",
       messages: [
-        { role: "system", content: MURRABI_AI_SYSTEM_PROMPT },
+        { role: "system", content: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
         ...messages
       ],
       temperature: 0.7,

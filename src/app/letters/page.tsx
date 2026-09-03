@@ -32,6 +32,8 @@ import {
   Wand2,
   Search,
   Mic,
+  Upload,
+  HardDrive,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -712,6 +714,105 @@ export default function LettersPage() {
       setSending(false);
     }
   };
+  // Google Drive Upload State
+  const [isUploadingDrive, setIsUploadingDrive] = useState(false);
+  const [driveSuccess, setDriveSuccess] = useState(false);
+  const [driveLink, setDriveLink] = useState("");
+
+  const handleUploadToDrive = async () => {
+    setIsUploadingDrive(true);
+    setErrorMessage("");
+    setDriveSuccess(false);
+    setDriveLink("");
+
+    try {
+      // 1. Generate HTML Document Content
+      const htmlDocument = `
+        <!DOCTYPE html>
+        <html lang="ur" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>${subject || "Official Letter"}</title>
+          <style>
+            @font-face {
+              font-family: 'Jameel Noori Nastaleeq Regular';
+              src: url('https://fonts.gstatic.com/ea/jameelnoorinastaleeq/v1/JameelNooriNastaleeq-Regular.ttf') format('truetype');
+            }
+            body {
+              font-family: 'Jameel Noori Nastaleeq Regular', 'Amiri', serif;
+              direction: rtl;
+              text-align: right;
+              padding: 40px;
+              color: #111827;
+              background-color: #ffffff;
+            }
+            .header {
+              text-align: center;
+              font-size: 20px;
+              font-weight: bold;
+              margin-bottom: 24px;
+              line-height: 1.8;
+            }
+            .greeting {
+              font-size: 18px;
+              margin-bottom: 20px;
+            }
+            .body-text {
+              font-size: 18px;
+              line-height: 2.2;
+              white-space: pre-wrap;
+              margin-bottom: 40px;
+            }
+            .footer {
+              font-size: 18px;
+              line-height: 1.8;
+              margin-top: 30px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
+            <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
+          </div>
+          <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
+          <div class="body-text">${computedUrduBody}</div>
+          <div class="footer">
+            <div>والسلام</div>
+            <div>خاکسار</div>
+            <div style="font-weight: bold;">${name}</div>
+            <div>${code}</div>
+            <div>${designation}</div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // 2. Invoke liquid Google Drive Upload API
+      const fileName = `${subject || "Official Letter"} - ${new Date().toISOString().split("T")[0]}.html`;
+      const res = await liquid.invoke("drive-upload", {
+        name: fileName,
+        content: htmlDocument,
+        mimeType: "text/html",
+        module: "Letters",
+        category: currentCategory.label,
+      });
+
+      if (res?.error) {
+        throw new Error(res.error);
+      }
+
+      setDriveSuccess(true);
+      if (res?.link) setDriveLink(res.link);
+      setTimeout(() => setDriveSuccess(false), 6000);
+    } catch (err: any) {
+      console.error("Google Drive Upload Error:", err);
+      setErrorMessage(err.message || "Failed to upload letter to Google Drive.");
+    } finally {
+      setIsUploadingDrive(false);
+    }
+  };
 
   return (
     <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
@@ -1061,10 +1162,42 @@ export default function LettersPage() {
               )}
               <span>Send</span>
             </button>
+
+            <button
+              onClick={handleUploadToDrive}
+              disabled={isUploadingDrive}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white glass border border-white/10 hover:border-white/20 hover:bg-white/10 shadow-lg transition-all active:scale-95 disabled:opacity-40"
+              title="Upload letter as document to Google Drive"
+            >
+              {isUploadingDrive ? (
+                <Loader2 size={14} className="animate-spin text-[var(--accent-main)]" />
+              ) : (
+                <HardDrive size={14} className="text-[var(--accent-main)]" />
+              )}
+              <span>Add to Google Drive</span>
+            </button>
           </div>
         </div>
 
         {/* Notifications */}
+        {driveSuccess && (
+          <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle size={15} />
+              <span>Letter uploaded to Murrabi Desk Drive / Letters!</span>
+            </div>
+            {driveLink && (
+              <a
+                href={driveLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-blue-300 font-bold"
+              >
+                View in Drive ↗
+              </a>
+            )}
+          </div>
+        )}
         {sendSuccess && (
           <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 animate-in fade-in">
             <CheckCircle size={15} />
