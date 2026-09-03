@@ -613,7 +613,7 @@ body {
 .form-v4 select {
   font-family: 'Inter', sans-serif;
   font-size: .8rem !important;
-  color: var(--foreground);
+  color: #ffffff !important;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
