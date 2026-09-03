@@ -31,6 +31,7 @@ import {
   Languages,
   Wand2,
   Search,
+  Mic,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -404,11 +405,89 @@ export default function LettersPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
 
-  // AI Assistant States
+  // AI Assistant & Smart Search States
   const [isAiDraftOpen, setIsAiDraftOpen] = useState(false);
   const [aiPromptTopic, setAiPromptTopic] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiMode, setAiMode] = useState<"translate" | "draft" | null>(null);
+  const [aiMode, setAiMode] = useState<"translate" | "draft" | "search" | null>(null);
+  const [isListening, setIsListening] = useState(false);
+
+  // AI Smart Search & Prefill Handler
+  const handleAiSmartSearch = async (queryText?: string) => {
+    const textToSearch = queryText || searchQuery;
+    if (!textToSearch.trim()) return;
+
+    setIsAiLoading(true);
+    setAiMode("search");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/letters/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "smart_search",
+          query: textToSearch,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (data.categoryId) {
+        handleSelectCategoryItem(
+          data.categoryId,
+          data.subCategoryId ? (data.subCategoryId as HuzoorSubCategory) : undefined
+        );
+      }
+
+      if (data.country) setSelectedCountry(data.country);
+      if (data.fromDate) setFromDate(data.fromDate);
+      if (data.toDate) setToDate(data.toDate);
+      if (data.wifePermission !== null && data.wifePermission !== undefined) {
+        setIncludeWifePermission(Boolean(data.wifePermission));
+      }
+      if (data.urduBody) {
+        setCustomMessage(data.urduBody);
+      }
+    } catch (err: any) {
+      console.error("AI Smart Search Error:", err);
+      setErrorMessage(err.message || "Failed to analyze AI search query.");
+    } finally {
+      setIsAiLoading(false);
+      setAiMode(null);
+    }
+  };
+
+  // Voice Speech-to-Text Input Handler
+  const handleVoiceSearch = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setErrorMessage("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || "";
+      if (transcript) {
+        setSearchQuery(transcript);
+        handleAiSmartSearch(transcript);
+      }
+    };
+
+    recognition.start();
+  };
   // Search & Recent Categories State
   const [searchQuery, setSearchQuery] = useState("");
   const [recentCategoryKeys, setRecentCategoryKeys] = useState<string[]>([
@@ -665,7 +744,7 @@ export default function LettersPage() {
             </div>
           </div>
 
-          {/* Search Box */}
+          {/* AI-Powered Smart Search & Voice Input Box */}
           <div className="relative">
             <Search
               size={13}
@@ -675,17 +754,40 @@ export default function LettersPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search categories & templates..."
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-white/40 outline-none focus:border-[var(--accent-main)] transition-all font-sans"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAiSmartSearch();
+              }}
+              placeholder="Ask AI or search templates..."
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-16 py-2 text-xs text-white placeholder-white/40 outline-none focus:border-[var(--accent-main)] transition-all font-sans"
             />
-            {searchQuery && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs"
+                type="button"
+                onClick={handleVoiceSearch}
+                className={clsx(
+                  "p-1 rounded-lg transition-all",
+                  isListening
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "text-white/40 hover:text-white hover:bg-white/10"
+                )}
+                title="Speak request"
               >
-                ✕
+                <Mic size={12} />
               </button>
-            )}
+              <button
+                type="button"
+                onClick={() => handleAiSmartSearch()}
+                disabled={isAiLoading || !searchQuery}
+                className="p-1.5 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)] transition-all disabled:opacity-30"
+                title="AI Smart Search & Prefill"
+              >
+                {aiMode === "search" && isAiLoading ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Sparkles size={12} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
