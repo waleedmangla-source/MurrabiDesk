@@ -151,12 +151,7 @@ export default function MurrabiAIPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        if (err.fallback) {
-          setHasKey(false);
-          setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: "⚠️ MurrabiAI requires a Google AI API key. Please add `GOOGLE_AI_API_KEY` to your `.env.local` file — get it free from [aistudio.google.com](https://aistudio.google.com). Then restart the dev server.", isStreaming: false } : m));
-        } else {
-          throw new Error(err.error || "API error");
-        }
+        throw new Error(err.error || "API error");
         setIsLoading(false);
         return;
       }
@@ -256,17 +251,6 @@ export default function MurrabiAIPage() {
           </div>
         </div>
 
-        {/* API Key Warning */}
-        {!hasKey && (
-          <div className="mx-8 mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
-            <AlertCircle size={16} className="text-amber-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-black text-amber-400">API Key Required</p>
-              <p className="text-[11px] text-amber-400/70 mt-1">Add <code className="bg-black/30 px-1 rounded">GOOGLE_AI_API_KEY</code> to your <code className="bg-black/30 px-1 rounded">.env.local</code> — get it free at <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="underline">aistudio.google.com</a></p>
-            </div>
-            <button onClick={() => setHasKey(true)} className="ml-auto text-amber-400/40 hover:text-amber-400"><X size={14} /></button>
-          </div>
-        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 pb-4 space-y-4 lg:space-y-6 relative z-10">
