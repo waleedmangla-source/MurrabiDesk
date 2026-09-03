@@ -56,6 +56,8 @@ interface EmailContextType {
   setQuery: (q: string) => void;
   composingInitial: Partial<ComposeData>;
   setComposingInitial: React.Dispatch<React.SetStateAction<Partial<ComposeData>>>;
+  favoriteRecipients: string[];
+  setFavoriteRecipients: React.Dispatch<React.SetStateAction<string[]>>;
   userEmail: string;
   setUserEmail: (email: string) => void;
   syncStatus: SyncStatus;
@@ -89,6 +91,7 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
   const [composing, setComposing] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'folders' | 'quick-mail'>('folders');
   const [query, setQueryState] = useState('');
+  const [favoriteRecipients, setFavoriteRecipients] = useState<string[]>([]);
   const [composingInitial, setComposingInitial] = useState<Partial<ComposeData>>({});
   const [userEmail, setUserEmail] = useState('...');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
@@ -338,6 +341,7 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
       sidebarTab, setSidebarTab,
       query, setQuery,
       composingInitial, setComposingInitial,
+      favoriteRecipients, setFavoriteRecipients,
       userEmail, setUserEmail,
       syncStatus, setSyncStatus,
       nextPageToken, setNextPageToken,

@@ -111,7 +111,7 @@ function ComposeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-end justify-end p-6 pointer-events-none">
+    <div className="fixed inset-0 z-[9999] flex items-end justify-end p-6 pointer-events-none">
       <div className="pointer-events-auto w-full max-w-lg glass border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ maxHeight: '80vh' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-white/5 backdrop-blur-md">
@@ -342,7 +342,7 @@ function EmailDetail({
               className="p-1.5 rounded-lg hover:bg-black/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all"
               title="Forward"
             >
-              <Send size={14} className="rotate-[-45deg] translate-y-[-1px]" />
+              <Send size={14} />
             </button>
           </div>
         </div>
@@ -404,7 +404,7 @@ function EmailDetail({
             className="p-3 rounded-xl glass border border-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] hover:border-white/20 transition-all"
             title="Forward"
           >
-            <Send size={14} className="rotate-[-45deg]" />
+            <Send size={14} />
           </button>
         </div>
       </div>
@@ -442,6 +442,8 @@ export default function EmailsPage() {
     setQuery,
     composingInitial,
     setComposingInitial,
+    favoriteRecipients,
+    setFavoriteRecipients,
     userEmail,
     syncStatus,
     nextPageToken,
@@ -638,7 +640,6 @@ export default function EmailsPage() {
         {/* Account Header */}
         <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
           <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
-            <Mail size={12} className="text-[var(--accent-main)] shrink-0" />
             <div className="flex-1 min-w-0 overflow-hidden">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
@@ -720,24 +721,44 @@ export default function EmailsPage() {
           ) : (
             <div className="p-4 flex flex-col flex-1">
               <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-4 shrink-0">Frequent Recipients</div>
-              <div className="grid grid-cols-2 gap-2 pb-4">
+              <div className="flex flex-col gap-2 pb-4">
                 {frequentRecipients.length === 0 ? (
-                  <div className="col-span-2 text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
+                  <div className="text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
                     No frequent contacts yet
                   </div>
                 ) : (
-                  frequentRecipients.map(recipient => (
-                    <button
-                      key={recipient.email}
-                      onClick={() => { setComposingInitial({ to: recipient.email }); setComposing(true); }}
-                      className="aspect-square flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group"
-                    >
-                      <Avatar name={recipient.name} size="md" />
-                      <div className="mt-2 text-[10px] font-black tracking-tight text-[var(--foreground)] truncate w-full text-center group-hover:text-[var(--accent-main)] transition-colors">
-                        {recipient.name.split(' ')[0]}
+                  frequentRecipients.map(recipient => {
+                    const isFavorite = favoriteRecipients.includes(recipient.email);
+                    return (
+                      <div key={recipient.email} className="flex items-center gap-3 p-2 pr-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group">
+                        <button
+                          onClick={() => { setComposingInitial({ to: recipient.email }); setComposing(true); }}
+                          className="flex items-center gap-3 flex-1 overflow-hidden text-left"
+                        >
+                          <Avatar name={recipient.name} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] font-black tracking-tight text-[var(--foreground)] truncate group-hover:text-[var(--accent-main)] transition-colors">
+                              {recipient.name}
+                            </div>
+                            <div className="text-[9px] text-[var(--text-dim)] truncate">
+                              {recipient.email}
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFavoriteRecipients(prev => 
+                              isFavorite ? prev.filter(email => email !== recipient.email) : [...prev, recipient.email]
+                            );
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-black/20 text-[var(--text-dim)] hover:text-amber-400 transition-all shrink-0"
+                        >
+                          <Star size={12} fill={isFavorite ? "currentColor" : "none"} className={isFavorite ? "text-amber-400" : ""} />
+                        </button>
                       </div>
-                    </button>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
