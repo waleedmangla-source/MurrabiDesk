@@ -26,7 +26,7 @@ Your purpose is to engage in natural, spoken conversations.
 `;
 
     const requestBody = {
-      model: "nvidia/nemotron-voicechat",
+      model: "nvidia/nemotron-4-340b-instruct",
       messages: [
         { role: "system", content: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
         ...messages
