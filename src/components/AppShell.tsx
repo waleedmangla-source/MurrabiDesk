@@ -172,7 +172,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // ── Before mount: render children inside a dark shell (no sidebar flash) ──
   if (!mounted) {
     return (
-      <div className="flex h-dvh w-full bg-[#020310]">
+      <div className="flex h-dvh w-full bg-[#f8fafc]">
         {children}
       </div>
     );
