@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "../styles/globals.css";
 import AppShell from "@/components/AppShell";
-
+import { EmailProvider } from "@/context/EmailContext";
 export const metadata: Metadata = {
   title: "Murrabi Desk OS",
   description: "Premium Islamic Administrative Desktop Suite",
@@ -40,7 +40,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="bg-[#020310] font-sans transition-colors duration-500">
-        <AppShell>{children}</AppShell>
+        <EmailProvider>
+          <AppShell>{children}</AppShell>
+        </EmailProvider>
       </body>
     </html>
   );
