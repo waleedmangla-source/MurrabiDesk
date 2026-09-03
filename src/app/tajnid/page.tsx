@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Users, Search, MapPin, Loader2, Navigation, Info } from "lucide-react";
+import { Upload, Users, Search, MapPin, Loader2, Navigation, Info, Plus, Copy, Check, Download, Filter } from "lucide-react";
 import dynamic from "next/dynamic";
 import Papa from "papaparse";
 import type { Contact } from "@/components/TajnidMap";
+import AddContactModal from "@/components/AddContactModal";
 
 // Dynamic import with no SSR to avoid window is not defined
 const TajnidMap = dynamic(() => import("@/components/TajnidMap"), {
@@ -81,6 +82,12 @@ export default function TajnidPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState(0);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  
+  // New features state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [filterAuxiliary, setFilterAuxiliary] = useState<string>("All");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   // Request user location on mount
   useEffect(() => {
@@ -96,6 +103,87 @@ export default function TajnidPage() {
     }
   }, []);
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  const toggleSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(filteredContacts.map(c => c.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const exportSelectedCsv = () => {
+    if (selectedIds.size === 0) return;
+    const selectedData = contacts.filter(c => selectedIds.has(c.id));
+    const csv = Papa.unparse(selectedData.map(c => ({
+      Name: c.name,
+      Phone: c.phone,
+      Email: c.email,
+      Address: c.address,
+      Age: c.age || "",
+      Auxiliary: c.auxiliary || "",
+      Latitude: c.lat || "",
+      Longitude: c.lng || ""
+    })));
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `tajnid_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleAddMember = async (newContact: Partial<Contact>) => {
+    setIsAddModalOpen(false);
+    const c: Contact = {
+      id: `manual-${Date.now()}`,
+      name: newContact.name || "Unknown",
+      phone: newContact.phone || "",
+      email: newContact.email || "",
+      address: newContact.address || "",
+      age: newContact.age,
+      auxiliary: newContact.auxiliary,
+    };
+
+    if (c.address) {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(c.address)}&key=${apiKey}`);
+          const data = await res.json();
+          if (data.status === "OK" && data.results.length > 0) {
+            const loc = data.results[0].geometry.location;
+            c.lat = loc.lat;
+            c.lng = loc.lng;
+          }
+        } catch (err) {
+          console.error("Geocoding failed for manual add", err);
+        }
+      }
+    }
+
+    setContacts(prev => [c, ...prev]);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -109,7 +197,7 @@ export default function TajnidPage() {
         
         const loadedContacts: Contact[] = parsed.map((row, index) => {
           return {
-            id: String(index),
+            id: `csv-${Date.now()}-${index}`,
             name: row.Name || row.name || "Unknown",
             phone: row.Phone || row.phone || "",
             email: row.Email || row.email || "",
@@ -140,12 +228,11 @@ export default function TajnidPage() {
               console.error("Geocoding failed for", c.address);
             }
             setGeocodingProgress(Math.round(((i + 1) / toGeocode.length) * 100));
-            // Small delay to prevent hitting rate limits (though Google is more generous)
             await new Promise(r => setTimeout(r, 200)); 
           }
         }
         
-        setContacts(loadedContacts);
+        setContacts(prev => [...loadedContacts, ...prev]);
         setIsUploading(false);
         setGeocodingProgress(0);
       },
@@ -158,11 +245,17 @@ export default function TajnidPage() {
 
   const filteredContacts = contacts.filter(c => {
     const q = query.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.phone.includes(q);
+    const matchesQuery = c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.phone.includes(q);
+    const matchesFilter = filterAuxiliary === "All" || c.auxiliary === filterAuxiliary;
+    return matchesQuery && matchesFilter;
   });
 
   return (
     <div className="flex-1 flex overflow-hidden">
+      {isAddModalOpen && (
+        <AddContactModal onClose={() => setIsAddModalOpen(false)} onAdd={handleAddMember} />
+      )}
+
       {/* Left Pane - List & Upload */}
       <div className="w-1/3 min-w-[320px] max-w-md border-r border-white/5 flex flex-col bg-black/20">
         <div className="p-6 border-b border-white/5 shrink-0">
@@ -172,6 +265,13 @@ export default function TajnidPage() {
               Tajnid
             </h1>
             <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--text-dim)] hover:text-[var(--accent-main)]"
+                title="Add Member"
+              >
+                <Plus size={16} />
+              </button>
               <div className="relative group/tooltip flex items-center">
                 <Info size={16} className="text-[var(--text-dim)] hover:text-[var(--foreground)] transition-all cursor-help" />
                 <div className="absolute right-0 top-full mt-2 w-64 p-3 rounded-xl text-[10px] leading-relaxed font-medium text-white/90 bg-black/90 backdrop-blur-md border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
@@ -181,21 +281,41 @@ export default function TajnidPage() {
               </div>
               <label className="cursor-pointer p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all text-[var(--accent-main)] flex items-center gap-2">
                 {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">Upload CSV</span>
+                <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline">CSV</span>
                 <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
               </label>
             </div>
           </div>
 
-          <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
-                <input
-                  type="text"
-                  placeholder="Search members..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-[var(--foreground)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] transition-all"
-            />
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
+              <input
+                type="text"
+                placeholder="Search members..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-[var(--foreground)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] transition-all"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" size={14} />
+                <select 
+                  value={filterAuxiliary}
+                  onChange={(e) => setFilterAuxiliary(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--accent-main)] transition-all appearance-none"
+                >
+                  <option value="All">All Auxiliaries</option>
+                  <option value="Khuddam">Khuddam</option>
+                  <option value="Ansar">Ansar</option>
+                  <option value="Atfal">Atfal</option>
+                  <option value="Lajna">Lajna</option>
+                  <option value="Nasirat">Nasirat</option>
+                </select>
+              </div>
+            </div>
           </div>
           
           {geocodingProgress > 0 && (
@@ -214,12 +334,35 @@ export default function TajnidPage() {
           )}
         </div>
 
+        {/* Selection Header */}
+        <div className="px-4 py-3 border-b border-white/5 bg-black/40 flex items-center justify-between shrink-0">
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--text-dim)] hover:text-white transition-all">
+            <input 
+              type="checkbox" 
+              className="rounded bg-black/40 border-white/10 accent-[var(--accent-main)] cursor-pointer"
+              checked={filteredContacts.length > 0 && selectedIds.size === filteredContacts.length}
+              onChange={handleSelectAll}
+            />
+            {selectedIds.size > 0 ? `${selectedIds.size} Selected` : "Select All"}
+          </label>
+          
+          {selectedIds.size > 0 && (
+            <button 
+              onClick={exportSelectedCsv}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-main)] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[var(--accent-hover)] transition-all"
+            >
+              <Download size={12} />
+              Export
+            </button>
+          )}
+        </div>
+
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
           {filteredContacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[var(--text-dim)] opacity-50 p-6 text-center">
               <Users size={32} className="mb-3" />
               <p className="text-sm">No contacts found.</p>
-              <p className="text-xs mt-1">Upload a CSV file containing Name, Phone, and Address.</p>
+              <p className="text-xs mt-1">Try uploading a CSV or adding a member.</p>
             </div>
           ) : (
             filteredContacts.map(contact => (
@@ -231,14 +374,23 @@ export default function TajnidPage() {
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
-                    {(contact.auxiliary || contact.age) && (
-                      <span className="text-[10px] font-bold text-[var(--accent-main)] uppercase tracking-wider mt-0.5">
-                        {contact.auxiliary}{contact.auxiliary && contact.age ? ' • ' : ''}
-                        {contact.age ? `${contact.age} YRS` : ''}
-                      </span>
-                    )}
+                  <div className="flex items-start gap-3">
+                    <input 
+                      type="checkbox" 
+                      className="mt-1 rounded bg-black/40 border-white/10 accent-[var(--accent-main)] cursor-pointer"
+                      checked={selectedIds.has(contact.id)}
+                      onClick={(e) => toggleSelection(contact.id, e)}
+                      onChange={() => {}} // Handle warning
+                    />
+                    <div className="flex flex-col">
+                      <h3 className="text-sm font-bold text-[var(--foreground)]">{contact.name}</h3>
+                      {(contact.auxiliary || contact.age) && (
+                        <span className="text-[10px] font-bold text-[var(--accent-main)] uppercase tracking-wider mt-0.5">
+                          {contact.auxiliary}{contact.auxiliary && contact.age ? ' • ' : ''}
+                          {contact.age ? `${contact.age} YRS` : ''}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {contact.lat && contact.lng ? (
                     <MapPin size={12} className="text-emerald-400 mt-0.5 shrink-0" title="Location verified" />
@@ -246,9 +398,34 @@ export default function TajnidPage() {
                     <MapPin size={12} className="text-red-400 mt-0.5 shrink-0" title="Location missing" />
                   )}
                 </div>
-                {contact.phone && <div className="text-xs text-[var(--text-dim)]">{contact.phone}</div>}
-                {contact.email && <div className="text-xs text-[var(--text-dim)]">{contact.email}</div>}
-                {contact.address && <div className="text-xs text-[var(--text-dim)] truncate" title={contact.address}>{contact.address}</div>}
+
+                <div className="pl-6 space-y-1">
+                  {contact.phone && (
+                    <div className="flex items-center group/copy gap-2">
+                      <div className="text-xs text-[var(--text-dim)]">{contact.phone}</div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleCopy(contact.phone); }}
+                        className="opacity-0 group-hover/copy:opacity-100 p-1 hover:bg-white/10 rounded transition-all text-[var(--text-dim)] hover:text-white"
+                        title="Copy Phone"
+                      >
+                        {copiedText === contact.phone ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+                      </button>
+                    </div>
+                  )}
+                  {contact.email && (
+                    <div className="flex items-center group/copy gap-2">
+                      <div className="text-xs text-[var(--text-dim)]">{contact.email}</div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleCopy(contact.email); }}
+                        className="opacity-0 group-hover/copy:opacity-100 p-1 hover:bg-white/10 rounded transition-all text-[var(--text-dim)] hover:text-white"
+                        title="Copy Email"
+                      >
+                        {copiedText === contact.email ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+                      </button>
+                    </div>
+                  )}
+                  {contact.address && <div className="text-xs text-[var(--text-dim)] truncate" title={contact.address}>{contact.address}</div>}
+                </div>
               </div>
             ))
           )}
