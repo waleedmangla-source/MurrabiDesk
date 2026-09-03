@@ -145,6 +145,7 @@ Assalamu ‘alaikum! I am MurrabiAI, your assistant within Murrabi Desk OS. May 
 
 export const QUICK_PROMPTS = {
   ahmadiyyat: [
+    { label: "Summarize Latest Khutba", prompt: "Summarize the latest Friday sermon (Khutba) of Huzoor (aba) into point form and translate the summary into Urdu." },
     { label: "Duties of a Murrabi", prompt: "What are the key duties and responsibilities of a Murrabi in the Ahmadiyya Muslim Community?" },
     { label: "Khilafat Explained", prompt: "Can you explain the institution of Khilafat-e-Ahmadiyya and its importance?" },
     { label: "The Promised Messiah (as)", prompt: "Give me an overview of Hazrat Mirza Ghulam Ahmad (as) — his mission and major claims." },

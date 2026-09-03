@@ -341,7 +341,7 @@ export default function MurrabiAIPage() {
               <button 
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
                 className={clsx(
-                  "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-black/30 hover:text-red-500 hover:bg-red-500/10 transition-all",
+                  "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all",
                   currentConvId === conv.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                 )}
                 title="Delete Chat"
