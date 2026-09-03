@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Users, Search, MapPin, Loader2, Navigation, Info, Plus, Copy, Check, Download, Filter } from "lucide-react";
+import { Upload, Users, Search, MapPin, Loader2, Navigation, Info, Plus, Copy, Check, Download, Filter, MessageCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import Papa from "papaparse";
 import type { Contact } from "@/components/TajnidMap";
@@ -410,6 +410,16 @@ export default function TajnidPage() {
                       >
                         {copiedText === contact.phone ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
                       </button>
+                      <a 
+                        href={`https://wa.me/${contact.phone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover/copy:opacity-100 p-1 hover:bg-emerald-500/20 hover:text-emerald-400 rounded transition-all text-[var(--text-dim)]"
+                        title="Open in WhatsApp"
+                      >
+                        <MessageCircle size={10} />
+                      </a>
                     </div>
                   )}
                   {contact.email && (
