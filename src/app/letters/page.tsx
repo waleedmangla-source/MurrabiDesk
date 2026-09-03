@@ -30,6 +30,7 @@ import {
   Save,
   Languages,
   Wand2,
+  Search,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -407,7 +408,23 @@ export default function LettersPage() {
   const [isAiDraftOpen, setIsAiDraftOpen] = useState(false);
   const [aiPromptTopic, setAiPromptTopic] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiMode, setAiMode] = useState<"translate" | "draft" | null>(null);
+  // Search & Recent Categories State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [recentCategoryKeys, setRecentCategoryKeys] = useState<string[]>([
+    "huzoor-prayers",
+    "huzoor-leave_international",
+    "amir-main",
+  ]);
+
+  // Handle selecting a category or sub-category item
+  const handleSelectCategoryItem = (catId: string, subId?: HuzoorSubCategory) => {
+    setActiveCategoryId(catId);
+    if (catId === "huzoor" && subId) {
+      setHuzoorSubCat(subId);
+    }
+    const itemKey = catId === "huzoor" ? `huzoor-${subId || huzoorSubCat}` : `${catId}-main`;
+    setRecentCategoryKeys((prev) => [itemKey, ...prev.filter((k) => k !== itemKey)]);
+  };
 
   // AI Translate Handler
   const handleAiTranslate = async () => {
