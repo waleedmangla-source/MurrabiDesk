@@ -402,9 +402,11 @@ export default function MurrabiAIPage() {
           <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0 overflow-hidden pr-4">
             <div className="flex-1 min-w-0 overflow-hidden">
               <HoverMarquee text={currentConversation?.title || ""} className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase block" />
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]/80">
-                {isLoading ? "Generating..." : currentConversation?.isTemporary ? "Temporary Protocol" : "Ahmadiyya Intelligence Protocol"}
-              </p>
+              {(isLoading || currentConversation?.isTemporary) && (
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]/80">
+                  {isLoading ? "Generating..." : "Temporary Chat"}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 lg:gap-3">
