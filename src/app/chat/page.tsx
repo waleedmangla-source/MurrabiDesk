@@ -540,7 +540,7 @@ export default function MurabbiAIPage() {
               <button
                 onClick={() => setCurrentConvId(conv.id)}
                 className={clsx(
-                  "w-full flex items-center gap-2 px-3 py-3 rounded-xl text-left transition-all",
+                  "w-full flex items-center gap-2 pl-3 pr-8 py-3 rounded-xl text-left transition-all",
                   currentConvId === conv.id 
                     ? "bg-black/10 font-bold text-black" 
                     : "text-black/50 hover:bg-black/5 hover:text-black/80"
@@ -555,10 +555,10 @@ export default function MurabbiAIPage() {
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center z-10"
                 title="Delete Chat"
               >
-                <Trash2 size={13} className="text-red-600" />
+                <Trash2 size={14} style={{ color: '#ef4444', stroke: '#ef4444' }} />
               </button>
             </div>
           ))}
