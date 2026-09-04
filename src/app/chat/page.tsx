@@ -11,6 +11,7 @@ import {
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murabbiAI-system";
 import { GoogleSyncService } from "@/lib/google-sync-service";
+import AIBlob from "@/components/AIBlob";
 
 export interface Attachment {
   id: string;
@@ -595,9 +596,9 @@ export default function MurabbiAIPage() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 pb-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-20 select-none">
-              <div className="w-24 h-24 rounded-full border flex items-center justify-center mb-6 shadow-2xl" style={{ background: 'var(--accent-soft)', borderColor: 'rgba(var(--accent-rgb, 16, 185, 129), 0.25)' }}>
-                <Sparkles size={40} style={{ color: 'var(--accent-main)' }} />
+            <div className="h-full flex flex-col items-center justify-center text-center py-12 select-none">
+              <div className="mb-2 flex items-center justify-center">
+                <AIBlob state={isListening ? "listening" : isLoading ? "thinking" : "idle"} />
               </div>
               <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">MurabbiAI</h2>
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs">

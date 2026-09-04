@@ -868,6 +868,205 @@ body {
   background: var(--accent-main);
   filter: blur(10px);
 }
+
+/* ═══════════════════════════════════════════════
+   3D ACADEMIC CRIMSON & BLUE AI BLOB
+   ═══════════════════════════════════════════════ */
+.blob-stage {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.blob-glow {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.28) 0%, rgba(37, 99, 235, 0.18) 48%, transparent 72%);
+  filter: blur(40px);
+  opacity: 0.85;
+  z-index: 0;
+  pointer-events: none;
+  transition: background 0.6s ease, opacity 0.6s ease;
+  transform: translateZ(-70px);
+}
+
+.blob-outline-back {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 32% 68% 28% 72% / 70% 30% 70% 30%;
+  border: 2px solid rgba(59, 130, 246, 0.45);
+  filter: blur(7px);
+  z-index: 1;
+  animation: morphDistorted var(--speed-distort, 13s) ease-in-out infinite alternate,
+             outlineSpin 32s linear infinite;
+  transform: translateZ(-60px);
+  pointer-events: none;
+  will-change: border-radius, transform;
+}
+
+.blob-core {
+  position: absolute;
+  width: 115px;
+  height: 115px;
+  border-radius: 58% 42% 63% 37% / 48% 59% 41% 52%;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(37, 99, 235, 0.85) 0%, transparent 48%),
+    radial-gradient(circle at 75% 35%, rgba(220, 38, 38, 0.9) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(153, 27, 27, 0.9) 0%, transparent 55%),
+    conic-gradient(from 190deg at 50% 50%, #991b1b, #2563eb, #7f1d1d, #1d4ed8, #b91c1c, #991b1b);
+  filter: blur(16px) saturate(145%);
+  opacity: 0.9;
+  z-index: 2;
+  animation: morphCurvy var(--speed-core, 12s) ease-in-out infinite alternate,
+             coreSlowRotate 24s linear infinite;
+  transform: translateZ(-30px);
+  will-change: border-radius, transform;
+}
+
+.blob-layer-mid {
+  position: absolute;
+  width: 125px;
+  height: 125px;
+  border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  filter: blur(2px);
+  z-index: 3;
+  animation: morphCurvy var(--speed-mid, 10s) ease-in-out infinite alternate-reverse;
+  transform: translateZ(-10px);
+  will-change: border-radius;
+}
+
+.ai-blob-front {
+  position: relative;
+  z-index: 4;
+  width: 135px;
+  height: 135px;
+  border-radius: 58% 42% 63% 37% / 48% 59% 41% 52%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.6),
+    0 15px 35px rgba(15, 23, 42, 0.1);
+  animation: morphCurvy var(--blob-speed, 11s) ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+  overflow: hidden;
+  will-change: border-radius, transform;
+}
+
+.blob-noise {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes morphDistorted {
+  0% {
+    border-radius: 32% 68% 28% 72% / 70% 30% 70% 30%;
+    transform: translateZ(-60px) scale(0.98);
+  }
+  25% {
+    border-radius: 74% 26% 65% 35% / 32% 78% 22% 68%;
+  }
+  50% {
+    border-radius: 28% 72% 76% 24% / 68% 24% 76% 32%;
+    transform: translateZ(-60px) scale(1.05);
+  }
+  75% {
+    border-radius: 65% 35% 30% 70% / 26% 74% 36% 64%;
+  }
+  100% {
+    border-radius: 35% 65% 69% 31% / 75% 35% 65% 25%;
+    transform: translateZ(-60px) scale(1);
+  }
+}
+
+@keyframes morphCurvy {
+  0% {
+    border-radius: 58% 42% 63% 37% / 48% 59% 41% 52%;
+  }
+  25% {
+    border-radius: 52% 48% 45% 55% / 57% 43% 57% 43%;
+  }
+  50% {
+    border-radius: 46% 54% 59% 41% / 44% 56% 44% 56%;
+  }
+  75% {
+    border-radius: 61% 39% 48% 52% / 53% 47% 53% 47%;
+  }
+  100% {
+    border-radius: 54% 46% 66% 34% / 46% 63% 37% 54%;
+  }
+}
+
+@keyframes coreSlowRotate {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.04); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes outlineSpin {
+  0%   { rotate: 0deg; }
+  100% { rotate: 360deg; }
+}
+
+.state-listening .blob-core {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.9) 0%, transparent 45%),
+    radial-gradient(circle at 75% 35%, rgba(239, 68, 68, 0.85) 0%, transparent 45%),
+    conic-gradient(from 190deg at 50% 50%, #0284c7, #b91c1c, #0369a1, #ef4444, #0284c7);
+}
+.state-listening .blob-glow {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, rgba(239, 68, 68, 0.2) 48%, transparent 70%);
+}
+.state-listening .blob-outline-back {
+  border-color: rgba(14, 165, 233, 0.55);
+}
+
+.state-thinking .blob-core {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(79, 70, 229, 0.95) 0%, transparent 45%),
+    radial-gradient(circle at 75% 35%, rgba(190, 18, 60, 0.9) 0%, transparent 45%),
+    conic-gradient(from 190deg at 50% 50%, #4338ca, #881337, #312e81, #be123c, #4338ca);
+  filter: blur(18px) saturate(150%);
+}
+.state-thinking .blob-glow {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.32) 0%, rgba(190, 18, 60, 0.22) 48%, transparent 70%);
+}
+.state-thinking .blob-outline-back {
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+.state-speaking .blob-core {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(37, 99, 235, 0.9) 0%, transparent 45%),
+    radial-gradient(circle at 75% 35%, rgba(234, 88, 12, 0.85) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(185, 28, 28, 0.9) 0%, transparent 50%),
+    conic-gradient(from 190deg at 50% 50%, #b91c1c, #2563eb, #dc2626, #1d4ed8, #b91c1c);
+}
+.state-speaking .blob-glow {
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.35) 0%, rgba(37, 99, 235, 0.25) 48%, transparent 70%);
+}
+.state-speaking .blob-outline-back {
+  border-color: rgba(59, 130, 246, 0.6);
+}
 .sidebar-glider::after {
   content: "";
   position: absolute;
