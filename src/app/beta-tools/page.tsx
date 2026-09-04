@@ -157,6 +157,38 @@ export default function BetaToolsPage() {
     }
   };
 
+  const playRawPcmAudio = (base64Pcm: string) => {
+    try {
+      const binaryString = atob(base64Pcm);
+      const len = binaryString.length;
+      const bytes = new Int16Array(len / 2);
+      const dataView = new DataView(new ArrayBuffer(len));
+      for (let i = 0; i < len; i++) {
+        dataView.setUint8(i, binaryString.charCodeAt(i));
+      }
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = dataView.getInt16(i * 2, true); // Little endian
+      }
+
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const buffer = audioCtx.createBuffer(1, bytes.length, 24000);
+      const channelData = buffer.getChannelData(0);
+      for (let i = 0; i < bytes.length; i++) {
+        channelData[i] = bytes[i] / 32768.0;
+      }
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioCtx.destination);
+      
+      setIsSpeaking(true);
+      source.onended = () => setIsSpeaking(false);
+      source.start();
+    } catch (e) {
+      console.error("[PCM Audio] Error playing Gemini native audio:", e);
+    }
+  };
+
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -302,7 +334,12 @@ export default function BetaToolsPage() {
       if (data.text) {
         setChatMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
         addTerminalLog(`[NEURAL] Processed query: ${userMsg.substring(0, 20)}...`);
-        speakText(data.text);
+
+        if (data.audioBase64) {
+          playRawPcmAudio(data.audioBase64);
+        } else {
+          speakText(data.text);
+        }
       } else {
         setChatMessages(prev => [...prev, { role: 'assistant', content: "[ERROR] " + (data.error || "Unknown error") }]);
         addTerminalLog(`[ERROR] Neural Engine: ${data.error || "Unknown error"}`);

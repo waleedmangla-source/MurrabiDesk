@@ -55,25 +55,58 @@ Your purpose is to engage in natural, spoken conversations.
         parts: [{ text: msg.content }]
       }));
 
-      const requestBody = {
+      // Step 1: Generate text response with Gemini 3.5 Flash
+      const textRequestBody = {
         system_instruction: { parts: { text: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA } },
         contents: geminiMessages,
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
       };
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      const textRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(textRequestBody),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        return NextResponse.json({ error: `Gemini API error: ${res.status} ${errorText}` }, { status: res.status });
+      if (!textRes.ok) {
+        const errorText = await textRes.text();
+        return NextResponse.json({ error: `Gemini API error: ${textRes.status} ${errorText}` }, { status: textRes.status });
       }
 
-      const data = await res.json();
-      return NextResponse.json({ text: data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated." });
+      const textData = await textRes.json();
+      const responseText = textData.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+
+      // Step 2: Synthesize native audio using Gemini TTS model
+      let audioBase64: string | null = null;
+      let audioMimeType: string | null = null;
+
+      try {
+        const ttsRequestBody = {
+          contents: [{ parts: [{ text: `Read the following text naturally out loud: ${responseText}` }] }],
+          generationConfig: {
+            responseModalities: ["AUDIO"]
+          }
+        };
+
+        const ttsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(ttsRequestBody),
+        });
+
+        if (ttsRes.ok) {
+          const ttsData = await ttsRes.json();
+          const part = ttsData.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+          if (part && part.data) {
+            audioBase64 = part.data;
+            audioMimeType = part.mimeType || "audio/L16;codec=pcm;rate=24000";
+          }
+        }
+      } catch (audioErr) {
+        console.error('[Gemini TTS] Failed to generate native audio, fallback to WebSpeech:', audioErr);
+      }
+
+      return NextResponse.json({ text: responseText, audioBase64, audioMimeType });
     }
 
   } catch (err: any) {
