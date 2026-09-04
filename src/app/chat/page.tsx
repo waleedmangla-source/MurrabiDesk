@@ -623,24 +623,24 @@ export default function MurabbiAIPage() {
           {/* Bottom theme background gradient layer */}
           <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20" />
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 py-4 space-y-4 lg:space-y-6 relative z-10">
+          <div className={clsx("flex-1 px-4 lg:px-8 py-2 relative z-10 flex flex-col", messages.length === 0 ? "overflow-hidden justify-center" : "overflow-y-auto custom-scrollbar space-y-4 lg:space-y-6 py-4")}>
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-12 select-none">
-              <div className="mb-2 flex items-center justify-center">
+            <div className="h-full flex flex-col items-center justify-center text-center py-4 select-none my-auto">
+              <div className="mb-2 flex items-center justify-center shrink-0">
                 <AIBlob state={isListening ? "listening" : isLoading ? "thinking" : "idle"} />
               </div>
-              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">MurabbiAI</h2>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs">
+              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-1">MurabbiAI</h2>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs mb-6">
                 Your AI assistant for Ahmadiyyat, mission work, and Murabbi Desk
               </p>
-              <div className="mt-10 grid grid-cols-2 gap-3 max-w-md w-full">
+              <div className="grid grid-cols-2 gap-3 max-w-md w-full shrink-0">
                 {[
                   "What are the duties of a Murabbi?",
                   "Help me prepare a Friday Khutba",
                   "Explain Khilafat-e-Ahmadiyya",
                   "Draft a Tabligh follow-up letter",
                 ].map(s => (
-                  <button key={s} onClick={() => sendMessage(s)} className="p-4 rounded-2xl glass border border-white/5 text-left hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] transition-all group">
+                  <button key={s} onClick={() => sendMessage(s)} className="p-3.5 rounded-2xl glass border border-white/5 text-left hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] transition-all group">
                     <p className="text-[11px] font-bold text-black/30 group-hover:text-black/60 transition-colors leading-relaxed">{s}</p>
                   </button>
                 ))}
