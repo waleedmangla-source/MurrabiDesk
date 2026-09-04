@@ -344,7 +344,7 @@ export default function HabitsPage() {
                             {!DEFAULT_PROTOCOLS.find(d => d.id === habit.id) && (
                               <button 
                                 onClick={() => toggleArchiveHabit(habit.id)}
-                                className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                                className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-red-500 hover:bg-red-500/10 transition-all"
                                 title="Archive Protocol"
                               >
                                 <XCircle size={14} />
@@ -644,7 +644,7 @@ export default function HabitsPage() {
                               "px-6 py-2 rounded-[14px] text-[10px] font-black uppercase tracking-[0.2em] transition-all",
                               habit.archived 
                                 ? "bg-accent-main text-white hover:bg-accent-hover" 
-                                : "bg-white/5 text-white/40 hover:bg-rose-500/10 hover:text-rose-400"
+                                : "bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500"
                             )}
                           >
                             {habit.archived ? 'Reactivate' : 'Archive'}

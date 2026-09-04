@@ -308,7 +308,7 @@ function EmailDetail({
           <button onClick={() => onArchive(email.id)} className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]" title="Archive">
             <Archive size={15} />
           </button>
-          <button onClick={() => onTrash(email.id)} className="p-2 rounded-xl hover:bg-rose-500/20 transition-all text-[var(--text-dim)] hover:text-rose-400" title="Delete">
+          <button onClick={() => onTrash(email.id)} className="p-2 rounded-xl hover:bg-red-500/20 transition-all text-[var(--text-dim)] hover:text-red-400" title="Delete">
             <Trash2 size={15} />
           </button>
         </div>
@@ -634,7 +634,7 @@ export default function EmailsPage() {
       <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
-          <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase leading-none">Email</h1>
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Email</h1>
         </div>
         
         {/* Account Header */}

@@ -184,8 +184,8 @@ function NoteCard({
           <button onClick={e => { e.stopPropagation(); onPin(note); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-all" title={note.pinned ? "Unpin" : "Pin"}>
             <Pin size={13} className={clsx(note.pinned ? "text-[var(--accent-main)]" : "text-white/30")} />
           </button>
-          <button onClick={e => { e.stopPropagation(); onDelete(note); }} className="p-1.5 rounded-lg hover:bg-rose-500/20 transition-all">
-            <Trash2 size={13} className="text-white/30 hover:text-rose-400" />
+          <button onClick={e => { e.stopPropagation(); onDelete(note); }} className="p-1.5 rounded-lg hover:bg-red-500/20 transition-all">
+            <Trash2 size={13} className="text-white/30 hover:text-red-400" />
           </button>
         </div>
       </div>
@@ -226,8 +226,8 @@ function NoteCard({
           <button onClick={e => { e.stopPropagation(); onPin(note); }} className="p-1 rounded-lg hover:bg-white/10 transition-all" title={note.pinned ? "Unpin" : "Pin"}>
             <Pin size={12} className={clsx(note.pinned ? "text-[var(--accent-main)]" : "text-white/30")} />
           </button>
-          <button onClick={e => { e.stopPropagation(); onDelete(note); }} className="p-1 rounded-lg hover:bg-rose-500/20 transition-all">
-            <Trash2 size={12} className="text-white/30 hover:text-rose-400" />
+          <button onClick={e => { e.stopPropagation(); onDelete(note); }} className="p-1 rounded-lg hover:bg-red-500/20 transition-all">
+            <Trash2 size={12} className="text-white/30 hover:text-red-400" />
           </button>
         </div>
       </div>
@@ -272,8 +272,8 @@ function NoteModal({
           </h2>
           <div className="flex items-center gap-2">
             {!isNew && (
-              <button onClick={() => onDelete(form)} className="p-2 rounded-xl hover:bg-rose-500/20 transition-all" title="Delete note">
-                <Trash2 size={16} className="text-white/30 hover:text-rose-400" />
+              <button onClick={() => onDelete(form)} className="p-2 rounded-xl hover:bg-red-500/20 transition-all" title="Delete note">
+                <Trash2 size={16} className="text-white/30 hover:text-red-400" />
               </button>
             )}
             <button
@@ -442,7 +442,7 @@ export default function NotesPage() {
     : syncStatus === 'error' ? AlertCircle
     : RefreshCw;
   const syncColor = syncStatus === 'synced' ? 'text-emerald-400'
-    : syncStatus === 'error' ? 'text-rose-400'
+    : syncStatus === 'error' ? 'text-red-400'
     : syncStatus === 'offline' ? 'text-white/20'
     : 'text-white/30';
   return (

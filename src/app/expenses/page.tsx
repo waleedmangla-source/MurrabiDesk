@@ -90,7 +90,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
       style={style}
       className={clsx(
         "flex items-center gap-4 glass bg-white/5 p-3 rounded-[16px] group transition-all border border-white/5",
-        isDragging ? "shadow-2xl shadow-[var(--accent-soft)] border-[var(--accent-main)]/30 scale-105" : ""
+        isDragging ? "shadow-2xl shadow-red-600/30 border-red-600/30 scale-105" : ""
       )}
     >
       <div 
@@ -101,7 +101,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
         <GripVertical size={16} className="text-[var(--text-main)]/20 " />
       </div>
 
-      <div className="w-10 h-10 rounded-[12px] bg-[var(--accent-soft)] flex flex-col items-center justify-center border border-[var(--accent-main)]/30 flex-shrink-0">
+      <div className="w-10 h-10 rounded-[12px] bg-red-600/20 flex flex-col items-center justify-center border border-red-600/30 flex-shrink-0">
           <span className="text-[8px] font-black text-[var(--accent-main)] uppercase tracking-tighter">REF</span>
           <span className="text-xs font-black text-[var(--text-main)] italic leading-none">#{idx + 1}</span>
       </div>
@@ -113,7 +113,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
 
       <button 
           onClick={() => onRemove(receipt.id)}
-          className="p-1.5 rounded-md text-rose-400/40 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+          className="p-1.5 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
       >
           <Trash2 size={14} />
       </button>
@@ -1863,7 +1863,7 @@ ${formData.comments || 'None'}
           <button 
             onClick={handleExportAndSend}
             disabled={isSending}
-            className="btn-ruby py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag shadow-2xl shadow-[var(--accent-soft)]"
+            className="btn-ruby py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag shadow-2xl shadow-red-900/40"
           >
             {isSending ? (
               <div className="animate-spin rounded-full h-6 w-6 border-4 border-white/20 border-t-white" />
@@ -1892,12 +1892,12 @@ ${formData.comments || 'None'}
           />
           <div className="relative w-full max-w-lg glass bg-[#0a0a0a]/80 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="p-8 pt-10 flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent-main)] border border-[var(--accent-main)]/30 mb-6 shadow-[0_0_30px_var(--accent-glow)]">
+              <div className="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center text-red-500 border border-red-600/30 mb-6 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
                 <AlertCircle size={32} />
               </div>
               
               <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
-                Confirm <span className="text-[var(--accent-main)]">Submission</span>
+                Confirm <span className="text-red-500">Submission</span>
               </h3>
               
               <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-dim)] leading-relaxed max-w-[320px]">
@@ -1915,13 +1915,13 @@ ${formData.comments || 'None'}
                     className={clsx(
                       "flex items-center gap-3 p-3 rounded-xl border transition-all duration-300",
                       selectedEmail === 'manglawaleed@gmail.com' 
-                        ? "bg-[var(--accent-soft)] border-[var(--accent-main)]/50 text-[var(--text-main)] shadow-[0_0_20px_var(--accent-glow)]" 
+                        ? "bg-red-600/20 border-red-600/50 text-[var(--text-main)] shadow-[0_0_20px_rgba(220,38,38,0.1)]" 
                         : "bg-black/40 border-white/5 text-[var(--text-dim)] hover:border-white/20"
                     )}
                   >
                      <div className={clsx(
                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                       selectedEmail === 'manglawaleed@gmail.com' ? "bg-[var(--accent-main)] text-white" : "bg-white/5 text-[var(--text-dim)]"
+                       selectedEmail === 'manglawaleed@gmail.com' ? "bg-red-600 text-white" : "bg-white/5 text-[var(--text-dim)]"
                      )}>
                         <Mail size={14} />
                      </div>
@@ -1933,13 +1933,13 @@ ${formData.comments || 'None'}
                     className={clsx(
                       "flex items-center gap-3 p-3 rounded-xl border transition-all duration-300",
                       selectedEmail === 'ap@ahmadiyya.ca' 
-                        ? "bg-[var(--accent-soft)] border-[var(--accent-main)]/50 text-[var(--text-main)] shadow-[0_0_20px_var(--accent-glow)]" 
+                        ? "bg-red-600/20 border-red-600/50 text-[var(--text-main)] shadow-[0_0_20px_rgba(220,38,38,0.1)]" 
                         : "bg-black/40 border-white/5 text-[var(--text-dim)] hover:border-white/20"
                     )}
                   >
                      <div className={clsx(
                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                       selectedEmail === 'ap@ahmadiyya.ca' ? "bg-[var(--accent-main)] text-white" : "bg-white/5 text-[var(--text-dim)]"
+                       selectedEmail === 'ap@ahmadiyya.ca' ? "bg-red-600 text-white" : "bg-white/5 text-[var(--text-dim)]"
                      )}>
                         <Mail size={14} />
                      </div>
@@ -1957,7 +1957,7 @@ ${formData.comments || 'None'}
                 </button>
                 <button 
                   onClick={confirmAndSend}
-                  className="px-6 py-4 rounded-[18px] bg-[var(--accent-main)] text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-soft)] hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Send size={14} />
                   Send Now

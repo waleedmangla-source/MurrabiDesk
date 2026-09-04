@@ -584,7 +584,7 @@ export default function BetaToolsPage() {
             <div className="col-span-12 xl:col-span-5 space-y-6">
               <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-fit">
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-[var(--accent-soft)] rounded-2xl flex items-center justify-center text-[var(--accent-main)]">
+                  <div className="w-12 h-12 bg-red-600/10 rounded-2xl flex items-center justify-center text-red-600">
                     <Youtube size={24} />
                   </div>
                   <div>
@@ -600,19 +600,19 @@ export default function BetaToolsPage() {
                       placeholder="Paste YouTube Link Here..."
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 placeholder:opacity-10 focus:outline-none focus:border-[var(--accent-main)]/50 transition-all font-bold"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 placeholder:opacity-10 focus:outline-none focus:border-red-600/50 transition-all font-bold"
                     />
                     <button
                       type="submit"
                       disabled={loading || !url}
-                      className="absolute right-2 top-2 bottom-2 px-6 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] disabled:bg-white/5 disabled:text-white/20 text-white rounded-xl font-medium tracking-widest text-[10px] transition-all flex items-center gap-2"
+                      className="absolute right-2 top-2 bottom-2 px-6 bg-red-600 hover:bg-red-700 disabled:bg-white/5 disabled:text-white/20 text-white rounded-xl font-medium tracking-widest text-[10px] transition-all flex items-center gap-2"
                     >
                       {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
                       Inspect
                     </button>
                   </div>
                   {error && (
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold">
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-red-600/10 border border-red-600/20 text-red-500 text-xs font-bold">
                       <AlertCircle size={16} />
                       {error}
                     </div>
@@ -630,23 +630,23 @@ export default function BetaToolsPage() {
                     <div className="absolute bottom-6 left-10 right-10">
                       <h2 className="text-2xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl">{videoInfo.title}</h2>
                       <div className="flex items-center gap-6 mt-4 text-white/60 text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Eye size={12} className="text-[var(--accent-main)]" /> {videoInfo.view_count?.toLocaleString()} Views</div>
-                        <div className="flex items-center gap-2"><ThumbsUp size={12} className="text-[var(--accent-main)]" /> {videoInfo.like_count?.toLocaleString()} Likes</div>
-                        <div className="flex items-center gap-2"><Clock size={12} className="text-[var(--accent-main)]" /> {Math.floor(videoInfo.duration / 60)}:{(videoInfo.duration % 60).toString().padStart(2, '0')}</div>
+                        <div className="flex items-center gap-2"><Eye size={12} className="text-red-600" /> {videoInfo.view_count?.toLocaleString()} Views</div>
+                        <div className="flex items-center gap-2"><ThumbsUp size={12} className="text-red-600" /> {videoInfo.like_count?.toLocaleString()} Likes</div>
+                        <div className="flex items-center gap-2"><Clock size={12} className="text-red-600" /> {Math.floor(videoInfo.duration / 60)}:{(videoInfo.duration % 60).toString().padStart(2, '0')}</div>
                       </div>
                     </div>
                   </div>
                   <div className="p-10 space-y-10">
                     <div className="grid grid-cols-2 gap-6">
-                      <button onClick={() => handleDownload('video')} disabled={downloading} className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-[var(--accent-main)] text-white hover:bg-[var(--accent-hover)] transition-all duration-500 overflow-hidden border border-black/5 shadow-xl">
+                      <button onClick={() => handleDownload('video')} disabled={downloading} className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white text-black hover:bg-red-600 hover:text-white transition-all duration-500 overflow-hidden border border-black/5 shadow-xl">
                         <Video size={32} />
                         <span className="text-xs font-black uppercase tracking-widest">Download Video</span>
-                        {downloading && <div className="absolute inset-0 bg-[var(--accent-main)] flex items-center justify-center"><Loader2 size={24} className="animate-spin text-white" /></div>}
+                        {downloading && <div className="absolute inset-0 bg-red-600 flex items-center justify-center"><Loader2 size={24} className="animate-spin text-white" /></div>}
                       </button>
-                      <button onClick={() => handleDownload('audio')} disabled={downloading} className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white/5 border border-white/10 hover:border-[var(--accent-main)]/50 hover:bg-[var(--accent-soft)] transition-all duration-500">
-                        <Music size={32} className="text-[var(--accent-main)]" />
+                      <button onClick={() => handleDownload('audio')} disabled={downloading} className="group relative flex flex-col items-center gap-4 p-8 rounded-[24px] bg-white/5 border border-white/10 hover:border-red-600/50 hover:bg-red-600/10 transition-all duration-500">
+                        <Music size={32} className="text-red-600" />
                         <span className="text-xs font-black uppercase tracking-widest text-[var(--foreground)]">Extract Audio</span>
-                        {downloading && <div className="absolute inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center"><Loader2 size={24} className="animate-spin text-[var(--accent-main)]" /></div>}
+                        {downloading && <div className="absolute inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center"><Loader2 size={24} className="animate-spin text-red-600" /></div>}
                       </button>
                     </div>
                   </div>

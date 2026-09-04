@@ -89,7 +89,7 @@ export default function CommandPalette() {
         </div>
         <div className="p-4 border-t border-white/10 flex justify-between items-center text-[11px] text-white/40 font-black uppercase tracking-widest">
            <span className="flex items-center gap-2">Navigate with <span className="px-1.5 py-0.5 bg-white/10 rounded-[14px]">↑↓</span></span>
-           <span className="flex items-center gap-2">Press <span className="px-1.5 py-0.5 bg-[var(--accent-main)] text-white rounded-[14px]">Enter</span> to select</span>
+           <span className="flex items-center gap-2">Press <span className="px-1.5 py-0.5 bg-red-600 text-white rounded-[14px]">Enter</span> to select</span>
         </div>
       </div>
     </div>

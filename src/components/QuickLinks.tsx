@@ -114,12 +114,12 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                  />
                </a>
                {!link.isPreset && (
-                  <button 
-                   onClick={() => removeLink(link.id)}
-                   className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/pod:opacity-100 transition-opacity z-20 shadow-lg"
-                  >
-                    <X size={8} />
-                  </button>
+                 <button 
+                  onClick={() => removeLink(link.id)}
+                  className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/pod:opacity-100 transition-opacity z-20 shadow-lg"
+                 >
+                   <X size={8} />
+                 </button>
                )}
             </div>
           ))}
@@ -136,7 +136,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
 
         {isAdding && (
           <div className="absolute right-0 top-14 z-50 p-6 rounded-[24px] glass border border-white/10 shadow-2xl w-72 animate-in fade-in slide-in-from-top-4 backdrop-blur-3xl">
-            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] mb-4 flex items-center gap-2">
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-red-600 mb-4 flex items-center gap-2">
                <Globe size={10} />
                Add Protocol Resource
             </h4>
@@ -145,20 +145,20 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                 type="text" 
                 placeholder="Interface Name" 
                 autoFocus
-                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold text-v4-ink focus:border-[var(--accent-main)]/30 focus:ring-0 transition-all"
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold text-v4-ink focus:border-red-600/30 focus:ring-0 transition-all"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
               />
               <input 
                 type="text" 
                 placeholder="Domain / URL" 
-                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold text-v4-ink/60 focus:border-[var(--accent-main)]/30 focus:ring-0 transition-all"
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold text-v4-ink/60 focus:border-red-600/30 focus:ring-0 transition-all"
                 value={newUrl}
                 onChange={e => setNewUrl(e.target.value)}
               />
               <div className="flex justify-end gap-3 pt-2">
                 <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-white/30  transition-colors">Cancel</button>
-                <button onClick={addLink} className="bg-[var(--accent-main)] text-white px-6 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg shadow-[var(--accent-soft)] hover:bg-[var(--accent-hover)] active:scale-95 transition-all">Establish</button>
+                <button onClick={addLink} className="bg-red-600 text-white px-6 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20  active:scale-95 transition-all">Establish</button>
               </div>
             </div>
           </div>
@@ -211,7 +211,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                         e.stopPropagation();
                         removeLink(link.id);
                       }}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-0  transition-all z-20 shadow-lg  active:scale-95"
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0  transition-all z-20 shadow-lg  active:scale-95"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -248,7 +248,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
              <div className="relative z-[110] glass p-10 rounded-[40px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] w-full max-w-md animate-in zoom-in-95 pointer-events-auto">
                 <div className="flex items-center justify-between mb-8">
                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[var(--accent-soft)] rounded-2xl flex items-center justify-center text-[var(--accent-main)] shadow-[0_0_20px_var(--accent-glow)]">
+                      <div className="w-12 h-12 bg-red-600/10 rounded-2xl flex items-center justify-center text-red-600 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                          <Plus size={24} />
                       </div>
                       <div>
@@ -270,7 +270,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         autoFocus
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold text-v4-ink focus:border-[var(--accent-main)]/30 focus:ring-0 transition-all"
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold text-v4-ink focus:border-red-600/30 focus:ring-0 transition-all"
                       />
                    </div>
                    <div className="space-y-2">
@@ -280,13 +280,13 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
                         placeholder="e.g. hq.alislam.org"
                         value={newUrl}
                         onChange={(e) => setNewUrl(e.target.value)}
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold text-v4-ink/60 focus:border-[var(--accent-main)]/30 focus:ring-0 transition-all font-mono"
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold text-v4-ink/60 focus:border-red-600/30 focus:ring-0 transition-all font-mono"
                       />
                    </div>
                    
                    <button 
                      onClick={addLink}
-                     className="w-full h-16 mt-4 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] rounded-[22px] font-black uppercase tracking-[0.3em] text-[11px] text-white shadow-2xl shadow-[var(--accent-soft)] active:scale-[0.98] transition-all"
+                     className="w-full h-16 mt-4 bg-red-600 rounded-[22px] font-black uppercase tracking-[0.3em] text-[11px] text-white shadow-2xl shadow-red-900/40   active:scale-[0.98] transition-all"
                    >
                      Initiate Link Connection
                    </button>

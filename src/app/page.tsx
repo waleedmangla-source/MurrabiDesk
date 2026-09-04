@@ -231,8 +231,8 @@ export default function Dashboard() {
           className="glass p-4 lg:p-5 flex flex-col gap-3 relative overflow-hidden group cursor-pointer hover:bg-white/[0.03] transition-all col-span-2 md:col-span-1"
         >
           <div className="flex items-center justify-between relative z-10">
-            <Activity className="text-[var(--accent-main)]" size={20} />
-            <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)]">
+            <Activity className="text-red-500" size={20} />
+            <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-red-600/20 text-red-500">
               {habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}% INTEGRITY
             </span>
           </div>
@@ -244,7 +244,7 @@ export default function Dashboard() {
             {/* Simple Progress Bar */}
             <div className="w-full h-1 bg-white/5 rounded-full mt-3 overflow-hidden">
               <div 
-                className="h-full bg-[var(--accent-main)] transition-all duration-1000" 
+                className="h-full bg-red-600 transition-all duration-1000" 
                 style={{ width: `${habitStats.total > 0 ? (habitStats.completed / habitStats.total) * 100 : 0}%` }}
               />
             </div>
@@ -265,14 +265,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 no-drag form-v4">
         <div className="lg:col-span-7 flex flex-col gap-6 lg:gap-12 overflow-hidden">
           <section className="glass rounded-[32px] overflow-hidden flex flex-col border border-white/5 shadow-2xl">
-            <div className="card-hdr !bg-[var(--accent-main)] !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
+            <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
               <div className="dot !bg-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"></div>
               MISSION PROTOCOL • CALENDAR GRID
             </div>
             <div className="card-body">
               <div className="flex justify-between items-center mb-6 lg:mb-10 pb-4 lg:pb-6 border-b border-v4-rule/30">
                 <h2 className="text-xl font-black flex items-center gap-3 text-v4-ink">
-                  <Calendar className="text-[var(--accent-main)]" size={24} />
+                  <Calendar className="text-red-500" size={24} />
                   Operational Log
                 </h2>
                 <div className="flex bg-black/20 p-1.5 rounded-[14px] border border-white/5">
@@ -353,11 +353,11 @@ export default function Dashboard() {
                     })
                   ) : (
                     <>
-                      <div className="flex items-start gap-4 p-5 rounded-[12px] bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 transition-all duration-500 hover:shadow-xl group no-drag">
-                        <div className="w-1 bg-[var(--accent-main)] h-10 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
+                      <div className="flex items-start gap-4 p-5 rounded-[12px] bg-red-600/5 border border-red-500/10 transition-all duration-500 hover:shadow-xl group no-drag">
+                        <div className="w-1 bg-red-500 h-10 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)]" />
                         <div>
                           <h3 className="text-base font-black text-v4-ink tracking-tight">Dhuhr Prayer</h3>
-                          <p className="text-[9px] font-black text-[var(--accent-main)]/80 mt-1 uppercase tracking-widest">12:45 PM • Main Prayer Hall</p>
+                          <p className="text-[9px] font-black text-red-500/80 mt-1 uppercase tracking-widest">12:45 PM • Main Prayer Hall</p>
                         </div>
                       </div>
                     </>
@@ -375,8 +375,8 @@ export default function Dashboard() {
         <div className="lg:col-span-5 flex flex-col gap-4 lg:gap-6 overflow-hidden">
            {dashboardSettings.showPrayerTimes && <PrayerTimes />}
 
-            <section className="glass rounded-[32px] flex flex-col !p-0 overflow-hidden shadow-2xl group hover:border-[var(--accent-main)]/30 transition-all flex-1 border border-white/5">
-              <div className="card-hdr !bg-[var(--accent-main)] !text-white border-b-0 shadow-lg relative z-10 flex justify-between items-center w-full">
+            <section className="glass rounded-[32px] flex flex-col !p-0 overflow-hidden shadow-2xl group hover:border-red-500/30 transition-all flex-1 border border-white/5">
+              <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex justify-between items-center w-full">
                 <div className="flex items-center gap-3">
                   <div className={clsx(
                     "dot !bg-white transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.4)]",
@@ -458,7 +458,7 @@ export default function Dashboard() {
 
         <div className="col-span-12 h-full">
           <section className="glass rounded-[32px] shadow-xl no-drag h-full border border-white/5 overflow-hidden">
-             <div className="card-hdr !bg-[var(--accent-main)] !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
+             <div className="card-hdr !bg-red-600 !text-white border-b-0 shadow-lg relative z-10 flex items-center gap-3">
                <div className="dot !bg-white shadow-[0_0_10px_rgba(255,255,255,0.4)]"></div>
                MISSION TRANSACTION LOG • AUDIT TRAIL
              </div>
