@@ -546,7 +546,6 @@ export default function MurabbiAIPage() {
                     : "text-black/50 hover:bg-black/5 hover:text-black/80"
                 )}
               >
-                <MessageSquare size={13} className={clsx("shrink-0", conv.isTemporary && "text-[var(--accent-main)]")} />
                 <div className="flex-1 min-w-0">
                   <HoverMarquee text={conv.title} className="text-xs w-full block" />
                   <p className="text-[9px] uppercase tracking-widest opacity-60">
@@ -556,10 +555,7 @@ export default function MurabbiAIPage() {
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-                className={clsx(
-                  "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all",
-                  currentConvId === conv.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                )}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                 title="Delete Chat"
               >
                 <Trash2 size={13} />
