@@ -157,7 +157,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-12 gap-12 no-drag">
         {/* Core Identity Widget */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
-          <div className="glass-card p-10 relative overflow-hidden group border border-white/5 bg-white/5 rounded-[32px]">
+          <div className="glass-card p-8 relative overflow-hidden group border border-white/10 bg-white/5 rounded-2xl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent-soft rounded-full blur-3xl pointer-events-none" />
             
             <div className="flex flex-col items-center mb-10">
@@ -216,7 +216,7 @@ export default function ProfilePage() {
           </div>
 
           {/* New Section: Administrative Credentials */}
-          <div className="glass-card p-10 relative overflow-hidden group border border-white/5 bg-white/5 rounded-[32px]">
+          <div className="glass-card p-8 relative overflow-hidden group border border-white/10 bg-white/5 rounded-2xl">
              <div className="flex items-center gap-4 mb-8">
                 <div className="w-10 h-10 bg-accent-soft rounded-2xl flex items-center justify-center text-accent-main">
                    <Fingerprint size={20} />
@@ -410,7 +410,7 @@ export default function ProfilePage() {
 
       {/* Security & Access Section */}
       <div className="mt-12 no-drag">
-        <div className="glass-card p-12 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px]">
+        <div className="glass-card p-12 relative overflow-hidden border border-white/10 bg-white/5 rounded-2xl">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400">

@@ -448,15 +448,8 @@ export default function MurrabiAIPage() {
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
-                {/* Avatar */}
-                <div className={clsx("w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-white text-xs font-black mt-1",
-                  msg.role === "assistant" ? "bg-[var(--accent-main)]" : "bg-black/10 border border-black/10"
-                )}>
-                  {msg.role === "assistant" ? <Sparkles size={14} className={clsx(msg.isStreaming && "animate-pulse")} /> : "M"}
-                </div>
-
                 {/* Bubble */}
-                <div className={clsx("flex flex-col gap-1 max-w-[78%]", msg.role === "user" ? "items-end" : "items-start")}>
+                <div className={clsx("flex flex-col gap-1 max-w-[85%]", msg.role === "user" ? "items-end" : "items-start")}>
                   <div className={clsx(
                     "px-5 py-4 rounded-2xl text-sm leading-relaxed",
                     msg.role === "user"
