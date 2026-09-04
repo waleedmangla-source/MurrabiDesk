@@ -400,12 +400,6 @@ export default function MurrabiAIPage() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 lg:px-8 pt-4 lg:pt-8 pb-3 lg:pb-4 shrink-0 relative z-10 border-b border-white/5 lg:border-none">
           <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0 overflow-hidden pr-4">
-            <div className="relative">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl flex items-center justify-center shadow-md" style={{ background: 'var(--accent-main)' }}>
-                <Sparkles size={20} className={clsx("text-white transition-all", isLoading && "animate-pulse")} />
-              </div>
-              <span className={clsx("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#020310] transition-colors", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
-            </div>
             <div className="flex-1 min-w-0 overflow-hidden">
               <HoverMarquee text={currentConversation?.title || ""} className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase block" />
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]/80">
