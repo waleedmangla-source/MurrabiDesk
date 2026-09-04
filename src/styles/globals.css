@@ -842,16 +842,16 @@ body {
 }
 
 .ai-send-button {
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 30%, #8b5cf6 65%, #10b981 100%);
+  background: linear-gradient(135deg, #b91c1c 0%, #2563eb 45%, #991b1b 75%, #1d4ed8 100%);
   background-size: 250% 250%;
   animation: aiGradientShift 4s ease infinite;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 14px rgba(185, 28, 28, 0.35);
   transition: all 0.3s ease;
 }
 
 .ai-send-button:hover:not(:disabled) {
   background-size: 300% 300%;
-  box-shadow: 0 6px 22px rgba(6, 182, 212, 0.45), 0 0 15px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 6px 22px rgba(37, 99, 235, 0.45), 0 0 15px rgba(185, 28, 28, 0.35);
   transform: translateY(-1px);
 }
 
