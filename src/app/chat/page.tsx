@@ -615,9 +615,9 @@ export default function MurabbiAIPage() {
         </div>
 
 
-        {/* Messages with smooth gradient blur & fade to background */}
+        {/* Messages with smooth gradient blur & white gradient fade */}
         <div className="flex-1 relative overflow-hidden flex flex-col">
-          {/* Top gradient blur fade to background */}
+          {/* Top gradient blur & white gradient layer */}
           <div 
             className="absolute top-0 left-0 right-0 h-12 pointer-events-none z-20"
             style={{
@@ -627,7 +627,9 @@ export default function MurabbiAIPage() {
               WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
             }}
           />
-          {/* Bottom gradient blur fade to background */}
+          <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white via-white/70 to-transparent pointer-events-none z-20" />
+
+          {/* Bottom gradient blur & white gradient layer */}
           <div 
             className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none z-20"
             style={{
@@ -637,6 +639,7 @@ export default function MurabbiAIPage() {
               WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
             }}
           />
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/70 to-transparent pointer-events-none z-20" />
 
           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 py-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
