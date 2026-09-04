@@ -18,6 +18,7 @@ import {
   HardDrive,
   ScrollText,
   Users,
+  X,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -62,6 +63,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScreensaverActive, setIsScreensaverActive] = useState(false);
+  const [showDevNotes, setShowDevNotes] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accentColor, setAccentColor] = useState("flup");
   const pathname = usePathname();
@@ -70,6 +72,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // ── Mount + init ──────────────────────────────────────────────────────────
   useEffect(() => {
     setMounted(true);
+
+    if (localStorage.getItem("murrabi_hide_dev_notes") === "true") {
+      setShowDevNotes(false);
+    }
 
     window.addEventListener("online", () => {});
     window.addEventListener("offline", () => {});
@@ -190,6 +196,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         isLightTheme={isLightTheme}
         accentColor={accentColor}
         onLogoDoubleClick={() => setIsScreensaverActive(true)}
+        showDevNotes={showDevNotes}
+        onDismissDevNotes={() => {
+          setShowDevNotes(false);
+          localStorage.setItem("murrabi_hide_dev_notes", "true");
+        }}
       />
 
       <div className="flex h-full lg:h-screen w-full bg-transparent lg:overflow-hidden relative flex-col lg:flex-row">
@@ -277,18 +288,33 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Footer */}
           <div className="mt-auto space-y-3 relative z-10">
-            {/* Developer Notes Box */}
-            <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Developer Notes
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {/* Developer Notes Box (Dismissable) */}
+            {showDevNotes && (
+              <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm relative group/devnotes animate-in fade-in slide-in-from-bottom-1 duration-200">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                      Developer Notes
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowDevNotes(false);
+                      localStorage.setItem("murrabi_hide_dev_notes", "true");
+                    }}
+                    className="p-1 -mr-1 -mt-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    title="Dismiss notes"
+                    aria-label="Dismiss developer notes"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pr-1">
+                  Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+                </p>
               </div>
-              <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
-                Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
-              </p>
-            </div>
+            )}
 
             {/* Lowered Separator Line */}
             <div className="border-t border-slate-200 dark:border-white/10 pt-2" />

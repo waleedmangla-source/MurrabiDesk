@@ -43,6 +43,8 @@ interface SidebarDrawerProps {
   isLightTheme?: boolean;
   accentColor?: string;
   onLogoDoubleClick?: () => void;
+  showDevNotes?: boolean;
+  onDismissDevNotes?: () => void;
 }
 
 export default function SidebarDrawer({
@@ -52,6 +54,8 @@ export default function SidebarDrawer({
   isLightTheme,
   accentColor,
   onLogoDoubleClick,
+  showDevNotes = true,
+  onDismissDevNotes,
 }: SidebarDrawerProps) {
   const pathname = usePathname();
   const isFlupTheme = accentColor === "flup";
@@ -168,18 +172,32 @@ export default function SidebarDrawer({
 
         {/* Footer — Developer Notes + Separator Line + Profile & Settings */}
         <div className="relative z-10 space-y-3 mt-auto pt-2">
-          {/* Developer Notes Box */}
-          <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                Developer Notes
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          {/* Developer Notes Box (Dismissable) */}
+          {showDevNotes && (
+            <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm relative group/devnotes animate-in fade-in slide-in-from-bottom-1 duration-200">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    Developer Notes
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                {onDismissDevNotes && (
+                  <button
+                    onClick={onDismissDevNotes}
+                    className="p-1 -mr-1 -mt-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    title="Dismiss notes"
+                    aria-label="Dismiss developer notes"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pr-1">
+                Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+              </p>
             </div>
-            <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
-              Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
-            </p>
-          </div>
+          )}
 
           {/* Lowered Separator Line */}
           <div className="border-t border-slate-200 dark:border-white/10 pt-1" />
