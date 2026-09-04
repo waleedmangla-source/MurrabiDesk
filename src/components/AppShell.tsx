@@ -28,6 +28,7 @@ import { liquid } from "@/lib/sync/bridge";
 import MobileHeader from "@/components/MobileHeader";
 import SidebarDrawer from "@/components/SidebarDrawer";
 import { GoogleSyncService } from "@/lib/google-sync-service";
+import ScreensaverModal from "@/components/ScreensaverModal";
 
 const ACCENT_COLORS: Record<
   string,
@@ -60,6 +61,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isScreensaverActive, setIsScreensaverActive] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accentColor, setAccentColor] = useState("flup");
   const pathname = usePathname();
@@ -187,6 +189,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         userProfile={userProfile}
         isLightTheme={isLightTheme}
         accentColor={accentColor}
+        onLogoDoubleClick={() => setIsScreensaverActive(true)}
       />
 
       <div className="flex h-full lg:h-screen w-full bg-transparent lg:overflow-hidden relative flex-col lg:flex-row">
@@ -213,12 +216,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
 
           {/* Logo */}
-          <div className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10">
+          <div
+            className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10 cursor-pointer select-none"
+            onDoubleClick={() => setIsScreensaverActive(true)}
+            title="Double-click for Murrabi Desk screensaver"
+          >
             <div className="flex items-center justify-center overflow-hidden">
               <img
                 src="/text-logo.png"
                 alt="Murrabi Desk"
-                className="h-[62px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply"
+                className="h-[62px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95"
               />
             </div>
             <div className="flex items-center justify-center gap-1.5">
@@ -269,7 +276,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Footer */}
-          <div className="mt-auto pt-8 border-t border-white/5 space-y-4 relative z-10">
+          <div className="mt-auto space-y-3 relative z-10">
+            {/* Developer Notes Box */}
+            <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                  Developer Notes
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+              <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
+                Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+              </p>
+            </div>
+
+            {/* Lowered Separator Line */}
+            <div className="border-t border-slate-200 dark:border-white/10 pt-2" />
+
+            {/* Profile & Settings Badge */}
             <div className="flex items-center gap-3 w-full group/footer min-h-[44px]">
               <Link
                 href="/profile"
@@ -305,6 +329,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         <PWAInstallPrompt />
 
+        {/* Easter Egg Screensaver */}
+        <ScreensaverModal
+          active={isScreensaverActive}
+          onExit={() => setIsScreensaverActive(false)}
+        />
+
         <main className="flex-1 lg:overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
           {/* Desktop sidebar re-open handle */}
           {isSidebarCollapsed && (
@@ -322,6 +352,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             onMenuClick={() => setIsDrawerOpen(true)}
             userProfile={userProfile}
             isLightTheme={isLightTheme}
+            onLogoDoubleClick={() => setIsScreensaverActive(true)}
           />
 
           {children}

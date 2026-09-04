@@ -23,9 +23,15 @@ interface MobileHeaderProps {
   onMenuClick: () => void;
   userProfile: { name?: string; picture?: string | null } | null;
   isLightTheme?: boolean;
+  onLogoDoubleClick?: () => void;
 }
 
-export default function MobileHeader({ onMenuClick, userProfile, isLightTheme }: MobileHeaderProps) {
+export default function MobileHeader({
+  onMenuClick,
+  userProfile,
+  isLightTheme,
+  onLogoDoubleClick,
+}: MobileHeaderProps) {
   const pathname = usePathname();
   const title = PAGE_TITLES[pathname] ?? "Murrabi Desk";
 
@@ -45,10 +51,12 @@ export default function MobileHeader({ onMenuClick, userProfile, isLightTheme }:
         <img
           src="/text-logo.png"
           alt="Murrabi Desk"
+          onDoubleClick={onLogoDoubleClick}
           className={clsx(
-            "h-8 w-auto object-contain shrink-0",
+            "h-8 w-auto object-contain shrink-0 cursor-pointer active:scale-95 transition-all select-none",
             !isLightTheme && "invert mix-blend-multiply"
           )}
+          title="Double-click for Murrabi Desk screensaver"
         />
         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/30 truncate hidden sm:block">
           {title}

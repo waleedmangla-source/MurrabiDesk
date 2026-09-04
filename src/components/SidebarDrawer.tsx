@@ -42,6 +42,7 @@ interface SidebarDrawerProps {
   userProfile: { name?: string; email?: string; picture?: string | null } | null;
   isLightTheme?: boolean;
   accentColor?: string;
+  onLogoDoubleClick?: () => void;
 }
 
 export default function SidebarDrawer({
@@ -50,6 +51,7 @@ export default function SidebarDrawer({
   userProfile,
   isLightTheme,
   accentColor,
+  onLogoDoubleClick,
 }: SidebarDrawerProps) {
   const pathname = usePathname();
   const isFlupTheme = accentColor === "flup";
@@ -107,10 +109,17 @@ export default function SidebarDrawer({
           <img
             src="/text-logo.png"
             alt="Murrabi Desk"
+            onDoubleClick={() => {
+              if (onLogoDoubleClick) {
+                onClose();
+                onLogoDoubleClick();
+              }
+            }}
             className={clsx(
-              "h-[48px] w-auto object-contain",
+              "h-[48px] w-auto object-contain cursor-pointer active:scale-95 transition-all select-none",
               !isLightTheme && "invert mix-blend-multiply"
             )}
+            title="Double-click for Murrabi Desk screensaver"
           />
           <button
             onClick={onClose}
@@ -157,8 +166,24 @@ export default function SidebarDrawer({
           ))}
         </nav>
 
-        {/* Footer — Profile + Settings */}
-        <div className="relative z-10 pt-4 border-t border-white/5 space-y-3 mt-auto">
+        {/* Footer — Developer Notes + Separator Line + Profile & Settings */}
+        <div className="relative z-10 space-y-3 mt-auto pt-2">
+          {/* Developer Notes Box */}
+          <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/60 p-2.5 transition-all shadow-sm">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Developer Notes
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
+              Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+            </p>
+          </div>
+
+          {/* Lowered Separator Line */}
+          <div className="border-t border-slate-200 dark:border-white/10 pt-1" />
+
           <div className="flex items-center gap-3 w-full">
             <Link
               href="/profile"
