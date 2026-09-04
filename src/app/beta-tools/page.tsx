@@ -820,11 +820,19 @@ export default function BetaToolsPage() {
                   </div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center">
+                    {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
+                      <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center">
+                        <AlertCircle size={16} className="inline mr-2 mb-0.5" />
+                        Warning: You are accessing this on 'localhost'. <br/>
+                        The QR code below points to localhost, which your phone cannot reach. <br/>
+                        Please access this dashboard using your computer's local network IP address (e.g., http://192.168.1.X:3001) for the scanner to work!
+                      </div>
+                    )}
                     <div className="bg-white p-4 rounded-3xl mb-6">
-                      <QRCodeSVG value={`${window.location.origin}/ocr-capture/${ocrSessionId}`} size={200} />
+                      <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/ocr-capture/${ocrSessionId}`} size={200} />
                     </div>
                     <p className="text-xs font-bold opacity-60 mb-2">Scan this QR code with your mobile device.</p>
-                    <p className="text-[10px] font-mono opacity-40 mb-6 break-all max-w-[250px]">{`${window.location.origin}/ocr-capture/${ocrSessionId}`}</p>
+                    <p className="text-[10px] font-mono opacity-40 mb-6 break-all max-w-[250px]">{`${typeof window !== 'undefined' ? window.location.origin : ''}/ocr-capture/${ocrSessionId}`}</p>
                     
                     <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 border border-white/5 w-full justify-center">
                       {(ocrStatus === 'waiting' || ocrStatus === 'idle') && <><Loader2 size={16} className="text-amber-500 animate-spin" /><span className="text-xs font-bold uppercase tracking-widest text-amber-500">Waiting for Scan...</span></>}
