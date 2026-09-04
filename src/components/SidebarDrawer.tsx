@@ -224,7 +224,7 @@ export default function SidebarDrawer({
                   {userProfile?.name || "Waleed Mangla"}
                 </h4>
                 <p className="text-[8px] font-black text-emerald-500/40 uppercase tracking-widest truncate">
-                  HQ Protocol
+                  Murabbi Silsila
                 </p>
               </div>
             </Link>
