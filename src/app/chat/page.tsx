@@ -56,12 +56,30 @@ function renderMarkdown(text: string) {
 
   let html = text;
 
+  // Markdown Tables (| Header | Header | \n | --- | --- | \n | Cell | Cell |)
+  html = html.replace(/(?:(?:^|\n)\|[^\n]+\|\n\|[\s:-|-]+\|\n(?:\|[^\n]+\|\n?)+)/gm, (tableMatch) => {
+    const lines = tableMatch.trim().split('\n');
+    if (lines.length < 3) return tableMatch;
+
+    const parseRow = (rowStr: string) => {
+      return rowStr.split('|').slice(1, -1).map(cell => cell.trim());
+    };
+
+    const headerCells = parseRow(lines[0]);
+    const bodyRows = lines.slice(2).map(parseRow);
+
+    const thead = `<thead class="bg-black/10 text-black font-bold uppercase text-[11px] tracking-wider border-b border-black/15"><tr>${headerCells.map(h => `<th class="px-3 py-2 text-left">${h}</th>`).join('')}</tr></thead>`;
+    const tbody = `<tbody>${bodyRows.map((row, idx) => `<tr class="${idx % 2 === 0 ? 'bg-black/[0.02]' : 'bg-transparent'} border-b border-black/5 hover:bg-black/5 transition-colors">${row.map(c => `<td class="px-3 py-2 text-xs text-black/90 font-medium">${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+    return `<div class="my-3 overflow-x-auto rounded-xl border border-black/15 bg-white/40 shadow-sm"><table class="w-full text-left border-collapse">${thead}${tbody}</table></div>`;
+  });
+
   // Code blocks ```code```
   html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-black/90 text-emerald-400 p-3 rounded-xl text-xs font-mono my-2 overflow-x-auto border border-white/10"><code>$1</code></pre>');
 
   // Headers
   html = html.replace(/^#### (.*$)/gm, '<h4 class="text-xs font-black uppercase tracking-widest mt-3 mb-1 text-[var(--accent-main)]">$1</h4>');
-  html = html.replace(/^### (.*$)/gm, '<h3 class="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-[var(--accent-main)]">$1</h3>');
+  html = html.replace(/^### (.*$)/gm, '<h3 class="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-[var(--accent-main)] text-black">$1</h3>');
   html = html.replace(/^## (.*$)/gm, '<h2 class="text-base font-black mt-5 mb-2 text-black">$1</h2>');
   html = html.replace(/^# (.*$)/gm, '<h1 class="text-lg font-black mt-6 mb-2 text-black">$1</h1>');
 
@@ -99,9 +117,12 @@ function renderMarkdown(text: string) {
     return `<span class="font-quran text-base lg:text-lg leading-loose inline-block text-black px-1" dir="rtl">${match}</span>`;
   });
 
-  // Paragraph breaks & newlines
-  html = html.replace(/\n\n/g, '<br/><br/>');
-  html = html.replace(/\n/g, '<br/>');
+  // Paragraph breaks & newlines (avoid breaking table HTML)
+  const parts = html.split(/(<div class="my-3 overflow-x-auto[\s\S]*?<\/div>)/g);
+  html = parts.map(part => {
+    if (part.startsWith('<div class="my-3 overflow-x-auto')) return part;
+    return part.replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>');
+  }).join('');
 
   return html;
 }
