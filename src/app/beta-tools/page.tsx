@@ -79,6 +79,7 @@ export default function BetaToolsPage() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [aiModel, setAiModel] = useState<'gemini' | 'nemotron'>('gemini');
   const recognitionRef = useRef<any>(null);
 
   // Terminal State
@@ -294,7 +295,7 @@ export default function BetaToolsPage() {
       const res = await fetch("/api/beta/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...chatMessages, { role: 'user', content: userMsg }] })
+        body: JSON.stringify({ aiModel, messages: [...chatMessages, { role: 'user', content: userMsg }] })
       });
       const data = await res.json();
       
@@ -432,11 +433,33 @@ export default function BetaToolsPage() {
 
         {activeTab === 'ai-chat' && (
           <div className="h-full flex flex-col max-w-4xl mx-auto">
-            <div className="mb-8">
-              <h2 className="text-4xl font-black tracking-tighter mb-2">Neural Engine</h2>
-              <div className="flex items-center gap-3">
-                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-500 text-[8px] font-black uppercase tracking-widest">Protocol V4</span>
-                <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">LLM Sandbox environment</span>
+            <div className="mb-8 flex justify-between items-end">
+              <div>
+                <h2 className="text-4xl font-black tracking-tighter mb-2">Neural Engine</h2>
+                <div className="flex items-center gap-3">
+                  <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-500 text-[8px] font-black uppercase tracking-widest">Protocol V4</span>
+                  <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">LLM Sandbox environment</span>
+                </div>
+              </div>
+              <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
+                <button
+                  onClick={() => setAiModel('gemini')}
+                  className={clsx(
+                    "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                    aiModel === 'gemini' ? "bg-white/10 text-white" : "text-white/30 hover:text-white/60"
+                  )}
+                >
+                  Gemini
+                </button>
+                <button
+                  onClick={() => setAiModel('nemotron')}
+                  className={clsx(
+                    "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                    aiModel === 'nemotron' ? "bg-white/10 text-white" : "text-white/30 hover:text-white/60"
+                  )}
+                >
+                  Nemotron
+                </button>
               </div>
             </div>
 
