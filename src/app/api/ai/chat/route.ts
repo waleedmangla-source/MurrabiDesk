@@ -29,20 +29,49 @@ export async function POST(req: NextRequest) {
       }, { status: 503 });
     }
 
-    // Build conversation history for Gemini
-    // Gemini uses "user" and "model" roles (not "assistant")
+    // Build conversation history for Gemini (supports text & base64 attachments inlineData)
     const contents = messages
       .filter((m: any) => m.role !== 'system')
-      .map((m: any) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      }));
+      .map((m: any) => {
+        const parts: any[] = [];
+
+        // Process attachments (images, PDFs, audio, documents)
+        if (Array.isArray(m.attachments) && m.attachments.length > 0) {
+          for (const att of m.attachments) {
+            if (att.data && att.mimeType) {
+              parts.push({
+                inlineData: {
+                  mimeType: att.mimeType,
+                  data: att.data
+                }
+              });
+            }
+          }
+        }
+
+        // Add text prompt part
+        if (m.content) {
+          parts.push({ text: m.content });
+        } else if (parts.length === 0) {
+          parts.push({ text: 'Please analyze the attached file(s).' });
+        }
+
+        return {
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts
+        };
+      });
 
     // If context is provided (calendar/expenses/notes), prepend it to the last user message
     if (context && contents.length > 0) {
       const lastMsg = contents[contents.length - 1];
       if (lastMsg.role === 'user') {
-        lastMsg.parts[0].text = `[CONTEXT DATA ATTACHED]\n${context}\n\n[USER QUERY]\n${lastMsg.parts[0].text}`;
+        const textPart = lastMsg.parts.find((p: any) => p.text !== undefined);
+        if (textPart) {
+          textPart.text = `[CONTEXT DATA ATTACHED]\n${context}\n\n[USER QUERY]\n${textPart.text}`;
+        } else {
+          lastMsg.parts.push({ text: `[CONTEXT DATA ATTACHED]\n${context}` });
+        }
       }
     }
 

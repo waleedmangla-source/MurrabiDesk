@@ -5,11 +5,21 @@ import {
   Sparkles, Send, Trash2, ChevronRight, ChevronLeft,
   Calendar, Receipt, FileText, Copy, Check, BookOpen,
   PenTool, MessageSquare, Globe, Loader2, AlertCircle, X,
-  Plus, Ghost
+  Plus, Ghost, Paperclip, Image as ImageIcon, Music, File as FileIcon
 } from "lucide-react";
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murrabiAI-system";
 import { GoogleSyncService } from "@/lib/google-sync-service";
+
+export interface Attachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  mimeType: string;
+  data: string; // Base64 string
+  previewUrl?: string;
+}
 
 interface Message {
   id: string;
@@ -17,6 +27,15 @@ interface Message {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  attachments?: Attachment[];
+}
+
+function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
 interface Conversation {
@@ -103,9 +122,63 @@ export default function MurrabiAIPage() {
   const [activeContexts, setActiveContexts] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const processFile = async (file: File): Promise<Attachment | null> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const base64Data = dataUrl.split(",")[1] || "";
+        resolve({
+          id: Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          size: file.size,
+          type: file.type.startsWith("image/") ? "image" : file.type.includes("pdf") ? "pdf" : file.type.startsWith("audio/") ? "audio" : "doc",
+          mimeType: file.type || "application/octet-stream",
+          data: base64Data,
+          previewUrl: file.type.startsWith("image/") ? dataUrl : undefined
+        });
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    const newAtts: Attachment[] = [];
+    for (const f of files) {
+      const att = await processFile(f);
+      if (att) newAtts.push(att);
+    }
+    setPendingAttachments(prev => [...prev, ...newAtts]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (id: string) => {
+    setPendingAttachments(prev => prev.filter(a => a.id !== id));
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      const newAtts: Attachment[] = [];
+      for (const f of files) {
+        const att = await processFile(f);
+        if (att) newAtts.push(att);
+      }
+      setPendingAttachments(prev => [...prev, ...newAtts]);
+    }
+  };
 
   // Load from localStorage
   useEffect(() => {
@@ -240,11 +313,21 @@ export default function MurrabiAIPage() {
 
   const sendMessage = useCallback(async (overrideContent?: string) => {
     const content = (overrideContent ?? input).trim();
-    if (!content || isLoading || !currentConvId) return;
+    const hasAtts = pendingAttachments.length > 0;
+    if ((!content && !hasAtts) || isLoading || !currentConvId) return;
 
+    const currentAtts = [...pendingAttachments];
+    setPendingAttachments([]);
     setInput("");
     setApiError(null);
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content, timestamp: new Date() };
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content,
+      timestamp: new Date(),
+      attachments: currentAtts.length > 0 ? currentAtts : undefined
+    };
     updateCurrentConvMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
@@ -253,7 +336,11 @@ export default function MurrabiAIPage() {
     updateCurrentConvMessages(prev => [...prev, aiMsg]);
 
     const context = await fetchContext();
-    const historyForApi = [...messages, userMsg].slice(-20).map(m => ({ role: m.role, content: m.content }));
+    const historyForApi = [...messages, userMsg].slice(-20).map(m => ({
+      role: m.role,
+      content: m.content,
+      attachments: m.attachments ? m.attachments.map(a => ({ mimeType: a.mimeType, data: a.data, name: a.name })) : undefined
+    }));
 
     abortRef.current = new AbortController();
 
@@ -308,7 +395,7 @@ export default function MurrabiAIPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, activeContexts, currentConvId]);
+  }, [input, isLoading, messages, activeContexts, currentConvId, pendingAttachments]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); sendMessage(); }
@@ -460,6 +547,23 @@ export default function MurrabiAIPage() {
                         dangerouslySetInnerHTML={{ __html: `<p>${renderMarkdown(msg.content)}</p>` }}
                       />
                     ) : msg.content}
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {msg.attachments.map(att => (
+                          <div key={att.id} className="flex flex-col gap-1">
+                            {att.previewUrl ? (
+                              <img src={att.previewUrl} alt={att.name} className="max-w-[240px] max-h-[180px] rounded-xl border border-white/20 object-cover shadow-sm" />
+                            ) : (
+                              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-black/10 border border-white/20 text-xs font-bold">
+                                <FileText size={14} className="shrink-0" />
+                                <span className="truncate max-w-[160px]">{att.name}</span>
+                                <span className="text-[9px] opacity-70 font-normal">{formatBytes(att.size)}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {msg.isStreaming && (
                       <span className="inline-flex gap-1 ml-2 align-middle">
                         {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 rounded-full bg-black/40 animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
@@ -485,7 +589,43 @@ export default function MurrabiAIPage() {
 
         {/* Input */}
         <div className="px-4 lg:px-8 pb-4 lg:pb-6 pt-3 lg:pt-4 shrink-0 relative z-10">
-          <div className="relative glass rounded-2xl border border-white/10 overflow-hidden focus-within:border-[var(--accent-main)]/40 transition-all">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            multiple
+            className="hidden"
+            accept="image/*,application/pdf,text/*,.doc,.docx,.csv,.json,.md,.mp3,.wav,.m4a"
+          />
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={clsx(
+              "relative glass rounded-2xl border transition-all overflow-hidden",
+              isDragging ? "border-[var(--accent-main)] bg-[var(--accent-soft)]/20" : "border-white/10 focus-within:border-[var(--accent-main)]/40"
+            )}
+          >
+            {pendingAttachments.length > 0 && (
+              <div className="flex items-center gap-2 px-4 pt-3 pb-2 overflow-x-auto custom-scrollbar border-b border-black/5">
+                {pendingAttachments.map(att => (
+                  <div key={att.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/5 border border-black/10 text-xs shrink-0 max-w-[200px]">
+                    {att.previewUrl ? (
+                      <img src={att.previewUrl} alt={att.name} className="w-6 h-6 rounded object-cover shrink-0" />
+                    ) : (
+                      <FileText size={14} className="text-[var(--accent-main)] shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-black truncate">{att.name}</p>
+                      <p className="text-[9px] text-black/40">{formatBytes(att.size)}</p>
+                    </div>
+                    <button type="button" onClick={() => removeAttachment(att.id)} className="p-0.5 rounded hover:bg-black/10 text-black/40 hover:text-black">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             {activeContexts.size > 0 && (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1 border-b border-white/5">
                 {Array.from(activeContexts).map(id => {
@@ -504,12 +644,20 @@ export default function MurrabiAIPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about Ahmadiyyat, Murrabi duties, draft documents... (Enter to send)"
+              placeholder={isDragging ? "Drop files here to attach..." : "Ask about Ahmadiyyat, Murrabi duties, draft documents... (Enter to send)"}
               rows={2}
               className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar"
               style={{ maxHeight: "120px" }}
             />
-            <div className="flex items-center justify-end px-4 pb-3">
+            <div className="flex items-center justify-between px-4 pb-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 rounded-xl text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
+                title="Attach File (Images, PDFs, Audio, Documents)"
+              >
+                <Paperclip size={16} />
+              </button>
               <div className="flex items-center gap-2">
                 {isLoading ? (
                   <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black transition-all hover:bg-red-600/20">
@@ -518,15 +666,15 @@ export default function MurrabiAIPage() {
                 ) : (
                   <button
                     onClick={() => sendMessage()}
-                    disabled={!input.trim()}
+                    disabled={!input.trim() && pendingAttachments.length === 0}
                     className={clsx(
                       "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 shadow-md",
-                      !input.trim()
+                      (!input.trim() && pendingAttachments.length === 0)
                         ? "bg-black/5 text-black/20 cursor-not-allowed"
                         : "text-white ai-send-button"
                     )}
                   >
-                    <Send size={12} className={clsx(input.trim() && "animate-pulse")} /> Send
+                    <Send size={12} className={clsx((input.trim() || pendingAttachments.length > 0) && "animate-pulse")} /> Send
                   </button>
                 )}
               </div>
