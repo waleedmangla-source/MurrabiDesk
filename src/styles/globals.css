@@ -823,6 +823,7 @@ body {
     rgba(255, 255, 255, 0.25) 50%,
     rgba(255, 255, 255, 0.08) 100%
   );
+  width: 1px;
 }
 
 /* AI Send Button Animated Gradient */
@@ -845,8 +846,7 @@ body {
   box-shadow: 0 6px 22px rgba(6, 182, 212, 0.45), 0 0 15px rgba(139, 92, 246, 0.35);
   transform: translateY(-1px);
 }
-  width: 1px;
-}
+
 .sidebar-glider {
   position: absolute;
   width: 100%;
