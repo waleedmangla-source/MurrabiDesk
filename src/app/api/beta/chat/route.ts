@@ -8,11 +8,11 @@ export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    let apiKey = process.env.NVIDIA_API_KEY || "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";
+    let apiKey = process.env.GOOGLE_AI_API_KEY;
     
     if (!apiKey) {
       return NextResponse.json({ 
-        error: 'NVIDIA_API_KEY not configured.',
+        error: 'GOOGLE_AI_API_KEY not configured.',
       }, { status: 503 });
     }
 
@@ -25,35 +25,41 @@ Your purpose is to engage in natural, spoken conversations.
 - Be prepared for interruptions and keep dialogue flowing naturally.
 `;
 
+    // Map OpenAI style messages to Gemini style
+    const geminiMessages = messages.map((msg: any) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    }));
+
     const requestBody = {
-      model: "nvidia/nemotron-4-340b-instruct",
-      messages: [
-        { role: "system", content: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
-        ...messages
-      ],
-      temperature: 0.7,
-      max_tokens: 2048,
+      system_instruction: {
+        parts: { text: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA }
+      },
+      contents: geminiMessages,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+      }
     };
 
-    const url = "https://integrate.api.nvidia.com/v1/chat/completions";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(requestBody),
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error('[Nvidia API] error:', errorText);
-      return NextResponse.json({ error: `Nvidia API error: ${res.status} ${errorText}` }, { status: res.status });
+      console.error('[Gemini API] error:', errorText);
+      return NextResponse.json({ error: `Gemini API error: ${res.status} ${errorText}` }, { status: res.status });
     }
 
     const data = await res.json();
-    const text = data.choices[0].message.content;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
     return NextResponse.json({ text });
 
   } catch (err: any) {
