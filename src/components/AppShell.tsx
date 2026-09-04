@@ -374,14 +374,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
 
         <main className="flex-1 lg:overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
-          {/* Desktop sidebar re-open edge handle — attached flush to left screen edge, reveals on hover or interaction */}
+          {/* Desktop sidebar re-open handle — inverted version of the close button */}
           {isSidebarCollapsed && (
-            <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-8 z-[100] group/edge pointer-events-auto">
+            <div className="hidden lg:block fixed left-0 top-0 h-28 w-12 z-50 group/open-sidebar pointer-events-auto">
               <button
                 onClick={() => setIsSidebarCollapsed(false)}
-                className="absolute left-0 top-6 -translate-x-[60%] group-hover/edge:translate-x-0 transition-all duration-250 ease-out flex items-center justify-center p-2 rounded-r-[12px] glass border border-l-0 border-white/10 shadow-lg text-white/40 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer opacity-0 group-hover/edge:opacity-100"
+                className="absolute -left-3 top-6 p-2 rounded-[12px] glass border border-white/10 text-white/20 hover:text-white transition-all no-drag opacity-0 group-hover/open-sidebar:opacity-100 group-hover/open-sidebar:left-0 z-50 shadow-md"
                 title="Open Sidebar (Cmd+D)"
-                aria-label="Open navigation sidebar"
+                aria-label="Open Sidebar"
               >
                 <ChevronRight size={16} />
               </button>
