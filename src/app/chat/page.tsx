@@ -5,7 +5,8 @@ import {
   Sparkles, Send, Trash2, ChevronRight, ChevronLeft,
   Calendar, Receipt, FileText, Copy, Check, BookOpen,
   PenTool, MessageSquare, Globe, Loader2, AlertCircle, X,
-  Plus, Ghost, Paperclip, Image as ImageIcon, Music, File as FileIcon
+  Plus, Ghost, Paperclip, Image as ImageIcon, Music, File as FileIcon,
+  Mic, MicOff
 } from "lucide-react";
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murabbiAI-system";
@@ -160,10 +161,60 @@ export default function MurabbiAIPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const toggleVoiceTyping = () => {
+    if (typeof window === "undefined") return;
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
+      }
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice typing is not supported in this browser environment.");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event: any) => {
+        let finalTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+          }
+        }
+        if (finalTranscript) {
+          setInput(prev => (prev ? (prev.endsWith(" ") ? prev : prev + " ") + finalTranscript.trim() : finalTranscript.trim()));
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Speech recognition error:", err);
+      setIsListening(false);
+    }
+  };
 
   const processFile = async (file: File): Promise<Attachment | null> => {
     return new Promise((resolve) => {
@@ -686,14 +737,30 @@ export default function MurabbiAIPage() {
               style={{ maxHeight: "120px" }}
             />
             <div className="flex items-center justify-between px-4 pb-3">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-xl text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
-                title="Attach File (Images, PDFs, Audio, Documents)"
-              >
-                <Paperclip size={16} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 rounded-xl text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
+                  title="Attach File (Images, PDFs, Audio, Documents)"
+                >
+                  <Paperclip size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleVoiceTyping}
+                  className={clsx(
+                    "p-2 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold",
+                    isListening
+                      ? "bg-red-500/15 border border-red-500/30 text-red-500 animate-pulse"
+                      : "text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
+                  )}
+                  title={isListening ? "Stop Voice Typing" : "Voice Typing"}
+                >
+                  {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                  {isListening && <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Listening...</span>}
+                </button>
+              </div>
               <div className="flex items-center gap-2">
                 {isLoading ? (
                   <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black transition-all hover:bg-red-600/20">
