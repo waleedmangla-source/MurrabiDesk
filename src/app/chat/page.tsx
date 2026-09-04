@@ -594,12 +594,28 @@ export default function MurabbiAIPage() {
         </div>
 
 
-        {/* Messages with depth shadows & blur */}
+        {/* Messages with smooth gradient blur & fade to background */}
         <div className="flex-1 relative overflow-hidden flex flex-col">
-          {/* Top shadow gradient for depth on scroll */}
-          <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/10 to-transparent pointer-events-none z-20 backdrop-blur-[2px]" />
-          {/* Bottom shadow gradient for depth on scroll */}
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-20 backdrop-blur-[2px]" />
+          {/* Top gradient blur fade to background */}
+          <div 
+            className="absolute top-0 left-0 right-0 h-12 pointer-events-none z-20"
+            style={{
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+            }}
+          />
+          {/* Bottom gradient blur fade to background */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none z-20"
+            style={{
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+              WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+            }}
+          />
 
           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 py-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
