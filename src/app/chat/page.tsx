@@ -192,7 +192,6 @@ export default function MurabbiAIPage() {
   const recognitionRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isScrolledTop, setIsScrolledTop] = useState(false);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
 
@@ -356,44 +355,9 @@ export default function MurabbiAIPage() {
   const currentConversation = conversations.find(c => c.id === currentConvId);
   const messages = currentConversation?.messages || [];
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Custom Smooth Auto-scroll with Ease-In-Out Easing
+  // Auto-scroll
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || messages.length === 0) return;
-
-    const start = container.scrollTop;
-    const target = container.scrollHeight - container.clientHeight;
-    const distance = target - start;
-    if (Math.abs(distance) < 5) return;
-
-    const duration = 600; // ms
-    let startTime: number | null = null;
-
-    // Cubic-bezier ease-in-out easing curve (smooth acceleration and deceleration)
-    const easeInOutCubic = (t: number) => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
-
-    let animationFrameId: number;
-
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = easeInOutCubic(progress);
-
-      container.scrollTop = start + distance * easeProgress;
-
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(step);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(step);
-
-    return () => cancelAnimationFrame(animationFrameId);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleNewChat = (isTemporary: boolean) => {
@@ -667,7 +631,6 @@ export default function MurabbiAIPage() {
           <div className={clsx("absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20 transition-opacity duration-300", isScrolledBottom ? "opacity-100" : "opacity-0")} />
 
           <div 
-            ref={scrollContainerRef}
             onScroll={handleScroll}
             className={clsx("flex-1 px-4 lg:px-8 py-2 relative z-10 flex flex-col", messages.length === 0 ? "overflow-hidden justify-center" : "overflow-y-auto custom-scrollbar space-y-4 lg:space-y-6 py-4")}
           >
