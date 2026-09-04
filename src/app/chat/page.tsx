@@ -520,8 +520,7 @@ export default function MurrabiAIPage() {
               className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar"
               style={{ maxHeight: "120px" }}
             />
-            <div className="flex items-center justify-between px-4 pb-3">
-              <span className="text-[9px] font-black uppercase tracking-widest text-black/15">⌘ + Enter to send</span>
+            <div className="flex items-center justify-end px-4 pb-3">
               <div className="flex items-center gap-2">
                 {isLoading ? (
                   <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black transition-all hover:bg-red-600/20">
