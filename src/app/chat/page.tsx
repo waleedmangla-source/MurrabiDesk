@@ -94,6 +94,11 @@ function renderMarkdown(text: string) {
   // Horizontal rules
   html = html.replace(/^[-*━_]{3,}$/gm, '<hr class="border-black/10 my-3" />');
 
+  // Format Arabic / Quranic verses in Manzoor Naskh Al-Islam font
+  html = html.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:\s+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*)/g, (match) => {
+    return `<span class="font-quran text-base lg:text-lg leading-loose inline-block text-black px-1" dir="rtl">${match}</span>`;
+  });
+
   // Paragraph breaks & newlines
   html = html.replace(/\n\n/g, '<br/><br/>');
   html = html.replace(/\n/g, '<br/>');

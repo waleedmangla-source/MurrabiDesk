@@ -6,12 +6,20 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Manzoor Naskh Al-Islam';
+  src: url('/fonts/ManzoorNaskh-alislam.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.font-urdu {
-  font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif !important;
+.font-urdu, .font-quran, .font-arabic {
+  font-family: 'Manzoor Naskh Al-Islam', 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
   line-height: 2.2;
 }
 
