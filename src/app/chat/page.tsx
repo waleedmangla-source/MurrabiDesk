@@ -742,14 +742,6 @@ export default function MurabbiAIPage() {
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 rounded-xl text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
-                  title="Attach File (Images, PDFs, Audio, Documents)"
-                >
-                  <Paperclip size={16} />
-                </button>
-                <button
-                  type="button"
                   onClick={toggleVoiceTyping}
                   className={clsx(
                     "p-2 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold",
@@ -761,6 +753,14 @@ export default function MurabbiAIPage() {
                 >
                   {isListening ? <MicOff size={16} /> : <Mic size={16} />}
                   {isListening && <span className="text-[10px] font-black uppercase tracking-wider text-red-500 hidden sm:inline">Listening...</span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 rounded-xl text-black/40 hover:text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
+                  title="Attach File (Images, PDFs, Audio, Documents)"
+                >
+                  <Paperclip size={16} />
                 </button>
 
                 {isLoading ? (
