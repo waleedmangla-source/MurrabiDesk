@@ -113,7 +113,7 @@ export default function EventModal({
         <div className="bg-white/[0.01] px-8 py-8 border-b border-white/5 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div>
-              <h2 className="text-white font-black text-3xl tracking-tighter italic">Add <span className="text-red-600">Task</span></h2>
+              <h2 className="text-white font-black text-3xl tracking-tighter italic">Add <span className="text-[var(--accent-main)]">Task</span></h2>
               <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em] mt-1">Mission Log Active</p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function EventModal({
               placeholder="Primary mission objective..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full h-16 bg-white/[0.02] border border-white/5 rounded-2xl px-6 text-xl font-black text-white outline-none focus:ring-2 focus:ring-red-600/40 focus:bg-white/5 transition-all placeholder:text-white/5"
+              className="w-full h-16 bg-white/[0.02] border border-white/5 rounded-2xl px-6 text-xl font-black text-white outline-none focus:ring-2 focus:ring-[var(--accent-main)]/40 focus:bg-white/5 transition-all placeholder:text-white/5"
               required
             />
           </div>
@@ -153,14 +153,14 @@ export default function EventModal({
                    type="time" 
                    value={startTime}
                    onChange={(e) => setStartTime(e.target.value)}
-                   className="flex-1 h-12 bg-white/[0.01] border border-white/5 rounded-xl px-3 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-red-600/40"
+                   className="flex-1 h-12 bg-white/[0.01] border border-white/5 rounded-xl px-3 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-[var(--accent-main)]/40"
                  />
                  <span className="text-white/5 font-black">→</span>
                  <input 
                    type="time" 
                    value={endTime}
                    onChange={(e) => setEndTime(e.target.value)}
-                   className="flex-1 h-12 bg-white/[0.01] border border-white/5 rounded-xl px-3 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-red-600/40"
+                   className="flex-1 h-12 bg-white/[0.01] border border-white/5 rounded-xl px-3 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-[var(--accent-main)]/40"
                  />
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function EventModal({
                 placeholder="Mission HQ..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full h-12 bg-white/[0.01] border border-white/5 rounded-xl px-5 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-red-600/40"
+                className="w-full h-12 bg-white/[0.01] border border-white/5 rounded-xl px-5 text-xs font-bold text-white outline-none focus:ring-1 focus:ring-[var(--accent-main)]/40"
               />
             </div>
           </div>
@@ -211,8 +211,8 @@ export default function EventModal({
                disabled={isSubmitting || status === 'success'}
                className={clsx(
                  "w-full h-16 rounded-2xl flex items-center justify-center gap-4 transition-all duration-500 shadow-2xl relative overflow-hidden group font-black uppercase text-[10px] tracking-[0.3em]",
-                 status === 'success' ? "bg-red-600 text-white" :
-                 status === 'error' ? "bg-red-800 text-white" :
+                 status === 'success' ? "bg-[var(--accent-main)] text-white" :
+                 status === 'error' ? "bg-rose-600 text-white" :
                  "bg-white text-black  active:scale-[0.98]"
                )}
              >

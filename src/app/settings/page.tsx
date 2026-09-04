@@ -229,7 +229,7 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
           </div>
         </div>
         {settings.signatureData && (
-          <button onClick={() => setSettings(s => ({ ...s, signatureData: null }))} className="mt-3 text-[9px] font-black uppercase tracking-widest text-red-500">
+          <button onClick={() => setSettings(s => ({ ...s, signatureData: null }))} className="mt-3 text-[9px] font-black uppercase tracking-widest text-rose-400">
             Remove Signature
           </button>
         )}
@@ -579,8 +579,8 @@ function PrivacyTab() {
         <div className="relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 opacity-10"><AlertTriangle size={80} /></div>
           <CardHeader icon={<AlertTriangle size={18} />} title="Danger Zone" subtitle="Irreversible destructive actions" />
-          <div className="bg-red-500/5 border border-red-500/10 p-6 rounded-2xl">
-            <h4 className="text-[10px] font-black uppercase tracking-tighter text-red-500 mb-2 flex items-center gap-2">
+          <div className="bg-rose-500/5 border border-rose-500/10 p-6 rounded-2xl">
+            <h4 className="text-[10px] font-black uppercase tracking-tighter text-rose-400 mb-2 flex items-center gap-2">
               <AlertTriangle size={12} /> Destructive — Wipe Local Cache
             </h4>
             <p className="text-[9px] font-bold text-white/40 leading-relaxed mb-5">
@@ -589,13 +589,13 @@ function PrivacyTab() {
             <div className="flex flex-col gap-3">
               <button onClick={() => setWipeLock(!wipeLock)}
                 className={clsx("w-full h-11 rounded-xl border font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
-                  wipeLock ? "bg-white/5 border-white/5 text-white/40" : "bg-red-600/10 border-red-500/30 text-red-400")}>
+                  wipeLock ? "bg-white/5 border-white/5 text-white/40" : "bg-rose-500/10 border-rose-500/30 text-rose-400")}>
                 {wipeLock ? <Eye size={13} /> : <EyeOff size={13} />}
                 {wipeLock ? 'Unlock Wipe Protocol' : 'Wipe Protocol Armed'}
               </button>
               <button disabled={wipeLock} onClick={handleWipe}
                 className={clsx("w-full h-11 rounded-xl font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
-                  wipeLock ? "bg-white/5 text-white/10 cursor-not-allowed" : "bg-red-600 text-white shadow-lg shadow-red-900/40")}>
+                  wipeLock ? "bg-white/5 text-white/10 cursor-not-allowed" : "bg-rose-600 text-white shadow-lg shadow-rose-900/40 hover:bg-rose-700")}>
                 <Trash2 size={13} /> Execute Wipe
               </button>
             </div>
@@ -1002,7 +1002,7 @@ function UILibraryTab() {
                 window.location.href = '/onboarding';
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20"
           >
             <LogOut size={13} />
             Sign Out

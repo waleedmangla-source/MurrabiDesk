@@ -413,7 +413,7 @@ export default function ProfilePage() {
         <div className="glass-card p-12 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px]">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500">
+                 <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400">
                     <Shield size={24} />
                  </div>
                  <div>

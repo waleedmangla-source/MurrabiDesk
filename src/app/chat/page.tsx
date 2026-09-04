@@ -341,7 +341,7 @@ export default function MurrabiAIPage() {
         <div className="p-3 border-b border-white/5 flex flex-col gap-2">
           <button 
             onClick={() => handleNewChat(false)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/30"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent-soft)]"
           >
             <Plus size={14} /> New Chat
           </button>
@@ -400,14 +400,14 @@ export default function MurrabiAIPage() {
         <div className="flex items-center justify-between px-4 lg:px-8 pt-4 lg:pt-8 pb-3 lg:pb-4 shrink-0 relative z-10 border-b border-white/5 lg:border-none">
           <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0 overflow-hidden pr-4">
             <div className="relative">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center shadow-lg shadow-red-900/40">
-                <Sparkles size={20} className={clsx("text-black transition-all", isLoading && "animate-pulse")} />
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-[var(--accent-main)] flex items-center justify-center shadow-lg shadow-[var(--accent-soft)]">
+                <Sparkles size={20} className={clsx("text-white transition-all", isLoading && "animate-pulse")} />
               </div>
               <span className={clsx("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#020310] transition-colors", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
               <HoverMarquee text={currentConversation?.title || ""} className="text-xl lg:text-2xl font-black italic tracking-tighter text-black uppercase block" />
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-red-500/60">
+              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]/70">
                 {isLoading ? "Generating..." : currentConversation?.isTemporary ? "Temporary Protocol" : "Ahmadiyya Intelligence Protocol"}
               </p>
             </div>
@@ -425,8 +425,8 @@ export default function MurrabiAIPage() {
         <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 pb-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-20 select-none">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-600/20 to-red-900/5 border border-red-500/20 flex items-center justify-center mb-6 shadow-2xl shadow-red-900/20">
-                <Sparkles size={40} className="text-red-500/60" />
+              <div className="w-24 h-24 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex items-center justify-center mb-6 shadow-2xl">
+                <Sparkles size={40} className="text-[var(--accent-main)]/60" />
               </div>
               <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">Bismillah</h2>
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs">
@@ -439,7 +439,7 @@ export default function MurrabiAIPage() {
                   "Explain Khilafat-e-Ahmadiyya",
                   "Draft a Tabligh follow-up letter",
                 ].map(s => (
-                  <button key={s} onClick={() => sendMessage(s)} className="p-4 rounded-2xl glass border border-white/5 text-left hover:border-red-500/20 hover:bg-red-600/5 transition-all group">
+                  <button key={s} onClick={() => sendMessage(s)} className="p-4 rounded-2xl glass border border-white/5 text-left hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] transition-all group">
                     <p className="text-[11px] font-bold text-black/30 group-hover:text-black/60 transition-colors leading-relaxed">{s}</p>
                   </button>
                 ))}
@@ -449,8 +449,8 @@ export default function MurrabiAIPage() {
             messages.map((msg) => (
               <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
                 {/* Avatar */}
-                <div className={clsx("w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-black text-xs font-black mt-1",
-                  msg.role === "assistant" ? "bg-gradient-to-br from-red-600 to-red-900" : "bg-black/10 border border-black/10"
+                <div className={clsx("w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-white text-xs font-black mt-1",
+                  msg.role === "assistant" ? "bg-[var(--accent-main)]" : "bg-black/10 border border-black/10"
                 )}>
                   {msg.role === "assistant" ? <Sparkles size={14} className={clsx(msg.isStreaming && "animate-pulse")} /> : "M"}
                 </div>
@@ -460,7 +460,7 @@ export default function MurrabiAIPage() {
                   <div className={clsx(
                     "px-5 py-4 rounded-2xl text-sm leading-relaxed",
                     msg.role === "user"
-                      ? "bg-red-600 text-black rounded-tr-sm"
+                      ? "bg-[var(--accent-main)] text-white rounded-tr-sm"
                       : "glass border border-white/10 text-black/90 rounded-tl-sm"
                   )}>
                     {msg.role === "assistant" ? (
@@ -493,15 +493,15 @@ export default function MurrabiAIPage() {
 
         {/* Input */}
         <div className="px-4 lg:px-8 pb-4 lg:pb-6 pt-3 lg:pt-4 shrink-0 relative z-10">
-          <div className="relative glass rounded-2xl border border-white/10 overflow-hidden focus-within:border-red-500/30 transition-all">
+          <div className="relative glass rounded-2xl border border-white/10 overflow-hidden focus-within:border-[var(--accent-main)]/50 transition-all">
             {activeContexts.size > 0 && (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1 border-b border-white/5">
                 {Array.from(activeContexts).map(id => {
                   const opt = CONTEXT_OPTIONS.find(o => o.id === id);
                   return opt ? (
-                    <span key={id} className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/15 border border-red-500/20 text-[9px] font-black text-red-400 uppercase tracking-widest">
+                    <span key={id} className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-[9px] font-black text-[var(--accent-main)] uppercase tracking-widest">
                       <opt.icon size={9} /> {opt.label}
-                      <button onClick={() => toggleContext(id)} className="ml-0.5 text-red-400/50 hover:text-red-400"><X size={8} /></button>
+                      <button onClick={() => toggleContext(id)} className="ml-0.5 text-[var(--accent-main)]/60 hover:text-[var(--accent-main)]"><X size={8} /></button>
                     </span>
                   ) : null;
                 })}
@@ -521,11 +521,11 @@ export default function MurrabiAIPage() {
               <span className="text-[9px] font-black uppercase tracking-widest text-black/15">⌘ + Enter to send</span>
               <div className="flex items-center gap-2">
                 {isLoading ? (
-                  <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 text-xs font-black transition-all hover:bg-red-600/30">
+                  <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-black transition-all hover:bg-rose-500/20">
                     <Loader2 size={12} className="animate-spin" /> Stop
                   </button>
                 ) : (
-                  <button onClick={() => sendMessage()} disabled={!input.trim()} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 disabled:bg-white/5 disabled:text-black/20 text-white text-xs font-black transition-all hover:bg-red-700 active:scale-95 shadow-lg shadow-red-900/30">
+                  <button onClick={() => sendMessage()} disabled={!input.trim()} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] disabled:bg-white/5 disabled:text-black/20 text-white text-xs font-black transition-all active:scale-95 shadow-lg shadow-[var(--accent-soft)]">
                     <Send size={12} /> Send
                   </button>
                 )}
@@ -562,7 +562,7 @@ export default function MurrabiAIPage() {
         <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
           {prompts.map((p, i) => (
             <button key={i} onClick={() => sendMessage(p.prompt)} disabled={isLoading}
-              className="w-full text-left p-3 rounded-xl bg-black/[0.02] border border-black/5 hover:border-red-500/20 hover:bg-red-600/5 transition-all group disabled:opacity-40 disabled:cursor-not-allowed">
+              className="w-full text-left p-3 rounded-xl bg-black/[0.02] border border-black/5 hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] transition-all group disabled:opacity-40 disabled:cursor-not-allowed">
               <p className="text-[11px] font-bold text-black/50 group-hover:text-black/80 transition-colors leading-relaxed">{p.label}</p>
             </button>
           ))}
@@ -575,14 +575,14 @@ export default function MurrabiAIPage() {
             {CONTEXT_OPTIONS.map(opt => (
               <button key={opt.id} onClick={() => toggleContext(opt.id)}
                 className={clsx("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left",
-                  activeContexts.has(opt.id) ? "bg-red-600/10 border-red-500/30 text-red-600" : "border-black/5 bg-black/[0.02] text-black/50 hover:text-black/80 hover:border-black/10"
+                  activeContexts.has(opt.id) ? "bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-[var(--accent-main)]" : "border-black/5 bg-black/[0.02] text-black/50 hover:text-black/80 hover:border-black/10"
                 )}>
                 <opt.icon size={13} />
                 <div className="flex-1 min-w-0">
                   <div className="text-[11px] font-black uppercase tracking-widest">{opt.label}</div>
                   <div className="text-[9px] opacity-60">{opt.desc}</div>
                 </div>
-                {activeContexts.has(opt.id) && <Check size={12} className="text-red-600 shrink-0" />}
+                {activeContexts.has(opt.id) && <Check size={12} className="text-[var(--accent-main)] shrink-0" />}
               </button>
             ))}
           </div>

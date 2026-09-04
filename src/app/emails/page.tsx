@@ -308,7 +308,7 @@ function EmailDetail({
           <button onClick={() => onArchive(email.id)} className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]" title="Archive">
             <Archive size={15} />
           </button>
-          <button onClick={() => onTrash(email.id)} className="p-2 rounded-xl hover:bg-red-500/20 transition-all text-[var(--text-dim)] hover:text-red-400" title="Delete">
+          <button onClick={() => onTrash(email.id)} className="p-2 rounded-xl hover:bg-rose-500/20 transition-all text-[var(--text-dim)] hover:text-rose-400" title="Delete">
             <Trash2 size={15} />
           </button>
         </div>

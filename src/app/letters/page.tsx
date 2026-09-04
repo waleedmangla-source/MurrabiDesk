@@ -868,7 +868,7 @@ export default function LettersPage() {
                 className={clsx(
                   "p-1 rounded-lg transition-all",
                   isListening
-                    ? "bg-red-500 text-white animate-pulse"
+                    ? "bg-rose-500 text-white animate-pulse"
                     : "text-white/40 hover:text-white hover:bg-white/10"
                 )}
                 title="Speak request"
@@ -1205,7 +1205,7 @@ export default function LettersPage() {
           </div>
         )}
         {errorMessage && (
-          <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+          <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold flex items-center gap-2 animate-in fade-in">
             <AlertCircle size={15} />
             <span>{errorMessage}</span>
           </div>
