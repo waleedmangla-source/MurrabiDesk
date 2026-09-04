@@ -30,11 +30,14 @@ import {
   CornerDownLeft,
   Send,
   Trash2,
-  Play
+  Play,
+  ScanText,
+  QrCode as QrCodeIcon
 } from "lucide-react";
 import { clsx } from "clsx";
+import { QRCodeSVG } from 'qrcode.react';
 
-type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper';
+type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
 
 const Sparkles = ({ size, className }: { size: number, className: string }) => (
   <svg 
@@ -72,6 +75,11 @@ export default function BetaToolsPage() {
   const [scrapeLoading, setScrapeLoading] = useState(false);
   const [scrapeData, setScrapeData] = useState<any>(null);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
+
+  // OCR State
+  const [ocrSessionId, setOcrSessionId] = useState<string | null>(null);
+  const [ocrStatus, setOcrStatus] = useState<'idle' | 'waiting' | 'processing' | 'completed' | 'error'>('idle');
+  const [ocrResultText, setOcrResultText] = useState<string | null>(null);
 
   // AI Chat State
   const [chatInput, setChatInput] = useState("");
@@ -294,6 +302,50 @@ export default function BetaToolsPage() {
     setTerminalLogs(prev => [...prev, `[${timestamp}] ${log}`]);
   };
 
+  const generateOcrSession = async () => {
+    setOcrStatus('idle');
+    setOcrResultText(null);
+    addTerminalLog(`[OCR] Initializing new session sequence...`);
+    try {
+      const res = await fetch('/api/ocr/create-session', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setOcrSessionId(data.sessionId);
+        setOcrStatus('waiting');
+        addTerminalLog(`[OCR] Session ${data.sessionId} initialized. Awaiting mobile scan.`);
+      }
+    } catch (e) {
+      addTerminalLog(`[ERROR] Failed to initialize OCR session`);
+    }
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (ocrSessionId && (ocrStatus === 'waiting' || ocrStatus === 'processing')) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/ocr/${ocrSessionId}/status`);
+          const data = await res.json();
+          if (data.success) {
+            if (data.status !== ocrStatus) {
+              setOcrStatus(data.status);
+              addTerminalLog(`[OCR] Status update: ${data.status.toUpperCase()}`);
+            }
+            if (data.status === 'completed') {
+              setOcrResultText(data.textResult);
+              addTerminalLog(`[OCR] Extraction successful. Length: ${data.textResult.length} chars`);
+            } else if (data.status === 'error') {
+              setOcrResultText(data.textResult);
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [ocrSessionId, ocrStatus]);
+
   const handleTerminalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!terminalInput.trim()) return;
@@ -356,7 +408,8 @@ export default function BetaToolsPage() {
     { id: 'overview', label: 'Lab Overview', icon: LayoutDashboard, color: 'text-blue-500', desc: 'System Diagnostic' },
     { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurabbiAI Beta' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
-    { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' }
+    { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' },
+    { id: 'ocr', label: 'OCR Scanner', icon: ScanText, color: 'text-amber-500', desc: 'Mobile Link' }
   ];
 
   return (
@@ -734,6 +787,84 @@ export default function BetaToolsPage() {
                 <div className="h-full min-h-[400px] flex flex-col items-center justify-center glass-card border border-white/5 bg-white/5 rounded-[32px] p-20 text-center">
                   <Globe size={48} className="opacity-10 mb-8" />
                   <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase">Engine Ready</h3>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'ocr' && (
+          <div className="grid grid-cols-12 gap-10 max-w-6xl">
+            <div className="col-span-12 xl:col-span-5 space-y-6">
+              <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-fit flex flex-col items-center text-center">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500">
+                    <ScanText size={24} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-black tracking-tight">OCR Scanner</h3>
+                    <p className="text-[9px] font-black uppercase tracking-widest leading-none mt-1 opacity-40">Mobile Lens Link</p>
+                  </div>
+                </div>
+
+                {!ocrSessionId ? (
+                  <div className="mt-8">
+                    <p className="text-sm font-medium opacity-60 mb-6">Initialize a secure bridge to your mobile device to scan physical documents directly into the Murabbi environment.</p>
+                    <button
+                      onClick={generateOcrSession}
+                      className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-black rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3 mx-auto"
+                    >
+                      <QrCodeIcon size={16} />
+                      Generate Bridge Link
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-6 flex flex-col items-center">
+                    <div className="bg-white p-4 rounded-3xl mb-6">
+                      <QRCodeSVG value={`${window.location.origin}/ocr-capture/${ocrSessionId}`} size={200} />
+                    </div>
+                    <p className="text-xs font-bold opacity-60 mb-2">Scan this QR code with your mobile device.</p>
+                    <p className="text-[10px] font-mono opacity-40 mb-6 break-all max-w-[250px]">{`${window.location.origin}/ocr-capture/${ocrSessionId}`}</p>
+                    
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 border border-white/5 w-full justify-center">
+                      {(ocrStatus === 'waiting' || ocrStatus === 'idle') && <><Loader2 size={16} className="text-amber-500 animate-spin" /><span className="text-xs font-bold uppercase tracking-widest text-amber-500">Waiting for Scan...</span></>}
+                      {ocrStatus === 'processing' && <><Loader2 size={16} className="text-blue-500 animate-spin" /><span className="text-xs font-bold uppercase tracking-widest text-blue-500">Extracting Text...</span></>}
+                      {ocrStatus === 'completed' && <><CheckCircle2 size={16} className="text-emerald-500" /><span className="text-xs font-bold uppercase tracking-widest text-emerald-500">Extraction Complete</span></>}
+                      {ocrStatus === 'error' && <><AlertCircle size={16} className="text-red-500" /><span className="text-xs font-bold uppercase tracking-widest text-red-500">Error Encountered</span></>}
+                    </div>
+
+                    <button
+                      onClick={generateOcrSession}
+                      className="mt-6 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all"
+                    >
+                      Reset Session
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="col-span-12 xl:col-span-7">
+              {ocrStatus === 'completed' && ocrResultText ? (
+                <div className="glass-card p-10 relative border border-white/5 bg-white/5 rounded-[32px] animate-in fade-in slide-in-from-right-8 duration-700 h-full max-h-[80vh] flex flex-col">
+                  <div className="flex items-center justify-between mb-8 shrink-0">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500"><CheckCircle2 size={24} /></div>
+                      <div>
+                        <h2 className="text-xl font-black tracking-tight">Digitized Text</h2>
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Tesseract OCR Engine</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar bg-black/40 border border-white/5 rounded-2xl p-6 whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                    {ocrResultText}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full min-h-[400px] flex flex-col items-center justify-center glass-card border border-white/5 bg-white/5 rounded-[32px] p-20 text-center">
+                  <ScanText size={48} className="opacity-10 mb-8" />
+                  <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase">No Document Data</h3>
+                  <p className="text-sm opacity-10 mt-2 font-bold max-w-[200px]">Scan a document via mobile to digitize text here.</p>
                 </div>
               )}
             </div>

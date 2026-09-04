@@ -22,6 +22,15 @@ export function getDb() {
     `);
     try { db.exec("ALTER TABLE expenses ADD COLUMN status TEXT DEFAULT 'sent'"); } catch(e) {}
     try { db.exec("ALTER TABLE expenses ADD COLUMN data TEXT"); } catch(e) {}
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS ocr_sessions (
+        id TEXT PRIMARY KEY,
+        status TEXT DEFAULT 'waiting',
+        image_data TEXT,
+        text_result TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     global._sqliteCache = db;
     console.log('🧠 [DB] SQLite Initialized at', dbPath);
   }
