@@ -135,8 +135,23 @@ export default function BetaToolsPage() {
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
-      // Optional: change voice or rate here
+      
+      // Select a better voice
+      const voices = window.speechSynthesis.getVoices();
+      // Try to find a premium/natural sounding English voice
+      const preferredVoice = voices.find(v => 
+        v.name.includes('Google US English') || 
+        v.name.includes('Samantha') || 
+        v.name.includes('Daniel') || 
+        (v.lang.startsWith('en-') && !v.localService)
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
       utterance.rate = 1.05;
+      utterance.pitch = 1.0;
       window.speechSynthesis.speak(utterance);
     }
   };
