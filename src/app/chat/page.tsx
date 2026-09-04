@@ -594,8 +594,14 @@ export default function MurabbiAIPage() {
         </div>
 
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 pb-4 space-y-4 lg:space-y-6 relative z-10">
+        {/* Messages with depth shadows & blur */}
+        <div className="flex-1 relative overflow-hidden flex flex-col">
+          {/* Top shadow gradient for depth on scroll */}
+          <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/10 to-transparent pointer-events-none z-20 backdrop-blur-[2px]" />
+          {/* Bottom shadow gradient for depth on scroll */}
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-20 backdrop-blur-[2px]" />
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 lg:px-8 py-4 space-y-4 lg:space-y-6 relative z-10">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12 select-none">
               <div className="mb-2 flex items-center justify-center">
@@ -621,15 +627,15 @@ export default function MurabbiAIPage() {
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
-                {/* Bubble */}
+                {/* Bubble with backdrop blur & shadow depth */}
                 <div className={clsx("flex flex-col gap-1 max-w-[85%]", msg.role === "user" ? "items-end" : "items-start")}>
                   <div className={clsx(
-                    "px-5 py-4 rounded-2xl text-sm leading-relaxed",
+                    "px-5 py-4 rounded-2xl text-sm leading-relaxed backdrop-blur-md shadow-lg transition-all",
                     msg.role === "user"
-                      ? "text-white rounded-tr-sm"
-                      : "glass border border-white/10 text-black/90 rounded-tl-sm"
+                      ? "text-white rounded-tr-sm shadow-emerald-900/10"
+                      : "glass border border-white/20 text-black/90 rounded-tl-sm shadow-black/10"
                   )}
-                  style={msg.role === "user" ? { background: 'var(--accent-main)' } : {}}
+                  style={msg.role === "user" ? { background: 'var(--accent-main)', boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.25)' } : { boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.4)' }}
                   >
                     {msg.role === "assistant" ? (
                       <div className="prose max-w-none text-sm leading-relaxed text-black"
@@ -674,6 +680,7 @@ export default function MurabbiAIPage() {
             ))
           )}
           <div ref={messagesEndRef} />
+        </div>
         </div>
 
         {/* Input */}
