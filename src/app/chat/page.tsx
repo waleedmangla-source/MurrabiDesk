@@ -192,7 +192,14 @@ export default function MurabbiAIPage() {
   const recognitionRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [isScrolledTop, setIsScrolledTop] = useState(false);
+  const [isScrolledBottom, setIsScrolledBottom] = useState(false);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    setIsScrolledTop(scrollTop > 10);
+    setIsScrolledBottom(scrollHeight - scrollTop - clientHeight > 10);
+  };
   const abortRef = useRef<AbortController | null>(null);
 
   const toggleVoiceTyping = () => {
@@ -615,15 +622,18 @@ export default function MurabbiAIPage() {
         </div>
 
 
-        {/* Messages with theme background gradient fade */}
+        {/* Messages with theme background gradient fade on scroll */}
         <div className="flex-1 relative overflow-hidden flex flex-col">
-          {/* Top theme background gradient layer */}
-          <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20" />
+          {/* Top theme background gradient layer - only when scrolled down */}
+          <div className={clsx("absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20 transition-opacity duration-300", isScrolledTop ? "opacity-100" : "opacity-0")} />
 
-          {/* Bottom theme background gradient layer */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20" />
+          {/* Bottom theme background gradient layer - only when content overflows above bottom */}
+          <div className={clsx("absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/70 to-transparent pointer-events-none z-20 transition-opacity duration-300", isScrolledBottom ? "opacity-100" : "opacity-0")} />
 
-          <div className={clsx("flex-1 px-4 lg:px-8 py-2 relative z-10 flex flex-col", messages.length === 0 ? "overflow-hidden justify-center" : "overflow-y-auto custom-scrollbar space-y-4 lg:space-y-6 py-4")}>
+          <div 
+            onScroll={handleScroll}
+            className={clsx("flex-1 px-4 lg:px-8 py-2 relative z-10 flex flex-col", messages.length === 0 ? "overflow-hidden justify-center" : "overflow-y-auto custom-scrollbar space-y-4 lg:space-y-6 py-4")}
+          >
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-4 select-none my-auto">
               <div className="mb-2 flex items-center justify-center shrink-0">
