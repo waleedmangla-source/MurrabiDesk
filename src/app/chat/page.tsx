@@ -425,7 +425,7 @@ export default function MurrabiAIPage() {
               <div className="w-24 h-24 rounded-full border flex items-center justify-center mb-6 shadow-2xl" style={{ background: 'var(--accent-soft)', borderColor: 'rgba(var(--accent-rgb, 16, 185, 129), 0.25)' }}>
                 <Sparkles size={40} style={{ color: 'var(--accent-main)' }} />
               </div>
-              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">Bismillah</h2>
+              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">MurrabiAI</h2>
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs">
                 Your AI assistant for Ahmadiyyat, mission work, and Murrabi Desk
               </p>
