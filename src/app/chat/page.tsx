@@ -555,10 +555,10 @@ export default function MurabbiAIPage() {
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center z-10"
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 p-1 hover:scale-110"
                 title="Delete Chat"
               >
-                <Trash2 size={14} style={{ color: '#ef4444', stroke: '#ef4444' }} />
+                <Trash2 size={14} style={{ color: '#ef4444', stroke: '#ef4444', fill: 'none', background: 'none' }} />
               </button>
             </div>
           ))}
