@@ -84,7 +84,7 @@ export default function BetaToolsPage() {
 
   // Terminal State
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    "[SYSTEM] Murrabi Experimental Protocol Initialized...",
+    "[SYSTEM] Murabbi Experimental Protocol Initialized...",
     "[SECURE] Lab Environment: Operational",
     "[STATUS] Waiting for user command..."
   ]);
@@ -354,7 +354,7 @@ export default function BetaToolsPage() {
 
   const tabs = [
     { id: 'overview', label: 'Lab Overview', icon: LayoutDashboard, color: 'text-blue-500', desc: 'System Diagnostic' },
-    { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurrabiAI Beta' },
+    { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurabbiAI Beta' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
     { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' }
   ];
@@ -423,7 +423,7 @@ export default function BetaToolsPage() {
             <div>
               <h2 className="text-5xl font-black tracking-tighter mb-4" style={{ color: 'var(--foreground)' }}>Lab Overview</h2>
               <p className="text-sm font-medium opacity-40 max-w-2xl leading-relaxed">
-                Welcome to the Murrabi Experimental Infrastructure. Here we deploy and test new extraction engines, 
+                Welcome to the Murabbi Experimental Infrastructure. Here we deploy and test new extraction engines, 
                 diagnostic tools, and automated scrapers before they are promoted to the core OS protocols.
               </p>
             </div>
@@ -453,7 +453,7 @@ export default function BetaToolsPage() {
                   {[
                     'Phase 1: Feature sandbox and local environment testing.',
                     'Phase 2: Performance profiling and memory leak analysis.',
-                    'Phase 3: Integration with Murrabi Core and Global Context.',
+                    'Phase 3: Integration with Murabbi Core and Global Context.',
                     'Phase 4: Public release and documentation deployment.'
                   ].map((step, i) => (
                     <div key={i} className="flex items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">

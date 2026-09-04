@@ -7,7 +7,7 @@ import { clsx } from "clsx";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Dashboard",
-  "/chat": "MurrabiAI",
+  "/chat": "MurabbiAI",
   "/emails": "Mail",
   "/calendar": "Calendar",
   "/notes": "Notes",
@@ -33,7 +33,7 @@ export default function MobileHeader({
   onLogoDoubleClick,
 }: MobileHeaderProps) {
   const pathname = usePathname();
-  const title = PAGE_TITLES[pathname] ?? "Murrabi Desk";
+  const title = PAGE_TITLES[pathname] ?? "Murabbi Desk";
 
   return (
     <header className="mobile-header lg:hidden shrink-0">
@@ -50,13 +50,13 @@ export default function MobileHeader({
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <img
           src="/text-logo.png"
-          alt="Murrabi Desk"
+          alt="Murabbi Desk"
           onDoubleClick={onLogoDoubleClick}
           className={clsx(
             "h-8 w-auto object-contain shrink-0 cursor-pointer active:scale-95 transition-all select-none",
             !isLightTheme && "invert mix-blend-multiply"
           )}
-          title="Double-click for Murrabi Desk screensaver"
+          title="Double-click for Murabbi Desk screensaver"
         />
         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/30 truncate hidden sm:block">
           {title}

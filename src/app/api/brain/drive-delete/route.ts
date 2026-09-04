@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const { fileId } = await request.json();
-    const tokenHeader = request.headers.get('x-murrabi-token');
+    const tokenHeader = request.headers.get('x-murabbi-token');
     
     if (!tokenHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

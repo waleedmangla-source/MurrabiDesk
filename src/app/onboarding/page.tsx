@@ -25,20 +25,20 @@ function OnboardingContent() {
       .then(data => {
         if (data.token) {
           localStorage.setItem('google_refresh_token_encrypted', data.token);
-          localStorage.removeItem('murrabi_guest_mode');
+          localStorage.removeItem('murabbi_guest_mode');
           
-          // Initialize Murrabi Desk Drive folder
+          // Initialize Murabbi Desk Drive folder
           fetch('/api/brain/init-drive', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'x-murrabi-token': data.token 
+              'x-murabbi-token': data.token 
             }
           })
           .then(res => res.json())
           .then(driveData => {
             if (driveData.rootId) {
-              localStorage.setItem('murrabi_drive_root_id', driveData.rootId);
+              localStorage.setItem('murabbi_drive_root_id', driveData.rootId);
             }
             window.location.href = '/';
           })
@@ -63,7 +63,7 @@ function OnboardingContent() {
   };
 
   const handleGuest = () => {
-    localStorage.setItem('murrabi_guest_mode', 'true');
+    localStorage.setItem('murabbi_guest_mode', 'true');
     window.location.href = '/';
   };
 
@@ -79,7 +79,7 @@ function OnboardingContent() {
         </div>
 
         <h1 className="text-3xl font-black text-white text-center tracking-tight mb-2 uppercase">
-          Murrabi Desk
+          Murabbi Desk
         </h1>
         <p className="text-white/50 text-center text-sm mb-10 font-medium">
           Premium Islamic Administrative Suite

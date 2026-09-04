@@ -1,10 +1,10 @@
 ---
-description: How to plan and execute any UI change to Murrabi Desk OS
+description: How to plan and execute any UI change to Murabbi Desk OS
 ---
 
 # UI Change Workflow
 
-This workflow governs ALL visual, layout, or component changes to Murrabi Desk.
+This workflow governs ALL visual, layout, or component changes to Murabbi Desk.
 **Before writing a single line of code, follow these steps.**
 
 ---

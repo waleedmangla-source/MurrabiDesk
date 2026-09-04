@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const { name, content, mimeType, folderName, module, category, folderId: explicitFolderId } = await request.json();
-    const tokenHeader = request.headers.get('x-murrabi-token');
+    const tokenHeader = request.headers.get('x-murabbi-token');
     
     if (!tokenHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
     
     // 0. Ensure Root Folder is resolved
-    const ROOT_NAME = 'Murrabi Desk Drive';
+    const ROOT_NAME = 'Murabbi Desk Drive';
     let rootFolderId = '';
     const rootSearch = await drive.files.list({
       q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,

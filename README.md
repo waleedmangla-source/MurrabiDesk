@@ -1,6 +1,6 @@
-# Murrabi Desk OS: Premium Administrative Suite
+# Murabbi Desk OS: Premium Administrative Suite
 
-**Murrabi Desk OS** is a high-fidelity, Liquid Glass desktop application built with **Next.js 14** and **Electron**. It provides an integrated, mission-critical interface for administrative synchronization, scheduling, and specialized mission logging.
+**Murabbi Desk OS** is a high-fidelity, Liquid Glass desktop application built with **Next.js 14** and **Electron**. It provides an integrated, mission-critical interface for administrative synchronization, scheduling, and specialized mission logging.
 
 ---
 
@@ -63,5 +63,5 @@ This will generate a production-ready installer in the `/dist` directory.
 - **Icons**: Lucide React
 
 ---
-**Developed by the Murrabi Desk Native Team**  
+**Developed by the Murabbi Desk Native Team**  
 *Mission Protocol Version 6.0 Stable*

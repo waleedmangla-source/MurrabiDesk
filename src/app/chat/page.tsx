@@ -8,7 +8,7 @@ import {
   Plus, Ghost, Paperclip, Image as ImageIcon, Music, File as FileIcon
 } from "lucide-react";
 import { clsx } from "clsx";
-import { QUICK_PROMPTS } from "@/lib/murrabiAI-system";
+import { QUICK_PROMPTS } from "@/lib/murabbiAI-system";
 import { GoogleSyncService } from "@/lib/google-sync-service";
 
 export interface Attachment {
@@ -46,8 +46,8 @@ interface Conversation {
   updatedAt: number;
 }
 
-const STORAGE_KEY = "murrabi_ai_conversations_v1";
-const OLD_STORAGE_KEY = "murrabi_ai_chat_v1";
+const STORAGE_KEY = "murabbi_ai_conversations_v1";
+const OLD_STORAGE_KEY = "murabbi_ai_chat_v1";
 
 function renderMarkdown(text: string) {
   return text
@@ -111,7 +111,7 @@ const HoverMarquee = ({ text, className }: { text: string; className?: string })
 
 
 
-export default function MurrabiAIPage() {
+export default function MurabbiAIPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConvId, setCurrentConvId] = useState<string | null>(null);
   
@@ -422,7 +422,7 @@ export default function MurrabiAIPage() {
       {/* ── LEFT PANEL (CONVERSATIONS) ── */}
       <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         <div className="px-5 pt-8 pb-4 border-b border-white/5">
-          <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase leading-none">MurrabiAI</h1>
+          <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase leading-none">MurabbiAI</h1>
         </div>
         
         <div className="p-3 border-b border-white/5 flex flex-col gap-2">
@@ -512,13 +512,13 @@ export default function MurrabiAIPage() {
               <div className="w-24 h-24 rounded-full border flex items-center justify-center mb-6 shadow-2xl" style={{ background: 'var(--accent-soft)', borderColor: 'rgba(var(--accent-rgb, 16, 185, 129), 0.25)' }}>
                 <Sparkles size={40} style={{ color: 'var(--accent-main)' }} />
               </div>
-              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">MurrabiAI</h2>
+              <h2 className="text-3xl font-black italic tracking-tighter text-black/20 uppercase mb-2">MurabbiAI</h2>
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/15 max-w-xs">
-                Your AI assistant for Ahmadiyyat, mission work, and Murrabi Desk
+                Your AI assistant for Ahmadiyyat, mission work, and Murabbi Desk
               </p>
               <div className="mt-10 grid grid-cols-2 gap-3 max-w-md w-full">
                 {[
-                  "What are the duties of a Murrabi?",
+                  "What are the duties of a Murabbi?",
                   "Help me prepare a Friday Khutba",
                   "Explain Khilafat-e-Ahmadiyya",
                   "Draft a Tabligh follow-up letter",
@@ -644,7 +644,7 @@ export default function MurrabiAIPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isDragging ? "Drop files here to attach..." : "Ask about Ahmadiyyat, Murrabi duties, draft documents... (Enter to send)"}
+              placeholder={isDragging ? "Drop files here to attach..." : "Ask about Ahmadiyyat, Murabbi duties, draft documents... (Enter to send)"}
               rows={2}
               className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar"
               style={{ maxHeight: "120px" }}

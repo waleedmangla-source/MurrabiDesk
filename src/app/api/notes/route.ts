@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
 
-const ROOT_NAME = 'Murrabi Desk Drive';
+const ROOT_NAME = 'Murabbi Desk Drive';
 const NOTES_FOLDER = 'Notes';
 const NOTE_MIME = 'application/json';
 

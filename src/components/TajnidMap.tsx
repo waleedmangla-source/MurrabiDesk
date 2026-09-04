@@ -29,7 +29,7 @@ const mapContainerStyle = {
   background: "#020310",
 };
 
-// Dark mode style matching Murrabi Desk aesthetic
+// Dark mode style matching Murabbi Desk aesthetic
 const mapOptions = {
   disableDefaultUI: true,
   zoomControl: true,

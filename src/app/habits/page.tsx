@@ -74,7 +74,7 @@ export default function HabitsPage() {
   });
 
   useEffect(() => {
-    setIsGuest(localStorage.getItem('murrabi_guest_mode') === 'true');
+    setIsGuest(localStorage.getItem('murabbi_guest_mode') === 'true');
     loadData();
   }, []);
 
@@ -662,7 +662,7 @@ export default function HabitsPage() {
                       Tactical<br />Performance<br />Summary
                     </h3>
                     <p className="text-micro leading-relaxed text-white/50 mb-8">
-                      Your routine discipline protocols are synchronized across the Murrabi Desk neural network. Maintain consistency to ensure mission success.
+                      Your routine discipline protocols are synchronized across the Murabbi Desk neural network. Maintain consistency to ensure mission success.
                     </p>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">

@@ -5,7 +5,7 @@ declare global {
 }
 export function getDb() {
   if (!global._sqliteCache) {
-    const dbPath = path.join(process.cwd(), 'murrabi-db.sqlite');
+    const dbPath = path.join(process.cwd(), 'murabbi-db.sqlite');
     const db = new Database(dbPath);
     db.exec(`
       CREATE TABLE IF NOT EXISTS expenses (

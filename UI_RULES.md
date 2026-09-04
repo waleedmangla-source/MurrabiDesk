@@ -1,6 +1,6 @@
-# Murrabi Desk OS — UI Rules & Design System
+# Murabbi Desk OS — UI Rules & Design System
 
-This document serves as the absolute "Source of Truth" for all visual and interactive elements within the Murrabi Desk ecosystem. Follow these rules strictly to maintain the premium, mission-critical aesthetic.
+This document serves as the absolute "Source of Truth" for all visual and interactive elements within the Murabbi Desk ecosystem. Follow these rules strictly to maintain the premium, mission-critical aesthetic.
 
 ---
 

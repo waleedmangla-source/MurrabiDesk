@@ -460,7 +460,7 @@ export default function EmailsPage() {
     handleMarkUnread
   } = useEmails();
 
-  const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
+  const isGuest = typeof window !== 'undefined' && localStorage.getItem('murabbi_guest_mode') === 'true';
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [pullDistance, setPullDistance] = useState(0);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MURRABI_AI_SYSTEM_PROMPT } from '@/lib/murrabiAI-system';
+import { MURABBI_AI_SYSTEM_PROMPT } from '@/lib/murabbiAI-system';
 
 export const runtime = 'nodejs';
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     const requestBody = {
       system_instruction: {
-        parts: [{ text: MURRABI_AI_SYSTEM_PROMPT }]
+        parts: [{ text: MURABBI_AI_SYSTEM_PROMPT }]
       },
       contents,
       generationConfig: {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 
     if (!geminiRes.ok) {
       const errorText = await geminiRes.text();
-      console.error('[MurrabiAI] Gemini API error:', errorText);
+      console.error('[MurabbiAI] Gemini API error:', errorText);
       return NextResponse.json({ error: `Gemini API error: ${geminiRes.status}` }, { status: geminiRes.status });
     }
 
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (err) {
-          console.error('[MurrabiAI] Stream error:', err);
+          console.error('[MurabbiAI] Stream error:', err);
         } finally {
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (err: any) {
-    console.error('[MurrabiAI] Fatal error:', err);
+    console.error('[MurabbiAI] Fatal error:', err);
     return NextResponse.json({ error: err.message || 'Unknown error' }, { status: 500 });
   }
 }

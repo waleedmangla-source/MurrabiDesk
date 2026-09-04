@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MURRABI_AI_SYSTEM_PROMPT } from '@/lib/murrabiAI-system';
+import { MURABBI_AI_SYSTEM_PROMPT } from '@/lib/murabbiAI-system';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,7 +24,7 @@ Your purpose is to engage in natural, spoken conversations.
       const requestBody = {
         model: "nvidia/nemotron-4-340b-instruct",
         messages: [
-          { role: "system", content: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
+          { role: "system", content: MURABBI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA },
           ...messages
         ],
         temperature: 0.7,
@@ -57,7 +57,7 @@ Your purpose is to engage in natural, spoken conversations.
 
       // Step 1: Generate text response with Gemini 3.5 Flash
       const textRequestBody = {
-        system_instruction: { parts: { text: MURRABI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA } },
+        system_instruction: { parts: { text: MURABBI_AI_SYSTEM_PROMPT + "\n\n" + VOICECHAT_PERSONA } },
         contents: geminiMessages,
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
       };

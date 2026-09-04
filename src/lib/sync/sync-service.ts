@@ -93,13 +93,13 @@ export class SyncService {
   private async getSyncFolderId() {
     const drive = google.drive({ version: 'v3', auth: this.oauth2Client });
     const res = await drive.files.list({
-      q: "name = 'MurrabiDeskSync' and mimeType = 'application/vnd.google-apps.folder'",
+      q: "name = 'MurabbiDeskSync' and mimeType = 'application/vnd.google-apps.folder'",
       fields: 'files(id)',
     });
     if (res.data.files && res.data.files.length) return res.data.files[0].id;
     const folderRes = await drive.files.create({
       requestBody: {
-        name: 'MurrabiDeskSync',
+        name: 'MurabbiDeskSync',
         mimeType: 'application/vnd.google-apps.folder',
       },
       fields: 'id',

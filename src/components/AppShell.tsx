@@ -46,7 +46,7 @@ const ACCENT_COLORS: Record<
 
 const navLinks = [
   { icon: Home, label: "Dashboard", href: "/" },
-  { icon: Sparkles, label: "MurrabiAI", href: "/chat" },
+  { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Mail, label: "Mail", href: "/emails" },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
   { icon: FileText, label: "Notes", href: "/notes" },
@@ -73,7 +73,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
 
-    if (localStorage.getItem("murrabi_hide_dev_notes") === "true") {
+    if (localStorage.getItem("murabbi_hide_dev_notes") === "true") {
       setShowDevNotes(false);
     }
 
@@ -81,7 +81,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("offline", () => {});
 
     const existingToken = localStorage.getItem("google_refresh_token_encrypted");
-    const isGuest = localStorage.getItem("murrabi_guest_mode") === "true";
+    const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
 
     if (existingToken && !isGuest) {
       liquid.invoke("sync-init", { refreshToken: existingToken }).then(() => {
@@ -90,10 +90,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         });
       });
     } else if (isGuest) {
-      setUserProfile({ name: "Guest User", email: "guest@murrabi.local", picture: null });
+      setUserProfile({ name: "Guest User", email: "guest@murabbi.local", picture: null });
     }
 
-    const savedSettings = localStorage.getItem("murrabi_settings");
+    const savedSettings = localStorage.getItem("murabbi_settings");
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
@@ -164,7 +164,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
     const isAuth = localStorage.getItem("google_refresh_token_encrypted");
-    const isGuest = localStorage.getItem("murrabi_guest_mode") === "true";
+    const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
     const authenticated = isAuth || isGuest;
     if (!authenticated && pathname !== "/onboarding") {
       router.push("/onboarding");
@@ -199,7 +199,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         showDevNotes={showDevNotes}
         onDismissDevNotes={() => {
           setShowDevNotes(false);
-          localStorage.setItem("murrabi_hide_dev_notes", "true");
+          localStorage.setItem("murabbi_hide_dev_notes", "true");
         }}
       />
 
@@ -230,12 +230,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div
             className="flex flex-col items-center gap-2 text-center w-full pt-0 relative group z-10 cursor-pointer select-none"
             onDoubleClick={() => setIsScreensaverActive(true)}
-            title="Double-click for Murrabi Desk screensaver"
+            title="Double-click for Murabbi Desk screensaver"
           >
             <div className="flex items-center justify-center overflow-hidden">
               <img
                 src="/text-logo.png"
-                alt="Murrabi Desk"
+                alt="Murabbi Desk"
                 className="h-[62px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95"
               />
             </div>
@@ -279,7 +279,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <link.icon size={20} className="transition-all duration-300" />
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
-                {link.label === "MurrabiAI" && (
+                {link.label === "MurabbiAI" && (
                   <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                 )}
               </Link>
@@ -301,7 +301,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <button
                     onClick={() => {
                       setShowDevNotes(false);
-                      localStorage.setItem("murrabi_hide_dev_notes", "true");
+                      localStorage.setItem("murabbi_hide_dev_notes", "true");
                     }}
                     className="p-1 -mr-1 -mt-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     title="Dismiss notes"
@@ -311,7 +311,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   </button>
                 </div>
                 <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pr-1">
-                  Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+                  Murabbi Core v1.0.6-alpha • All local sync pipelines nominal.
                 </p>
               </div>
             )}

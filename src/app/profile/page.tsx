@@ -63,9 +63,9 @@ export default function ProfilePage() {
     const googleInfo = await GoogleSyncService.getUserProfile();
     
     // Load custom fields from localStorage
-    const savedCustom = localStorage.getItem('murrabi_profile_custom');
+    const savedCustom = localStorage.getItem('murabbi_profile_custom');
     const customData = savedCustom ? JSON.parse(savedCustom) : {
-      missionTitle: "Administrative Murrabi",
+      missionTitle: "Administrative Murabbi",
       missionArea: "Canada HQ / Toronto",
       graduationYear: "2018",
       languages: "English, Urdu, Arabic",
@@ -81,7 +81,7 @@ export default function ProfilePage() {
        // Fallback for demo
        setProfile({
           id: 'mock-123',
-          email: 'waleed@murrabi.desk',
+          email: 'waleed@murabbi.desk',
           name: 'Waleed Mangla',
           given_name: 'Waleed',
           family_name: 'Mangla',
@@ -111,7 +111,7 @@ export default function ProfilePage() {
       bio: profile.bio
     };
 
-    localStorage.setItem('murrabi_profile_custom', JSON.stringify(customData));
+    localStorage.setItem('murabbi_profile_custom', JSON.stringify(customData));
     
     setTimeout(() => {
       setIsSaving(false);

@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 export async function POST(request: Request) {
   try {
-    const tokenHeader = request.headers.get('x-murrabi-token');
+    const tokenHeader = request.headers.get('x-murabbi-token');
     
     if (!tokenHeader) {
       return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });

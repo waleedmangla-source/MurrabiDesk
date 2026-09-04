@@ -40,13 +40,13 @@ function useGoogleToken(): string | null {
   useEffect(() => {
     async function getToken() {
       if (typeof window === 'undefined') return;
-      if (localStorage.getItem('murrabi_guest_mode') === 'true') return;
+      if (localStorage.getItem('murabbi_guest_mode') === 'true') return;
       const encrypted = localStorage.getItem('google_refresh_token_encrypted');
       if (!encrypted) return;
       try {
         const decRes = await fetch('/api/brain/decrypt', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-murrabi-token': encrypted },
+          headers: { 'Content-Type': 'application/json', 'x-murabbi-token': encrypted },
           body: JSON.stringify({ encrypted }),
         });
         const decData = await decRes.json();
@@ -106,7 +106,7 @@ export default function DrivePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-murrabi-token': tokenHeader
+          'x-murabbi-token': tokenHeader
         },
         body: JSON.stringify({ folderId })
       });

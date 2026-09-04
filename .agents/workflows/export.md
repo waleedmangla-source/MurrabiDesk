@@ -1,12 +1,12 @@
 ---
-description: Export and Package Murrabi Desk Native
+description: Export and Package Murabbi Desk Native
 ---
 
 // turbo-all
 
-# Export Murrabi Desk Native (macOS)
+# Export Murabbi Desk Native (macOS)
 
-This workflow automates the export of the Murrabi Desk Native application, applying all architectural fixes for Mach port crashes, routing, and packaging.
+This workflow automates the export of the Murabbi Desk Native application, applying all architectural fixes for Mach port crashes, routing, and packaging.
 
 ## 1. Environment & Setup
 1. Validate `.env.local` exists for API services.

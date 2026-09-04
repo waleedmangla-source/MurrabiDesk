@@ -24,7 +24,7 @@ import {
 
 const navLinks = [
   { icon: Home, label: "Dashboard", href: "/" },
-  { icon: Sparkles, label: "MurrabiAI", href: "/chat" },
+  { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Mail, label: "Mail", href: "/emails" },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
   { icon: FileText, label: "Notes", href: "/notes" },
@@ -112,7 +112,7 @@ export default function SidebarDrawer({
         <div className="relative z-10 flex items-center justify-between mb-2">
           <img
             src="/text-logo.png"
-            alt="Murrabi Desk"
+            alt="Murabbi Desk"
             onDoubleClick={() => {
               if (onLogoDoubleClick) {
                 onClose();
@@ -123,7 +123,7 @@ export default function SidebarDrawer({
               "h-[48px] w-auto object-contain cursor-pointer active:scale-95 transition-all select-none",
               !isLightTheme && "invert mix-blend-multiply"
             )}
-            title="Double-click for Murrabi Desk screensaver"
+            title="Double-click for Murabbi Desk screensaver"
           />
           <button
             onClick={onClose}
@@ -163,7 +163,7 @@ export default function SidebarDrawer({
             >
               <link.icon size={20} className="transition-all duration-300 shrink-0" />
               <span className="text-sm tracking-wide">{link.label}</span>
-              {link.label === "MurrabiAI" && (
+              {link.label === "MurabbiAI" && (
                 <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
               )}
             </Link>
@@ -194,7 +194,7 @@ export default function SidebarDrawer({
                 )}
               </div>
               <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pr-1">
-                Murrabi Core v1.0.6-alpha • All local sync pipelines nominal.
+                Murabbi Core v1.0.6-alpha • All local sync pipelines nominal.
               </p>
             </div>
           )}

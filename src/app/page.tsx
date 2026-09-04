@@ -81,7 +81,7 @@ export default function Dashboard() {
       loadMissionNotes();
     }
 
-    const savedSettings = localStorage.getItem('murrabi_settings');
+    const savedSettings = localStorage.getItem('murabbi_settings');
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
       setDashboardSettings({

@@ -37,7 +37,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
   const [newUrl, setNewUrl] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('murrabi_quick_links');
+    const saved = localStorage.getItem('murabbi_quick_links');
     if (saved) {
       try {
         const customLinks = JSON.parse(saved);
@@ -51,7 +51,7 @@ export default function QuickLinks({ variant = 'full' }: QuickLinksProps) {
 
   const saveCustomLinks = (updatedLinks: QuickLink[]) => {
     const customOnly = updatedLinks.filter(l => !l.isPreset);
-    localStorage.setItem('murrabi_quick_links', JSON.stringify(customOnly));
+    localStorage.setItem('murabbi_quick_links', JSON.stringify(customOnly));
   };
 
   const addLink = () => {

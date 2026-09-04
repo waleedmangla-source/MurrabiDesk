@@ -255,7 +255,7 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
 
   // Preload emails on start & whenever folder/query changes
   useEffect(() => {
-    const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
+    const isGuest = typeof window !== 'undefined' && localStorage.getItem('murabbi_guest_mode') === 'true';
     if (!isGuest) {
       fetchEmails();
     } else {
@@ -273,7 +273,7 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
   // Heartbeat sync or background sync: we can listen for google sync status
   // or sync emails every 5 minutes in background
   useEffect(() => {
-    const isGuest = typeof window !== 'undefined' && localStorage.getItem('murrabi_guest_mode') === 'true';
+    const isGuest = typeof window !== 'undefined' && localStorage.getItem('murabbi_guest_mode') === 'true';
     if (isGuest) return;
 
     const interval = setInterval(() => {

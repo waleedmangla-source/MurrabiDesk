@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const { spreadsheetId, range } = await request.json();
-    const tokenHeader = request.headers.get('x-murrabi-token');
+    const tokenHeader = request.headers.get('x-murabbi-token');
     
     if (!tokenHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,9 +31,9 @@ export async function POST(request: Request) {
     
     let targetId = spreadsheetId;
 
-    // If no spreadsheetId provided, find 'Murrabi Expenses Master' in 'Murrabi Desk Drive/Expenses'
+    // If no spreadsheetId provided, find 'Murabbi Expenses Master' in 'Murabbi Desk Drive/Expenses'
     if (!targetId) {
-       const ROOT_NAME = 'Murrabi Desk Drive';
+       const ROOT_NAME = 'Murabbi Desk Drive';
        const MODULE_NAME = 'Expenses';
        
        const rootSearch = await drive.files.list({
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
          if (moduleSearch.data.files && moduleSearch.data.files.length > 0) {
            const expensesFolderId = moduleSearch.data.files[0].id;
            const searchRes = await drive.files.list({
-             q: `name = 'Murrabi Expenses Master' and '${expensesFolderId}' in parents and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
+             q: `name = 'Murabbi Expenses Master' and '${expensesFolderId}' in parents and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
              fields: 'files(id)',
            });
 

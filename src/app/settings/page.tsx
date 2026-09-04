@@ -174,7 +174,7 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1">
             <FieldLabel>Mission Title / Role</FieldLabel>
-            <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Administrative Murrabi" />
+            <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Administrative Murabbi" />
           </div>
           <div className="space-y-1">
             <FieldLabel>Member Code</FieldLabel>
@@ -491,7 +491,7 @@ const SHORTCUTS = [
   ]},
   { section: 'Navigation', items: [
     { keys: ['⌘', '1'], desc: 'Go to Dashboard' },
-    { keys: ['⌘', '2'], desc: 'Go to MurrabiAI' },
+    { keys: ['⌘', '2'], desc: 'Go to MurabbiAI' },
     { keys: ['⌘', '3'], desc: 'Go to Mail' },
     { keys: ['⌘', '4'], desc: 'Go to Calendar' },
     { keys: ['⌘', '5'], desc: 'Go to Notes' },
@@ -538,7 +538,7 @@ function PrivacyTab() {
 
   const handleWipe = () => {
     if (wipeLock) return;
-    ['cache_calendar', 'cache_gmail', 'cache_notes', 'mission_notes_browser_fallback', 'murrabi_profile_custom', 'google_sync_status'].forEach(k => localStorage.removeItem(k));
+    ['cache_calendar', 'cache_gmail', 'cache_notes', 'mission_notes_browser_fallback', 'murabbi_profile_custom', 'google_sync_status'].forEach(k => localStorage.removeItem(k));
     alert('WIPE COMPLETE: Mission Cache Purged.');
     router.push('/');
   };
@@ -564,7 +564,7 @@ function PrivacyTab() {
         </p>
         <button
           onClick={async () => {
-            if (confirm('Sign out of MurrabiDesk?')) { await GoogleSyncService.logout(); window.location.href = '/onboarding'; }
+            if (confirm('Sign out of MurabbiDesk?')) { await GoogleSyncService.logout(); window.location.href = '/onboarding'; }
           }}
           className="flex items-center gap-2 px-6 h-11 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest transition-all"
         >
@@ -606,7 +606,7 @@ function PrivacyTab() {
           title={
             <div className="flex items-center gap-2">
               <span>About</span>
-              <img src="/logo.png" alt="Murrabi Desk" className="h-4 w-auto object-contain" />
+              <img src="/logo.png" alt="Murabbi Desk" className="h-4 w-auto object-contain" />
             </div>
           } 
           subtitle="Version info" 
@@ -645,7 +645,7 @@ function FeedbackTab({ settings }: { settings: SettingsState }) {
       <Card>
         <CardHeader icon={<Zap size={18} />} title="Request a Feature" subtitle="Submit ideas, bugs, or improvements" />
         <p className="text-xs text-[var(--text-dim)] leading-relaxed mb-6">
-          Have an idea that would make MurrabiDesk better? Submit a feature request or bug report below. All submissions are reviewed personally.
+          Have an idea that would make MurabbiDesk better? Submit a feature request or bug report below. All submissions are reviewed personally.
         </p>
 
         {isPlaceholder ? (
@@ -740,7 +740,7 @@ export default function SettingsPage() {
     weekStart: 'sunday',
     language: 'en',
     signatureData: null,
-    missionTitle: 'Administrative Murrabi',
+    missionTitle: 'Administrative Murabbi',
     missionArea: 'Canada HQ / Toronto',
     graduationYear: '2018',
     languages: 'English, Urdu, Arabic',
@@ -752,7 +752,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('murrabi_settings_v2');
+    const saved = localStorage.getItem('murabbi_settings_v2');
     if (saved) {
       try { setSettings(prev => ({ ...prev, ...JSON.parse(saved) })); } catch {}
     }
@@ -760,11 +760,11 @@ export default function SettingsPage() {
 
   const handleSave = () => {
     setIsSaving(true);
-    localStorage.setItem('murrabi_settings_v2', JSON.stringify(settings));
-    localStorage.setItem('murrabi_settings', JSON.stringify({ accentColor: settings.accentColor }));
-    localStorage.setItem('murrabi_show_worldclocks', settings.showWorldClock.toString());
-    localStorage.setItem('murrabi_show_prayertimes', settings.showPrayerTimes.toString());
-    localStorage.setItem('murrabi_profile_custom', JSON.stringify({
+    localStorage.setItem('murabbi_settings_v2', JSON.stringify(settings));
+    localStorage.setItem('murabbi_settings', JSON.stringify({ accentColor: settings.accentColor }));
+    localStorage.setItem('murabbi_show_worldclocks', settings.showWorldClock.toString());
+    localStorage.setItem('murabbi_show_prayertimes', settings.showPrayerTimes.toString());
+    localStorage.setItem('murabbi_profile_custom', JSON.stringify({
       missionTitle: settings.missionTitle, missionArea: settings.missionArea,
       graduationYear: settings.graduationYear, languages: settings.languages,
       memberCode: settings.memberCode, alias: settings.alias, birthday: settings.birthday, bio: settings.bio,
@@ -1054,7 +1054,7 @@ function UILibraryTab() {
 
           <button
             onClick={async () => {
-              if (confirm('Sign out of MurrabiDesk?')) {
+              if (confirm('Sign out of MurabbiDesk?')) {
                 await GoogleSyncService.logout();
                 window.location.href = '/onboarding';
               }

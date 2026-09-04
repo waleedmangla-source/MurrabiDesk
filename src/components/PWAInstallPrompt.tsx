@@ -19,7 +19,7 @@ export default function PWAInstallPrompt() {
       } else {
         console.log('✨ [PWA] Install prompt not available yet');
         if (window.matchMedia('(display-mode: standalone)').matches) {
-          alert("Murrabi Desk is already running in App Mode.");
+          alert("Murabbi Desk is already running in App Mode.");
         }
       }
     };

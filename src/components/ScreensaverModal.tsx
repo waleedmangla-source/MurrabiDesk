@@ -75,7 +75,7 @@ export default function ScreensaverModal({ active, onExit }: ScreensaverModalPro
   return (
     <div
       className="fixed inset-0 z-[99999] bg-[#020308]/95 backdrop-blur-xl flex flex-col items-center justify-center select-none cursor-none overflow-hidden animate-in fade-in duration-500"
-      aria-label="Murrabi Desk Screensaver"
+      aria-label="Murabbi Desk Screensaver"
       role="dialog"
       aria-modal="true"
     >
@@ -113,7 +113,7 @@ export default function ScreensaverModal({ active, onExit }: ScreensaverModalPro
 
           <img
             src="/text-logo.png"
-            alt="Murrabi Desk"
+            alt="Murabbi Desk"
             className="relative h-20 md:h-28 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,0.8)] filter brightness-110"
           />
         </div>
@@ -129,7 +129,7 @@ export default function ScreensaverModal({ active, onExit }: ScreensaverModalPro
               className="text-[11px] font-black tracking-[0.35em] uppercase"
               style={{ color: "var(--accent-main, #10b981)" }}
             >
-              Murrabi Desk OS
+              Murabbi Desk OS
             </span>
           </div>
 

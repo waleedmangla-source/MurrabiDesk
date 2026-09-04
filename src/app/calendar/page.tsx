@@ -732,7 +732,7 @@ export default function CalendarPage() {
   const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const isGuest = localStorage.getItem("murrabi_guest_mode") === "true";
+      const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
       if (isGuest) {
         // Demo events for guest mode
         const now = new Date();
@@ -836,7 +836,7 @@ export default function CalendarPage() {
       };
       setEvents(prev => [...prev, newEv]);
 
-      const isGuest = localStorage.getItem("murrabi_guest_mode") === "true";
+      const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
       if (!isGuest) {
         const service = await GoogleSyncService.fromLocalStorage();
         await service?.createCalendarEvent({

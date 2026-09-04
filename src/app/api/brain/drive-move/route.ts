@@ -3,12 +3,12 @@ import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
 
-const ROOT_NAME = 'Murrabi Desk Drive';
+const ROOT_NAME = 'Murabbi Desk Drive';
 
 export async function POST(request: Request) {
   try {
     const { folderName, module, sourceCategory, targetCategory } = await request.json();
-    const tokenHeader = request.headers.get('x-murrabi-token');
+    const tokenHeader = request.headers.get('x-murabbi-token');
     
     if (!tokenHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

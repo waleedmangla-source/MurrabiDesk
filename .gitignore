@@ -35,7 +35,7 @@ staging_asar/
 .chrome-profile/
 .electron-user-data*/
 .electron-v6-stable-data/
-.murrabi-headless-data/
+.murabbi-headless-data/
 
 # Environment and secrets
 .env

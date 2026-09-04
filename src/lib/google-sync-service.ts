@@ -129,7 +129,7 @@ export class GoogleSyncService {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('google_refresh_token_encrypted');
     localStorage.removeItem('cached_user_profile');
-    localStorage.removeItem('murrabi_guest_mode');
+    localStorage.removeItem('murabbi_guest_mode');
     const cachedKeys = Object.keys(localStorage).filter(k => 
       k.startsWith('cache_') || 
       k.startsWith('calendar') || 

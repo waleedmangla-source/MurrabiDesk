@@ -649,9 +649,9 @@ export default function LettersPage() {
     setRecipientEmail(currentCategory.recipientEmail);
     if (activeCategoryId === "huzoor") {
       const subLabel = HUZOOR_SUB_CATEGORIES.find((s) => s.id === huzoorSubCat)?.label;
-      setSubject(`Letter to Huzoor (aba) - ${subLabel} - ${name || "Murrabi Desk"}`);
+      setSubject(`Letter to Huzoor (aba) - ${subLabel} - ${name || "Murabbi Desk"}`);
     } else {
-      setSubject(`Letter to ${currentCategory.recipient} - ${name || "Murrabi Desk"}`);
+      setSubject(`Letter to ${currentCategory.recipient} - ${name || "Murabbi Desk"}`);
     }
   }, [activeCategoryId, huzoorSubCat, currentCategory, name]);
 
@@ -1184,7 +1184,7 @@ export default function LettersPage() {
           <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle size={15} />
-              <span>Letter uploaded to Murrabi Desk Drive / Letters!</span>
+              <span>Letter uploaded to Murabbi Desk Drive / Letters!</span>
             </div>
             {driveLink && (
               <a

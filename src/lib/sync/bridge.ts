@@ -3,7 +3,7 @@ export const liquid = {
     const targetUrl = `/api/brain/${action}`;
     const tokenHeader = typeof window !== 'undefined' ? localStorage.getItem('google_refresh_token_encrypted') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (tokenHeader) headers['x-murrabi-token'] = tokenHeader;
+    if (tokenHeader) headers['x-murabbi-token'] = tokenHeader;
     try {
       const response = await fetch(targetUrl, {
         method: 'POST',

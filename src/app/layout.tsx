@@ -3,13 +3,13 @@ import "../styles/globals.css";
 import AppShell from "@/components/AppShell";
 import { EmailProvider } from "@/context/EmailContext";
 export const metadata: Metadata = {
-  title: "Murrabi Desk OS",
+  title: "Murabbi Desk OS",
   description: "Premium Islamic Administrative Desktop Suite",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "MurrabiDesk",
+    title: "MurabbiDesk",
   },
 };
 
