@@ -68,7 +68,7 @@ function renderMarkdown(text: string) {
   html = html.replace(/^(?:> ?)(.*$)/gm, '<blockquote class="border-l-4 border-[var(--accent-main)] pl-3 py-1 my-2 bg-black/5 italic rounded-r text-black/80">$1</blockquote>');
 
   // Bullet points (*, -, •, +) including indented sub-bullets
-  html = html.replace(/^( *)([*•-+]) (.*$)/gm, (match, indent, symbol, content) => {
+  html = html.replace(/^( *)([•*+\-]) (.*$)/gm, (match, indent, symbol, content) => {
     const spaceCount = indent.length;
     const marginClass = spaceCount >= 4 ? 'ml-8 list-circle' : spaceCount >= 2 ? 'ml-6 list-disc' : 'ml-4 list-disc';
     return `<li class="${marginClass} my-1 leading-relaxed">${content}</li>`;

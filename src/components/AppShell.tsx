@@ -30,6 +30,7 @@ import MobileHeader from "@/components/MobileHeader";
 import SidebarDrawer from "@/components/SidebarDrawer";
 import { GoogleSyncService } from "@/lib/google-sync-service";
 import ScreensaverModal from "@/components/ScreensaverModal";
+import { useEmails } from "@/context/EmailContext";
 
 const ACCENT_COLORS: Record<
   string,
@@ -68,6 +69,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [accentColor, setAccentColor] = useState("flup");
   const pathname = usePathname();
   const router = useRouter();
+
+  const { emails } = useEmails();
+  const unreadMailCount = emails.filter(
+    (e) => !e.read && !e.labels.includes("TRASH") && !e.labels.includes("SENT")
+  ).length;
 
   // ── Mount + init ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -201,6 +207,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           setShowDevNotes(false);
           localStorage.setItem("murabbi_hide_dev_notes", "true");
         }}
+        unreadMailCount={unreadMailCount}
       />
 
       <div className="flex h-full lg:h-screen w-full bg-transparent lg:overflow-hidden relative flex-col lg:flex-row">
@@ -279,6 +286,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <link.icon size={20} className="transition-all duration-300" />
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
+                {link.label === "Mail" && unreadMailCount >= 1 && (
+                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                    {unreadMailCount > 99 ? "99+" : unreadMailCount}
+                  </span>
+                )}
                 {link.label === "MurabbiAI" && (
                   <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                 )}

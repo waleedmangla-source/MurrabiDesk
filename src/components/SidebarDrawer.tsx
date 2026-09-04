@@ -45,6 +45,7 @@ interface SidebarDrawerProps {
   onLogoDoubleClick?: () => void;
   showDevNotes?: boolean;
   onDismissDevNotes?: () => void;
+  unreadMailCount?: number;
 }
 
 export default function SidebarDrawer({
@@ -56,6 +57,7 @@ export default function SidebarDrawer({
   onLogoDoubleClick,
   showDevNotes = true,
   onDismissDevNotes,
+  unreadMailCount = 0,
 }: SidebarDrawerProps) {
   const pathname = usePathname();
   const isFlupTheme = accentColor === "flup";
@@ -163,6 +165,11 @@ export default function SidebarDrawer({
             >
               <link.icon size={20} className="transition-all duration-300 shrink-0" />
               <span className="text-sm tracking-wide">{link.label}</span>
+              {link.label === "Mail" && unreadMailCount >= 1 && (
+                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                  {unreadMailCount > 99 ? "99+" : unreadMailCount}
+                </span>
+              )}
               {link.label === "MurabbiAI" && (
                 <div className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
               )}
