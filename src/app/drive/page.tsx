@@ -158,7 +158,7 @@ export default function DrivePage() {
     : syncStatus === 'error' ? AlertCircle
     : RefreshCw;
   const syncColor = syncStatus === 'synced' ? 'text-emerald-400'
-    : syncStatus === 'error' ? 'text-red-400'
+    : syncStatus === 'error' ? 'text-rose-400'
     : syncStatus === 'offline' ? 'text-white/20'
     : 'text-white/30';
 

@@ -634,7 +634,7 @@ export default function EmailsPage() {
       <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Email</h1>
+          <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase leading-none">Email</h1>
         </div>
         
         {/* Account Header */}

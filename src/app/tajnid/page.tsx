@@ -260,7 +260,7 @@ export default function TajnidPage() {
       <div className="w-[340px] xl:w-[380px] shrink-0 border-r border-white/5 flex flex-col bg-black/20 h-full">
         <div className="p-6 border-b border-white/5 shrink-0">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] flex items-center gap-2">
+            <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] uppercase flex items-center gap-2">
               <Users className="text-[var(--accent-main)]" />
               Tajnid
             </h1>

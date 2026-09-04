@@ -951,8 +951,8 @@ function UILibraryTab() {
       {/* ── Secondary Sidebar ── */}
       <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
         <div className="px-6 pt-14 pb-5 border-b border-white/5">
-          <h2 className="text-lg font-black tracking-tighter text-[var(--foreground)]">Settings</h2>
-          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]/60 mt-0.5">Configuration Protocol</p>
+          <h2 className="text-xl font-black italic tracking-tighter uppercase text-[var(--foreground)]">Settings</h2>
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]/60 mt-0.5">Configuration Protocol</p>
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">

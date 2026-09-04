@@ -1028,7 +1028,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Header label */}
-          <h1 className="text-lg font-black tracking-tight text-[var(--foreground)] flex-1">{headerLabel()}</h1>
+          <h1 className="text-xl font-black italic tracking-tighter uppercase text-[var(--foreground)] flex-1">{headerLabel()}</h1>
 
           {/* Today Button */}
           <button
