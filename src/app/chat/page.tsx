@@ -192,6 +192,7 @@ export default function MurabbiAIPage() {
   const recognitionRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isScrolledTop, setIsScrolledTop] = useState(false);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
 
