@@ -732,7 +732,7 @@ export default function MurabbiAIPage() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isDragging ? "Drop files here..." : "Ask about Ahmadiyyat, Murabbi duties, draft documents... (Enter to send)"}
+                placeholder={isDragging ? "Drop files here..." : "Ask anything about Ahmadiyyat"}
                 rows={1}
                 className="flex-1 bg-transparent py-1.5 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar leading-normal"
                 style={{ maxHeight: "100px" }}
