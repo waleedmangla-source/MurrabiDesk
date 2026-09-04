@@ -689,16 +689,16 @@ export default function MurabbiAIPage() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             className={clsx(
-              "relative glass rounded-2xl border transition-all overflow-hidden",
+              "relative glass rounded-2xl border transition-all overflow-hidden p-1.5 flex flex-col gap-1",
               isDragging ? "border-[var(--accent-main)] bg-[var(--accent-soft)]/20" : "border-white/10 focus-within:border-[var(--accent-main)]/40"
             )}
           >
             {pendingAttachments.length > 0 && (
-              <div className="flex items-center gap-2 px-4 pt-3 pb-2 overflow-x-auto custom-scrollbar border-b border-black/5">
+              <div className="flex items-center gap-2 px-3 pt-2 pb-1 overflow-x-auto custom-scrollbar border-b border-black/5">
                 {pendingAttachments.map(att => (
-                  <div key={att.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/5 border border-black/10 text-xs shrink-0 max-w-[200px]">
+                  <div key={att.id} className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-black/5 border border-black/10 text-xs shrink-0 max-w-[200px]">
                     {att.previewUrl ? (
-                      <img src={att.previewUrl} alt={att.name} className="w-6 h-6 rounded object-cover shrink-0" />
+                      <img src={att.previewUrl} alt={att.name} className="w-5 h-5 rounded object-cover shrink-0" />
                     ) : (
                       <FileText size={14} className="text-[var(--accent-main)] shrink-0" />
                     )}
@@ -714,7 +714,7 @@ export default function MurabbiAIPage() {
               </div>
             )}
             {activeContexts.size > 0 && (
-              <div className="flex items-center gap-2 px-4 pt-3 pb-1 border-b border-white/5">
+              <div className="flex items-center gap-2 px-3 pt-1 pb-1 border-b border-white/5">
                 {Array.from(activeContexts).map(id => {
                   const opt = CONTEXT_OPTIONS.find(o => o.id === id);
                   return opt ? (
@@ -726,18 +726,18 @@ export default function MurabbiAIPage() {
                 })}
               </div>
             )}
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isDragging ? "Drop files here to attach..." : "Ask about Ahmadiyyat, Murabbi duties, draft documents... (Enter to send)"}
-              rows={2}
-              className="w-full bg-transparent px-5 pt-4 pb-2 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar"
-              style={{ maxHeight: "120px" }}
-            />
-            <div className="flex items-center justify-between px-4 pb-3">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 pl-3 pr-1 py-0.5">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isDragging ? "Drop files here..." : "Ask about Ahmadiyyat, Murabbi duties, draft documents... (Enter to send)"}
+                rows={1}
+                className="flex-1 bg-transparent py-1.5 text-sm font-medium text-black placeholder:text-black/50 resize-none focus:outline-none custom-scrollbar leading-normal"
+                style={{ maxHeight: "100px" }}
+              />
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -758,10 +758,9 @@ export default function MurabbiAIPage() {
                   title={isListening ? "Stop Voice Typing" : "Voice Typing"}
                 >
                   {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-                  {isListening && <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Listening...</span>}
+                  {isListening && <span className="text-[10px] font-black uppercase tracking-wider text-red-500 hidden sm:inline">Listening...</span>}
                 </button>
-              </div>
-              <div className="flex items-center gap-2">
+
                 {isLoading ? (
                   <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black transition-all hover:bg-red-600/20">
                     <Loader2 size={12} className="animate-spin" /> Stop
@@ -771,7 +770,7 @@ export default function MurabbiAIPage() {
                     onClick={() => sendMessage()}
                     disabled={!input.trim() && pendingAttachments.length === 0}
                     className={clsx(
-                      "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 shadow-md",
+                      "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95 shadow-md",
                       (!input.trim() && pendingAttachments.length === 0)
                         ? "bg-black/5 text-black/20 cursor-not-allowed"
                         : "text-white ai-send-button"
