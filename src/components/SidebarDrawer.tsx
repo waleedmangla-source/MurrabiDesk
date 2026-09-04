@@ -22,6 +22,8 @@ import {
   Users,
 } from "lucide-react";
 
+import AIBlobIcon from "@/components/AIBlobIcon";
+
 const navLinks = [
   { icon: Home, label: "Dashboard", href: "/" },
   { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
@@ -163,7 +165,11 @@ export default function SidebarDrawer({
                 pathname === link.href ? "active" : "text-gray-400"
               )}
             >
-              <link.icon size={20} className="transition-all duration-300 shrink-0" />
+              {link.label === "MurabbiAI" ? (
+                <AIBlobIcon size={20} active={pathname === link.href} />
+              ) : (
+                <link.icon size={20} className="transition-all duration-300 shrink-0" />
+              )}
               <span className="text-sm tracking-wide">{link.label}</span>
               {link.label === "Mail" && unreadMailCount >= 1 && (
                 <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white flex items-center justify-center shadow-sm">

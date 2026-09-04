@@ -30,6 +30,7 @@ import MobileHeader from "@/components/MobileHeader";
 import SidebarDrawer from "@/components/SidebarDrawer";
 import { GoogleSyncService } from "@/lib/google-sync-service";
 import ScreensaverModal from "@/components/ScreensaverModal";
+import AIBlobIcon from "@/components/AIBlobIcon";
 import { useEmails } from "@/context/EmailContext";
 
 const ACCENT_COLORS: Record<
@@ -284,7 +285,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 )}
                 href={link.href}
               >
-                <link.icon size={20} className="transition-all duration-300" />
+                {link.label === "MurabbiAI" ? (
+                  <AIBlobIcon size={20} active={pathname === link.href} />
+                ) : (
+                  <link.icon size={20} className="transition-all duration-300" />
+                )}
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
                 {link.label === "Mail" && unreadMailCount >= 1 && (
                   <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white flex items-center justify-center shadow-sm">
