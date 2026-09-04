@@ -862,6 +862,11 @@ export default function CalendarPage() {
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
       {/* ── Sidebar — desktop only ── */}
       <div className="hidden lg:flex w-[240px] glass bg-black/20 border-r border-white/5 flex-col h-full shrink-0 secondary-sidebar">
+        {/* Sidebar Title */}
+        <div className="px-5 pt-8 pb-4 border-b border-white/5 shrink-0">
+          <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase leading-none">Calendar</h1>
+        </div>
+
         {/* Mini calendar */}
         <MiniCalendar 
           selected={current} 
