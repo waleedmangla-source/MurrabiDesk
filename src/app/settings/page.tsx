@@ -242,9 +242,7 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
 // TAB: Appearance
 // ─────────────────────────────────────────────────────────────
 const THEMES = [
-  { id: 'creamy',  name: 'Creamy White',        hex: '#a07f5c' },
   { id: 'flup',    name: 'Flup Emerald',          hex: '#10b981', isLight: true },
-  { id: 'flup-blue', name: 'Flup Blue',           hex: '#2563eb', isLight: true },
 ];
 
 function AppearanceTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
@@ -259,7 +257,6 @@ function AppearanceTab({ settings, setSettings }: { settings: SettingsState; set
               <div className="w-14 h-14 rounded-full border-4 shadow-xl relative overflow-hidden transition-all"
                 style={{ backgroundColor: t.isLight ? '#ffffff' : t.hex, borderColor: settings.accentColor === t.id ? 'white' : 'transparent', boxShadow: settings.accentColor === t.id ? `0 0 24px ${t.hex}80` : 'none' }}>
                 {t.isLight && <div className="absolute inset-0 flex items-center justify-center"><div className="w-7 h-7 rounded-full" style={{ background: t.hex }} /></div>}
-                {t.id === 'creamy' && <div className="absolute inset-0 bg-gradient-to-br from-[#fef9f0] to-[#ede8dc]" />}
               </div>
               {settings.accentColor === t.id && <span className="text-[8px] font-black uppercase tracking-widest text-white whitespace-nowrap">{t.name}</span>}
             </button>
@@ -678,7 +675,7 @@ function FeedbackTab({ settings }: { settings: SettingsState }) {
           <div 
             className={clsx(
               "rounded-2xl overflow-hidden border border-white/5 bg-white transition-all duration-700",
-              !['creamy', 'flup'].includes(settings.accentColor) && "invert-[0.9] hue-rotate-180 brightness-[1.1] contrast-[0.9]"
+              !['flup'].includes(settings.accentColor) && "invert-[0.9] hue-rotate-180 brightness-[1.1] contrast-[0.9]"
             )} 
             style={{ minHeight: 1080 }}
           >
