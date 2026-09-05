@@ -666,7 +666,7 @@ export default function MurabbiAIPage() {
                     className={clsx(
                       "text-sm leading-relaxed transition-all",
                       msg.role === "user"
-                        ? "px-5 py-3.5 rounded-2xl text-black font-medium bg-white border border-[var(--accent-main)] rounded-tr-sm shadow-sm"
+                        ? "px-5 py-3.5 rounded-2xl text-black font-medium bg-white rounded-tr-sm user-blob-glow"
                         : "py-1 text-black/90 w-full"
                     )}
                   >
