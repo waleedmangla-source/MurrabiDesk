@@ -735,9 +735,9 @@ export default function MurabbiAIPage() {
                         ))}
                       </div>
                     )}
-                    {msg.isStreaming && (
-                      <span className="inline-block ml-2 align-middle my-1">
-                        <AIBlob state="thinking" className="w-8 h-8 scale-75" />
+                    {msg.isStreaming && !msg.content && (
+                      <span className="inline-block align-middle my-1">
+                        <AIBlob state="thinking" className="w-5 h-5 scale-50" />
                       </span>
                     )}
                   </div>
