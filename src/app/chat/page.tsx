@@ -666,14 +666,9 @@ export default function MurabbiAIPage() {
                     className={clsx(
                       "text-sm leading-relaxed transition-all",
                       msg.role === "user"
-                        ? "px-5 py-4 rounded-2xl text-white rounded-tr-sm backdrop-blur-md shadow-lg"
+                        ? "px-5 py-3.5 rounded-2xl text-black font-medium bg-white border border-[var(--accent-main)] rounded-tr-sm shadow-sm"
                         : "py-1 text-black/90 w-full"
                     )}
-                    style={
-                      msg.role === "user"
-                        ? { background: 'var(--accent-main)', boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.25)' }
-                        : {}
-                    }
                   >
                     {msg.role === "assistant" ? (
                       <div className="prose max-w-none text-sm leading-relaxed text-black"
