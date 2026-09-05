@@ -659,15 +659,20 @@ export default function MurabbiAIPage() {
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
-                {/* Bubble with backdrop blur & shadow depth */}
-                <div className={clsx("flex flex-col gap-1 max-w-[85%]", msg.role === "user" ? "items-end" : "items-start")}>
-                  <div className={clsx(
-                    "px-5 py-4 rounded-2xl text-sm leading-relaxed backdrop-blur-md shadow-lg transition-all",
-                    msg.role === "user"
-                      ? "text-white rounded-tr-sm shadow-emerald-900/10"
-                      : "glass border border-white/20 text-black/90 rounded-tl-sm shadow-black/10"
-                  )}
-                  style={msg.role === "user" ? { background: 'var(--accent-main)', boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.25)' } : { boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.4)' }}
+                {/* Bubble container - styled bubble for user, unstyled borderless container for assistant */}
+                <div className={clsx("flex flex-col gap-1", msg.role === "user" ? "items-end max-w-[85%]" : "items-start max-w-[90%] lg:max-w-[85%]")}>
+                  <div 
+                    className={clsx(
+                      "text-sm leading-relaxed transition-all",
+                      msg.role === "user"
+                        ? "px-5 py-4 rounded-2xl text-white rounded-tr-sm backdrop-blur-md shadow-lg"
+                        : "py-1 text-black/90"
+                    )}
+                    style={
+                      msg.role === "user"
+                        ? { background: 'var(--accent-main)', boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.25)' }
+                        : {}
+                    }
                   >
                     {msg.role === "assistant" ? (
                       <div className="prose max-w-none text-sm leading-relaxed text-black"
