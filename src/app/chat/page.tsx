@@ -736,8 +736,8 @@ export default function MurabbiAIPage() {
                       </div>
                     )}
                     {msg.isStreaming && (
-                      <span className="inline-flex gap-1 ml-2 align-middle">
-                        {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 rounded-full bg-black/40 animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+                      <span className="inline-block ml-2 align-middle my-1">
+                        <AIBlob state="thinking" className="w-8 h-8 scale-75" />
                       </span>
                     )}
                   </div>
