@@ -659,15 +659,15 @@ export default function MurabbiAIPage() {
             </div>
           ) : (
             messages.map((msg) => (
-              <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
-                {/* Bubble container - styled bubble for user, unstyled borderless container for assistant */}
-                <div className={clsx("flex flex-col gap-1", msg.role === "user" ? "items-end max-w-[85%]" : "items-start max-w-[90%] lg:max-w-[85%]")}>
+              <div key={msg.id} className={clsx("flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "flex-row-reverse" : "flex-row w-full")}>
+                {/* Bubble container - styled bubble for user, full-width edge-to-edge container for assistant */}
+                <div className={clsx("flex flex-col gap-1", msg.role === "user" ? "items-end max-w-[85%]" : "items-start w-full max-w-full")}>
                   <div 
                     className={clsx(
                       "text-sm leading-relaxed transition-all",
                       msg.role === "user"
                         ? "px-5 py-4 rounded-2xl text-white rounded-tr-sm backdrop-blur-md shadow-lg"
-                        : "py-1 text-black/90"
+                        : "py-1 text-black/90 w-full"
                     )}
                     style={
                       msg.role === "user"
