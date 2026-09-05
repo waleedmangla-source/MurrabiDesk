@@ -506,6 +506,49 @@ export default function MurabbiAIPage() {
       }
 
       updateCurrentConvMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, isStreaming: false } : m));
+
+      // Automatically generate concise AI summary title for new conversations
+      const targetConvId = currentConvId;
+      const targetConv = conversations.find(c => c.id === targetConvId);
+      if (targetConv && (targetConv.title === "New Chat" || targetConv.title === "Temporary Chat" || targetConv.title.length > 30)) {
+        try {
+          const sumRes = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [
+                { role: "user", content: `Summarize this user request into a clean, concise 3-5 word title (plain text only, no quotes, no period, no prefix):\n\nUser: "${userMsg.content.substring(0, 300)}"\nAI Response: "${accumulated.substring(0, 300)}"` }
+              ]
+            })
+          });
+          if (sumRes.ok) {
+            const sumReader = sumRes.body?.getReader();
+            if (sumReader) {
+              let titleText = "";
+              const dec = new TextDecoder();
+              while (true) {
+                const { done, value } = await sumReader.read();
+                if (done) break;
+                const chunk = dec.decode(value, { stream: true });
+                for (const line of chunk.split("\n")) {
+                  if (line.startsWith("data: ") && line.slice(6).trim() !== "[DONE]") {
+                    try {
+                      const p = JSON.parse(line.slice(6).trim());
+                      if (p.text) titleText += p.text;
+                    } catch {}
+                  }
+                }
+              }
+              const cleanTitle = titleText.trim().replace(/^["']|["']$/g, '').slice(0, 40);
+              if (cleanTitle) {
+                setConversations(prev => prev.map(c => c.id === targetConvId ? { ...c, title: cleanTitle } : c));
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to generate AI title summary:", e);
+        }
+      }
     } catch (err: any) {
       if (err.name !== "AbortError") {
         const errorMsg = err.message || "Something went wrong";
