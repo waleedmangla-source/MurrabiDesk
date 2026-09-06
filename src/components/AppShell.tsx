@@ -390,11 +390,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 : "bg-[#f8fafc]/60 backdrop-blur-2xl opacity-100 pointer-events-auto"
             )}
           >
-            <img
-              src="/text-logo.png"
-              alt="Murabbi Desk"
-              className="h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-70"
-            />
+            <div className="relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#10b981]/30 blur-[40px] rounded-full z-0 pointer-events-none" />
+              <img
+                src="/text-logo.png"
+                alt="Murabbi Desk"
+                className="relative z-10 h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-70"
+              />
+            </div>
             <div className="flex items-center gap-3 text-[#10b981] font-black text-xs tracking-[0.3em] uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
               Initializing System
