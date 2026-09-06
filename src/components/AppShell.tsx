@@ -398,7 +398,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <img
                 src="/text-logo.png"
                 alt="Murabbi Desk"
-                className="relative z-10 h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-70"
+                className="relative z-10 h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-95 drop-shadow-md"
               />
             </div>
             <div className="flex flex-col items-center gap-3">
