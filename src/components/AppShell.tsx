@@ -64,12 +64,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [isInitialAppLoading, setIsInitialAppLoading] = useState(true);
   const [isLoadingFadeOut, setIsLoadingFadeOut] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
+    const progressTimer = setTimeout(() => setLoadingProgress(100), 50);
     const fadeTimer = setTimeout(() => setIsLoadingFadeOut(true), 3000);
     const removeTimer = setTimeout(() => setIsInitialAppLoading(false), 4500);
     return () => {
+      clearTimeout(progressTimer);
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
     };
@@ -398,9 +401,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 className="relative z-10 h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-70"
               />
             </div>
-            <div className="flex items-center gap-3 text-[#10b981] font-black text-xs tracking-[0.3em] uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
-              Initializing System
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3 text-[#10b981] font-black text-xs tracking-[0.3em] uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
+                Initializing System
+              </div>
+              <div className="w-32 h-0.5 bg-[#10b981]/20 rounded-full overflow-hidden relative">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-[#10b981] rounded-full transition-all ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  style={{ width: `${loadingProgress}%`, transitionDuration: "3000ms" }}
+                />
+              </div>
             </div>
           </div>
         )}
