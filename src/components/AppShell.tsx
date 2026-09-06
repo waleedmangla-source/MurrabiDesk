@@ -62,7 +62,13 @@ const navLinks = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
+  const [isInitialAppLoading, setIsInitialAppLoading] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialAppLoading(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScreensaverActive, setIsScreensaverActive] = useState(false);
   const [showDevNotes, setShowDevNotes] = useState(true);
@@ -368,6 +374,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <PWAInstallPrompt />
+
+        {/* Initial Loading Screen */}
+        {isInitialAppLoading && (
+          <div className="fixed inset-0 z-[9999] bg-[#f8fafc] flex flex-col items-center justify-center gap-6">
+            <img
+              src="/text-logo.png"
+              alt="Murabbi Desk"
+              className="h-20 w-auto object-contain animate-pulse mix-blend-multiply opacity-70"
+            />
+            <div className="flex items-center gap-3 text-[#10b981] font-black text-xs tracking-[0.3em] uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
+              Initializing System
+            </div>
+          </div>
+        )}
 
         {/* Easter Egg Screensaver */}
         <ScreensaverModal
