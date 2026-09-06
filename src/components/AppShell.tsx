@@ -63,11 +63,16 @@ const navLinks = [
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [isInitialAppLoading, setIsInitialAppLoading] = useState(true);
+  const [isLoadingFadeOut, setIsLoadingFadeOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsInitialAppLoading(false), 3000);
-    return () => clearTimeout(timer);
+    const fadeTimer = setTimeout(() => setIsLoadingFadeOut(true), 3000);
+    const removeTimer = setTimeout(() => setIsInitialAppLoading(false), 4500);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
   }, []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScreensaverActive, setIsScreensaverActive] = useState(false);
@@ -377,7 +382,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Initial Loading Screen */}
         {isInitialAppLoading && (
-          <div className="fixed inset-0 z-[9999] bg-[#f8fafc] flex flex-col items-center justify-center gap-6">
+          <div 
+            className={clsx(
+              "fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 transition-all duration-[1500ms] ease-in-out",
+              isLoadingFadeOut 
+                ? "bg-transparent backdrop-blur-none opacity-0 pointer-events-none" 
+                : "bg-[#f8fafc]/60 backdrop-blur-2xl opacity-100 pointer-events-auto"
+            )}
+          >
             <img
               src="/text-logo.png"
               alt="Murabbi Desk"
