@@ -592,6 +592,20 @@ export default function ExpensesPage() {
     }
   };
 
+  const handleDeleteDraft = async () => {
+    if (confirm("Are you sure you want to delete this draft?")) {
+      if (isCurrentDraft && currentReportId) {
+        try {
+          await googleSync.deleteDriveFile(currentReportId);
+          fetchExpenses();
+        } catch (e) {
+          console.warn('Failed to delete draft from Drive:', e);
+        }
+      }
+      startNewReport();
+    }
+  };
+
   // Draft recovery disabled per user request
 
 
@@ -1652,24 +1666,37 @@ ${formData.comments || 'None'}
           </div>
         </div>
 
-        <button 
-          onClick={handleSaveDraft}
-          disabled={isSaving || isReadOnly}
-          className={clsx(
-            "px-6 py-4 glass rounded-[18px] border transition-all flex items-center gap-3 group relative overflow-hidden",
-            isReadOnly ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed" : "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)]"
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleSaveDraft}
+            disabled={isSaving || isReadOnly}
+            className={clsx(
+              "px-6 py-4 glass rounded-[18px] border transition-all flex items-center gap-3 group relative overflow-hidden",
+              isReadOnly ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed" : "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)]"
+            )}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {isSaving ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-main)]/20 border-t-[var(--accent-main)]" />
+            ) : (
+              isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
+            )}
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
+              {isReadOnly ? "Archived" : (isJustSaved ? "Draft saved" : "Save as draft")}
+            </span>
+          </button>
+
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={handleDeleteDraft}
+              title="Delete draft"
+              className="p-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-500/10"
+            >
+              <Trash2 size={18} />
+            </button>
           )}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          {isSaving ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-main)]/20 border-t-[var(--accent-main)]" />
-          ) : (
-            isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
-          )}
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
-            {isReadOnly ? "Archived" : (isJustSaved ? "Draft saved" : "Save as draft")}
-          </span>
-        </button>
+        </div>
       </div>
 
 
