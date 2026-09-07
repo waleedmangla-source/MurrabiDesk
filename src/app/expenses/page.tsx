@@ -231,6 +231,7 @@ export default function ExpensesPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showSendConfirm, setShowSendConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [hasUsedAiInCurrentReport, setHasUsedAiInCurrentReport] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
   // Navigation State
@@ -513,6 +514,7 @@ export default function ExpensesPage() {
         setIsReadOnly(false); // Let them edit the draft
         setCurrentReportId(report.id);
         setIsCurrentDraft(report.isDriveDraft);
+        setHasUsedAiInCurrentReport(!!fullState.hasUsedAiInCurrentReport);
         setActiveTab('create'); // Switch to editor view
       }
     } catch (e) {
@@ -542,6 +544,7 @@ export default function ExpensesPage() {
     setIsReadOnly(false);
     setCurrentReportId(null);
     setIsCurrentDraft(false);
+    setHasUsedAiInCurrentReport(false);
     // Trigger prefill again to restore name/code
     const savedCustom = localStorage.getItem('murabbi_profile_custom');
     if (savedCustom) {
@@ -561,7 +564,8 @@ export default function ExpensesPage() {
         formData,
         itemData,
         activeIndices,
-        receipts
+        receipts,
+        hasUsedAiInCurrentReport
       };
       
       // Cloud Storage ONLY (JSON)
@@ -794,6 +798,11 @@ export default function ExpensesPage() {
   };
 
   const handleAutoFillDescription = async () => {
+    if (hasUsedAiInCurrentReport) {
+      alert("AI receipt analysis can only be used once per expense report.");
+      return;
+    }
+
     if (receipts.length === 0) {
       alert("Please upload some receipts first to analyze.");
       return;
@@ -846,6 +855,8 @@ export default function ExpensesPage() {
         setActiveIndices(Array.from(newActive).sort((a, b) => a - b));
         setItemData(newItemData);
       }
+
+      setHasUsedAiInCurrentReport(true);
 
     } catch (err) {
       console.error(err);
@@ -2089,11 +2100,17 @@ ${formData.comments || 'None'}
                       {receipts.length > 0 && (
                           <button
                               type="button"
-                              disabled={isAnalyzing}
+                              disabled={isAnalyzing || hasUsedAiInCurrentReport}
                               onClick={handleAutoFillDescription}
-                              className="mt-2 w-full p-3 rounded-[16px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all font-bold text-[9px] uppercase tracking-widest"
+                              className={`mt-2 w-full p-3 rounded-[16px] border flex items-center justify-center gap-2 transition-all font-bold text-[9px] uppercase tracking-widest ${
+                                  hasUsedAiInCurrentReport 
+                                      ? "bg-stone-500/10 border-stone-500/20 text-stone-400 cursor-not-allowed opacity-70" 
+                                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20"
+                              }`}
                           >
-                              {isAnalyzing ? "ANALYZING RECEIPTS..." : "✨ AUTO-FILL MONTH & DESC FROM RECEIPTS"}
+                              {hasUsedAiInCurrentReport 
+                                  ? "✓ AI ANALYSIS COMPLETE FOR THIS REPORT" 
+                                  : (isAnalyzing ? "ANALYZING RECEIPTS..." : "✨ AUTO-FILL MONTH & DESC FROM RECEIPTS")}
                           </button>
                       )}
 
