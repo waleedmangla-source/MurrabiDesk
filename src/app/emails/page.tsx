@@ -911,7 +911,7 @@ export default function EmailsPage() {
               key={email.id}
               onClick={() => handleSelect(email)}
               className={clsx(
-                "w-full flex items-start gap-3 px-4 py-4 border-b border-white/5 text-left transition-all group",
+                "w-full flex items-start gap-3 px-4 py-2.5 border-b border-white/5 text-left transition-all group",
                 selected?.id === email.id ? "" : "hover:bg-black/10",
                 email.read ? "bg-black/30 opacity-60 hover:opacity-90" : "bg-white/[0.02]",
                 !email.read && "border-l-2 border-l-[var(--accent-main)]"
@@ -919,13 +919,13 @@ export default function EmailsPage() {
               style={selected?.id === email.id ? { background: 'rgba(0, 0, 0, 0.4)', opacity: 1 } : {}}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
                   <p className={clsx("text-xs truncate", email.read ? "font-medium text-[var(--text-muted)]" : "font-black text-[var(--foreground)]")}>
                     {email.fromName || email.from}
                   </p>
                   <span className="text-[9px] text-[var(--text-dim)] shrink-0 font-bold">{relativeTime(email.date)}</span>
                 </div>
-                <p className={clsx("text-xs truncate mb-1", email.read ? "text-[var(--text-muted)]" : "font-bold text-[var(--foreground)]")}>
+                <p className={clsx("text-xs truncate mb-0.5", email.read ? "text-[var(--text-muted)]" : "font-bold text-[var(--foreground)]")}>
                   {email.subject}
                 </p>
                 <div className="flex items-center gap-2">
