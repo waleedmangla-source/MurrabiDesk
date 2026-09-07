@@ -39,17 +39,70 @@ export async function POST(req: NextRequest) {
       }
     }));
 
+    const categoryGuide = `
+Category Indices:
+0: Employee Vehicle Fuel (Gasoline, petrol, gas stations)
+1: Employee Vehicle Maint/Oil (Car oil change, repairs)
+2: Employee Vehicle Insurance
+3: Employee Vehicle Lic/Reg (Driver license, vehicle registration)
+4: Employee Vehicle Washing (Car wash)
+5: Other Vehicle Expense
+6: Phone (Employee Res.)
+7: Cell (Employee) (Mobile phone bills)
+8: Internet (Employee Res.) (Home internet)
+9: Employee Travel Exp (Flights, train tickets, transit pass)
+10: Accommodation (Hotels, motels, Airbnb)
+11: Toll/Parking (Parking meters, parking lots, tolls)
+12: Diyafat (Food, meals, groceries, restaurant, catering)
+13: Gifts/Misc
+14: Waqf-e-Jadid/Tehrik-e-Jadid
+15: Other Items (General uncategorized purchases)
+16: Comp Maint (Computer maintenance/repairs)
+17: Software/Antiv (Software subscriptions, digital tools, apps)
+18: Hardware (Laptops, monitors, cables, computer accessories)
+19: Dental Treating/Med (Dental care)
+20: Eye Treatment/Glasses (Glasses, optometry)
+21: Other Medical (Pharmacy, prescription, medical supplies)
+22: Hydro (Electricity utility)
+23: Gas/Heating (Gas utility)
+24: Water (Water utility)
+25: Stationery/Pr (Office supplies, paper, pens, printing)
+26: Postage/Ship (Stamps, courier, shipping, Canada Post, FedEx)
+27: Rent/Mortgage
+28: Property Tax
+29: Insurance/Maintenance
+`;
+
     const requestBody = {
       system_instruction: {
-        parts: [{ text: `You are an expert accountant assistant.
-Your goal is to look at the provided receipts and invoices, and determine:
-1. The most common month of the purchases. Output the full month name (e.g., "January", "February", etc.).
-2. A short, combined description for the purpose of the expense report (e.g., "Gasoline, Office Supplies, and Hotel"). Keep it brief but descriptive.
+        parts: [{ text: `You are an expert accountant AI assistant scanning expense receipts/invoices.
+Analyze ALL provided images carefully and extract:
+1. "month": The predominant month of the purchases as a full month name (e.g., "January", "February", "March", etc.).
+2. "description": A concise, clear summary of the overall purpose of these expenses suitable for an official report (e.g. "Fuel, Office Supplies & Business Meals").
+3. "items": An array of extracted items. Each item represents a receipt or line item, containing:
+   - "categoryIdx": The integer index (0 to 29) from the category guide below that best fits this expense.
+   - "hst": Number representing tax (HST/GST/Sales Tax) in dollars (0.00 if none).
+   - "total": Number representing the total expense amount in dollars.
+   - "merchant": String merchant/vendor name (e.g. "Shell", "Staples", "Tim Hortons").
+   - "date": String date of purchase (YYYY-MM-DD if available).
+4. "notes": A clean formatted text summary of all receipts scanned (e.g. "- Shell (2026-03-02): $45.00 [HST: $5.20]").
+
+${categoryGuide}
 
 Return ONLY valid JSON matching this schema:
 {
   "month": "Month Name",
-  "description": "Combined Description"
+  "description": "Short overall purpose summary",
+  "items": [
+    {
+      "categoryIdx": 0,
+      "hst": 5.20,
+      "total": 45.00,
+      "merchant": "Merchant Name",
+      "date": "YYYY-MM-DD"
+    }
+  ],
+  "notes": "Summary text listing each receipt..."
 }
 ` }]
       },
@@ -58,15 +111,15 @@ Return ONLY valid JSON matching this schema:
           role: "user",
           parts: [
             ...imageParts,
-            { text: "Analyze these receipts and provide the JSON output." }
+            { text: "Analyze all uploaded receipts and return the detailed JSON extraction." }
           ]
         }
       ],
       generationConfig: {
-        temperature: 0.2,
+        temperature: 0.1,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
         responseMimeType: "application/json"
       }
     };

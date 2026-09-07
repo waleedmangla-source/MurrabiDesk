@@ -804,11 +804,44 @@ export default function ExpensesPage() {
 
       const data = await res.json();
       
+      // Update form header fields (Month, Purpose, Comments/Notes)
       setFormData(prev => ({
         ...prev,
         expense_month: data.month || prev.expense_month,
-        purpose: data.description || prev.purpose
+        purpose: data.description || prev.purpose,
+        comments: data.notes 
+          ? (prev.comments ? `${prev.comments}\n\n[AI Breakdown]\n${data.notes}` : `[AI Breakdown]\n${data.notes}`)
+          : prev.comments
       }));
+
+      // Update Expense Claim items (Active Categories, HST, Totals)
+      if (Array.isArray(data.items) && data.items.length > 0) {
+        const newActive = new Set(activeIndices);
+        const newItemData = { ...itemData };
+
+        data.items.forEach((item: any) => {
+          const idx = (typeof item.categoryIdx === 'number' && item.categoryIdx >= 0 && item.categoryIdx <= 29)
+            ? item.categoryIdx 
+            : 15; // fallback to 15 (Other Items)
+          
+          newActive.add(idx);
+
+          const existingHst = parseFloat(newItemData[idx]?.hst || '0') || 0;
+          const existingTotal = parseFloat(newItemData[idx]?.total || '0') || 0;
+
+          const itemHst = typeof item.hst === 'number' ? item.hst : (parseFloat(item.hst) || 0);
+          const itemTotal = typeof item.total === 'number' ? item.total : (parseFloat(item.total) || 0);
+
+          newItemData[idx] = {
+            ref: newItemData[idx]?.ref || '1',
+            hst: (existingHst + itemHst).toFixed(2),
+            total: (existingTotal + itemTotal).toFixed(2)
+          };
+        });
+
+        setActiveIndices(Array.from(newActive).sort((a, b) => a - b));
+        setItemData(newItemData);
+      }
 
     } catch (err) {
       console.error(err);
