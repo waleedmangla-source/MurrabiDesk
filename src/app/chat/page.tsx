@@ -6,7 +6,7 @@ import {
   Calendar, Receipt, FileText, Copy, Check, BookOpen,
   PenTool, MessageSquare, Globe, Loader2, AlertCircle, X,
   Plus, Ghost, Paperclip, Image as ImageIcon, Music, File as FileIcon,
-  Mic, MicOff
+  Mic, MicOff, Square
 } from "lucide-react";
 import { clsx } from "clsx";
 import { QUICK_PROMPTS } from "@/lib/murabbiAI-system";
@@ -847,8 +847,8 @@ export default function MurabbiAIPage() {
                 </button>
 
                 {isLoading ? (
-                  <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black transition-all hover:bg-red-600/20">
-                    <Loader2 size={12} className="animate-spin" /> Stop
+                  <button onClick={stopGeneration} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ai-send-button">
+                    <Square size={12} className="text-red-500 fill-red-500 animate-pulse" /> Stop
                   </button>
                 ) : (
                   <button
