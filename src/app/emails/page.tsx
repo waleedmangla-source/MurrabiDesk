@@ -913,7 +913,7 @@ export default function EmailsPage() {
               className={clsx(
                 "w-full flex items-start gap-3 px-4 py-2.5 border-b border-white/5 text-left transition-all group",
                 selected?.id === email.id ? "" : "hover:bg-black/10",
-                email.read ? "bg-black/30 opacity-60 hover:opacity-90" : "bg-white/[0.02]",
+                email.read ? "opacity-55 hover:opacity-90" : "",
                 !email.read && "border-l-2 border-l-[var(--accent-main)]"
               )}
               style={selected?.id === email.id ? { background: 'rgba(0, 0, 0, 0.4)', opacity: 1 } : {}}
