@@ -2110,7 +2110,7 @@ ${formData.comments || 'None'}
                           >
                               {hasUsedAiInCurrentReport 
                                   ? "✓ AI ANALYSIS COMPLETE FOR THIS REPORT" 
-                                  : (isAnalyzing ? "ANALYZING RECEIPTS..." : "✨ AUTO-FILL MONTH & DESC FROM RECEIPTS")}
+                                  : (isAnalyzing ? "ANALYZING RECEIPTS..." : "✨ AUTOFILL")}
                           </button>
                       )}
 
