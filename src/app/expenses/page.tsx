@@ -1726,19 +1726,9 @@ ${formData.comments || 'None'}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <label className="lbl">Executive Summary / Purpose</label>
-                    <div className="flex items-center gap-3">
-                        <button 
-                            type="button"
-                            onClick={handleAutoFillDescription}
-                            disabled={isAnalyzing}
-                            className="text-[9px] font-bold text-indigo-400 uppercase hover:text-indigo-300 transition-colors flex items-center gap-1"
-                        >
-                            {isAnalyzing ? "Analyzing..." : "✨ Auto-Fill from Receipts"}
-                        </button>
-                        <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
-                            {formData.purpose.length} / 300
-                        </span>
-                    </div>
+                    <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
+                        {formData.purpose.length} / 300
+                    </span>
                   </div>
                   <textarea 
                     className="h-20 resize-none" 
@@ -1940,6 +1930,17 @@ ${formData.comments || 'None'}
                           <Plus size={14} className="text-[var(--text-main)]/20 " />
                           <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-main)]/20 ">Add Another Receipt</span>
                       </button>
+
+                      {receipts.length > 0 && (
+                          <button
+                              type="button"
+                              disabled={isAnalyzing}
+                              onClick={handleAutoFillDescription}
+                              className="mt-2 w-full p-3 rounded-[16px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all font-bold text-[9px] uppercase tracking-widest"
+                          >
+                              {isAnalyzing ? "ANALYZING RECEIPTS..." : "✨ AUTO-FILL MONTH & DESC FROM RECEIPTS"}
+                          </button>
+                      )}
 
                       <input 
                           type="file" 
