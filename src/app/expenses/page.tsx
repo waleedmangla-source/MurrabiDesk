@@ -272,6 +272,10 @@ export default function ExpensesPage() {
   }, []);
 
   const handleAddPreset = () => {
+    if (presets.length >= 5) {
+      alert("Maximum 5 presets allowed. Please delete an existing preset to add a new one.");
+      return;
+    }
     if (!formData.purpose || !formData.purpose.trim()) {
       alert("Please enter an Executive Summary / Purpose description first to name your preset.");
       return;
@@ -284,7 +288,7 @@ export default function ExpensesPage() {
       itemData: { ...itemData },
       activeIndices: [...activeIndices]
     };
-    const updated = [newPreset, ...presets];
+    const updated = [newPreset, ...presets].slice(0, 5);
     setPresets(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('waqfeen_expense_presets', JSON.stringify(updated));
@@ -1733,7 +1737,7 @@ ${formData.comments || 'None'}
             <div className="flex items-center gap-3 flex-wrap flex-1">
               <div className="flex items-center gap-2 pr-2 border-r border-white/10">
                 <Bookmark size={14} className="text-[var(--accent-main)]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]">Presets</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]">Presets ({presets.length}/5)</span>
               </div>
 
               {presets.length === 0 ? (
@@ -1762,8 +1766,14 @@ ${formData.comments || 'None'}
             <button
               type="button"
               onClick={handleAddPreset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white transition-all text-xs font-bold shrink-0 shadow-sm group"
-              title="Save current form as a new preset (named after Expense Description)"
+              disabled={presets.length >= 5}
+              className={clsx(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all text-xs font-bold shrink-0 shadow-sm group",
+                presets.length >= 5
+                  ? "bg-white/5 text-[var(--text-dim)] border-white/5 opacity-50 cursor-not-allowed"
+                  : "bg-[var(--accent-soft)] text-[var(--accent-main)] border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white"
+              )}
+              title={presets.length >= 5 ? "Maximum 5 presets reached. Delete one to add a new preset." : "Save current form as a new preset (named after Expense Description)"}
             >
               <Plus size={14} />
               <span>Add Preset</span>
