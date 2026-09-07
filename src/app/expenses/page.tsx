@@ -1061,9 +1061,9 @@ ${formData.comments || 'None'}
            <button 
              onClick={() => setActiveTab('overview')}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                activeTab === 'overview'
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1076,9 +1076,9 @@ ${formData.comments || 'None'}
                setActiveTab('create');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                (activeTab === 'create' && !isReadOnly)
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1091,19 +1091,19 @@ ${formData.comments || 'None'}
                setActiveTab('external');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                activeTab === 'external'
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
-             <span>Log external expense</span>
+             <span>Log External Expense</span>
            </button>
 
            <div className="h-px bg-white/5 my-4 mx-6" />
 
            <div className="px-6 mb-2 mt-2">
-             <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] opacity-60">Log Books</span>
+             <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--text-dim)] opacity-60">Log Books</span>
            </div>
 
            <button 
@@ -1113,9 +1113,9 @@ ${formData.comments || 'None'}
                toggleCategoryExpand('Drafts');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Drafts')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1169,9 +1169,9 @@ ${formData.comments || 'None'}
                toggleCategoryExpand('Pending');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Pending')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1239,9 +1239,9 @@ ${formData.comments || 'None'}
                toggleCategoryExpand('Refunded');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Refunded')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
