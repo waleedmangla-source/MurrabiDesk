@@ -1527,9 +1527,6 @@ ${formData.comments || 'None'}
                   Expense Policy Summary
                 </h3>
               </div>
-              <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-70">
-                Official Limits & Guidelines
-              </span>
             </div>
 
             <div className="overflow-x-auto">
