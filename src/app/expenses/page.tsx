@@ -1518,6 +1518,59 @@ ${formData.comments || 'None'}
 
         <form id="F" onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
+          {/* Card 0: Expense Policy Summary */}
+          <div className="card">
+            <div className="card-hdr flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="dot"></div>
+                EXPENSE POLICY SUMMARY
+              </div>
+            </div>
+            <div className="overflow-x-auto min-h-[100px]">
+              <table className="tbl w-full">
+                <thead>
+                  <tr className="border-b border-v4-rule/50">
+                    <th style={{ width: '25%' }} className="text-left py-2.5 px-3">Expense</th>
+                    <th style={{ width: '50%' }} className="text-left py-2.5 px-3">Explanation</th>
+                    <th style={{ width: '25%' }} className="text-right py-2.5 px-3">Limit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Vehicle Fuel</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Expense total over limit should be explained in detail</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$330 per Month</td>
+                  </tr>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Communication</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Includes Cable TV, Internet, Landline, and Mobile</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$175 Per Month</td>
+                  </tr>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Household</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Minor replacement or repair of small household items</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$200 Per Year</td>
+                  </tr>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Diyafat</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Entertainment of official or formal guests</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$100 Per Month</td>
+                  </tr>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Dental</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Dental work for immediate family, non-cosmetic only</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$1500 Per Year/Family</td>
+                  </tr>
+                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-v4-ink">Prescription Glasses</td>
+                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Eye exam fees are included in the expense limit.</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$200 Per 2 Years/Member</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Card 1: General Info */}
           <div className="card">
             <div className="card-hdr">
