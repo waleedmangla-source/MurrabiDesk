@@ -221,6 +221,7 @@ export default function ExpensesPage() {
   const [activeIndices, setActiveIndices] = useState<number[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
@@ -723,6 +724,38 @@ export default function ExpensesPage() {
 
     setReceipts(newReceipts);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleAutoFillDescription = async () => {
+    if (receipts.length === 0) {
+      alert("Please upload some receipts first to analyze.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const res = await fetch('/api/ai/analyze-receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipts: receipts.map(r => ({ type: r.type, data: r.data })) })
+      });
+
+      if (!res.ok) throw new Error("Failed to analyze receipts");
+
+      const data = await res.json();
+      
+      setFormData(prev => ({
+        ...prev,
+        expense_month: data.month || prev.expense_month,
+        purpose: data.description || prev.purpose
+      }));
+
+    } catch (err) {
+      console.error(err);
+      alert("Error analyzing receipts. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const removeReceipt = (id: string) => {
@@ -1693,9 +1726,19 @@ ${formData.comments || 'None'}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <label className="lbl">Executive Summary / Purpose</label>
-                    <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
-                        {formData.purpose.length} / 300
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            type="button"
+                            onClick={handleAutoFillDescription}
+                            disabled={isAnalyzing}
+                            className="text-[9px] font-bold text-indigo-400 uppercase hover:text-indigo-300 transition-colors flex items-center gap-1"
+                        >
+                            {isAnalyzing ? "Analyzing..." : "✨ Auto-Fill from Receipts"}
+                        </button>
+                        <span className="text-[9px] font-mono text-v4-ink-muted uppercase">
+                            {formData.purpose.length} / 300
+                        </span>
+                    </div>
                   </div>
                   <textarea 
                     className="h-20 resize-none" 
