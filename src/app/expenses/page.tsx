@@ -37,7 +37,8 @@ import {
   CheckCircle,
   CreditCard,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Bookmark
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -237,6 +238,7 @@ export default function ExpensesPage() {
   const [activeTab, setActiveTab] = useState<Tab>('create');
 
   // Category Filter State
+  // Category Filter State
   type Category = 'Drafts' | 'Pending' | 'Refunded';
   const [activeCategory, setActiveCategory] = useState<Category>('Pending');
   const [expandedCategories, setExpandedCategories] = useState<Set<Category>>(new Set(['Pending'] as Category[]));
@@ -248,6 +250,64 @@ export default function ExpensesPage() {
       else next.add(cat);
       return next;
     });
+  };
+
+  // Presets State
+  interface ExpensePreset {
+    id: string;
+    name: string;
+    formData: typeof formData;
+    itemData: typeof itemData;
+    activeIndices: number[];
+  }
+  const [presets, setPresets] = useState<ExpensePreset[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPresets = localStorage.getItem('waqfeen_expense_presets');
+      if (savedPresets) {
+        try { setPresets(JSON.parse(savedPresets)); } catch (e) { console.error(e); }
+      }
+    }
+  }, []);
+
+  const handleAddPreset = () => {
+    if (!formData.purpose || !formData.purpose.trim()) {
+      alert("Please enter an Executive Summary / Purpose description first to name your preset.");
+      return;
+    }
+    const presetName = formData.purpose.trim();
+    const newPreset: ExpensePreset = {
+      id: `preset_${Date.now()}`,
+      name: presetName,
+      formData: { ...formData },
+      itemData: { ...itemData },
+      activeIndices: [...activeIndices]
+    };
+    const updated = [newPreset, ...presets];
+    setPresets(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('waqfeen_expense_presets', JSON.stringify(updated));
+    }
+  };
+
+  const applyPreset = (preset: ExpensePreset) => {
+    setFormData(prev => ({
+      ...prev,
+      ...preset.formData,
+      date: prev.date || new Date().toISOString().split('T')[0]
+    }));
+    setItemData(preset.itemData || {});
+    setActiveIndices(preset.activeIndices || []);
+  };
+
+  const removePreset = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = presets.filter(p => p.id !== id);
+    setPresets(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('waqfeen_expense_presets', JSON.stringify(updated));
+    }
   };
 
   // History State
@@ -1623,6 +1683,48 @@ ${formData.comments || 'None'}
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Expense Presets Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 glass bg-white/5 p-4 rounded-2xl border border-white/5 shadow-md mb-2">
+            <div className="flex items-center gap-3 flex-wrap flex-1">
+              <div className="flex items-center gap-2 pr-2 border-r border-white/10">
+                <Bookmark size={14} className="text-[var(--accent-main)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]">Presets</span>
+              </div>
+
+              {presets.length === 0 ? (
+                <span className="text-[10px] font-medium text-[var(--text-dim)] italic">No saved presets. Fill out form & click + to save preset.</span>
+              ) : (
+                presets.map(p => (
+                  <div 
+                    key={p.id}
+                    onClick={() => applyPreset(p)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-[var(--accent-main)]/40 hover:bg-white/10 transition-all cursor-pointer group"
+                    title={`Click to load preset: ${p.name}`}
+                  >
+                    <span className="text-xs font-bold text-[var(--text-main)] group-hover:text-[var(--accent-main)] transition-colors">{p.name}</span>
+                    <button
+                      onClick={(e) => removePreset(p.id, e)}
+                      className="p-0.5 rounded-md hover:bg-red-500/20 hover:text-red-400 text-[var(--text-dim)] transition-all opacity-0 group-hover:opacity-100"
+                      title="Delete Preset"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddPreset}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white transition-all text-xs font-bold shrink-0 shadow-sm"
+              title="Save current form as a new preset (named after Expense Description)"
+            >
+              <Plus size={14} />
+              <span>Add Preset</span>
+            </button>
           </div>
 
           {/* Card 1: General Info */}
