@@ -918,7 +918,6 @@ export default function EmailsPage() {
               )}
               style={selected?.id === email.id ? { background: 'rgba(0, 0, 0, 0.4)', opacity: 1 } : {}}
             >
-              <Avatar name={email.fromName || email.from} size="sm" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <p className={clsx("text-xs truncate", email.read ? "font-medium text-[var(--text-muted)]" : "font-black text-[var(--foreground)]")}>
