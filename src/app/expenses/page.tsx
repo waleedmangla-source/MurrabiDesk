@@ -225,6 +225,7 @@ export default function ExpensesPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isJustSaved, setIsJustSaved] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [isCurrentDraft, setIsCurrentDraft] = useState(false);
@@ -581,7 +582,8 @@ export default function ExpensesPage() {
       );
 
       fetchExpenses(); // Refresh sidebar from Drive
-      alert("Draft saved to Google Drive successfully!");
+      setIsJustSaved(true);
+      setTimeout(() => setIsJustSaved(false), 3000);
     } catch (e) {
       console.error(e);
       alert("Failed to save draft to Drive.");
@@ -1665,7 +1667,7 @@ ${formData.comments || 'None'}
             isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
           )}
           <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
-            {isReadOnly ? "Archived" : "Save as draft"}
+            {isReadOnly ? "Archived" : (isJustSaved ? "Draft saved" : "Save as draft")}
           </span>
         </button>
       </div>
