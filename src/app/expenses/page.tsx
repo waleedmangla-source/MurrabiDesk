@@ -221,6 +221,7 @@ export default function ExpensesPage() {
   const [activeIndices, setActiveIndices] = useState<number[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
@@ -579,7 +580,7 @@ export default function ExpensesPage() {
   // Receipt Management State
   const [receipts, setReceipts] = useState<{ id: string, name: string, data: string, type: string }[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
+  const aiFileInputRef = React.useRef<HTMLInputElement>(null);
   const googleSync = new GoogleSyncService();
 
   // Auto-calculate totals
@@ -723,6 +724,80 @@ export default function ExpensesPage() {
 
     setReceipts(newReceipts);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleAIScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (receipts.length >= 10) {
+      alert("Maximum 10 receipts allowed.");
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const getBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+
+      const base64Data = await getBase64(file);
+
+      // Add file to receipts immediately (visual feedback)
+      const newReceiptId = Math.random().toString(36).substr(2, 9);
+      setReceipts(prev => [...prev, {
+        id: newReceiptId,
+        name: file.name,
+        data: base64Data,
+        type: file.type
+      }]);
+
+      const res = await fetch('/api/ai/scan-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mimeType: file.type, data: base64Data })
+      });
+
+      if (!res.ok) throw new Error("Failed to scan receipt");
+
+      const data = await res.json();
+      
+      // Update form data based on AI response
+      const idx = typeof data.categoryIdx === 'number' ? data.categoryIdx : 15;
+      
+      setActiveIndices(prev => {
+        if (!prev.includes(idx)) return [...prev, idx].sort((a, b) => a - b);
+        return prev;
+      });
+
+      setItemData(prev => ({
+        ...prev,
+        [idx]: {
+          ref: prev[idx]?.ref || '1',
+          hst: data.hst || '0.00',
+          total: data.total || '0.00'
+        }
+      }));
+
+      if (data.merchant || data.date) {
+        setFormData(prev => ({
+          ...prev,
+          comments: prev.comments 
+            ? `${prev.comments}\n[AI Scan] ${data.merchant || 'Unknown'} - ${data.date || 'Unknown'}`
+            : `[AI Scan] ${data.merchant || 'Unknown'} - ${data.date || 'Unknown'}`
+        }));
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Error scanning receipt. Please try again.");
+    } finally {
+      setIsScanning(false);
+      if (aiFileInputRef.current) aiFileInputRef.current.value = '';
+    }
   };
 
   const removeReceipt = (id: string) => {
@@ -1837,15 +1912,25 @@ ${formData.comments || 'None'}
                   </p>
                   <div className="space-y-4">
                       {receipts.length === 0 ? (
-                          <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
-                               onClick={() => fileInputRef.current?.click()}>
-                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center   transition-all">
-                                  <Paperclip size={20} className="text-[var(--text-main)]/40 " />
-                              </div>
-                              <div className="text-center">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]/50  transition-colors">Click to upload receipts</p>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-main)]/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
-                              </div>
+                          <div className="flex flex-col gap-2">
+                            <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
+                                 onClick={() => fileInputRef.current?.click()}>
+                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center   transition-all">
+                                    <Paperclip size={20} className="text-[var(--text-main)]/40 " />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]/50  transition-colors">Click to upload receipts</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-main)]/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                disabled={isScanning}
+                                onClick={() => aiFileInputRef.current?.click()}
+                                className="w-full p-4 rounded-[16px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all font-bold text-[10px] uppercase tracking-widest"
+                            >
+                                {isScanning ? "SCANNING WITH AI..." : "✨ AUTO-SCAN WITH AI (BETA)"}
+                            </button>
                           </div>
                       ) : (
                           <DndContext 
@@ -1873,12 +1958,24 @@ ${formData.comments || 'None'}
                       )}
 
                       <button 
+                          type="button"
                           onClick={() => fileInputRef.current?.click()}
                           className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2   transition-all group"
                       >
                           <Plus size={14} className="text-[var(--text-main)]/20 " />
                           <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-main)]/20 ">Add Another Receipt</span>
                       </button>
+
+                      {receipts.length > 0 && (
+                          <button
+                              type="button"
+                              disabled={isScanning}
+                              onClick={() => aiFileInputRef.current?.click()}
+                              className="mt-2 w-full p-3 rounded-[16px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center gap-2 hover:bg-indigo-500/20 transition-all font-bold text-[9px] uppercase tracking-widest"
+                          >
+                              {isScanning ? "SCANNING WITH AI..." : "✨ AUTO-SCAN WITH AI (BETA)"}
+                          </button>
+                      )}
 
                       <input 
                           type="file" 
@@ -1887,6 +1984,14 @@ ${formData.comments || 'None'}
                           multiple 
                           accept=".pdf,image/*"
                           onChange={handleFileChange}
+                      />
+                      
+                      <input 
+                          type="file" 
+                          ref={aiFileInputRef}
+                          className="hidden" 
+                          accept="image/*"
+                          onChange={handleAIScan}
                       />
                   </div>
               </div>
