@@ -1542,32 +1542,32 @@ ${formData.comments || 'None'}
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Vehicle Fuel</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Expense total over limit should be explained in detail</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$330 per Month</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$330 per Month</td>
                   </tr>
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Communication</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Includes Cable TV, Internet, Landline, and Mobile</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$175 Per Month</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$175 Per Month</td>
                   </tr>
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Household</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Minor replacement or repair of small household items</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$200 Per Year</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$200 Per Year</td>
                   </tr>
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Diyafat</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Entertainment of official or formal guests</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$100 Per Month</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$100 Per Month</td>
                   </tr>
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Dental</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Dental work for immediate family, non-cosmetic only</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$1500 Per Year/Family</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$1500 Per Year/Family</td>
                   </tr>
                   <tr className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Prescription Glasses</td>
                     <td className="py-2.5 px-3 text-[var(--text-dim)]">Eye exam fees are included in the expense limit.</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$200 Per 2 Years/Member</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--text-main)]">$200 Per 2 Years/Member</td>
                   </tr>
                 </tbody>
               </table>
