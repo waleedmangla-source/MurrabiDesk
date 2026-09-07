@@ -834,7 +834,7 @@ body {
   width: 1px;
 }
 
-/* AI Send Button Animated Gradient */
+/* AI Send Button Animated Gradient Outline */
 @keyframes aiGradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -842,17 +842,53 @@ body {
 }
 
 .ai-send-button {
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 30%, #8b5cf6 65%, #10b981 100%);
-  background-size: 250% 250%;
-  animation: aiGradientShift 4s ease infinite;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-  transition: all 0.3s ease;
+  position: relative;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  padding: 2px; /* border thickness container */
+  border-radius: 12px;
+  background-clip: padding-box;
+  transition: padding 0.7s cubic-bezier(0.2, 1, 0.4, 1), background 0.7s ease, opacity 0.7s ease !important;
+  overflow: hidden;
+}
+
+.ai-send-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px; /* Default subtle inner outline thickness */
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 30%, #8b5cf6 65%, #ec4899 85%, #10b981 100%);
+  background-size: 300% 300%;
+  animation: aiGradientShift 10s ease infinite; /* Slow smooth animation */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: padding 0.7s cubic-bezier(0.2, 1, 0.4, 1), opacity 0.7s ease;
+}
+
+/* Hover: Increase outline thickness smoothly without hovering/lifting/shadow effects */
+.ai-send-button:hover:not(:disabled)::before {
+  padding: 3.5px;
 }
 
 .ai-send-button:hover:not(:disabled) {
-  background-size: 300% 300%;
-  box-shadow: 0 6px 22px rgba(6, 182, 212, 0.45), 0 0 15px rgba(139, 92, 246, 0.35);
-  transform: translateY(-1px);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Active Click: Thickness becomes zero */
+.ai-send-button:active:not(:disabled)::before {
+  padding: 0px;
+}
+
+.ai-send-button:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 0.15s ease, padding 0.15s ease !important;
 }
 
 .sidebar-glider {

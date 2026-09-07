@@ -855,13 +855,13 @@ export default function MurabbiAIPage() {
                     onClick={() => sendMessage()}
                     disabled={!input.trim() && pendingAttachments.length === 0}
                     className={clsx(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95 shadow-md",
+                      "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all",
                       (!input.trim() && pendingAttachments.length === 0)
-                        ? "bg-black/5 text-black/20 cursor-not-allowed"
-                        : "text-white ai-send-button"
+                        ? "bg-black/5 text-black/20 cursor-not-allowed border border-black/10"
+                        : "ai-send-button"
                     )}
                   >
-                    <Send size={12} className={clsx((input.trim() || pendingAttachments.length > 0) && "animate-pulse")} /> Send
+                    <Send size={12} className={clsx((input.trim() || pendingAttachments.length > 0) ? "text-emerald-600 animate-pulse" : "text-black/20")} /> Send
                   </button>
                 )}
               </div>
