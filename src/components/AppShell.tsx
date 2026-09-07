@@ -306,7 +306,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 )}
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
                 {link.label === "Mail" && unreadMailCount >= 1 && (
-                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white border border-emerald-400 ring-2 ring-[var(--accent-main)]/30 flex items-center justify-center shadow-sm">
                     {unreadMailCount > 99 ? "99+" : unreadMailCount}
                   </span>
                 )}
