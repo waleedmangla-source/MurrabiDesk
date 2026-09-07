@@ -85,7 +85,6 @@ Analyze ALL provided images carefully and extract:
    - "total": Number representing the total expense amount in dollars.
    - "merchant": String merchant/vendor name (e.g. "Shell", "Staples", "Tim Hortons").
    - "date": String date of purchase (YYYY-MM-DD if available).
-4. "notes": A clean formatted text summary of all receipts scanned (e.g. "- Shell (2026-03-02): $45.00 [HST: $5.20]").
 
 ${categoryGuide}
 
@@ -101,8 +100,7 @@ Return ONLY valid JSON matching this schema:
       "merchant": "Merchant Name",
       "date": "YYYY-MM-DD"
     }
-  ],
-  "notes": "Summary text listing each receipt..."
+  ]
 }
 ` }]
       },

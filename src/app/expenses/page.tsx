@@ -807,14 +807,11 @@ export default function ExpensesPage() {
 
       const data = await res.json();
       
-      // Update form header fields (Month, Purpose, Comments/Notes)
+      // Update form header fields (Month, Purpose)
       setFormData(prev => ({
         ...prev,
         expense_month: data.month || prev.expense_month,
-        purpose: data.description || prev.purpose,
-        comments: data.notes 
-          ? (prev.comments ? `${prev.comments}\n\n[AI Breakdown]\n${data.notes}` : `[AI Breakdown]\n${data.notes}`)
-          : prev.comments
+        purpose: data.description || prev.purpose
       }));
 
       // Update Expense Claim items (Active Categories, HST, Totals)
@@ -1159,7 +1156,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                activeTab === 'overview'
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1174,7 +1171,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                (activeTab === 'create' && !isReadOnly)
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1189,7 +1186,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
                activeTab === 'external'
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1211,7 +1208,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Drafts')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1267,7 +1264,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Pending')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
@@ -1337,7 +1334,7 @@ ${formData.comments || 'None'}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'history' && activeCategory === 'Refunded')
-                 ? "text-white border-[var(--accent-main)] bg-black/20 font-bold"
+                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
