@@ -107,11 +107,6 @@ export default function SidebarDrawer({
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        {/* Ambient glow — always emerald */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] animate-[spin_20s_linear_infinite] mix-blend-screen bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_50%)]" />
-        </div>
-
         {/* Header row */}
         <div className="relative z-10 flex items-center justify-between mb-2">
           <img
