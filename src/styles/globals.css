@@ -621,7 +621,7 @@ body {
 .form-v4 select {
   font-family: 'Inter', sans-serif;
   font-size: .8rem !important;
-  color: #ffffff !important;
+  color: var(--text-main) !important;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
@@ -652,7 +652,7 @@ body {
   font-size: .6rem;
   text-transform: uppercase;
   letter-spacing: .1em;
-  color: #fff;
+  color: var(--text-main);
   padding: .65rem .6rem;
   text-align: left;
   border-bottom: 2px solid rgba(255, 255, 255, 0.05);
