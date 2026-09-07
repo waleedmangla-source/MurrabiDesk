@@ -1413,8 +1413,8 @@ ${formData.comments || 'None'}
                 className={clsx(
                   "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
                   isActive
-                    ? "text-white"
-                    : "text-white/40 border border-white/10 hover:text-white/70"
+                    ? "text-[var(--text-main)]"
+                    : "text-[var(--text-dim)] border border-white/10 hover:text-[var(--text-muted)]"
                 )}
                 style={isActive ? { background: 'var(--accent-main)' } : undefined}
               >
@@ -1762,7 +1762,7 @@ ${formData.comments || 'None'}
             <button
               type="button"
               onClick={handleAddPreset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white transition-all text-xs font-bold shrink-0 shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white transition-all text-xs font-bold shrink-0 shadow-sm group"
               title="Save current form as a new preset (named after Expense Description)"
             >
               <Plus size={14} />
