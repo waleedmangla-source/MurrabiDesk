@@ -1293,7 +1293,7 @@ ${formData.comments || 'None'}
         )}
 
         {activeTab === 'history' && (
-          <div className="p-8 md:p-12 pt-24 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-7xl mx-auto w-full">
+          <div className="p-6 md:p-12 pt-8 md:pt-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-7xl mx-auto w-full">
             <div className="mb-12">
               <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">History</span></h1>
               <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
@@ -1476,9 +1476,9 @@ ${formData.comments || 'None'}
         )}
 
         {activeTab === 'create' && (
-          <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-8 md:px-12 pt-16 max-w-7xl mx-auto">
+          <div className="flex flex-col gap-6 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-6 md:px-12 pt-6 md:pt-8 max-w-7xl mx-auto">
       {/* Top Action Bar Section */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Total Claim</span>
@@ -1513,13 +1513,13 @@ ${formData.comments || 'None'}
 
 
 
-      <div className="w-full space-y-8 form-v4 no-drag pt-4">
+      <div className="w-full space-y-6 form-v4 no-drag">
 
 
         <form id="F" onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
           {/* Expense Policy Summary Section (Unboxed) */}
-          <div className="glass bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 mb-8 shadow-xl">
+          <div className="glass bg-white/5 rounded-2xl p-5 border border-white/5 space-y-3 mb-4 shadow-xl">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-[var(--accent-main)]"></div>
