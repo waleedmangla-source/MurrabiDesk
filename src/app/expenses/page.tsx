@@ -1672,10 +1672,10 @@ ${formData.comments || 'None'}
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
               title="Delete draft"
-              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
-              className="p-4 !bg-red-600 hover:!bg-red-500 !text-white border !border-red-500 rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/40 cursor-pointer"
+              style={{ backgroundColor: '#dc2626', borderColor: '#ef4444', color: '#ffffff' }}
+              className="p-4 btn-delete-draft-permanent rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/40 cursor-pointer"
             >
-              <Trash2 size={18} className="!text-white stroke-white" />
+              <Trash2 size={18} color="#ffffff" className="stroke-white" />
             </button>
           )}
 

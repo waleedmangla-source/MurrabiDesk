@@ -1151,3 +1151,22 @@ body {
 .user-blob-glow {
   animation: userBlobGlow 6s ease-in-out infinite;
 }
+
+/* Force permanent red background and white icon on draft delete button */
+.btn-delete-draft-permanent {
+  background-color: #dc2626 !important;
+  background: #dc2626 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.btn-delete-draft-permanent:hover {
+  background-color: #b91c1c !important;
+  background: #b91c1c !important;
+  border-color: #dc2626 !important;
+}
+
+.btn-delete-draft-permanent svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
