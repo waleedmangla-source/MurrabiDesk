@@ -1024,13 +1024,17 @@ ${formData.comments || 'None'}
           )}
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 no-drag overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 py-4 space-y-1 no-drag overflow-y-auto custom-scrollbar">
            <button 
              onClick={() => setActiveTab('overview')}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               activeTab === 'overview'
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <Zap size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Overview</span>
+             <span>Overview</span>
            </button>
 
            <button 
@@ -1038,10 +1042,14 @@ ${formData.comments || 'None'}
                startNewReport();
                setActiveTab('create');
              }}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", (activeTab === 'create' && !isReadOnly) ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               (activeTab === 'create' && !isReadOnly)
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <Plus size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Waqfeen Expense</span>
+             <span>New Waqfeen Expense</span>
            </button>
 
            <button 
@@ -1049,16 +1057,20 @@ ${formData.comments || 'None'}
                // No function yet
                setActiveTab('external');
              }}
-             className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'external' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider",
+               activeTab === 'external'
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <CreditCard size={18} />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Log external expense</span>
+             <span>Log external expense</span>
            </button>
 
-           <div className="h-px bg-white/5 my-4 mx-2" />
+           <div className="h-px bg-white/5 my-4 mx-6" />
 
-           <div className="px-4 mb-2 mt-4">
-             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] opacity-50">Log Books</span>
+           <div className="px-6 mb-2 mt-2">
+             <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] opacity-60">Log Books</span>
            </div>
 
            <button 
@@ -1067,12 +1079,14 @@ ${formData.comments || 'None'}
                setActiveCategory('Drafts'); 
                toggleCategoryExpand('Drafts');
              }}
-             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Drafts') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               (activeTab === 'history' && activeCategory === 'Drafts')
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <div className="flex items-center gap-3">
-               <Edit3 size={18} />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drafts</span>
-             </div>
+             <span>Drafts</span>
              {expandedCategories.has('Drafts') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
@@ -1121,12 +1135,14 @@ ${formData.comments || 'None'}
                setActiveCategory('Pending'); 
                toggleCategoryExpand('Pending');
              }}
-             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Pending') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               (activeTab === 'history' && activeCategory === 'Pending')
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <div className="flex items-center gap-3">
-               <Clock size={18} />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pending</span>
-             </div>
+             <span>Pending</span>
              {expandedCategories.has('Pending') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
@@ -1189,12 +1205,14 @@ ${formData.comments || 'None'}
                setActiveCategory('Refunded'); 
                toggleCategoryExpand('Refunded');
              }}
-             className={clsx("w-full flex items-center justify-between px-4 py-3 rounded-[12px] transition-all text-left group", (activeTab === 'history' && activeCategory === 'Refunded') ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
+             className={clsx(
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-bold uppercase tracking-wider group",
+               (activeTab === 'history' && activeCategory === 'Refunded')
+                 ? "text-white border-[var(--accent-main)] bg-black/20 font-black"
+                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
+             )}
            >
-             <div className="flex items-center gap-3">
-               <CheckCircle size={18} />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Refunded</span>
-             </div>
+             <span>Refunded</span>
              {expandedCategories.has('Refunded') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
            </button>
 
