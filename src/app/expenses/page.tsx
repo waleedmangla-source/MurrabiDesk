@@ -1667,6 +1667,17 @@ ${formData.comments || 'None'}
         </div>
 
         <div className="flex items-center gap-2">
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={handleDeleteDraft}
+              title="Delete draft"
+              className="p-4 bg-red-600 hover:bg-red-500 text-white border border-red-500 rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/30"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+
           <button 
             onClick={handleSaveDraft}
             disabled={isSaving || isReadOnly}
@@ -1685,17 +1696,6 @@ ${formData.comments || 'None'}
               {isReadOnly ? "Archived" : (isJustSaved ? "Draft saved" : "Save as draft")}
             </span>
           </button>
-
-          {!isReadOnly && (
-            <button
-              type="button"
-              onClick={handleDeleteDraft}
-              title="Delete draft"
-              className="p-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-500/10"
-            >
-              <Trash2 size={18} />
-            </button>
-          )}
         </div>
       </div>
 
