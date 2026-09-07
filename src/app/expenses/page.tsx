@@ -232,6 +232,7 @@ export default function ExpensesPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [showSendConfirm, setShowSendConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [hasUsedAiInCurrentReport, setHasUsedAiInCurrentReport] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
@@ -593,17 +594,16 @@ export default function ExpensesPage() {
   };
 
   const handleDeleteDraft = async () => {
-    if (confirm("Are you sure you want to delete this draft?")) {
-      if (isCurrentDraft && currentReportId) {
-        try {
-          await googleSync.deleteDriveFile(currentReportId);
-          fetchExpenses();
-        } catch (e) {
-          console.warn('Failed to delete draft from Drive:', e);
-        }
+    if (isCurrentDraft && currentReportId) {
+      try {
+        await googleSync.deleteDriveFile(currentReportId);
+        fetchExpenses();
+      } catch (e) {
+        console.warn('Failed to delete draft from Drive:', e);
       }
-      startNewReport();
     }
+    startNewReport();
+    setShowDeleteConfirm(false);
   };
 
   // Draft recovery disabled per user request
@@ -1670,7 +1670,7 @@ ${formData.comments || 'None'}
           {!isReadOnly && (
             <button
               type="button"
-              onClick={handleDeleteDraft}
+              onClick={() => setShowDeleteConfirm(true)}
               title="Delete draft"
               className="p-4 bg-red-600 hover:bg-red-500 text-white border border-red-500 rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/30"
             >
@@ -2274,6 +2274,46 @@ ${formData.comments || 'None'}
                 >
                   <Send size={14} />
                   Send Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            onClick={() => setShowDeleteConfirm(false)}
+          />
+          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/80 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-8 pt-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center text-red-500 border border-red-600/30 mb-6 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+                <Trash2 size={32} />
+              </div>
+              
+              <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
+                Delete <span className="text-red-500">Draft</span>?
+              </h3>
+              
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-dim)] leading-relaxed max-w-[280px]">
+                Are you sure you want to delete this draft? This action cannot be undone.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 w-full mt-10">
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-6 py-4 rounded-[18px] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--text-main)] transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDeleteDraft}
+                  className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  Delete
                 </button>
               </div>
             </div>
