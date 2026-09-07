@@ -240,6 +240,31 @@ export default function ExpensesPage() {
   type Tab = 'overview' | 'create' | 'history' | 'external';
   const [activeTab, setActiveTab] = useState<Tab>('create');
 
+  // Open Expense Tabs State
+  interface OpenExpenseTab {
+    id: string;
+    title: string;
+    category: 'Drafts' | 'Pending' | 'Refunded';
+    date: string;
+    month?: string;
+    total: number | string;
+    report: any;
+    state: {
+      formData: typeof formData;
+      itemData: typeof itemData;
+      activeIndices: number[];
+      receipts: any[];
+      isReadOnly: boolean;
+      currentReportId: string | null;
+      isCurrentDraft: boolean;
+      hasUsedAiInCurrentReport: boolean;
+    };
+  }
+
+  const [openExpenseTabs, setOpenExpenseTabs] = useState<OpenExpenseTab[]>([]);
+  const [activeReportTabId, setActiveReportTabId] = useState<string>('new');
+  const newExpenseStateRef = React.useRef<any>(null);
+
   // Category Filter State
   // Category Filter State
   type Category = 'Drafts' | 'Pending' | 'Refunded';
@@ -490,42 +515,203 @@ export default function ExpensesPage() {
     }
   };
 
-  const loadFromHistory = async (report: any) => {
+  const applyTabState = (st: any) => {
+    if (!st) return;
+    setFormData(st.formData);
+    setItemData(st.itemData || {});
+    setActiveIndices(st.activeIndices || []);
+    setReceipts(st.receipts || []);
+    setIsReadOnly(!!st.isReadOnly);
+    setCurrentReportId(st.currentReportId || null);
+    setIsCurrentDraft(!!st.isCurrentDraft);
+    setHasUsedAiInCurrentReport(!!st.hasUsedAiInCurrentReport);
+    setActiveTab('create');
+  };
+
+  const selectExpenseTab = (targetTabId: string) => {
+    if (targetTabId === activeReportTabId && activeTab === 'create') return;
+
+    // Snapshot current active tab state
+    const currentSnapshot = {
+      formData,
+      itemData,
+      activeIndices,
+      receipts,
+      isReadOnly,
+      currentReportId,
+      isCurrentDraft,
+      hasUsedAiInCurrentReport
+    };
+
+    if (activeReportTabId === 'new') {
+      newExpenseStateRef.current = currentSnapshot;
+    } else {
+      setOpenExpenseTabs(prev => prev.map(t => t.id === activeReportTabId ? { ...t, state: currentSnapshot } : t));
+    }
+
+    // Switch to target tab
+    if (targetTabId === 'new') {
+      setActiveReportTabId('new');
+      if (newExpenseStateRef.current) {
+        applyTabState(newExpenseStateRef.current);
+      } else {
+        startNewReport();
+        setActiveTab('create');
+      }
+    } else {
+      const target = openExpenseTabs.find(t => t.id === targetTabId);
+      if (target) {
+        setActiveReportTabId(target.id);
+        applyTabState(target.state);
+      }
+    }
+  };
+
+  const closeExpenseTab = (tabId: string) => {
+    setOpenExpenseTabs(prev => {
+      const next = prev.filter(t => t.id !== tabId);
+      if (activeReportTabId === tabId) {
+        if (next.length > 0) {
+          const last = next[next.length - 1];
+          setActiveReportTabId(last.id);
+          applyTabState(last.state);
+        } else {
+          setActiveReportTabId('new');
+          if (newExpenseStateRef.current) {
+            applyTabState(newExpenseStateRef.current);
+          } else {
+            startNewReport();
+            setActiveTab('create');
+          }
+        }
+      }
+      return next;
+    });
+  };
+
+  const openExpenseInTab = async (report: any, category: 'Drafts' | 'Pending' | 'Refunded') => {
+    // 1. Snapshot current tab state
+    const currentSnapshot = {
+      formData,
+      itemData,
+      activeIndices,
+      receipts,
+      isReadOnly,
+      currentReportId,
+      isCurrentDraft,
+      hasUsedAiInCurrentReport
+    };
+
+    if (activeReportTabId === 'new') {
+      newExpenseStateRef.current = currentSnapshot;
+    } else {
+      setOpenExpenseTabs(prev => prev.map(t => t.id === activeReportTabId ? { ...t, state: currentSnapshot } : t));
+    }
+
+    // 2. Check if tab already exists
+    const existing = openExpenseTabs.find(t => t.id === report.id);
+    if (existing) {
+      setActiveReportTabId(existing.id);
+      applyTabState(existing.state);
+      setActiveTab('create');
+      return;
+    }
+
+    // 3. Load report state
     try {
-      let fullState: any = null;
+      setIsSaving(true);
+      let loadedState: any = null;
 
       if (report.isDriveDraft) {
-        setIsSaving(true); // Use as loading indicator
         const googleSync = await GoogleSyncService.fromLocalStorage();
         if (googleSync) {
           const res = await (googleSync as any).getDriveFileContent(report.fileId);
-          if (res.content) {
-            fullState = typeof res.content === 'string' ? JSON.parse(res.content) : res.content;
+          if (res && res.content) {
+            const fullState = typeof res.content === 'string' ? JSON.parse(res.content) : res.content;
+            loadedState = {
+              formData: fullState.formData || formData,
+              itemData: fullState.itemData || {},
+              activeIndices: fullState.activeIndices || [],
+              receipts: fullState.receipts || [],
+              isReadOnly: false,
+              currentReportId: report.id,
+              isCurrentDraft: true,
+              hasUsedAiInCurrentReport: !!fullState.hasUsedAiInCurrentReport
+            };
           }
         }
-        setIsSaving(false);
       } else if (report.data) {
-        fullState = JSON.parse(report.data);
+        const fullState = typeof report.data === 'string' ? JSON.parse(report.data) : report.data;
+        const readOnly = report.status === 'sent' || report.status === 'refunded' || category !== 'Drafts';
+        loadedState = {
+          formData: fullState.formData || formData,
+          itemData: fullState.itemData || {},
+          activeIndices: fullState.activeIndices || [],
+          receipts: fullState.receipts || [],
+          isReadOnly: readOnly,
+          currentReportId: report.id,
+          isCurrentDraft: false,
+          hasUsedAiInCurrentReport: !!fullState.hasUsedAiInCurrentReport
+        };
       }
 
-      if (fullState) {
-        setFormData(fullState.formData);
-        setItemData(fullState.itemData || {});
-        setActiveIndices(fullState.activeIndices || []);
-        setReceipts(fullState.receipts || []);
-        setIsReadOnly(false); // Let them edit the draft
-        setCurrentReportId(report.id);
-        setIsCurrentDraft(report.isDriveDraft);
-        setHasUsedAiInCurrentReport(!!fullState.hasUsedAiInCurrentReport);
-        setActiveTab('create'); // Switch to editor view
+      if (!loadedState) {
+        const parsedTotal = parseFloat(report.total || 0);
+        const hasTotal = !isNaN(parsedTotal) && parsedTotal > 0;
+        loadedState = {
+          formData: {
+            memberCode: report.memberCode || '',
+            fullName: report.fullName || '',
+            date: report.date || new Date().toISOString().split('T')[0],
+            cheque_num: report.cheque_num || '',
+            expense_month: report.month || months[new Date().getMonth()],
+            posting: 'branch',
+            posting_location: '',
+            purpose: report.purpose || 'Expense Submission',
+            fiscal_period: '',
+            date_received: '',
+            other_label: '',
+            comments: report.comments || '',
+          },
+          itemData: hasTotal ? { 0: { ref: '1', hst: '0.00', total: parsedTotal.toFixed(2) } } : {},
+          activeIndices: hasTotal ? [0] : [],
+          receipts: [],
+          isReadOnly: true,
+          currentReportId: report.id,
+          isCurrentDraft: false,
+          hasUsedAiInCurrentReport: false
+        };
       }
-    } catch (e) {
-      console.error('Failed to load history data', e);
+
+      const newTab: OpenExpenseTab = {
+        id: report.id,
+        title: report.date || report.month || 'Expense',
+        category,
+        date: report.date || new Date().toISOString().split('T')[0],
+        month: report.month,
+        total: report.total || 0,
+        report,
+        state: loadedState
+      };
+
+      setOpenExpenseTabs(prev => [...prev.filter(t => t.id !== report.id), newTab]);
+      setActiveReportTabId(report.id);
+      applyTabState(loadedState);
+      setActiveTab('create');
+    } catch (err) {
+      console.error('Error opening expense in tab:', err);
+    } finally {
       setIsSaving(false);
     }
   };
 
+  const loadFromHistory = async (report: any) => {
+    await openExpenseInTab(report, activeCategory);
+  };
+
   const startNewReport = () => {
+    setActiveReportTabId('new');
+    newExpenseStateRef.current = null;
     setFormData({
       memberCode: '',
       fullName: '',
@@ -573,6 +759,9 @@ export default function ExpensesPage() {
       // Cloud Storage ONLY (JSON)
       const fileName = `Draft_${formData.expense_month || 'Other'}_${new Date().toISOString().split('T')[0]}_${Date.now()}.json`;
       
+      const googleSync = await GoogleSyncService.fromLocalStorage();
+      if (!googleSync) throw new Error("Google sync not authenticated");
+
       await googleSync.uploadFile(
         fileName,
         JSON.stringify(fullState),
@@ -596,13 +785,20 @@ export default function ExpensesPage() {
   const handleDeleteDraft = async () => {
     if (isCurrentDraft && currentReportId) {
       try {
-        await googleSync.deleteDriveFile(currentReportId);
+        const googleSync = await GoogleSyncService.fromLocalStorage();
+        if (googleSync) {
+          await googleSync.deleteDriveFile(currentReportId);
+        }
         fetchExpenses();
       } catch (e) {
         console.warn('Failed to delete draft from Drive:', e);
       }
     }
-    startNewReport();
+    if (activeReportTabId !== 'new') {
+      closeExpenseTab(activeReportTabId);
+    } else {
+      startNewReport();
+    }
     setShowDeleteConfirm(false);
   };
 
@@ -1196,12 +1392,12 @@ ${formData.comments || 'None'}
 
            <button 
              onClick={() => {
-               startNewReport();
+               selectExpenseTab('new');
                setActiveTab('create');
              }}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
-               (activeTab === 'create' && !isReadOnly)
+               (activeTab === 'create' && activeReportTabId === 'new')
                  ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
@@ -1211,7 +1407,6 @@ ${formData.comments || 'None'}
 
            <button 
              onClick={() => {
-               // No function yet
                setActiveTab('external');
              }}
              className={clsx(
@@ -1223,6 +1418,60 @@ ${formData.comments || 'None'}
            >
              <span>Log External Expense</span>
            </button>
+
+           {/* Open Expenses Tab List in Sidebar */}
+           {openExpenseTabs.length > 0 && (
+             <div className="pt-3 pb-1 border-t border-white/5 my-2">
+               <div className="px-6 mb-2 flex items-center justify-between">
+                 <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--text-dim)] opacity-70">Open Tabs</span>
+                 <span className="text-[9px] font-bold text-[var(--accent-main)] px-1.5 py-0.5 rounded bg-[var(--accent-soft)]">
+                   {openExpenseTabs.length}
+                 </span>
+               </div>
+               <div className="space-y-1 px-3">
+                 {openExpenseTabs.map(tab => {
+                   const isActive = activeTab === 'create' && activeReportTabId === tab.id;
+                   return (
+                     <div
+                       key={tab.id}
+                       onClick={() => selectExpenseTab(tab.id)}
+                       className={clsx(
+                         "group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                         isActive
+                           ? "bg-[var(--accent-main)]/15 text-[var(--text-main)] border border-[var(--accent-main)]/30 shadow-sm"
+                           : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text-main)] border border-transparent"
+                       )}
+                     >
+                       <div className="flex items-center gap-2 min-w-0 flex-1 pr-1">
+                         <span className={clsx(
+                           "w-2 h-2 rounded-full shrink-0",
+                           tab.category === 'Drafts' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" :
+                           tab.category === 'Refunded' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]"
+                         )} />
+                         <div className="flex flex-col min-w-0 truncate">
+                           <span className="truncate text-xs font-bold text-[var(--text-main)]">{tab.date || tab.title}</span>
+                           <span className="text-[9px] text-[var(--text-dim)] uppercase font-semibold">
+                             {tab.category === 'Drafts' ? 'Draft' : tab.category} &bull; ${parseFloat(tab.total || 0).toFixed(2)}
+                           </span>
+                         </div>
+                       </div>
+                       <button
+                         type="button"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           closeExpenseTab(tab.id);
+                         }}
+                         className="opacity-40 group-hover:opacity-100 hover:bg-white/10 p-1 rounded-lg transition-all text-[var(--text-dim)] hover:text-white"
+                         title="Close Tab"
+                       >
+                         <X size={12} />
+                       </button>
+                     </div>
+                   );
+                 })}
+               </div>
+             </div>
+           )}
 
            <div className="h-px bg-white/5 my-4 mx-6" />
 
@@ -1260,26 +1509,33 @@ ${formData.comments || 'None'}
 
                  return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                    <div key={month} className="space-y-1">
-                     <div className="flex items-center gap-2 mb-1 opacity-40">
-                       <span className="text-[6px] font-black uppercase tracking-widest text-[var(--text-main)]">{month}</span>
+                     <div className="flex items-center gap-2 mb-1 opacity-60">
+                       <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
                        <div className="h-[1px] flex-1 bg-white/5" />
                      </div>
-                     {monthItems.slice(0, 5).map((exp: any) => (
-                       <button
-                         key={exp.id}
-                         onClick={() => {
-                           setActiveTab('history');
-                           setActiveCategory('Drafts');
-                           loadFromHistory(exp);
-                         }}
-                         className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
-                       >
-                         <div className="flex flex-col gap-0.5">
-                           <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                         </div>
-                         <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
-                       </button>
-                     ))}
+                     {monthItems.slice(0, 10).map((exp: any) => {
+                       const isOpen = activeReportTabId === exp.id && activeTab === 'create';
+                       return (
+                         <button
+                           key={exp.id}
+                           onClick={() => openExpenseInTab(exp, 'Drafts')}
+                           className={clsx(
+                             "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                             isOpen
+                               ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
+                               : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                           )}
+                         >
+                           <div className="flex flex-col min-w-0 pr-2">
+                             <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
+                             <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                               {exp.purpose && exp.purpose !== 'Cloud Draft' ? exp.purpose : (exp.month || 'Draft')}
+                             </span>
+                           </div>
+                           <span className="text-xs font-black text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                         </button>
+                       );
+                     })}
                    </div>
                  ));
                })()}
@@ -1304,7 +1560,7 @@ ${formData.comments || 'None'}
            </button>
 
            {expandedCategories.has('Pending') && (
-             <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+             <div className="space-y-4 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
                 {(() => {
                   const items = expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded);
                   const groups = items.reduce((acc: any, curr) => {
@@ -1316,40 +1572,47 @@ ${formData.comments || 'None'}
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                     <div key={month} className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1 opacity-40">
-                        <span className="text-[6px] font-black uppercase tracking-widest text-[var(--text-main)]">{month}</span>
+                      <div className="flex items-center gap-2 mb-1 opacity-60">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
                         <div className="h-[1px] flex-1 bg-white/5" />
                       </div>
-                      {monthItems.slice(0, 5).map((exp: any) => (
-                        <button
-                          key={exp.id}
-                          onClick={() => {
-                            setActiveTab('history');
-                            setActiveCategory('Pending');
-                            loadFromHistory(exp);
-                          }}
-                          className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
-                        >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
-                            <div 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (window.confirm(`Mark expense for ${month} ($${exp.total}) as refunded?`)) {
-                                  toggleRefund(exp); 
-                                }
-                              }}
-                              className="w-3.5 h-3.5 rounded-[4px] border border-white/20 hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center cursor-pointer group/check"
-                              title="Mark as Refunded"
-                            >
-                              <Check size={8} className="text-[var(--accent-main)] opacity-0 group-hover/check:opacity-50" />
+                      {monthItems.slice(0, 10).map((exp: any) => {
+                        const isOpen = activeReportTabId === exp.id && activeTab === 'create';
+                        return (
+                          <button
+                            key={exp.id}
+                            onClick={() => openExpenseInTab(exp, 'Pending')}
+                            className={clsx(
+                              "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                              isOpen
+                                ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
+                                : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                            )}
+                          >
+                            <div className="flex flex-col min-w-0 pr-2">
+                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                                {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Pending')}
+                              </span>
                             </div>
-                          </div>
-                        </button>
-                      ))}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs font-black text-[var(--accent-main)]">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Mark expense for ${month} ($${exp.total}) as refunded?`)) {
+                                    toggleRefund(exp); 
+                                  }
+                                }}
+                                className="w-4 h-4 rounded-[4px] border border-white/20 hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center cursor-pointer group/check"
+                                title="Mark as Refunded"
+                              >
+                                <Check size={9} className="text-[var(--accent-main)] opacity-0 group-hover/check:opacity-100" />
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   ));
                 })()}
@@ -1374,7 +1637,7 @@ ${formData.comments || 'None'}
            </button>
 
            {expandedCategories.has('Refunded') && (
-             <div className="space-y-1 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+             <div className="space-y-4 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
                 {(() => {
                   const items = expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded));
                   const groups = items.reduce((acc: any, curr) => {
@@ -1386,26 +1649,33 @@ ${formData.comments || 'None'}
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                     <div key={month} className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1 opacity-40">
-                        <span className="text-[6px] font-black uppercase tracking-widest text-[var(--text-main)]">{month}</span>
+                      <div className="flex items-center gap-2 mb-1 opacity-60">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
                         <div className="h-[1px] flex-1 bg-white/5" />
                       </div>
-                      {monthItems.slice(0, 5).map((exp: any) => (
-                        <button
-                          key={exp.id}
-                          onClick={() => {
-                            setActiveTab('history');
-                            setActiveCategory('Refunded');
-                            loadFromHistory(exp);
-                          }}
-                          className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all text-left group/item"
-                        >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[6px] font-bold text-[var(--text-dim)] uppercase">{exp.date}</span>
-                          </div>
-                          <span className="text-[8px] font-black text-[var(--accent-main)] opacity-70 group-hover/item:opacity-100 transition-opacity">${parseFloat(exp.total).toFixed(2)}</span>
-                        </button>
-                      ))}
+                      {monthItems.slice(0, 10).map((exp: any) => {
+                        const isOpen = activeReportTabId === exp.id && activeTab === 'create';
+                        return (
+                          <button
+                            key={exp.id}
+                            onClick={() => openExpenseInTab(exp, 'Refunded')}
+                            className={clsx(
+                              "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                              isOpen
+                                ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
+                                : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                            )}
+                          >
+                            <div className="flex flex-col min-w-0 pr-2">
+                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                                {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Refunded')}
+                              </span>
+                            </div>
+                            <span className="text-xs font-black text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   ));
                 })()}
@@ -1639,6 +1909,14 @@ ${formData.comments || 'None'}
                                   {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
                                 </span>
                               </label>
+                               <button
+                                 type="button"
+                                 onClick={() => openExpenseInTab(form, activeCategory)}
+                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[var(--text-main)] transition-all border border-white/5 hover:border-[var(--accent-main)]/40"
+                               >
+                                 <Edit3 size={12} className="text-[var(--accent-main)]" />
+                                 <span>Open as Expense</span>
+                               </button>
                            </div>
                         </div>
                       ))}
@@ -1652,6 +1930,58 @@ ${formData.comments || 'None'}
 
         {activeTab === 'create' && (
           <div className="flex flex-col gap-6 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-6 md:px-12 pt-6 md:pt-8 max-w-7xl mx-auto">
+            {/* Top Tabs Strip */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/5 no-scrollbar">
+              <button
+                type="button"
+                onClick={() => selectExpenseTab('new')}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all border",
+                  activeReportTabId === 'new'
+                    ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)]/40 text-[var(--text-main)] font-bold shadow-sm"
+                    : "bg-white/5 border-white/5 text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-white/10"
+                )}
+              >
+                <Plus size={14} className="text-[var(--accent-main)]" />
+                <span>New Waqfeen Expense</span>
+              </button>
+
+              {openExpenseTabs.map(tab => {
+                const isActive = activeReportTabId === tab.id;
+                return (
+                  <div
+                    key={tab.id}
+                    onClick={() => selectExpenseTab(tab.id)}
+                    className={clsx(
+                      "group flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer border",
+                      isActive
+                        ? "bg-[var(--accent-main)]/20 border-[var(--accent-main)]/50 text-[var(--text-main)] font-bold shadow-sm ring-1 ring-[var(--accent-main)]/30"
+                        : "bg-white/5 border-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/10"
+                    )}
+                  >
+                    <span className={clsx(
+                      "w-2 h-2 rounded-full shrink-0",
+                      tab.category === 'Drafts' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" :
+                      tab.category === 'Refunded' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]"
+                    )} />
+                    <span>{tab.category === 'Drafts' ? 'Draft' : tab.category}: {tab.date}</span>
+                    <span className="text-[11px] text-[var(--accent-main)] opacity-90">${parseFloat(tab.total || 0).toFixed(2)}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeExpenseTab(tab.id);
+                      }}
+                      className="ml-1 p-0.5 rounded-md opacity-40 group-hover:opacity-100 hover:bg-white/15 text-[var(--text-dim)] hover:text-white transition-all"
+                      title="Close tab"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
       {/* Top Action Bar Section */}
       <div className="flex items-center justify-between mb-4">
         <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
