@@ -306,7 +306,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 )}
                 <span className="text-sm tracking-wide flex-shrink-0">{link.label}</span>
                 {link.label === "Mail" && unreadMailCount >= 1 && (
-                  <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black bg-emerald-500 text-white border border-emerald-400 ring-2 ring-[var(--accent-main)]/30 flex items-center justify-center shadow-sm">
+                  <span
+                    className={clsx(
+                      "ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center shadow-sm transition-all duration-300",
+                      pathname === link.href
+                        ? "bg-[var(--accent-main)] text-white shadow-[0_0_10px_var(--accent-glow)]"
+                        : "bg-slate-400/80 text-white dark:bg-slate-600 dark:text-slate-100"
+                    )}
+                  >
                     {unreadMailCount > 99 ? "99+" : unreadMailCount}
                   </span>
                 )}
