@@ -1010,12 +1010,21 @@ ${formData.comments || 'None'}
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) — desktop only */}
-      <div className="hidden lg:flex w-[240px] glass bg-black/20 border-r border-white/5 flex-col h-full shrink-0">
-        <div className="no-drag h-[60px] shrink-0">
-          {/* Header removed for minimalist layout - space reserved for drag area */}
+      <div className="hidden lg:flex w-[240px] glass bg-black/20 border-r border-white/5 flex-col h-full shrink-0 secondary-sidebar">
+        {/* Sidebar Title */}
+        <div className="px-5 pt-8 pb-4 border-b border-white/5 shrink-0">
+          <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
+            Waqfeen<br />Expenses
+          </h1>
+          {isReadOnly && (
+            <span className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 rounded-full animate-pulse">
+              <Shield size={10} className="text-[var(--accent-main)]" />
+              <span className="text-[8px] font-black text-[var(--accent-main)] tracking-[0.15em]">ARCHIVED</span>
+            </span>
+          )}
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 no-drag mt-4 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-4 space-y-2 no-drag overflow-y-auto custom-scrollbar">
            <button 
              onClick={() => setActiveTab('overview')}
              className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left", activeTab === 'overview' ? "bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-soft)] shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "text-[var(--text-main)]/50 hover:bg-white/5 hover:text-[var(--text-main)]")}
@@ -1468,32 +1477,17 @@ ${formData.comments || 'None'}
 
         {activeTab === 'create' && (
           <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-8 md:px-12 pt-16 max-w-7xl mx-auto">
-      {/* Beta Tools Header Section */}
+      {/* Top Action Bar Section */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-12">
-          <div>
-            <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase flex flex-col items-start leading-[0.8]">
-              <span>Waqfeen</span>
-              <span>Expenses</span>
-              {isReadOnly && (
-                <span className="px-4 py-1.5 bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 rounded-full flex items-center gap-2 animate-pulse">
-                  <Shield size={12} className="text-[var(--accent-main)]" />
-                  <span className="text-[9px] font-black text-[var(--accent-main)] tracking-[0.2em]">ARCHIVED / READ-ONLY</span>
-                </span>
-              )}
-            </h1>
+        <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Total Claim</span>
+            <span className="text-lg font-black italic text-[var(--accent-main)] tracking-tighter">${totals.grand}</span>
           </div>
-
-          <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Total Claim</span>
-              <span className="text-lg font-black italic text-[var(--accent-main)] tracking-tighter">${totals.grand}</span>
-            </div>
-            <div className="w-px h-10 bg-white/10" />
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
-              <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{formData.expense_month}</span>
-            </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
+            <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{formData.expense_month}</span>
           </div>
         </div>
 
