@@ -1518,53 +1518,59 @@ ${formData.comments || 'None'}
 
         <form id="F" onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
-          {/* Card 0: Expense Policy Summary */}
-          <div className="card">
-            <div className="card-hdr flex items-center justify-between">
+          {/* Expense Policy Summary Section (Unboxed) */}
+          <div className="glass bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 mb-8 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-2">
-                <div className="dot"></div>
-                EXPENSE POLICY SUMMARY
+                <div className="w-2 h-2 rounded-full bg-[var(--accent-main)]"></div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--text-main)]">
+                  Expense Policy Summary
+                </h3>
               </div>
+              <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-70">
+                Official Limits & Guidelines
+              </span>
             </div>
-            <div className="overflow-x-auto min-h-[100px]">
-              <table className="tbl w-full">
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-v4-rule/50">
-                    <th style={{ width: '25%' }} className="text-left py-2.5 px-3">Expense</th>
-                    <th style={{ width: '50%' }} className="text-left py-2.5 px-3">Explanation</th>
-                    <th style={{ width: '25%' }} className="text-right py-2.5 px-3">Limit</th>
+                  <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+                    <th className="py-2.5 px-3">Expense</th>
+                    <th className="py-2.5 px-3">Explanation</th>
+                    <th className="py-2.5 px-3 text-right">Limit</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Vehicle Fuel</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Expense total over limit should be explained in detail</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$330 per Month</td>
+                <tbody className="divide-y divide-white/5 text-xs">
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Vehicle Fuel</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Expense total over limit should be explained in detail</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$330 per Month</td>
                   </tr>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Communication</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Includes Cable TV, Internet, Landline, and Mobile</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$175 Per Month</td>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Communication</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Includes Cable TV, Internet, Landline, and Mobile</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$175 Per Month</td>
                   </tr>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Household</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Minor replacement or repair of small household items</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$200 Per Year</td>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Household</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Minor replacement or repair of small household items</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$200 Per Year</td>
                   </tr>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Diyafat</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Entertainment of official or formal guests</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$100 Per Month</td>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Diyafat</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Entertainment of official or formal guests</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$100 Per Month</td>
                   </tr>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Dental</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Dental work for immediate family, non-cosmetic only</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$1500 Per Year/Family</td>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Dental</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Dental work for immediate family, non-cosmetic only</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$1500 Per Year/Family</td>
                   </tr>
-                  <tr className="border-b border-v4-rule/30 hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-3 font-bold text-v4-ink">Prescription Glasses</td>
-                    <td className="py-2.5 px-3 text-v4-ink-muted text-xs">Eye exam fees are included in the expense limit.</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)] text-xs">$200 Per 2 Years/Member</td>
+                  <tr className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-[var(--text-main)]">Prescription Glasses</td>
+                    <td className="py-2.5 px-3 text-[var(--text-dim)]">Eye exam fees are included in the expense limit.</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-[var(--accent-main)]">$200 Per 2 Years/Member</td>
                   </tr>
                 </tbody>
               </table>
