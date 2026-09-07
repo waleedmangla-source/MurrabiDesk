@@ -37,7 +37,7 @@ import {
 import { clsx } from "clsx";
 import { QRCodeSVG } from 'qrcode.react';
 
-type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
+type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr' | 'receipt-scanner';
 
 const Sparkles = ({ size, className }: { size: number, className: string }) => (
   <svg 
@@ -80,6 +80,12 @@ export default function BetaToolsPage() {
   const [ocrSessionId, setOcrSessionId] = useState<string | null>(null);
   const [ocrStatus, setOcrStatus] = useState<'idle' | 'waiting' | 'processing' | 'completed' | 'error'>('idle');
   const [ocrResultText, setOcrResultText] = useState<string | null>(null);
+
+  // Receipt Scanner State
+  const [receiptScanLoading, setReceiptScanLoading] = useState(false);
+  const [receiptScanResult, setReceiptScanResult] = useState<any>(null);
+  const [receiptScanError, setReceiptScanError] = useState<string | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
   // AI Chat State
   const [chatInput, setChatInput] = useState("");
@@ -302,6 +308,50 @@ export default function BetaToolsPage() {
     setTerminalLogs(prev => [...prev, `[${timestamp}] ${log}`]);
   };
 
+  const handleReceiptScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setReceiptScanLoading(true);
+    setReceiptScanError(null);
+    setReceiptScanResult(null);
+
+    // Create a local preview
+    const objectUrl = URL.createObjectURL(file);
+    setReceiptPreview(objectUrl);
+
+    addTerminalLog(`[AI SCAN] Initializing receipt scanning for: ${file.name}`);
+
+    try {
+      const getBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+
+      const base64Data = await getBase64(file);
+
+      const res = await fetch('/api/ai/scan-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mimeType: file.type, data: base64Data })
+      });
+
+      if (!res.ok) throw new Error("Failed to scan receipt");
+
+      const data = await res.json();
+      setReceiptScanResult(data);
+      addTerminalLog(`[AI SCAN] Extraction successful. Found merchant: ${data.merchant || 'Unknown'}`);
+    } catch (err) {
+      console.error(err);
+      setReceiptScanError("Error scanning receipt. Please try again.");
+      addTerminalLog(`[ERROR] Receipt Scanner: Extraction failed`);
+    } finally {
+      setReceiptScanLoading(false);
+    }
+  };
+
   const generateOcrSession = async () => {
     setOcrStatus('idle');
     setOcrResultText(null);
@@ -409,7 +459,8 @@ export default function BetaToolsPage() {
     { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurabbiAI Beta' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
     { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' },
-    { id: 'ocr', label: 'OCR Scanner', icon: ScanText, color: 'text-amber-500', desc: 'Mobile Link' }
+    { id: 'ocr', label: 'OCR Scanner', icon: ScanText, color: 'text-amber-500', desc: 'Mobile Link' },
+    { id: 'receipt-scanner', label: 'Receipt Scanner', icon: Sparkles, color: 'text-indigo-500', desc: 'AI Extraction' }
   ];
 
   return (
@@ -873,6 +924,106 @@ export default function BetaToolsPage() {
                   <ScanText size={48} className="opacity-10 mb-8" />
                   <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase">No Document Data</h3>
                   <p className="text-sm opacity-10 mt-2 font-bold max-w-[200px]">Scan a document via mobile to digitize text here.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'receipt-scanner' && (
+          <div className="grid grid-cols-12 gap-10 max-w-6xl">
+            <div className="col-span-12 xl:col-span-5 space-y-6">
+              <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] h-fit flex flex-col items-center text-center">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
+                    <Sparkles size={24} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-black tracking-tight">Receipt Scanner</h3>
+                    <p className="text-[9px] font-black uppercase tracking-widest leading-none mt-1 opacity-40">AI Extraction Engine</p>
+                  </div>
+                </div>
+
+                <div className="mt-8 w-full">
+                  <p className="text-sm font-medium opacity-60 mb-6">Upload a receipt or invoice. The AI will extract the merchant, date, tax, total, and expense category.</p>
+                  
+                  <label className="flex flex-col items-center justify-center w-full aspect-video border-2 border-dashed border-white/20 rounded-[32px] hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all cursor-pointer relative overflow-hidden">
+                    {receiptPreview && !receiptScanLoading ? (
+                      <img src={receiptPreview} alt="Receipt Preview" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                    ) : receiptScanLoading ? (
+                       <Loader2 size={48} className="animate-spin opacity-50 mb-4 text-indigo-500" />
+                    ) : (
+                       <ScanText size={48} className="mb-4 opacity-50 text-indigo-500" />
+                    )}
+                    
+                    <span className="font-bold tracking-widest uppercase text-sm opacity-80 relative z-10">
+                      {receiptScanLoading ? "Scanning..." : "Upload Receipt"}
+                    </span>
+                    <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleReceiptScan} disabled={receiptScanLoading} />
+                  </label>
+                  
+                  {receiptScanError && (
+                    <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center flex items-center justify-center gap-2">
+                       <AlertCircle size={16} />
+                       {receiptScanError}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 xl:col-span-7">
+              {receiptScanResult ? (
+                <div className="glass-card p-10 relative overflow-hidden border border-white/5 bg-white/5 rounded-[32px] animate-in fade-in slide-in-from-right-8 duration-700 h-full overflow-y-auto custom-scrollbar">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500"><CheckCircle2 size={24} /></div>
+                      <div>
+                        <h2 className="text-xl font-black tracking-tight">Extraction Successful</h2>
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Gemini 3.6 Flash Engine</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Merchant</div>
+                        <div className="text-lg font-bold">{receiptScanResult.merchant || 'Unknown'}</div>
+                      </div>
+                      <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Date</div>
+                        <div className="text-lg font-bold">{receiptScanResult.date || 'Unknown'}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Tax (HST/GST)</div>
+                        <div className="text-2xl font-black text-indigo-500">${receiptScanResult.hst || '0.00'}</div>
+                      </div>
+                      <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Total Amount</div>
+                        <div className="text-2xl font-black text-emerald-500">${receiptScanResult.total || '0.00'}</div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                           <Box size={20} />
+                        </div>
+                        <div>
+                           <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Matched Category ID</div>
+                           <div className="text-lg font-bold text-purple-400">{receiptScanResult.categoryIdx ?? 'N/A'}</div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full min-h-[400px] flex flex-col items-center justify-center glass-card border border-white/5 bg-white/5 rounded-[32px] p-20 text-center">
+                  <Sparkles size={48} className="opacity-10 mb-8" />
+                  <h3 className="text-xl font-black italic tracking-tight opacity-20 uppercase">Awaiting Receipt</h3>
+                  <p className="text-sm opacity-10 mt-2 font-bold max-w-[200px]">Upload an image to test the extraction engine.</p>
                 </div>
               )}
             </div>
