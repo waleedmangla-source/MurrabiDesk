@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
@@ -141,6 +141,46 @@ export default function RuhaniKhazainReader() {
   const [dictionary, setDictionary] = useState<Record<string, { translit?: string; meaning: string }>>({});
   const [selectedWord, setSelectedWord] = useState<SelectedWordInfo | null>(null);
 
+  // Dynamic font sizing to fit the 9x11 sheet of paper
+  const [fontSize, setFontSize] = useState<number>(15.5);
+  const innerContainerRef = useRef<HTMLDivElement>(null);
+  const textContentRef = useRef<HTMLDivElement>(null);
+
+  // Dynamically fit text to the 9x11 aspect ratio sheet without overflow
+  const fitTextToPage = useCallback(() => {
+    const container = innerContainerRef.current;
+    const content = textContentRef.current;
+    if (!container || !content) return;
+
+    const computed = window.getComputedStyle(container);
+    const paddingTop = parseFloat(computed.paddingTop) || 0;
+    const paddingBottom = parseFloat(computed.paddingBottom) || 0;
+    const maxAllowedHeight = container.clientHeight - paddingTop - paddingBottom;
+
+    if (maxAllowedHeight <= 60) return;
+
+    // Fast binary search to find maximum font size (10px to 21px in 0.5px steps)
+    // where content fits inside the available inner Jadwal frame
+    let low = 10;
+    let high = 21;
+    let best = 14.5;
+
+    for (let i = 0; i < 7; i++) {
+      const mid = Math.round(((low + high) / 2) * 2) / 2;
+      content.style.fontSize = `${mid}px`;
+      
+      if (content.scrollHeight <= maxAllowedHeight + 2) {
+        best = mid;
+        low = mid + 0.5;
+      } else {
+        high = mid - 0.5;
+      }
+    }
+
+    content.style.fontSize = `${best}px`;
+    setFontSize(best);
+  }, []);
+
   // Load static English dictionary on mount
   useEffect(() => {
     fetch('/ruhani-khazain/dictionary-en.json')
@@ -210,6 +250,28 @@ export default function RuhaniKhazainReader() {
 
   const currentPage = pages[currentPageIndex];
 
+  // Auto-fit text whenever the current page, volume, or page text changes
+  useEffect(() => {
+    fitTextToPage();
+    if (typeof document !== 'undefined' && document.fonts) {
+      document.fonts.ready.then(() => {
+        fitTextToPage();
+      });
+    }
+  }, [fitTextToPage, currentPageIndex, selectedVolume, pages, currentPage?.text]);
+
+  // Re-fit text on container resize (e.g., window resizing or sidebar toggle)
+  useEffect(() => {
+    const container = innerContainerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      fitTextToPage();
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [fitTextToPage]);
+
   // Select a word to inspect in the right-hand panel & fetch live definition if needed
   const handleSelectWord = useCallback(async (rawWord: string) => {
     const word = rawWord.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '').trim();
@@ -266,14 +328,14 @@ export default function RuhaniKhazainReader() {
       <>
         {paragraphs.map((para, pIdx) => {
           if (!para.trim()) {
-            return <div key={pIdx} className="h-4" />;
+            return <div key={pIdx} className="h-2" />;
           }
 
           // Split line into words and delimiters while preserving spaces & punctuation
           const tokens = para.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
 
           return (
-            <p key={pIdx} className="my-2 leading-[2.7]">
+            <p key={pIdx} className="mb-1 sm:mb-1.5 indent-6 sm:indent-8 leading-[1.82] text-justify">
               {tokens.map((token, tIdx) => {
                 const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
                 if (!clean) {
@@ -295,7 +357,7 @@ export default function RuhaniKhazainReader() {
                       key={tIdx}
                       onClick={() => handleSelectWord(clean)}
                       className={clsx(
-                        "group relative inline-block cursor-pointer px-1 mx-0.5 rounded transition-all select-text",
+                        "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
                         isSelected
                           ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
                           : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
@@ -549,24 +611,32 @@ export default function RuhaniKhazainReader() {
               <p className="text-red-400 font-bold text-sm">{error}</p>
             </div>
           ) : currentPage ? (
-            <div className="w-full max-w-[660px] my-auto">
-              {/* Authentic Ruhani Khazain Printed Lithograph Page Sheet */}
-              <div className="bg-white text-black shadow-2xl p-4 sm:p-6 md:p-8 relative select-text border border-zinc-300">
+            <div 
+              className="w-full my-auto flex justify-center py-2"
+              style={{
+                maxWidth: 'min(640px, calc((100vh - 170px) * 9 / 11))'
+              }}
+            >
+              {/* Authentic Ruhani Khazain Printed Lithograph Page Sheet (9x11 Aspect Ratio) */}
+              <div 
+                className="w-full aspect-[9/11] bg-white text-black shadow-2xl p-3.5 sm:p-5 md:p-6 relative select-text border border-zinc-300 flex flex-col justify-between"
+                style={{ aspectRatio: '9 / 11' }}
+              >
                 {/* ── Classic Khazain Jadwal (Outer Frame) ── */}
-                <div className="border-[2.5px] border-black bg-white">
+                <div className="border-[2px] sm:border-[2.5px] border-black bg-white flex flex-col flex-1 min-h-0">
                   {/* Running Header Bar (Book Title, Urdu Page Number, Ruhani Khazain Volume) */}
                   <div 
-                    className="flex items-center justify-between px-3 py-1.5 border-b-[1.5px] border-black text-black select-none" 
+                    className="flex items-center justify-between px-3 py-1 sm:py-1.5 border-b-[1.5px] border-black text-black select-none shrink-0" 
                     dir="rtl"
                     style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif" }}
                   >
                     {/* Right in RTL: Series & Volume */}
-                    <span className="text-base sm:text-lg font-bold">
+                    <span className="text-xs sm:text-sm md:text-base font-bold">
                       روحانی خزائن جلد {toUrduNumerals(selectedVolume || 1)}
                     </span>
 
                     {/* Center: Page Number in Urdu Numerals */}
-                    <span className="text-lg sm:text-xl font-bold tracking-widest px-2">
+                    <span className="text-sm sm:text-base md:text-lg font-bold tracking-widest px-2">
                       {toUrduNumerals(currentPage?.page_num || (currentPageIndex + 1))}
                     </span>
 
@@ -576,23 +646,29 @@ export default function RuhaniKhazainReader() {
                       const pageNum = currentPage?.page_num || (currentPageIndex + 1);
                       const active = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
                       return (
-                        <span className="text-base sm:text-lg font-bold">
+                        <span className="text-xs sm:text-sm md:text-base font-bold truncate max-w-[45%] text-left">
                           {active?.urduTitle || "براہین احمدیہ"}
                         </span>
                       );
                     })()}
                   </div>
 
-                  {/* ~3.5px White Border Gap between Outer Frame and Inner Frame */}
-                  <div className="p-[3.5px] bg-white">
+                  {/* ~3px White Border Gap between Outer Frame and Inner Frame */}
+                  <div className="p-[2.5px] sm:p-[3px] bg-white flex flex-col flex-1 min-h-0">
                     {/* Inner Thin Border Box Framing Body Text */}
-                    <div className="border border-black p-4 sm:p-5 md:p-6 min-h-[560px] bg-white">
+                    <div 
+                      ref={innerContainerRef}
+                      className="border border-black p-2.5 sm:p-3.5 md:p-4 flex flex-col flex-1 min-h-0 bg-white relative"
+                    >
                       <div 
-                        className="text-[19px] sm:text-[21px] md:text-[22px] leading-[2.5] sm:leading-[2.65] md:leading-[2.75] font-serif text-justify text-black whitespace-pre-wrap select-text" 
+                        ref={textContentRef}
+                        className="text-justify text-black select-text w-full flex-1 flex flex-col justify-start" 
                         dir="rtl"
                         style={{ 
                           fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
-                          textAlignLast: 'right'
+                          textAlignLast: 'right',
+                          lineHeight: 1.82,
+                          fontSize: `${fontSize}px`
                         }}
                       >
                         {renderText(currentPage.text)}
