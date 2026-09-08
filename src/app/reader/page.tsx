@@ -13,10 +13,16 @@ interface SelectedWordInfo {
   loading?: boolean;
 }
 
+function toUrduNumerals(num: number | string): string {
+  const urduDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(num).replace(/[0-9]/g, (d) => urduDigits[parseInt(d, 10)]);
+}
+
 // Map of Ruhani Khazain Volumes to major books contained within them
 const KHAZAIN_BOOKS: Record<number, { title: string; urduTitle: string; pageStart: number }[]> = {
   1: [
-    { title: "Barahin-e-Ahmadiyya Part 1 & 2", urduTitle: "براہین احمدیہ حصہ اول و دوم", pageStart: 1 }
+    { title: "Barahin-e-Ahmadiyya Part 1", urduTitle: "براہین احمدیہ حصہ اول", pageStart: 1 },
+    { title: "Barahin-e-Ahmadiyya Part 2", urduTitle: "براہین احمدیہ حصہ دوم", pageStart: 55 }
   ],
   2: [
     { title: "Barahin-e-Ahmadiyya Part 3", urduTitle: "براہین احمدیہ حصہ سوم", pageStart: 1 },
@@ -292,7 +298,7 @@ export default function RuhaniKhazainReader() {
                         "group relative inline-block cursor-pointer px-1 mx-0.5 rounded transition-all select-text",
                         isSelected
                           ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
-                          : "text-indigo-950 font-bold border-b-2 border-indigo-500/70 hover:bg-indigo-50 hover:text-indigo-700"
+                          : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
                       )}
                     >
                       {token}
@@ -358,7 +364,7 @@ export default function RuhaniKhazainReader() {
                     key={tIdx}
                     onClick={() => handleSelectWord(clean)}
                     className={clsx(
-                      "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text",
+                      "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
                       isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
                     )}
                   >
@@ -551,26 +557,56 @@ export default function RuhaniKhazainReader() {
               <p className="text-red-400 font-bold text-sm">{error}</p>
             </div>
           ) : currentPage ? (
-            <div className="w-full max-w-3xl my-auto">
-              {/* Paper Sheet Container */}
-              <div className="bg-white text-zinc-900 shadow-2xl rounded-xl p-8 md:p-14 border border-zinc-200 relative">
-                {/* Page Number Watermark / Header in Book */}
-                <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3 mb-8 text-[11px] font-mono text-zinc-500 select-none">
-                  <span>Ruhani Khazain · Vol {selectedVolume}</span>
-                  <span className="font-bold text-zinc-800">Page {currentPage.page_num || (currentPageIndex + 1)}</span>
-                </div>
+            <div className="w-full max-w-[660px] my-auto">
+              {/* Authentic Ruhani Khazain Printed Lithograph Page Sheet */}
+              <div className="bg-white text-black shadow-2xl p-4 sm:p-6 md:p-8 relative select-text border border-zinc-300">
+                {/* ── Classic Khazain Jadwal (Outer Frame) ── */}
+                <div className="border-[2.5px] border-black bg-white">
+                  {/* Running Header Bar (Book Title, Urdu Page Number, Ruhani Khazain Volume) */}
+                  <div 
+                    className="flex items-center justify-between px-3 py-1.5 border-b-[1.5px] border-black text-black select-none" 
+                    dir="rtl"
+                    style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif" }}
+                  >
+                    {/* Right in RTL: Series & Volume */}
+                    <span className="text-base sm:text-lg font-bold">
+                      روحانی خزائن جلد {toUrduNumerals(selectedVolume || 1)}
+                    </span>
 
-                <div 
-                  className="text-2xl md:text-[26px] leading-[2.6] font-serif text-justify text-zinc-950 whitespace-pre-wrap select-text tracking-wide" 
-                  dir="rtl"
-                  style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" }}
-                >
-                  {renderText(currentPage.text)}
-                </div>
+                    {/* Center: Page Number in Urdu Numerals */}
+                    <span className="text-lg sm:text-xl font-bold tracking-widest px-2">
+                      {toUrduNumerals(currentPage?.page_num || (currentPageIndex + 1))}
+                    </span>
 
-                {/* Page Bottom Footer */}
-                <div className="mt-10 pt-4 border-t border-zinc-200/70 flex justify-center text-[10px] font-mono text-zinc-400 select-none">
-                  — {currentPage.page_num || (currentPageIndex + 1)} —
+                    {/* Left in RTL: Current Book Title */}
+                    {(() => {
+                      const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
+                      const pageNum = currentPage?.page_num || (currentPageIndex + 1);
+                      const active = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
+                      return (
+                        <span className="text-base sm:text-lg font-bold">
+                          {active?.urduTitle || "براہین احمدیہ"}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  {/* ~3.5px White Border Gap between Outer Frame and Inner Frame */}
+                  <div className="p-[3.5px] bg-white">
+                    {/* Inner Thin Border Box Framing Body Text */}
+                    <div className="border border-black p-4 sm:p-5 md:p-6 min-h-[560px] bg-white">
+                      <div 
+                        className="text-[19px] sm:text-[21px] md:text-[22px] leading-[2.5] sm:leading-[2.65] md:leading-[2.75] font-serif text-justify text-black whitespace-pre-wrap select-text" 
+                        dir="rtl"
+                        style={{ 
+                          fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
+                          textAlignLast: 'right'
+                        }}
+                      >
+                        {renderText(currentPage.text)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -7,6 +7,14 @@
 }
 
 @font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Manzoor Naskh Al-Islam';
   src: url('/fonts/ManzoorNaskh-alislam.ttf') format('truetype');
   font-weight: normal;
