@@ -1,0 +1,294 @@
+{
+  "مبسوط": {
+    "translit": "mabsoot",
+    "meaning": "spread out, comprehensive, voluminous, detailed, extended"
+  },
+  "ضخامت": {
+    "translit": "zakhaamat",
+    "meaning": "thickness, bulkiness, large volume, massive size"
+  },
+  "اعانت": {
+    "translit": "i'aanat",
+    "meaning": "assistance, aid, financial backing, support"
+  },
+  "اولی العزم": {
+    "translit": "ulul-'azm",
+    "meaning": "men of high resolve, determined, steadfast leaders"
+  },
+  "مستثنیٰ": {
+    "translit": "mustasna",
+    "meaning": "exempted, excluded, exception to a rule"
+  },
+  "کارخیر": {
+    "translit": "kaar-e-khair",
+    "meaning": "virtuous work, noble deed, charitable endeavor"
+  },
+  "اعلائے کلمہ": {
+    "translit": "i'laa-e-kalimah",
+    "meaning": "exalting the word of God, proclaiming truth"
+  },
+  "سعادت اخروی": {
+    "translit": "sa'aadat-e-ukhrawi",
+    "meaning": "salvation in the hereafter, eternal bliss"
+  },
+  "توقف": {
+    "translit": "tawaqquf",
+    "meaning": "delay, pause, hesitation, suspension"
+  },
+  "تالیف": {
+    "translit": "ta'leef",
+    "meaning": "composition, compilation, authorship of a book"
+  },
+  "تصنیف": {
+    "translit": "tasneef",
+    "meaning": "original literary creation, authored work"
+  },
+  "عمائد": {
+    "translit": "'amaa'id",
+    "meaning": "notables, dignitaries, pillars of community"
+  },
+  "اکابر": {
+    "translit": "akaabir",
+    "meaning": "elders, grandees, prominent superiors"
+  },
+  "راغب": {
+    "translit": "raaghib",
+    "meaning": "desirous, inclined, motivated, keen"
+  },
+  "مستفیض": {
+    "translit": "mustafeed",
+    "meaning": "beneficiary, one who derives knowledge or spiritual grace"
+  },
+  "افادہ": {
+    "translit": "ifaadah",
+    "meaning": "imparting benefit, educating, teaching utility"
+  },
+  "افاضہ": {
+    "translit": "ifaadhah",
+    "meaning": "bestowing spiritual blessings, outpouring of grace"
+  },
+  "صداقت": {
+    "translit": "sadaaqat",
+    "meaning": "truthfulness, veracity, authenticity, sincerity"
+  },
+  "حقیت": {
+    "translit": "haqqiyyat",
+    "meaning": "truth, righteousness, factual validity"
+  },
+  "براہین": {
+    "translit": "baraaheen",
+    "meaning": "definitive proofs, conclusive theological arguments"
+  },
+  "برہمی": {
+    "translit": "barhami",
+    "meaning": "agitation, disorder, perturbation, confusion"
+  },
+  "ابتری": {
+    "translit": "abtari",
+    "meaning": "chaos, ruin, deplorable condition, degradation"
+  },
+  "طبائع": {
+    "translit": "tabaa'i",
+    "meaning": "human dispositions, temperaments, natures"
+  },
+  "ابطال": {
+    "translit": "ibtaal",
+    "meaning": "nullification, invalidation, decisive refutation"
+  },
+  "ازالہ": {
+    "translit": "izaalah",
+    "meaning": "eradication, removal, dispelling of error"
+  },
+  "معاندین": {
+    "translit": "mu'aanideen",
+    "meaning": "obstinate opponents, hostile adversaries"
+  },
+  "ملزم": {
+    "translit": "mulzam",
+    "meaning": "refuted by logic, convinced/silenced with proof"
+  },
+  "اغوا": {
+    "translit": "ighwa",
+    "meaning": "seduction, misleading, deceiving someone"
+  },
+  "اضلال": {
+    "translit": "izlaal",
+    "meaning": "leading astray, causing to err from truth"
+  },
+  "وسوسہ انداز": {
+    "translit": "waswasah-andaaz",
+    "meaning": "whisperer of doubts, instigator of insidious thoughts"
+  },
+  "اصطباغ": {
+    "translit": "istibagh",
+    "meaning": "baptism, ritual immersion, ceremonial dyeing"
+  },
+  "ارتداد": {
+    "translit": "irtidaad",
+    "meaning": "apostasy, turning back from faith"
+  },
+  "الحاد": {
+    "translit": "ilhaad",
+    "meaning": "atheism, irreligion, heresy, deviation"
+  },
+  "پرآشوب": {
+    "translit": "pur-aashob",
+    "meaning": "turbulent, tempestuous, full of strife"
+  },
+  "افحام": {
+    "translit": "ifhaam",
+    "meaning": "completely silencing an opponent in debate"
+  },
+  "مخاصمین": {
+    "translit": "mukhasimeen",
+    "meaning": "adversaries in disputation, contending parties"
+  },
+  "عندیات": {
+    "translit": "'indiyyaat",
+    "meaning": "subjective opinions, preconceived personal notions"
+  },
+  "مقتضا": {
+    "translit": "muqtada",
+    "meaning": "requisite demand, requirement, essential condition"
+  },
+  "صانع": {
+    "translit": "saani'",
+    "meaning": "the Creator, Artificer, Supreme Fashioner"
+  },
+  "تنازع": {
+    "translit": "tanaazu'",
+    "meaning": "dispute, discord, altercation, controversy"
+  },
+  "فروگذاشت": {
+    "translit": "faro-guzasht",
+    "meaning": "omission, oversight, negligence, lapse"
+  },
+  "منقوش خاطر": {
+    "translit": "manqoosh-e-khaatir",
+    "meaning": "firmly impressed on mind, engraved on the heart"
+  },
+  "استحقاق": {
+    "translit": "istihqaaq",
+    "meaning": "entitlement, intrinsic merit, rightful claim"
+  },
+  "غایت": {
+    "translit": "ghaayat",
+    "meaning": "utmost limit, ultimate objective, pinnacle"
+  },
+  "تسلیم": {
+    "translit": "tasleem",
+    "meaning": "acceptance, acknowledgment, willing submission"
+  },
+  "معقولہ": {
+    "translit": "ma'qoolah",
+    "meaning": "rational proposition, deductive intellectual concept"
+  },
+  "منقولہ": {
+    "translit": "manqoolah",
+    "meaning": "transmitted tradition, historical report"
+  },
+  "حجت": {
+    "translit": "hujjat",
+    "meaning": "conclusive evidence, decisive proof, disputation"
+  },
+  "اعجاز": {
+    "translit": "i'jaaz",
+    "meaning": "inimitability, miraculous wonder, supernatural sign"
+  },
+  "دافع": {
+    "translit": "daafi'",
+    "meaning": "repelling, averting, driver away of evil"
+  },
+  "تریاق": {
+    "translit": "tiryaaq",
+    "meaning": "antidote, sovereign remedy, panacea"
+  },
+  "تذکرہ": {
+    "translit": "tazkirah",
+    "meaning": "memoir, recollection, biographical account"
+  },
+  "معارف": {
+    "translit": "ma'aarif",
+    "meaning": "divine insights, mystical knowledge, higher truths"
+  },
+  "مواہب": {
+    "translit": "mawaahib",
+    "meaning": "divine endowments, spontaneous talents, gifts"
+  },
+  "الہام": {
+    "translit": "ilhaam",
+    "meaning": "divine inspiration, revelation bestowed on righteous"
+  },
+  "وحید": {
+    "translit": "waheed",
+    "meaning": "peerless, unique, solitary, singular"
+  },
+  "متنزہ": {
+    "translit": "mutanazzah",
+    "meaning": "transcendent, immaculate, far above flaws"
+  },
+  "سہیم": {
+    "translit": "saheem",
+    "meaning": "partner, associate, sharer in possession"
+  },
+  "قسیم": {
+    "translit": "qaseem",
+    "meaning": "co-sharer, counterpart, apportioner"
+  },
+  "ناپدید": {
+    "translit": "naa-padeed",
+    "meaning": "vanished, invisible, extinct, eradicated"
+  },
+  "مروجہ": {
+    "translit": "murawwajah",
+    "meaning": "prevalent, customary, commonly in vogue"
+  },
+  "طریقت": {
+    "translit": "tareeqat",
+    "meaning": "spiritual pathway, esoteric method of devotion"
+  },
+  "شریعت": {
+    "translit": "sharee'at",
+    "meaning": "revealed divine law, sacred code of conduct"
+  },
+  "فلسفہ": {
+    "translit": "falsafah",
+    "meaning": "philosophy, rational reasoning, theoretical system"
+  },
+  "مباحثہ": {
+    "translit": "mubaahasah",
+    "meaning": "formal debate, scholarly discourse, disputation"
+  },
+  "انوار": {
+    "translit": "anwaar",
+    "meaning": "spiritual luminaries, rays of light, splendors"
+  },
+  "حقائق": {
+    "translit": "haqaa'iq",
+    "meaning": "underlying realities, fundamental verities"
+  },
+  "دقائق": {
+    "translit": "daqaa'iq",
+    "meaning": "subtleties, intricate details, profound nuances"
+  },
+  "منکر": {
+    "translit": "munkir",
+    "meaning": "denier, disbeliever, skeptic, refuser"
+  },
+  "ملحد": {
+    "translit": "mulhid",
+    "meaning": "heretic, atheist, one turning away from religion"
+  },
+  "تائید": {
+    "translit": "taa'eed",
+    "meaning": "affirmation, divine corroboration, reinforcement"
+  },
+  "نصرت": {
+    "translit": "nusrat",
+    "meaning": "divine aid, victorious assistance, triumph"
+  },
+  "توفیق": {
+    "translit": "taufeeq",
+    "meaning": "divinely granted capability, enablement to do good"
+  }
+}

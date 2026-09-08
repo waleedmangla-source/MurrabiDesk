@@ -1,8 +1,17 @@
 "use client";
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X } from 'lucide-react';
 import { clsx } from 'clsx';
+import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
+
+interface SelectedWordInfo {
+  word: string;
+  translit?: string;
+  englishMeaning?: string;
+  rekhtaUrl: string;
+  googleUrl: string;
+  loading?: boolean;
+}
 
 // Map of Ruhani Khazain Volumes to major books contained within them
 const KHAZAIN_BOOKS: Record<number, { title: string; urduTitle: string; pageStart: number }[]> = {
@@ -122,8 +131,17 @@ export default function RuhaniKhazainReader() {
   // Dropdown states for each volume book breakdown
   const [expandedVolumes, setExpandedVolumes] = useState<Record<number, boolean>>({ 1: true });
 
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiData, setAiData] = useState<{ summary: string, hardWords: {word: string, meaning: string}[] } | null>(null);
+  // Pre-compiled English dictionary & Selected Word Inspector
+  const [dictionary, setDictionary] = useState<Record<string, { translit?: string; meaning: string }>>({});
+  const [selectedWord, setSelectedWord] = useState<SelectedWordInfo | null>(null);
+
+  // Load static English dictionary on mount
+  useEffect(() => {
+    fetch('/ruhani-khazain/dictionary-en.json')
+      .then(res => res.json())
+      .then(data => setDictionary(data || {}))
+      .catch(err => console.warn('Could not load dictionary-en.json:', err));
+  }, []);
 
   // Currently reading persistence in localStorage
   useEffect(() => {
@@ -169,7 +187,6 @@ export default function RuhaniKhazainReader() {
     const fetchVolume = async () => {
       setLoading(true);
       setError(null);
-      setAiData(null);
       try {
         const res = await fetch(`/ruhani-khazain/volume_${selectedVolume}.json`);
         if (!res.ok) throw new Error('Volume not found');
@@ -187,72 +204,173 @@ export default function RuhaniKhazainReader() {
 
   const currentPage = pages[currentPageIndex];
 
-  const handleAnalyze = async () => {
-    if (!currentPage?.text) return;
-    setAiLoading(true);
-    setAiData(null);
-    try {
-      const res = await fetch('/api/beta/khazain-analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: currentPage.text })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setAiData(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setAiLoading(false);
-    }
-  };
+  // Select a word to inspect in the right-hand panel & fetch live definition if needed
+  const handleSelectWord = useCallback(async (rawWord: string) => {
+    const word = rawWord.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '').trim();
+    if (!word) return;
 
-  // Helper to render text with tooltips for hard words
-  const renderText = (text: string) => {
-    if (!aiData?.hardWords || aiData.hardWords.length === 0) {
-      return <span>{text}</span>;
-    }
-    
-    let rendered = text;
-    // VERY simple string replacement (has flaws with sub-word matching but works for prototype)
-    // A better approach would be regex word boundaries, but Urdu word boundaries can be tricky.
-    
-    // Sort words by length descending so longer words get replaced first
-    const sortedWords = [...aiData.hardWords].sort((a, b) => b.word.length - a.word.length);
-    
-    // Using a simple split/map to avoid regex issues with Arabic/Urdu chars
-    // This is a naive approach, let's refine:
-    
-    // For now, we'll just return it as a single element, but in React we need an array of elements.
-    // Let's do a safer pass:
-    let elements: React.ReactNode[] = [text];
-    
-    sortedWords.forEach(({ word, meaning }) => {
-      const newElements: React.ReactNode[] = [];
-      elements.forEach(element => {
-        if (typeof element === 'string') {
-          const parts = element.split(word);
-          parts.forEach((part, i) => {
-            newElements.push(part);
-            if (i < parts.length - 1) {
-              newElements.push(
-                <span key={`${word}-${i}`} className="group relative inline-block cursor-help text-indigo-800 font-bold border-b-2 border-indigo-500/60 hover:bg-indigo-50 rounded px-1 transition-colors">
-                  {word}
-                  <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-white text-zinc-900 border border-zinc-200 shadow-xl text-xs font-medium p-2.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 text-right leading-relaxed" dir="rtl">
-                    {meaning}
-                  </span>
-                </span>
-              );
-            }
-          });
-        } else {
-          newElements.push(element);
-        }
-      });
-      elements = newElements;
+    const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(word)}`;
+    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(word + ' urdu meaning in english')}`;
+
+    const localEntry = dictionary[word];
+    setSelectedWord({
+      word,
+      translit: localEntry?.translit,
+      englishMeaning: localEntry?.meaning,
+      rekhtaUrl,
+      googleUrl,
+      loading: !localEntry?.meaning
     });
 
-    return <>{elements.map((el, i) => <React.Fragment key={i}>{el}</React.Fragment>)}</>;
+    if (!localEntry?.meaning) {
+      try {
+        const res = await fetch(`/api/dictionary/lookup?word=${encodeURIComponent(word)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSelectedWord({
+            word,
+            translit: data.transliteration,
+            englishMeaning: data.englishMeaning,
+            rekhtaUrl: data.rekhtaUrl || rekhtaUrl,
+            googleUrl: data.googleUrl || googleUrl,
+            loading: false
+          });
+          if (data.englishMeaning) {
+            setDictionary(prev => ({
+              ...prev,
+              [word]: { translit: data.transliteration, meaning: data.englishMeaning }
+            }));
+          }
+        } else {
+          setSelectedWord(prev => prev ? { ...prev, loading: false } : null);
+        }
+      } catch {
+        setSelectedWord(prev => prev ? { ...prev, loading: false } : null);
+      }
+    }
+  }, [dictionary]);
+
+  // Helper to render text with automatic vocabulary tooltips and click-to-inspect
+  const renderText = (text: string) => {
+    if (!text) return null;
+
+    const paragraphs = text.split('\n');
+
+    return (
+      <>
+        {paragraphs.map((para, pIdx) => {
+          if (!para.trim()) {
+            return <div key={pIdx} className="h-4" />;
+          }
+
+          // Split line into words and delimiters while preserving spaces & punctuation
+          const tokens = para.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
+
+          return (
+            <p key={pIdx} className="my-2 leading-[2.7]">
+              {tokens.map((token, tIdx) => {
+                const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
+                if (!clean) {
+                  return <React.Fragment key={tIdx}>{token}</React.Fragment>;
+                }
+
+                const dictEntry = dictionary[clean];
+                const isSelected = selectedWord?.word === clean;
+
+                // Word is in pre-identified vocabulary dictionary
+                if (dictEntry) {
+                  const meaning = dictEntry.meaning;
+                  const translit = dictEntry.translit;
+                  const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(clean)}`;
+                  const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(clean + ' urdu meaning in english')}`;
+
+                  return (
+                    <span
+                      key={tIdx}
+                      onClick={() => handleSelectWord(clean)}
+                      className={clsx(
+                        "group relative inline-block cursor-pointer px-1 mx-0.5 rounded transition-all select-text",
+                        isSelected
+                          ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
+                          : "text-indigo-950 font-bold border-b-2 border-indigo-500/70 hover:bg-indigo-50 hover:text-indigo-700"
+                      )}
+                    >
+                      {token}
+                      {/* White Tooltip Bubble with English definition & Rekhta/Google links */}
+                      <span
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
+                        dir="ltr"
+                      >
+                        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-serif font-bold text-lg text-zinc-900" dir="rtl">
+                              {clean}
+                            </span>
+                            {translit && (
+                              <span className="text-[11px] font-mono italic text-zinc-500">
+                                ({translit})
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">
+                            Vocabulary
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-zinc-700 font-medium leading-relaxed mb-2.5">
+                          {meaning}
+                        </p>
+
+                        <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-100 text-[10px] font-bold">
+                          <a
+                            href={rekhtaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-colors"
+                            title="Open entry in Rekhta Dictionary"
+                          >
+                            <Globe size={11} />
+                            <span>Rekhta</span>
+                            <ExternalLink size={9} />
+                          </a>
+                          <a
+                            href={googleUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200/60 transition-colors"
+                            title="Search meaning on Google"
+                          >
+                            <Search size={11} />
+                            <span>Google</span>
+                            <ExternalLink size={9} />
+                          </a>
+                        </div>
+                      </span>
+                    </span>
+                  );
+                }
+
+                // Regular word: also clickable to inspect in the right-hand panel
+                return (
+                  <span
+                    key={tIdx}
+                    onClick={() => handleSelectWord(clean)}
+                    className={clsx(
+                      "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text",
+                      isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
+                    )}
+                  >
+                    {token}
+                  </span>
+                );
+              })}
+            </p>
+          );
+        })}
+      </>
+    );
   };
 
   return (
@@ -472,7 +590,7 @@ export default function RuhaniKhazainReader() {
             <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl glass bg-black/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:scale-[1.02]">
               {/* Previous Page Button */}
               <button 
-                onClick={() => { setCurrentPageIndex(Math.max(0, currentPageIndex - 1)); setAiData(null); }}
+                onClick={() => setCurrentPageIndex(Math.max(0, currentPageIndex - 1))}
                 disabled={currentPageIndex === 0 || loading}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
                 title="Previous Page"
@@ -490,7 +608,7 @@ export default function RuhaniKhazainReader() {
 
               {/* Next Page Button */}
               <button 
-                onClick={() => { setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1)); setAiData(null); }}
+                onClick={() => setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1))}
                 disabled={currentPageIndex === pages.length - 1 || loading}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
                 title="Next Page"
@@ -503,80 +621,123 @@ export default function RuhaniKhazainReader() {
         )}
       </div>
 
-      {/* ── RIGHT PANEL: AI CONTEXT & VOCABULARY ── */}
+      {/* ── RIGHT PANEL: CURRENTLY SELECTED WORD ONLY ── */}
       <div className="w-full lg:w-[320px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]">
-              <Wand2 size={16} />
+              <Search size={16} />
             </div>
             <div>
               <h2 className="text-sm font-black italic tracking-tight text-[var(--foreground)] uppercase">
-                AI Assistant
+                Word Inspector
               </h2>
               <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
-                Context & Meaning
+                Selected Term
               </p>
             </div>
           </div>
+
+          {selectedWord && (
+            <button
+              onClick={() => setSelectedWord(null)}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-colors"
+              title="Clear selection"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
-          <button
-            onClick={handleAnalyze}
-            disabled={aiLoading || !currentPage}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider text-white transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-lg hover:opacity-90"
-            style={{ background: 'var(--accent-main)' }}
-          >
-            {aiLoading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
-            {aiLoading ? "Analyzing Page..." : "Analyze Current Page"}
-          </button>
-
-          {aiData && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
-              {/* Summary Card */}
-              <div className="glass-card p-4 rounded-xl border border-white/5 bg-white/5 space-y-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                  <Info size={13} />
-                  <span>Page Synopsis</span>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
+          {selectedWord ? (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+              {/* Word Header Card */}
+              <div className="glass-card p-6 rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center text-center relative overflow-hidden shadow-sm">
+                <div className="text-4xl font-serif font-bold text-[var(--foreground)] py-1 select-text" dir="rtl">
+                  {selectedWord.word}
                 </div>
-                <p className="text-xs text-[var(--foreground)]/90 leading-relaxed font-medium">
-                  {aiData.summary}
-                </p>
+                {selectedWord.translit && (
+                  <span className="text-xs font-mono italic text-[var(--accent-main)] font-semibold mt-1">
+                    /{selectedWord.translit}/
+                  </span>
+                )}
               </div>
 
-              {/* Hard Words Gloss */}
-              {aiData.hardWords && aiData.hardWords.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
-                      Difficult Words ({aiData.hardWords.length})
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    {aiData.hardWords.map((item, idx) => (
-                      <div 
-                        key={idx} 
-                        className="glass p-3 rounded-xl border border-white/5 bg-white/5 text-right flex flex-col items-end gap-1 group hover:border-[var(--accent-main)]/30 transition-colors" 
-                        dir="rtl"
-                      >
-                        <span className="font-bold text-[var(--accent-main)] text-base font-serif">
-                          {item.word}
-                        </span>
-                        <span className="text-xs text-[var(--foreground)]/80 leading-normal font-sans">
-                          {item.meaning}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+              {/* English Definition Card */}
+              <div className="glass-card p-5 rounded-2xl border border-white/10 bg-white/5 space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
+                  <BookText size={12} /> English Definition
+                </span>
 
-          {!aiData && !aiLoading && (
-            <div className="p-6 text-center text-xs text-[var(--text-dim)] border border-dashed border-white/10 rounded-xl">
-              Tap &ldquo;Analyze Current Page&rdquo; to extract archaic vocabulary definitions and an executive summary.
+                {selectedWord.loading ? (
+                  <div className="flex items-center gap-2.5 py-4 text-xs text-[var(--text-muted)]">
+                    <Loader2 size={16} className="animate-spin text-[var(--accent-main)]" />
+                    <span>Searching Rekhta Dictionary...</span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[var(--foreground)] leading-relaxed font-medium pt-1 select-text">
+                    {selectedWord.englishMeaning || "Detailed entry available on Rekhta or Google Search."}
+                  </p>
+                )}
+              </div>
+
+              {/* Web Search & External Dictionary Links */}
+              <div className="space-y-2.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] px-1">
+                  External Dictionaries
+                </span>
+
+                <a
+                  href={selectedWord.rekhtaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-[var(--accent-main)]/40 hover:bg-white/10 text-[var(--foreground)] transition-all group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
+                      RD
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xs font-bold flex items-center gap-1 group-hover:text-[var(--accent-main)]">
+                        <span>Rekhta Dictionary</span>
+                      </div>
+                      <p className="text-[9px] text-[var(--text-dim)]">English, Urdu & Hindi meanings</p>
+                    </div>
+                  </div>
+                  <ExternalLink size={14} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                </a>
+
+                <a
+                  href={selectedWord.googleUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-[var(--accent-main)]/40 hover:bg-white/10 text-[var(--foreground)] transition-all group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
+                      G
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xs font-bold flex items-center gap-1 group-hover:text-[var(--accent-main)]">
+                        <span>Google Search</span>
+                      </div>
+                      <p className="text-[9px] text-[var(--text-dim)]">Find literary & historical contexts</p>
+                    </div>
+                  </div>
+                  <ExternalLink size={14} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full min-h-[320px] text-center p-6 border border-dashed border-white/10 rounded-2xl opacity-60">
+              <Search size={32} className="text-[var(--accent-main)] mb-3 opacity-60" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
+                No Word Selected
+              </h3>
+              <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[200px]">
+                Click any word in the text to inspect its English definition and explore it in Rekhta or Google.
+              </p>
             </div>
           )}
         </div>
