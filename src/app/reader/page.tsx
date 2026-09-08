@@ -395,8 +395,8 @@ export default function RuhaniKhazainReader() {
       </div>
 
       {/* ── MAIN CONTENT: BOOK READING VIEW ── */}
-      <div className="flex-1 flex flex-col h-full min-w-0 bg-black/10">
-        {/* Top Control Bar */}
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-black/10 relative overflow-hidden">
+        {/* Top Control Bar (Clean header with volume title) */}
         <div className="h-16 border-b border-white/5 px-6 flex items-center justify-between glass bg-black/20 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
@@ -410,35 +410,17 @@ export default function RuhaniKhazainReader() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => { setCurrentPageIndex(Math.max(0, currentPageIndex - 1)); setAiData(null); }}
-              disabled={currentPageIndex === 0 || loading}
-              className="p-2 rounded-xl glass border border-white/10 text-[var(--foreground)] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
-              title="Previous Page"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            
             <div className="px-3 py-1.5 rounded-xl glass border border-white/5 bg-white/5 text-xs font-mono font-bold text-[var(--foreground)] flex items-center gap-1.5">
               <span>Page</span>
               <span className="text-[var(--accent-main)]">{currentPage?.page_num || (currentPageIndex + 1)}</span>
               <span className="opacity-30">/</span>
               <span className="opacity-60">{pages.length || "..."}</span>
             </div>
-
-            <button 
-              onClick={() => { setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1)); setAiData(null); }}
-              disabled={currentPageIndex === pages.length - 1 || loading}
-              className="p-2 rounded-xl glass border border-white/10 text-[var(--foreground)] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
-              title="Next Page"
-            >
-              <ChevronRight size={18} />
-            </button>
           </div>
         </div>
 
         {/* Scrollable Reading Canvas */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 flex justify-center">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 pb-28 flex justify-center">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 h-full my-auto opacity-70">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
@@ -483,6 +465,42 @@ export default function RuhaniKhazainReader() {
             </div>
           )}
         </div>
+
+        {/* ── FLOATING BOTTOM-CENTER PAGE CONTROLS ── */}
+        {currentPage && !loading && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center justify-center">
+            <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl glass bg-black/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:scale-[1.02]">
+              {/* Previous Page Button */}
+              <button 
+                onClick={() => { setCurrentPageIndex(Math.max(0, currentPageIndex - 1)); setAiData(null); }}
+                disabled={currentPageIndex === 0 || loading}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                title="Previous Page"
+              >
+                <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
+                <span className="text-xs font-bold uppercase tracking-wider">Prev</span>
+              </button>
+
+              {/* Page Indicator Badge */}
+              <div className="px-3 py-1 text-xs font-mono font-black text-white flex items-center gap-1.5 border-x border-white/10">
+                <span className="text-[var(--accent-main)]">{currentPage?.page_num || (currentPageIndex + 1)}</span>
+                <span className="opacity-30">/</span>
+                <span className="opacity-60">{pages.length || "..."}</span>
+              </div>
+
+              {/* Next Page Button */}
+              <button 
+                onClick={() => { setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1)); setAiData(null); }}
+                disabled={currentPageIndex === pages.length - 1 || loading}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                title="Next Page"
+              >
+                <span className="text-xs font-bold uppercase tracking-wider">Next</span>
+                <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT PANEL: AI CONTEXT & VOCABULARY ── */}
