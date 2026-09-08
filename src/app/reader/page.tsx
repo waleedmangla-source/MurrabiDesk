@@ -435,7 +435,7 @@ export default function RuhaniKhazainReader() {
           ) : currentPage ? (
             <div className="w-full max-w-3xl my-auto">
               {/* Paper Sheet Container */}
-              <div className="bg-[#fbf8f1] text-zinc-900 shadow-2xl rounded-xl p-8 md:p-14 border border-[#e5decb] relative">
+              <div className="bg-white text-zinc-900 shadow-2xl rounded-xl p-8 md:p-14 border border-zinc-200 relative">
                 {/* Page Number Watermark / Header in Book */}
                 <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3 mb-8 text-[11px] font-mono text-zinc-500 select-none">
                   <span>Ruhani Khazain · Vol {selectedVolume}</span>
