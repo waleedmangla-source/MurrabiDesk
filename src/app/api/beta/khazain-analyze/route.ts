@@ -57,7 +57,7 @@ Respond in strict JSON format matching this structure exactly (no markdown code 
     };
 
     // Try primary and fallback Gemini models
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+    const modelsToTry = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
     let textRes: Response | null = null;
     let lastError = '';
 
