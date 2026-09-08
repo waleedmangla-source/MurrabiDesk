@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X } from 'lucide-react';
+import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
 
@@ -140,6 +140,16 @@ export default function RuhaniKhazainReader() {
   // Pre-compiled English dictionary & Selected Word Inspector
   const [dictionary, setDictionary] = useState<Record<string, { translit?: string; meaning: string }>>({});
   const [selectedWord, setSelectedWord] = useState<SelectedWordInfo | null>(null);
+
+  // MurrabiAI Page Context Analysis state
+  const [aiData, setAiData] = useState<{
+    summary?: string;
+    themes?: string[];
+    hardWords?: { word: string; meaning: string; urduMeaning?: string }[];
+  } | null>(null);
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiCache, setAiCache] = useState<Record<string, any>>({});
 
   // Dynamic font sizing to fit the 9x11 sheet of paper
   const [fontSize, setFontSize] = useState<number>(15.5);
@@ -317,6 +327,66 @@ export default function RuhaniKhazainReader() {
       }
     }
   }, [dictionary]);
+
+  // Analyze current page with MurrabiAI to get theological context and vocabulary
+  const handleAnalyzePage = useCallback(async () => {
+    if (!currentPage?.text) return;
+
+    const cacheKey = `${selectedVolume || 1}-${currentPageIndex}`;
+    if (aiCache[cacheKey]) {
+      setAiData(aiCache[cacheKey]);
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const res = await fetch('/api/beta/khazain-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: currentPage.text })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Analysis failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      setAiData(data);
+      setAiCache(prev => ({ ...prev, [cacheKey]: data }));
+
+      // Automatically register any newly identified hard words into the dictionary
+      if (Array.isArray(data.hardWords) && data.hardWords.length > 0) {
+        setDictionary(prev => {
+          const next = { ...prev };
+          data.hardWords.forEach((hw: any) => {
+            if (hw.word && hw.meaning && !next[hw.word]) {
+              next[hw.word] = { meaning: hw.meaning };
+            }
+          });
+          return next;
+        });
+      }
+    } catch (err: any) {
+      console.error('[MurabbiAI Analyze error]:', err);
+      setAiError(err.message || 'Failed to analyze page');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [currentPage?.text, selectedVolume, currentPageIndex, aiCache]);
+
+  // Sync AI data from cache when page changes
+  useEffect(() => {
+    const cacheKey = `${selectedVolume || 1}-${currentPageIndex}`;
+    if (aiCache[cacheKey]) {
+      setAiData(aiCache[cacheKey]);
+    } else {
+      setAiData(null);
+    }
+    setAiError(null);
+  }, [selectedVolume, currentPageIndex, aiCache]);
 
   // Helper to render text with automatic vocabulary tooltips and click-to-inspect
   const renderText = (text: string) => {
@@ -725,124 +795,227 @@ export default function RuhaniKhazainReader() {
         )}
       </div>
 
-      {/* ── RIGHT PANEL: CURRENTLY SELECTED WORD ONLY ── */}
-      <div className="w-full lg:w-[320px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
+      {/* ── RIGHT PANEL: MurrabiAI (Context Analysis & Vocabulary) ── */}
+      <div className="w-full lg:w-[340px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]">
-              <Search size={16} />
+              <Sparkles size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-black italic tracking-tight text-[var(--foreground)] uppercase">
-                Word Inspector
+              <h2 className="text-sm font-black italic tracking-tight text-white uppercase flex items-center gap-1.5">
+                <span>MurrabiAI</span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-main)] lowercase">
+                  intel
+                </span>
               </h2>
               <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
-                Selected Term
+                Context & Analysis
               </p>
             </div>
           </div>
 
-          {selectedWord && (
-            <button
-              onClick={() => setSelectedWord(null)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--foreground)] transition-colors"
-              title="Clear selection"
-            >
-              <X size={14} />
-            </button>
-          )}
+          <div className="flex items-center gap-1">
+            {selectedWord && (
+              <button
+                onClick={() => setSelectedWord(null)}
+                className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-colors"
+                title="Clear selected word"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
-          {selectedWord ? (
-            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          {/* ── Action: Analyze Page Context Button ── */}
+          <div className="space-y-2">
+            <button
+              onClick={handleAnalyzePage}
+              disabled={aiLoading || !currentPage}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent-main)]/15 transition-all disabled:opacity-40 disabled:pointer-events-none"
+            >
+              {aiLoading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  <span>Analyzing Page Context...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={15} />
+                  <span>{aiData ? "Re-Analyze Page Context" : "Analyze Page & Context"}</span>
+                </>
+              )}
+            </button>
+
+            {aiError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
+                <Info size={14} className="shrink-0 mt-0.5" />
+                <span>{aiError}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Selected Term Card (if any word is selected) ── */}
+          {selectedWord && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 border-b border-white/10 pb-5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
+                  <Search size={11} /> Selected Term
+                </span>
+                <button
+                  onClick={() => setSelectedWord(null)}
+                  className="text-[10px] text-[var(--text-dim)] hover:text-white flex items-center gap-0.5"
+                >
+                  <X size={11} /> Dismiss
+                </button>
+              </div>
+
               {/* Word Header Card */}
-              <div className="glass-card p-6 rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center text-center relative overflow-hidden shadow-sm">
-                <div className="text-4xl font-serif font-bold text-[var(--foreground)] py-1 select-text" dir="rtl">
+              <div className="glass-card p-5 rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center text-center relative overflow-hidden shadow-sm">
+                <div className="text-3xl font-serif font-bold text-[var(--foreground)] py-1 select-text" dir="rtl">
                   {selectedWord.word}
                 </div>
                 {selectedWord.translit && (
-                  <span className="text-xs font-mono italic text-[var(--accent-main)] font-semibold mt-1">
+                  <span className="text-xs font-mono italic text-[var(--accent-main)] font-semibold mt-0.5">
                     /{selectedWord.translit}/
                   </span>
                 )}
               </div>
 
               {/* English Definition Card */}
-              <div className="glass-card p-5 rounded-2xl border border-white/10 bg-white/5 space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
-                  <BookText size={12} /> English Definition
+              <div className="glass-card p-4 rounded-xl border border-white/10 bg-white/5 space-y-1.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)] flex items-center gap-1">
+                  <BookText size={11} /> English Definition
                 </span>
 
                 {selectedWord.loading ? (
-                  <div className="flex items-center gap-2.5 py-4 text-xs text-[var(--text-muted)]">
-                    <Loader2 size={16} className="animate-spin text-[var(--accent-main)]" />
-                    <span>Searching Rekhta Dictionary...</span>
+                  <div className="flex items-center gap-2 py-2 text-xs text-[var(--text-muted)]">
+                    <Loader2 size={14} className="animate-spin text-[var(--accent-main)]" />
+                    <span>Searching Rekhta...</span>
                   </div>
                 ) : (
-                  <p className="text-sm text-[var(--foreground)] leading-relaxed font-medium pt-1 select-text">
+                  <p className="text-xs text-[var(--foreground)] leading-relaxed font-medium select-text">
                     {selectedWord.englishMeaning || "Detailed entry available on Rekhta or Google Search."}
                   </p>
                 )}
               </div>
 
-              {/* Web Search & External Dictionary Links */}
-              <div className="space-y-2.5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] px-1">
-                  External Dictionaries
-                </span>
-
+              {/* External Links */}
+              <div className="grid grid-cols-2 gap-2">
                 <a
                   href={selectedWord.rekhtaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-[var(--accent-main)]/40 hover:bg-white/10 text-[var(--foreground)] transition-all group"
+                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-amber-500/40 hover:bg-amber-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
-                      RD
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-bold flex items-center gap-1 group-hover:text-[var(--accent-main)]">
-                        <span>Rekhta Dictionary</span>
-                      </div>
-                      <p className="text-[9px] text-[var(--text-dim)]">English, Urdu & Hindi meanings</p>
-                    </div>
-                  </div>
-                  <ExternalLink size={14} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  <Globe size={13} className="text-amber-400" />
+                  <span>Rekhta</span>
+                  <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
                 </a>
 
                 <a
                   href={selectedWord.googleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-[var(--accent-main)]/40 hover:bg-white/10 text-[var(--foreground)] transition-all group"
+                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-blue-500/40 hover:bg-blue-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
-                      G
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-bold flex items-center gap-1 group-hover:text-[var(--accent-main)]">
-                        <span>Google Search</span>
-                      </div>
-                      <p className="text-[9px] text-[var(--text-dim)]">Find literary & historical contexts</p>
-                    </div>
-                  </div>
-                  <ExternalLink size={14} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  <Search size={13} className="text-blue-400" />
+                  <span>Google</span>
+                  <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
                 </a>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full min-h-[320px] text-center p-6 border border-dashed border-white/10 rounded-2xl opacity-60">
-              <Search size={32} className="text-[var(--accent-main)] mb-3 opacity-60" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
-                No Word Selected
-              </h3>
-              <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[200px]">
-                Click any word in the text to inspect its English definition and explore it in Rekhta or Google.
-              </p>
+          )}
+
+          {/* ── Page Context & Analysis Content ── */}
+          {aiData ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {/* Context Summary */}
+              {aiData.summary && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
+                      <BookOpen size={12} /> Page Context & Synopsis
+                    </span>
+                    <span className="text-[9px] font-mono text-[var(--text-dim)]">
+                      P.{currentPage?.page_num || (currentPageIndex + 1)}
+                    </span>
+                  </div>
+                  <div className="p-4 rounded-2xl glass border border-white/10 bg-white/5 text-xs text-[var(--foreground)] leading-relaxed select-text">
+                    {aiData.summary}
+                  </div>
+                </div>
+              )}
+
+              {/* Themes */}
+              {Array.isArray(aiData.themes) && aiData.themes.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+                    Central Themes
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {aiData.themes.map((theme, idx) => (
+                      <span
+                        key={idx}
+                        className="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]"
+                      >
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Identified Classical Terms on this Page */}
+              {Array.isArray(aiData.hardWords) && aiData.hardWords.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] flex items-center justify-between">
+                    <span>Key Terms Identified</span>
+                    <span className="font-mono text-[9px] text-[var(--accent-main)]">
+                      {aiData.hardWords.length} terms
+                    </span>
+                  </span>
+
+                  <div className="space-y-1.5">
+                    {aiData.hardWords.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectWord(item.word)}
+                        className="w-full p-2.5 rounded-xl glass border border-white/5 bg-white/5 hover:border-[var(--accent-main)]/30 hover:bg-white/10 transition-all flex items-center justify-between text-left group"
+                      >
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-[11px] text-[var(--text-muted)] group-hover:text-[var(--foreground)] truncate">
+                            {item.meaning}
+                          </p>
+                          {item.urduMeaning && (
+                            <p className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
+                              {item.urduMeaning}
+                            </p>
+                          )}
+                        </div>
+                        <span className="font-serif font-bold text-sm text-[var(--accent-main)] shrink-0" dir="rtl">
+                          {item.word}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            !selectedWord && (
+              <div className="flex flex-col items-center justify-center min-h-[260px] text-center p-5 border border-dashed border-white/10 rounded-2xl opacity-70">
+                <Sparkles size={28} className="text-[var(--accent-main)] mb-2.5 opacity-80" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
+                  MurrabiAI Context Engine
+                </h3>
+                <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[220px]">
+                  Click <span className="font-bold text-white">"Analyze Page & Context"</span> to generate an English synthesis of the arguments and key concepts, or click any word to inspect its definition.
+                </p>
+              </div>
+            )
           )}
         </div>
       </div>

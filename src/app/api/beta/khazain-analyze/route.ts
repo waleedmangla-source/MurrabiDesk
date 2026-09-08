@@ -12,20 +12,34 @@ export async function POST(req: NextRequest) {
     }
 
     let apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured.' }, { status: 503 });
+    if (!apiKey) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const envPath = path.resolve(process.cwd(), '.env.local');
+        if (fs.existsSync(envPath)) {
+          const envFile = fs.readFileSync(envPath, 'utf8');
+          const match = envFile.match(/^GOOGLE_AI_API_KEY=(.*)$/m);
+          if (match) apiKey = match[1].trim();
+        }
+      } catch {}
+    }
+
+    if (!apiKey) return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured in environment or .env.local' }, { status: 503 });
 
     const SYSTEM_PROMPT = `
-You are an expert in Urdu literature, specifically the writings of Mirza Ghulam Ahmad (Ruhani Khazain).
-Analyze the following page of text.
-1. Identify all "hard" or archaic Urdu/Persian/Arabic words that a modern Urdu reader might struggle with. Do NOT include common Urdu words.
-2. Provide their meanings in simple Urdu.
-3. Provide a brief summary/context of the page in English.
+You are an expert scholar in classical Urdu literature and the writings of Mirza Ghulam Ahmad of Qadian (Ruhani Khazain).
+Analyze the provided page of text.
+1. Provide an analytical summary and theological/historical context in clear, accessible English. Explain the main arguments, interlocutors, and the purpose of the discourse.
+2. Identify 3 to 8 key classical terms, theological concepts, or archaic words on this page. Provide their concise English definition and Urdu meaning.
+3. List 2 to 4 central themes or topics touched upon.
 
-Respond in strict JSON format matching this structure exactly (no markdown formatting around it, just the raw JSON object):
+Respond in strict JSON format matching this structure exactly (no markdown code fences, just valid JSON):
 {
-  "summary": "Brief summary here...",
+  "summary": "Detailed English context and summary of the page's arguments and message...",
+  "themes": ["Theme 1", "Theme 2"],
   "hardWords": [
-    { "word": "word1", "meaning": "meaning1" }
+    { "word": "اردو لفظ", "meaning": "English meaning", "urduMeaning": "اردو معنی" }
   ]
 }
 `;
@@ -42,23 +56,41 @@ Respond in strict JSON format matching this structure exactly (no markdown forma
       }
     };
 
-    const textRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
+    // Try primary and fallback Gemini models
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+    let textRes: Response | null = null;
+    let lastError = '';
 
-    if (!textRes.ok) {
-      const errorText = await textRes.text();
-      return NextResponse.json({ error: `Gemini API error: ${textRes.status} ${errorText}` }, { status: textRes.status });
+    for (const model of modelsToTry) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+        if (res.ok) {
+          textRes = res;
+          break;
+        } else {
+          lastError = await res.text();
+        }
+      } catch (e: any) {
+        lastError = e.message;
+      }
+    }
+
+    if (!textRes) {
+      return NextResponse.json({ error: `Gemini API request failed: ${lastError}` }, { status: 502 });
     }
 
     const textData = await textRes.json();
     const responseText = textData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
     
-    let parsedData = { summary: "", hardWords: [] };
+    let parsedData = { summary: "", themes: [], hardWords: [] };
     try {
-      parsedData = JSON.parse(responseText);
+      // Strip markdown code fences if model returned them
+      const cleanJson = responseText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+      parsedData = JSON.parse(cleanJson);
     } catch (e) {
       console.error("Failed to parse JSON from Gemini:", responseText);
     }
