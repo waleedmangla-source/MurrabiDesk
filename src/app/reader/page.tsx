@@ -1,8 +1,115 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText } from 'lucide-react';
 import { clsx } from 'clsx';
+
+// Map of Ruhani Khazain Volumes to major books contained within them
+const KHAZAIN_BOOKS: Record<number, { title: string; urduTitle: string; pageStart: number }[]> = {
+  1: [
+    { title: "Barahin-e-Ahmadiyya Part 1 & 2", urduTitle: "براہین احمدیہ حصہ اول و دوم", pageStart: 1 }
+  ],
+  2: [
+    { title: "Barahin-e-Ahmadiyya Part 3", urduTitle: "براہین احمدیہ حصہ سوم", pageStart: 1 },
+    { title: "Purani Tehrirain", urduTitle: "پرانی تحریریں", pageStart: 275 }
+  ],
+  3: [
+    { title: "Fath-e-Islam", urduTitle: "فتح اسلام", pageStart: 1 },
+    { title: "Taudih-e-Maram", urduTitle: "توضیح مرام", pageStart: 41 },
+    { title: "Izala-e-Auham", urduTitle: "ازالہ اوہام", pageStart: 101 }
+  ],
+  4: [
+    { title: "Al-Haq Mubahatha Ludhiana", urduTitle: "مباحثہ لدھیانہ", pageStart: 1 },
+    { title: "Al-Haq Mubahatha Delhi", urduTitle: "مباحثہ دہلی", pageStart: 131 },
+    { title: "Asmani Faislah", urduTitle: "آسمانی فیصلہ", pageStart: 311 },
+    { title: "Nishan-e-Asmani", urduTitle: "نشان آسمانی", pageStart: 361 }
+  ],
+  5: [
+    { title: "Aina-e-Kamalat-e-Islam", urduTitle: "آئینہ کمالات اسلام", pageStart: 1 }
+  ],
+  6: [
+    { title: "Barakat-ud-Dua", urduTitle: "برکات الدعا", pageStart: 1 },
+    { title: "Hujjat-ul-Islam", urduTitle: "حجۃ الاسلام", pageStart: 45 },
+    { title: "Sachai Ka Izhar", urduTitle: "سچائی کا اظہار", pageStart: 77 },
+    { title: "Jang-e-Muqaddas", urduTitle: "جنگ مقدس", pageStart: 93 }
+  ],
+  7: [
+    { title: "Shahadat-ul-Quran", urduTitle: "شہادت القرآن", pageStart: 1 },
+    { title: "Tuhfa-e-Baghdad", urduTitle: "تحفہ بغداد", pageStart: 127 },
+    { title: "Karamat-us-Sadiqeen", urduTitle: "کرامات الصادقین", pageStart: 153 },
+    { title: "Hamamat-ul-Bushra", urduTitle: "حمامة البشرى", pageStart: 179 }
+  ],
+  8: [
+    { title: "Nur-ul-Haq Part 1 & 2", urduTitle: "نور الحق حصہ اول و دوم", pageStart: 1 },
+    { title: "Itmam-ul-Hujjah", urduTitle: "اتمام الحجة", pageStart: 275 },
+    { title: "Sirr-ul-Khilafah", urduTitle: "سر الخلافة", pageStart: 317 }
+  ],
+  9: [
+    { title: "Anwar-ul-Islam", urduTitle: "انوار الاسلام", pageStart: 1 },
+    { title: "Minan-ur-Rahman", urduTitle: "منن الرحمٰن", pageStart: 125 },
+    { title: "Arya Dharam", urduTitle: "آریہ دھرم", pageStart: 181 },
+    { title: "Zia-ul-Haq", urduTitle: "ضیاء الحق", pageStart: 221 }
+  ],
+  10: [
+    { title: "Islami Usul Ki Philosophy", urduTitle: "اسلامی اصول کی فلاسفی", pageStart: 1 },
+    { title: "Sat Bachan", urduTitle: "ست بچن", pageStart: 111 }
+  ],
+  11: [
+    { title: "Anjam-e-Atham", urduTitle: "انجام آتھم", pageStart: 1 }
+  ],
+  12: [
+    { title: "Siraj-e-Munir", urduTitle: "سراج منیر", pageStart: 1 },
+    { title: "Hujjatullah", urduTitle: "حجة الله", pageStart: 109 },
+    { title: "Tuhfa-e-Qaisariyyah", urduTitle: "تحفہ قیصریہ", pageStart: 251 },
+    { title: "Kitab-ul-Bariyyah", urduTitle: "کتاب البریہ", pageStart: 289 }
+  ],
+  13: [
+    { title: "Kitab-ul-Bariyyah (cont.)", urduTitle: "کتاب البریہ (تکملہ)", pageStart: 1 },
+    { title: "Ayyam-us-Sulh", urduTitle: "ایام الصلح", pageStart: 231 }
+  ],
+  14: [
+    { title: "Zarurat-ul-Imam", urduTitle: "ضرورۃ الامام", pageStart: 1 },
+    { title: "Haqiqat-ul-Mahdi", urduTitle: "حقیقت المہدی", pageStart: 49 },
+    { title: "Masih Hindustan Mein", urduTitle: "مسیح ہندوستان میں", pageStart: 167 }
+  ],
+  15: [
+    { title: "Tiryaq-ul-Qulub", urduTitle: "تریاق القلوب", pageStart: 1 }
+  ],
+  16: [
+    { title: "Khutba Ilhamiyya", urduTitle: "خطبہ الہامیہ", pageStart: 1 },
+    { title: "Lujjat-un-Nur", urduTitle: "لجة النور", pageStart: 337 }
+  ],
+  17: [
+    { title: "Tuhfat-un-Nadwah", urduTitle: "تحفۃ الندوہ", pageStart: 1 },
+    { title: "Arbaeen", urduTitle: "اربعین", pageStart: 341 }
+  ],
+  18: [
+    { title: "Ijaz-ul-Masih", urduTitle: "اعجاز المسیح", pageStart: 1 },
+    { title: "Dafi-ul-Bala", urduTitle: "دافع البلاء", pageStart: 221 },
+    { title: "Al-Huda Wat-Tabsirah", urduTitle: "الهدى والتبصرة", pageStart: 247 }
+  ],
+  19: [
+    { title: "Kashti-e-Nuh", urduTitle: "کشتی نوح", pageStart: 1 },
+    { title: "Tadhkirat-ush-Shahadatain", urduTitle: "تذکرۃ الشہادتین", pageStart: 265 }
+  ],
+  20: [
+    { title: "Siraj-ud-Din Isai Ke 4 Sawal", urduTitle: "سراج الدین عیسائی کے چار سوال", pageStart: 1 },
+    { title: "Lecture Lahore", urduTitle: "لیکچر لاہور", pageStart: 145 },
+    { title: "Lecture Sialkot", urduTitle: "لیکچر سیالکوٹ", pageStart: 201 },
+    { title: "Lecture Ludhiana", urduTitle: "لیکچر لدھیانہ", pageStart: 251 }
+  ],
+  21: [
+    { title: "Barahin-e-Ahmadiyya Part 5", urduTitle: "براہین احمدیہ حصہ پنجم", pageStart: 1 }
+  ],
+  22: [
+    { title: "Haqiqat-ul-Wahi", urduTitle: "حقیقت الوحی", pageStart: 1 }
+  ],
+  23: [
+    { title: "Chashma-e-Masihi", urduTitle: "چشمہ مسیحی", pageStart: 1 },
+    { title: "Chashma-e-Marifat", urduTitle: "چشمہ معرفت", pageStart: 93 },
+    { title: "Paigham-e-Sulh", urduTitle: "پیغام صلح", pageStart: 437 }
+  ]
+};
 
 export default function RuhaniKhazainReader() {
   const [volumes, setVolumes] = useState<number[]>([]);
@@ -12,8 +119,42 @@ export default function RuhaniKhazainReader() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Dropdown states for each volume book breakdown
+  const [expandedVolumes, setExpandedVolumes] = useState<Record<number, boolean>>({ 1: true });
+
   const [aiLoading, setAiLoading] = useState(false);
   const [aiData, setAiData] = useState<{ summary: string, hardWords: {word: string, meaning: string}[] } | null>(null);
+
+  // Currently reading persistence in localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('murabbi_reader_current');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.volume) setSelectedVolume(parsed.volume);
+        if (typeof parsed.pageIndex === 'number') setCurrentPageIndex(parsed.pageIndex);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (selectedVolume !== null) {
+      try {
+        localStorage.setItem('murabbi_reader_current', JSON.stringify({
+          volume: selectedVolume,
+          pageIndex: currentPageIndex
+        }));
+      } catch {}
+    }
+  }, [selectedVolume, currentPageIndex]);
+
+  const toggleVolumeDropdown = (vol: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedVolumes(prev => ({
+      ...prev,
+      [vol]: !prev[vol]
+    }));
+  };
   
   useEffect(() => {
     // We know we processed volumes 1-23. Let's list them.
@@ -116,53 +257,138 @@ export default function RuhaniKhazainReader() {
 
   return (
     <div className="flex flex-col lg:flex-row h-full w-full overflow-hidden bg-transparent">
-      {/* ── LEFT SIDEBAR: VOLUME NAVIGATION ── */}
-      <div className="w-full lg:w-[260px] shrink-0 h-auto lg:h-full flex flex-col border-r border-white/5 glass bg-black/20">
-        <div className="px-5 pt-7 pb-4 border-b border-white/5 flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]">
-            <BookOpen size={20} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] uppercase leading-none">
-              Reader
-            </h1>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-70 mt-1">
-              Ruhani Khazain
-            </p>
+      {/* ── LEFT SIDEBAR: EXACT MAIL TAB PATTERN ── */}
+      <div className="hidden lg:flex w-[260px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
+        {/* Sidebar Title (identical to Mail tab) */}
+        <div className="px-5 pt-8 pb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+            Reader
+          </h1>
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-70 mt-1">
+            Ruhani Khazain
+          </p>
+        </div>
+
+        {/* Currently Reading Top Section */}
+        <div className="px-5 pt-2 pb-4 border-b border-white/5 mb-1">
+          <div className="p-3 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex flex-col gap-1.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                <Bookmark size={11} /> Currently Reading
+              </span>
+              <span className="text-[9px] font-mono font-bold text-[var(--accent-main)]">
+                Vol {selectedVolume || 1} · P.{currentPage?.page_num || (currentPageIndex + 1)}
+              </span>
+            </div>
+
+            {/* Current Book title */}
+            {(() => {
+              const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
+              const activeBook = [...currentBooks].reverse().find(b => (currentPage?.page_num || (currentPageIndex + 1)) >= b.pageStart) || currentBooks[0];
+              return (
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[var(--foreground)] truncate">
+                    {activeBook ? activeBook.title : `Volume ${selectedVolume || 1}`}
+                  </span>
+                  {activeBook && (
+                    <span className="text-[11px] font-serif text-[var(--text-muted)] text-right" dir="rtl">
+                      {activeBook.urduTitle}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
+        {/* Volume & Book Breakdown Accordion List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+          <div className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">
+            Volumes &amp; Books
+          </div>
+
           {volumes.map(vol => {
             const isSelected = selectedVolume === vol;
+            const isExpanded = !!expandedVolumes[vol];
+            const books = KHAZAIN_BOOKS[vol] || [];
+
             return (
-              <button
-                key={vol}
-                onClick={() => setSelectedVolume(vol)}
-                className={clsx(
-                  "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all text-left group",
-                  isSelected
-                    ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black border border-[var(--accent-main)]/30 shadow-sm"
-                    : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
-                )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className={clsx(
-                    "text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md",
-                    isSelected ? "bg-[var(--accent-main)] text-white" : "bg-white/5 text-[var(--text-dim)]"
-                  )}>
-                    V{vol}
-                  </span>
-                  <span className="font-bold tracking-tight">Volume {vol}</span>
-                </div>
-                <ChevronRight 
-                  size={14} 
+              <div key={vol} className="rounded-xl overflow-hidden transition-all">
+                {/* Volume Header Row */}
+                <div
+                  onClick={() => setSelectedVolume(vol)}
                   className={clsx(
-                    "transition-transform opacity-40 group-hover:opacity-100",
-                    isSelected && "opacity-100 text-[var(--accent-main)] translate-x-0.5"
-                  )} 
-                />
-              </button>
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all cursor-pointer select-none group border",
+                    isSelected
+                      ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black border-[var(--accent-main)]/30 shadow-sm"
+                      : "border-transparent text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
+                  )}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={clsx(
+                      "text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0",
+                      isSelected ? "bg-[var(--accent-main)] text-white" : "bg-white/5 text-[var(--text-dim)]"
+                    )}>
+                      V{vol}
+                    </span>
+                    <span className="font-bold tracking-tight truncate">Volume {vol}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {books.length > 0 && (
+                      <button
+                        onClick={(e) => toggleVolumeDropdown(vol, e)}
+                        className={clsx(
+                          "p-1 rounded-lg hover:bg-white/10 transition-transform",
+                          isExpanded ? "rotate-180 text-[var(--accent-main)]" : "opacity-40 hover:opacity-100"
+                        )}
+                        title="Toggle books"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sub-books Dropdown List */}
+                {isExpanded && books.length > 0 && (
+                  <div className="ml-4 pl-2 my-1 border-l-2 border-white/10 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    {books.map((book, idx) => {
+                      const isCurrentBook = isSelected && (currentPage?.page_num || (currentPageIndex + 1)) >= book.pageStart;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={async () => {
+                            if (selectedVolume !== vol) {
+                              setSelectedVolume(vol);
+                            }
+                            // Navigate to book start page if already loaded
+                            const targetIdx = pages.findIndex(p => p.page_num === book.pageStart);
+                            if (targetIdx !== -1) {
+                              setCurrentPageIndex(targetIdx);
+                              setAiData(null);
+                            }
+                          }}
+                          className={clsx(
+                            "w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition-all flex flex-col gap-0.5 group",
+                            isCurrentBook
+                              ? "bg-white/10 text-[var(--accent-main)] font-bold"
+                              : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)]"
+                          )}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="truncate flex-1">{book.title}</span>
+                            <span className="text-[9px] font-mono opacity-50 shrink-0 ml-1">p.{book.pageStart}</span>
+                          </div>
+                          <span className="text-[10px] font-serif opacity-70 text-right" dir="rtl">
+                            {book.urduTitle}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
