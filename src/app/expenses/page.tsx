@@ -39,7 +39,8 @@ import {
   ChevronDown,
   ChevronRight,
   Bookmark,
-  Lock
+  Lock,
+  Cloud
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -2753,7 +2754,10 @@ ${formData.comments || 'None'}
             </button>
           )}
 
-
+          <div className="col-span-1 md:col-span-2 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px] font-medium text-[var(--text-dim)] shadow-sm">
+            <Cloud size={15} className="text-[var(--accent-main)] shrink-0" />
+            <span><strong className="text-[var(--text-main)] font-semibold">Note:</strong> Every expense that is sent is backed up on Google Drive.</span>
+          </div>
         </div>
       </div>
 
