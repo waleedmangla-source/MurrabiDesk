@@ -93,7 +93,7 @@ export default function RuhaniKhazainReader() {
             newElements.push(part);
             if (i < parts.length - 1) {
               newElements.push(
-                <span key={`${word}-${i}`} className="group relative inline-block cursor-help text-indigo-400 font-bold border-b border-indigo-400/50 hover:bg-indigo-500/20 rounded px-1 transition-colors">
+                <span key={`${word}-${i}`} className="group relative inline-block cursor-help text-indigo-700 font-bold border-b border-indigo-700/50 hover:bg-indigo-100 rounded px-1 transition-colors">
                   {word}
                   <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
                     {meaning}
@@ -169,7 +169,7 @@ export default function RuhaniKhazainReader() {
         </div>
 
         {/* Text Area */}
-        <div className="flex-1 overflow-y-auto p-8 relative">
+        <div className="flex-1 overflow-y-auto p-8 relative bg-black/10">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
@@ -177,9 +177,9 @@ export default function RuhaniKhazainReader() {
           ) : error ? (
             <div className="text-red-400 text-center mt-10">{error}</div>
           ) : currentPage ? (
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto bg-[#fbf8f1] shadow-2xl rounded-sm p-12 min-h-full border border-[#e8e2d2]">
               <div 
-                className="text-2xl leading-loose font-serif text-right text-gray-200 whitespace-pre-wrap select-text" 
+                className="text-2xl leading-[2.5] font-serif text-justify text-black whitespace-pre-wrap select-text" 
                 dir="rtl"
                 style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" }}
               >
