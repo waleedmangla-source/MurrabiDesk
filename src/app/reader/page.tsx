@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
+import AIBlobIcon from '@/components/AIBlobIcon';
 
 interface SelectedWordInfo {
   word: string;
@@ -799,8 +800,8 @@ export default function RuhaniKhazainReader() {
       <div className="w-full lg:w-[340px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]">
-              <Sparkles size={16} />
+            <div className="p-1.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex items-center justify-center">
+              <AIBlobIcon size={18} active={true} />
             </div>
             <div>
               <h2 className="text-sm font-black italic tracking-tight text-white uppercase flex items-center gap-1.5">
@@ -843,7 +844,7 @@ export default function RuhaniKhazainReader() {
                 </>
               ) : (
                 <>
-                  <Sparkles size={15} />
+                  <AIBlobIcon size={15} active={true} />
                   <span>{aiData ? "Re-Analyze Page Context" : "Analyze Page & Context"}</span>
                 </>
               )}
@@ -1007,7 +1008,7 @@ export default function RuhaniKhazainReader() {
           ) : (
             !selectedWord && (
               <div className="flex flex-col items-center justify-center min-h-[260px] text-center p-5 border border-dashed border-white/10 rounded-2xl opacity-70">
-                <Sparkles size={28} className="text-[var(--accent-main)] mb-2.5 opacity-80" />
+                <AIBlobIcon size={32} active={true} className="mb-3" />
                 <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
                   MurrabiAI Context Engine
                 </h3>
