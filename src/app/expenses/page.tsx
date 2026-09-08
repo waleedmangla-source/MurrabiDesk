@@ -1475,8 +1475,8 @@ ${formData.comments || 'None'}
           </h1>
           {isReadOnly && (
             <span className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 rounded-full animate-pulse">
-              <Shield size={10} className="text-[var(--accent-main)]" />
-              <span className="text-[8px] font-black text-[var(--accent-main)] tracking-[0.15em]">ARCHIVED</span>
+              <Lock size={10} className="text-[var(--accent-main)]" />
+              <span className="text-[8px] font-black text-[var(--accent-main)] tracking-[0.15em]">LOCKED</span>
             </span>
           )}
         </div>
@@ -2725,7 +2725,7 @@ ${formData.comments || 'None'}
               disabled={true}
               className="py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag bg-white/5 border border-white/10 text-[var(--text-dim)] cursor-not-allowed opacity-60"
             >
-              <Shield size={20} />
+              <Lock size={20} className="text-amber-400" />
               Submitted • Pending Refund
             </button>
           ) : (
