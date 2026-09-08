@@ -566,7 +566,7 @@ function PrivacyTab() {
           onClick={async () => {
             if (confirm('Sign out of MurabbiDesk?')) { await GoogleSyncService.logout(); window.location.href = '/onboarding'; }
           }}
-          className="flex items-center gap-2 px-6 h-11 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest transition-all"
+          className="flex items-center gap-2 px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 btn-signout-permanent"
         >
           <CloudOff size={14} /> Sign Out
         </button>
@@ -989,218 +989,6 @@ export default function SettingsPage() {
 
   if (!mounted) return null;
 
-// ─────────────────────────────────────────────────────────────
-// TAB: UI Library
-// ─────────────────────────────────────────────────────────────
-function UILibraryTab() {
-  const [activePreviewTab, setActivePreviewTab] = useState('home');
-  const THEMES = [
-    { id: 'flup', label: 'Flup Emerald (Primary)', type: 'flup', bg: '#f8fafc', color: '#10b981', rgb: '16, 185, 129' },
-  ];
-
-  return (
-    <div className="space-y-12 max-w-4xl">
-      {THEMES.map(theme => (
-        <div 
-          key={theme.id}
-          className="rounded-3xl overflow-hidden border border-white/10 shadow-xl"
-          data-theme={theme.type !== 'dark' ? theme.type : undefined}
-          style={{
-            background: theme.bg,
-            '--accent-main': theme.color,
-            '--accent-rgb': theme.rgb || '16, 185, 129',
-            '--accent-soft': `rgba(${theme.rgb || '16, 185, 129'}, 0.1)`,
-            '--accent-glow': `rgba(${theme.rgb || '16, 185, 129'}, 0.25)`,
-          } as React.CSSProperties}
-        >
-          {/* Theme Preview Content */}
-          <div className="p-8 relative">
-            <div className="mb-8 border-b border-black/5 dark:border-white/10 pb-4">
-              <h2 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)]">Mission-Critical UI: <span className="text-[var(--accent-main)]">{theme.label}</span></h2>
-            </div>
-            
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              
-              {/* Typography */}
-              <Card className="glass-card">
-                <CardHeader icon={<LayoutDashboard size={18} />} title="Typography Structure" />
-                <div className="space-y-6">
-                  <div>
-                    <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase">Heading Level 1</h1>
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-dim)] mt-1">Subtitle Tracking Widest</p>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-black tracking-tighter text-[var(--foreground)]">Heading Level 2</h2>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[var(--foreground)]">Standard Text (<span className="text-[var(--accent-main)]">accent color inline</span>)</p>
-                    <p className="text-xs font-medium text-[var(--text-muted)] leading-relaxed">Muted description text for secondary information. The app uses Inter as the primary font, relying heavily on weight and tracking for visual hierarchy.</p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Toggles & Buttons */}
-              <Card className="glass-card">
-                <CardHeader icon={<Zap size={18} />} title="Buttons & Toggles" />
-                <div className="space-y-5">
-                  <div className="flex flex-wrap gap-4">
-                    <button className="px-6 py-2.5 rounded-2xl bg-[var(--accent-main)] text-white text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg">
-                      Primary
-                    </button>
-                    <button className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[var(--foreground)] text-xs font-black uppercase tracking-widest hover:bg-white/10 active:scale-95 transition-all">
-                      Secondary Glass
-                    </button>
-                    <button className="px-6 py-2.5 rounded-2xl bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-red-900/20">
-                      Destructive
-                    </button>
-                  </div>
-                  <div className="pt-4 space-y-3">
-                    <ToggleRow icon={<Bell size={14} />} label="Active Toggle" description="Enabled State" active={true} onToggle={() => {}} />
-                    <ToggleRow icon={<EyeOff size={14} />} label="Inactive Toggle" description="Disabled State" active={false} onToggle={() => {}} />
-                  </div>
-                </div>
-              </Card>
-
-              {/* Status Indicators & Badges */}
-              <Card className="glass-card">
-                <CardHeader icon={<Sparkles size={18} />} title="Status & Indicators" />
-                <div className="space-y-5">
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20 text-[8px] font-black uppercase text-green-500">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live Status
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/20 text-[8px] font-black uppercase text-yellow-600">
-                      Pending
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[8px] font-black uppercase text-[var(--foreground)]">
-                      <Lock size={10} className="text-amber-400" /> AES-256 GCM
-                    </div>
-                  </div>
-                  
-                  <div className="relative p-6 rounded-2xl border border-white/10 bg-black/5 mt-4">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Hover Tooltip Example:</span>
-                     <div className="relative group/tooltip inline-block ml-4">
-                        <Info size={16} className="text-[var(--accent-main)] cursor-pointer" />
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
-                          This is a mission-critical tooltip overlay.
-                        </div>
-                     </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Form Elements */}
-              <Card className="glass-card">
-                <CardHeader icon={<LayoutDashboard size={18} />} title="Form V4 Inputs" />
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-2">
-                    <FieldLabel>Standard Input / Glass</FieldLabel>
-                    <FieldInput value="Waleed Mangla" onChange={() => {}} placeholder="Text..." />
-                  </div>
-                  <div className="space-y-2">
-                    <FieldLabel>Select Menu</FieldLabel>
-                    <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all appearance-none cursor-pointer">
-                      <option>Option 1 (Default)</option>
-                      <option>Option 2</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <FieldLabel>Textarea / Bio</FieldLabel>
-                    <textarea 
-                      readOnly 
-                      value="Mission statement body text..." 
-                      className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-xs leading-relaxed text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all h-20 resize-none italic"
-                    />
-                  </div>
-                </div>
-              </Card>
-
-              {/* Lists and Data Rows */}
-              <Card className="glass-card xl:col-span-2">
-                 <CardHeader icon={<List size={18} />} title="List Rows & Complex Data" />
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                       <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Standard List Row</h4>
-                       {[1, 2].map((i) => (
-                          <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                             <div className="flex items-center gap-3 text-[var(--text-dim)]">
-                                <Mail size={14} />
-                                <span className="text-[11px] font-bold text-[var(--foreground)]">System Mail Row {i}</span>
-                             </div>
-                             <span className="text-[9px] font-black uppercase tracking-widest text-green-400">Cached</span>
-                          </div>
-                       ))}
-                    </div>
-                    
-                    <div className="space-y-3">
-                       <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">Dropzone / Upload</h4>
-                       <div className="relative h-28 border-2 border-dashed border-white/10 rounded-2xl bg-black/5 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[var(--accent-main)]/50 transition-colors">
-                          <Cloud size={24} className="text-white/20" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Drop File Here</span>
-                       </div>
-                    </div>
-                 </div>
-              </Card>
-
-              {/* Glider Navigation */}
-              <Card className="glass-card xl:col-span-2">
-                <CardHeader icon={<Navigation size={18} />} title="Glider Navigation" />
-                <div className="p-6 bg-black/5 dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/10">
-                  <div className="flex flex-col md:flex-row gap-12 items-start">
-                    <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0 w-60">
-                      <div className="sidebar-glider-container">
-                        <div 
-                          className="sidebar-glider"
-                          style={{
-                            height: `calc(100% / 3)`,
-                            transform: `translateY(${['home', 'vault', 'intel'].indexOf(activePreviewTab) * 100}%)`,
-                            opacity: 1
-                          }}
-                        />
-                      </div>
-                      {[
-                        { id: 'home', label: 'Command Center', icon: LayoutDashboard },
-                        { id: 'vault', label: 'Secure Vault', icon: Shield },
-                        { id: 'intel', label: 'Field Intel', icon: Globe }
-                      ].map((item) => (
-                        <button 
-                          key={item.id}
-                          onClick={() => setActivePreviewTab(item.id)}
-                          className={clsx(
-                            "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10 w-full text-left",
-                            activePreviewTab === item.id ? "active" : "text-[var(--text-muted)]"
-                          )}
-                        >
-                          <item.icon size={18} className="transition-all duration-300" />
-                          <span className="text-sm tracking-wide">{item.label}</span>
-                        </button>
-                      ))}
-                    </nav>
-
-                    <div className="flex-1 space-y-4">
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-black uppercase tracking-tighter text-[var(--foreground)]">System Logic</h4>
-                        <p className="text-xs font-bold text-[var(--text-muted)] leading-relaxed">
-                          The <span className="text-[var(--accent-main)] font-black">Glider Protocol</span> implements a dynamic indicator system. It calculates vertical offset based on item index, ensuring a fluid, uninterrupted transition between states without legacy background flashes.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[var(--accent-main)] text-[9px] font-black uppercase tracking-widest">0.4s Smooth Ease</div>
-                        <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[var(--accent-main)] text-[9px] font-black uppercase tracking-widest">Dynamic CSS Vars</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
   const TABS: Record<Tab, React.ReactNode> = {
     profile:       <ProfileTab settings={settings} setSettings={setSettings} />,
     appearance:    <AppearanceTab settings={settings} setSettings={setSettings} />,
@@ -1215,41 +1003,41 @@ function UILibraryTab() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* ── Secondary Sidebar ── */}
-      <div className="w-[240px] glass bg-black/20 border-r border-white/5 flex flex-col h-full shrink-0">
-        <div className="px-6 pt-14 pb-5 border-b border-white/5">
-          <h2 className="text-lg font-black tracking-tighter text-[var(--foreground)]">Settings</h2>
-          <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]/60 mt-0.5">Configuration Protocol</p>
+    <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
+      {/* ── Secondary Sidebar — Desktop only ── */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
+        {/* Sidebar Title */}
+        <div className="px-5 pt-8 pb-4 border-b border-white/5 shrink-0">
+          <h1 className="text-3xl font-black italic tracking-tighter text-[var(--foreground)] uppercase leading-none">
+            Settings
+          </h1>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(item => {
-            const Icon = item.icon;
-            const active = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={clsx(
-                  "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left group",
-                  active
-                    ? "bg-[var(--accent-soft)] text-[var(--accent-main)]"
-                    : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
-                )}
-              >
-                <Icon size={16} className="shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className={clsx("text-xs font-black truncate", active ? "text-[var(--accent-main)]" : "text-[var(--foreground)]")}>
-                    {item.label}
-                  </div>
-                  <div className="text-[8px] font-bold uppercase tracking-widest truncate text-[var(--text-dim)]">{item.desc}</div>
-                </div>
-                {active && <ChevronRight size={12} className="shrink-0" />}
-              </button>
-            );
-          })}
-        </nav>
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+          <nav className="py-4 space-y-px">
+            {NAV_ITEMS.map(item => {
+              const Icon = item.icon;
+              const active = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={clsx(
+                    "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
+                    active
+                      ? "font-black text-white border-[var(--accent-main)]"
+                      : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                  )}
+                  style={active ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
+                >
+                  <Icon size={15} className="shrink-0" />
+                  <span className="text-xs font-bold flex-1">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* Save & Sign Out Buttons in Sidebar */}
         <div className="p-4 border-t border-white/5 shrink-0 space-y-2">
@@ -1270,12 +1058,36 @@ function UILibraryTab() {
                 window.location.href = '/onboarding';
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 btn-signout-permanent"
           >
             <LogOut size={13} />
             Sign Out
           </button>
         </div>
+      </div>
+
+      {/* ── Mobile Tab Strip — shown only on mobile/tablet ── */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar">
+        {NAV_ITEMS.map(item => {
+          const Icon = item.icon;
+          const active = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={clsx(
+                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                active
+                  ? "text-white"
+                  : "text-[var(--text-muted)] border border-white/10"
+              )}
+              style={active ? { background: 'var(--accent-main)' } : {}}
+            >
+              <Icon size={11} />
+              {item.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Main Content ── */}

@@ -1170,3 +1170,29 @@ body {
   color: #ffffff !important;
   stroke: #ffffff !important;
 }
+
+/* Force permanent red background on sign-out and destructive danger actions */
+.btn-signout-permanent,
+.btn-danger-permanent {
+  background-color: #dc2626 !important;
+  background: #dc2626 !important;
+  border: 1px solid #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.35) !important;
+}
+
+.btn-signout-permanent:hover,
+.btn-danger-permanent:hover {
+  background-color: #b91c1c !important;
+  background: #b91c1c !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(185, 28, 28, 0.45) !important;
+}
+
+.btn-signout-permanent svg,
+.btn-danger-permanent svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
