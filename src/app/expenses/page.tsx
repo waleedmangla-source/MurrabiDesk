@@ -1360,6 +1360,18 @@ ${formData.comments || 'None'}
 
   const availableSECS = useMemo(() => SECS.filter(s => !s.isH && !activeIndices.includes(s.idx!)), [activeIndices]);
 
+  const currentOpenReport = openExpenseTabs.find(t => t.id === activeReportTabId);
+  const draftsCount = useMemo(() => expensesHistory.filter(f => !f.isSheet && !f.isGmail).length, [expensesHistory]);
+  const pendingCount = useMemo(() => expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded).length, [expensesHistory]);
+  const refundedCount = useMemo(() => expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded)).length, [expensesHistory]);
+
+  const isDraftsActive = (activeTab === 'history' && activeCategory === 'Drafts') ||
+    (activeTab === 'create' && currentOpenReport?.category === 'Drafts');
+  const isPendingActive = (activeTab === 'history' && activeCategory === 'Pending') ||
+    (activeTab === 'create' && currentOpenReport?.category === 'Pending');
+  const isRefundedActive = (activeTab === 'history' && activeCategory === 'Refunded') ||
+    (activeTab === 'create' && currentOpenReport?.category === 'Refunded');
+
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
       {/* Navigation Sidebar (Left) — desktop only */}
@@ -1419,60 +1431,6 @@ ${formData.comments || 'None'}
              <span>Log External Expense</span>
            </button>
 
-           {/* Open Expenses Tab List in Sidebar */}
-           {openExpenseTabs.length > 0 && (
-             <div className="pt-3 pb-1 border-t border-white/5 my-2">
-               <div className="px-6 mb-2 flex items-center justify-between">
-                 <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--text-dim)] opacity-70">Open Tabs</span>
-                 <span className="text-[9px] font-bold text-[var(--accent-main)] px-1.5 py-0.5 rounded bg-[var(--accent-soft)]">
-                   {openExpenseTabs.length}
-                 </span>
-               </div>
-               <div className="space-y-1 px-3">
-                 {openExpenseTabs.map(tab => {
-                   const isActive = activeTab === 'create' && activeReportTabId === tab.id;
-                   return (
-                     <div
-                       key={tab.id}
-                       onClick={() => selectExpenseTab(tab.id)}
-                       className={clsx(
-                         "group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-                         isActive
-                           ? "bg-[var(--accent-main)]/15 text-[var(--text-main)] border border-[var(--accent-main)]/30 shadow-sm"
-                           : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text-main)] border border-transparent"
-                       )}
-                     >
-                       <div className="flex items-center gap-2 min-w-0 flex-1 pr-1">
-                         <span className={clsx(
-                           "w-2 h-2 rounded-full shrink-0",
-                           tab.category === 'Drafts' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" :
-                           tab.category === 'Refunded' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]"
-                         )} />
-                         <div className="flex flex-col min-w-0 truncate">
-                           <span className="truncate text-xs font-bold text-[var(--text-main)]">{tab.date || tab.title}</span>
-                           <span className="text-[9px] text-[var(--text-dim)] uppercase font-semibold">
-                             {tab.category === 'Drafts' ? 'Draft' : tab.category} &bull; ${parseFloat(tab.total || 0).toFixed(2)}
-                           </span>
-                         </div>
-                       </div>
-                       <button
-                         type="button"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           closeExpenseTab(tab.id);
-                         }}
-                         className="opacity-40 group-hover:opacity-100 hover:bg-white/10 p-1 rounded-lg transition-all text-[var(--text-dim)] hover:text-white"
-                         title="Close Tab"
-                       >
-                         <X size={12} />
-                       </button>
-                     </div>
-                   );
-                 })}
-               </div>
-             </div>
-           )}
-
            <div className="h-px bg-white/5 my-4 mx-6" />
 
            <div className="px-6 mb-2 mt-2">
@@ -1483,23 +1441,51 @@ ${formData.comments || 'None'}
              onClick={() => { 
                setActiveTab('history'); 
                setActiveCategory('Drafts'); 
-               toggleCategoryExpand('Drafts');
+               if (!expandedCategories.has('Drafts')) {
+                 toggleCategoryExpand('Drafts');
+               }
              }}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
-               (activeTab === 'history' && activeCategory === 'Drafts')
+               isDraftsActive
                  ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
-             <span>Drafts</span>
-             {expandedCategories.has('Drafts') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
+             <div className="flex items-center gap-2">
+               <span>Drafts</span>
+               {draftsCount > 0 && (
+                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-[var(--text-dim)]">
+                   {draftsCount}
+                 </span>
+               )}
+             </div>
+             <div 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 toggleCategoryExpand('Drafts');
+               }}
+               className="p-1 -mr-1 rounded-md hover:bg-white/10 transition-colors"
+               title={expandedCategories.has('Drafts') ? "Collapse" : "Expand"}
+             >
+               <ChevronDown size={14} className={clsx(
+                 "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-[var(--text-main)]",
+                 !expandedCategories.has('Drafts') && "-rotate-90"
+               )} />
+             </div>
            </button>
 
            {expandedCategories.has('Drafts') && (
-             <div className="space-y-4 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+             <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                {(() => {
                  const items = expensesHistory.filter(f => !f.isSheet && !f.isGmail);
+                 if (items.length === 0) {
+                   return (
+                     <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                       No drafts
+                     </div>
+                   );
+                 }
                  const groups = items.reduce((acc: any, curr) => {
                    const m = curr.month || 'Other';
                    if (!acc[m]) acc[m] = [];
@@ -1508,31 +1494,30 @@ ${formData.comments || 'None'}
                  }, {});
 
                  return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
-                   <div key={month} className="space-y-1">
-                     <div className="flex items-center gap-2 mb-1 opacity-60">
-                       <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
-                       <div className="h-[1px] flex-1 bg-white/5" />
+                   <div key={month} className="space-y-0.5">
+                     <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                       {month}
                      </div>
-                     {monthItems.slice(0, 10).map((exp: any) => {
+                     {monthItems.map((exp: any) => {
                        const isOpen = activeReportTabId === exp.id && activeTab === 'create';
                        return (
                          <button
                            key={exp.id}
                            onClick={() => openExpenseInTab(exp, 'Drafts')}
                            className={clsx(
-                             "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                             "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                              isOpen
-                               ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
-                               : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                               ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
+                               : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                            )}
                          >
                            <div className="flex flex-col min-w-0 pr-2">
                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                             <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                             <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
                                {exp.purpose && exp.purpose !== 'Cloud Draft' ? exp.purpose : (exp.month || 'Draft')}
                              </span>
                            </div>
-                           <span className="text-xs font-black text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                           <span className="text-xs font-bold text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
                          </button>
                        );
                      })}
@@ -1546,23 +1531,51 @@ ${formData.comments || 'None'}
              onClick={() => { 
                setActiveTab('history'); 
                setActiveCategory('Pending'); 
-               toggleCategoryExpand('Pending');
+               if (!expandedCategories.has('Pending')) {
+                 toggleCategoryExpand('Pending');
+               }
              }}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
-               (activeTab === 'history' && activeCategory === 'Pending')
+               isPendingActive
                  ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
-             <span>Pending</span>
-             {expandedCategories.has('Pending') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
+             <div className="flex items-center gap-2">
+               <span>Pending</span>
+               {pendingCount > 0 && (
+                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-[var(--text-dim)]">
+                   {pendingCount}
+                 </span>
+               )}
+             </div>
+             <div 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 toggleCategoryExpand('Pending');
+               }}
+               className="p-1 -mr-1 rounded-md hover:bg-white/10 transition-colors"
+               title={expandedCategories.has('Pending') ? "Collapse" : "Expand"}
+             >
+               <ChevronDown size={14} className={clsx(
+                 "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-[var(--text-main)]",
+                 !expandedCategories.has('Pending') && "-rotate-90"
+               )} />
+             </div>
            </button>
 
            {expandedCategories.has('Pending') && (
-             <div className="space-y-4 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+             <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                 {(() => {
                   const items = expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded);
+                  if (items.length === 0) {
+                    return (
+                      <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                        No pending expenses
+                      </div>
+                    );
+                  }
                   const groups = items.reduce((acc: any, curr) => {
                     const m = curr.month || 'Other';
                     if (!acc[m]) acc[m] = [];
@@ -1571,32 +1584,31 @@ ${formData.comments || 'None'}
                   }, {});
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
-                    <div key={month} className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1 opacity-60">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
-                        <div className="h-[1px] flex-1 bg-white/5" />
+                    <div key={month} className="space-y-0.5">
+                      <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                        {month}
                       </div>
-                      {monthItems.slice(0, 10).map((exp: any) => {
+                      {monthItems.map((exp: any) => {
                         const isOpen = activeReportTabId === exp.id && activeTab === 'create';
                         return (
                           <button
                             key={exp.id}
                             onClick={() => openExpenseInTab(exp, 'Pending')}
                             className={clsx(
-                              "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                               isOpen
-                                ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
-                                : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                                ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
+                                : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                             )}
                           >
                             <div className="flex flex-col min-w-0 pr-2">
                               <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
                                 {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Pending')}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-black text-[var(--accent-main)]">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                              <span className="text-xs font-bold text-[var(--accent-main)]">${parseFloat(exp.total || 0).toFixed(2)}</span>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1623,23 +1635,51 @@ ${formData.comments || 'None'}
              onClick={() => { 
                setActiveTab('history'); 
                setActiveCategory('Refunded'); 
-               toggleCategoryExpand('Refunded');
+               if (!expandedCategories.has('Refunded')) {
+                 toggleCategoryExpand('Refunded');
+               }
              }}
              className={clsx(
                "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
-               (activeTab === 'history' && activeCategory === 'Refunded')
+               isRefundedActive
                  ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
-             <span>Refunded</span>
-             {expandedCategories.has('Refunded') ? <ChevronDown size={14} className="text-[var(--accent-main)]" /> : <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
+             <div className="flex items-center gap-2">
+               <span>Refunded</span>
+               {refundedCount > 0 && (
+                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-[var(--text-dim)]">
+                   {refundedCount}
+                 </span>
+               )}
+             </div>
+             <div 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 toggleCategoryExpand('Refunded');
+               }}
+               className="p-1 -mr-1 rounded-md hover:bg-white/10 transition-colors"
+               title={expandedCategories.has('Refunded') ? "Collapse" : "Expand"}
+             >
+               <ChevronDown size={14} className={clsx(
+                 "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-[var(--text-main)]",
+                 !expandedCategories.has('Refunded') && "-rotate-90"
+               )} />
+             </div>
            </button>
 
            {expandedCategories.has('Refunded') && (
-             <div className="space-y-4 mb-4 mt-1 ml-6 border-l border-white/5 pl-2 animate-in slide-in-from-top-1 duration-300">
+             <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                 {(() => {
                   const items = expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded));
+                  if (items.length === 0) {
+                    return (
+                      <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                        No refunded expenses
+                      </div>
+                    );
+                  }
                   const groups = items.reduce((acc: any, curr) => {
                     const m = curr.month || 'Other';
                     if (!acc[m]) acc[m] = [];
@@ -1648,31 +1688,30 @@ ${formData.comments || 'None'}
                   }, {});
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
-                    <div key={month} className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1 opacity-60">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">{month}</span>
-                        <div className="h-[1px] flex-1 bg-white/5" />
+                    <div key={month} className="space-y-0.5">
+                      <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                        {month}
                       </div>
-                      {monthItems.slice(0, 10).map((exp: any) => {
+                      {monthItems.map((exp: any) => {
                         const isOpen = activeReportTabId === exp.id && activeTab === 'create';
                         return (
                           <button
                             key={exp.id}
                             onClick={() => openExpenseInTab(exp, 'Refunded')}
                             className={clsx(
-                              "w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left group/item",
+                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                               isOpen
-                                ? "bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/40 text-[var(--text-main)] shadow-sm"
-                                : "hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
+                                ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
+                                : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                             )}
                           >
                             <div className="flex flex-col min-w-0 pr-2">
                               <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[120px]">
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
                                 {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Refunded')}
                               </span>
                             </div>
-                            <span className="text-xs font-black text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                            <span className="text-xs font-bold text-[var(--accent-main)] shrink-0">${parseFloat(exp.total || 0).toFixed(2)}</span>
                           </button>
                         );
                       })}
