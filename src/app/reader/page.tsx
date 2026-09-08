@@ -95,9 +95,9 @@ export default function RuhaniKhazainReader() {
             newElements.push(part);
             if (i < parts.length - 1) {
               newElements.push(
-                <span key={`${word}-${i}`} className="group relative inline-block cursor-help text-indigo-700 font-bold border-b border-indigo-700/50 hover:bg-indigo-100 rounded px-1 transition-colors">
+                <span key={`${word}-${i}`} className="group relative inline-block cursor-help text-indigo-800 font-bold border-b-2 border-indigo-500/60 hover:bg-indigo-50 rounded px-1 transition-colors">
                   {word}
-                  <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-white text-zinc-900 border border-zinc-200 shadow-xl text-xs font-medium p-2.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 text-right leading-relaxed" dir="rtl">
                     {meaning}
                   </span>
                 </span>
