@@ -233,6 +233,8 @@ export default function ExpensesPage() {
   const [showSendConfirm, setShowSendConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showInfoErrorModal, setShowInfoErrorModal] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [hasUsedAiInCurrentReport, setHasUsedAiInCurrentReport] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
   
@@ -887,6 +889,9 @@ export default function ExpensesPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (exportError && (field === 'fullName' || field === 'memberCode')) {
+      setExportError(null);
+    }
   };
 
   const handleItemChange = (idx: number, field: 'ref' | 'hst' | 'total', value: string) => {
@@ -1099,9 +1104,11 @@ export default function ExpensesPage() {
 
   const handleExportAndSend = async () => {
     if (!formData.fullName || !formData.memberCode) {
-      alert("Please fill in basic member information before exporting.");
+      setExportError("Please fill in basic member information before exporting.");
+      setShowInfoErrorModal(true);
       return;
     }
+    setExportError(null);
     setShowSendConfirm(true);
   };
 
@@ -1304,6 +1311,12 @@ ${formData.comments || 'None'}
   };
 
   const handleDownload = async () => {
+    if (!formData.fullName || !formData.memberCode) {
+      setExportError("Please fill in basic member information before exporting.");
+      setShowInfoErrorModal(true);
+      return;
+    }
+    setExportError(null);
     setIsGenerating(true);
     try {
       const fullItems = Array(30).fill(null).map((_, i) => ({
@@ -2191,7 +2204,7 @@ ${formData.comments || 'None'}
           </div>
 
           {/* Card 1: General Info */}
-          <div className="card">
+          <div className="card" id="general-info-card">
             <div className="card-hdr">
               <div className="dot"></div>
               GENERAL INFORMATION
@@ -2200,23 +2213,35 @@ ${formData.comments || 'None'}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-2">
-                    <label className="lbl">Full Name</label>
+                    <label className="lbl flex items-center justify-between">
+                      <span>Full Name</span>
+                      {exportError && !formData.fullName && (
+                        <span className="text-[10px] text-amber-400 font-bold normal-case tracking-normal">Required for export</span>
+                      )}
+                    </label>
                     <input 
                       type="text" 
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
                       disabled={isReadOnly}
+                      className={clsx(exportError && !formData.fullName && "!border-amber-500/80 !ring-1 !ring-amber-500/50")}
                       placeholder="e.g. Waleed Ahmad Mangla" 
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid grid-cols-1 gap-2">
-                      <label className="lbl">Member Code</label>
+                      <label className="lbl flex items-center justify-between">
+                        <span>Member Code</span>
+                        {exportError && !formData.memberCode && (
+                          <span className="text-[10px] text-amber-400 font-bold normal-case tracking-normal">Required</span>
+                        )}
+                      </label>
                       <input 
                         type="text" 
                         value={formData.memberCode}
                         onChange={(e) => handleInputChange('memberCode', e.target.value)}
                         disabled={isReadOnly}
+                        className={clsx(exportError && !formData.memberCode && "!border-amber-500/80 !ring-1 !ring-amber-500/50")}
                         placeholder="5 digits" 
                         maxLength={5} 
                       />
@@ -2528,6 +2553,40 @@ ${formData.comments || 'None'}
 
         {/* Global Export & Send Section */}
         <div className="mt-12 pt-8 border-t border-v4-rule/30 grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
+          {exportError && (
+            <div className="col-span-1 md:col-span-2 flex items-center justify-between p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-200 animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-xl shadow-amber-950/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <AlertCircle size={18} className="text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-amber-200">{exportError}</p>
+                  <p className="text-[10px] text-amber-300/70 font-semibold mt-0.5">Please provide Full Name and 5-digit Member Code in General Information.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('general-info-card');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[10px] font-bold uppercase tracking-wider transition-all"
+                >
+                  Go to fields
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setExportError(null)}
+                  className="p-1.5 rounded-xl text-amber-400 hover:text-white hover:bg-amber-500/20 transition-all cursor-pointer"
+                  title="Dismiss"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
           <button 
             onClick={handleDownload}
             disabled={isGenerating}
@@ -2684,6 +2743,47 @@ ${formData.comments || 'None'}
                   className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Missing Info Error Modal */}
+      {showInfoErrorModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            onClick={() => setShowInfoErrorModal(false)}
+          />
+          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/90 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-8 pt-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 border border-amber-500/30 mb-6 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+                <AlertCircle size={32} />
+              </div>
+              
+              <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
+                Missing <span className="text-amber-400">Information</span>
+              </h3>
+              
+              <p className="text-xs font-bold text-[var(--text-main)] leading-relaxed max-w-[280px]">
+                Please fill in basic member information before exporting.
+              </p>
+              <p className="text-[10px] font-medium text-[var(--text-dim)] mt-2">
+                Full Name and Member Code are required.
+              </p>
+
+              <div className="w-full mt-8">
+                <button 
+                  onClick={() => {
+                    setShowInfoErrorModal(false);
+                    const el = document.getElementById('general-info-card');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                  className="w-full px-6 py-4 rounded-[18px] bg-[var(--accent-main)] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                >
+                  OK, Fill Information
                 </button>
               </div>
             </div>
