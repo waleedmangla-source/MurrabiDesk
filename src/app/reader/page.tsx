@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
 import { clsx } from 'clsx';
