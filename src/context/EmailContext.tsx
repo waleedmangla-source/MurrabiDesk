@@ -113,6 +113,13 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchEmails = useCallback(async (token: string | null = null, append = false) => {
+    const hasToken = typeof window !== 'undefined' && localStorage.getItem('google_refresh_token_encrypted');
+    const isGuest = typeof window !== 'undefined' && localStorage.getItem('murabbi_guest_mode') === 'true';
+    if (!hasToken && !isGuest) {
+      setSyncStatus('idle');
+      return;
+    }
+
     if (token) setLoadingMore(true);
     else if (append) return;
     else setSyncStatus('syncing');
@@ -236,7 +243,7 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
       setSyncStatus('error');
       
       const errMsg = err?.message || String(err);
-      if (errMsg.includes('invalid_grant') || errMsg.includes('401') || errMsg.includes('token') || errMsg.includes('Brain Error')) {
+      if (errMsg.includes('invalid_grant') || errMsg.includes('invalid_credentials')) {
         localStorage.removeItem('google_refresh_token_encrypted');
         alert("Your login session has expired or is invalid. Please log in again.");
         window.location.reload();
