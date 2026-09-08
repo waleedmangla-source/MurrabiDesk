@@ -234,6 +234,7 @@ export default function ExpensesPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showInfoErrorModal, setShowInfoErrorModal] = useState(false);
+  const [refundConfirmTarget, setRefundConfirmTarget] = useState<{ exp: any; month: string } | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [hasUsedAiInCurrentReport, setHasUsedAiInCurrentReport] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState('manglawaleed@gmail.com');
@@ -1625,9 +1626,7 @@ ${formData.comments || 'None'}
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (window.confirm(`Mark expense for ${month} ($${exp.total}) as refunded?`)) {
-                                    toggleRefund(exp); 
-                                  }
+                                  setRefundConfirmTarget({ exp, month });
                                 }}
                                 className="w-4 h-4 rounded-[4px] border border-white/20 hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center cursor-pointer group/check"
                                 title="Mark as Refunded"
@@ -2750,7 +2749,7 @@ ${formData.comments || 'None'}
         </div>
       )}
 
-      {/* Missing Info Error Modal */}
+      {/* Custom Missing Info Error Modal */}
       {showInfoErrorModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div 
@@ -2784,6 +2783,53 @@ ${formData.comments || 'None'}
                   className="w-full px-6 py-4 rounded-[18px] bg-[var(--accent-main)] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                 >
                   OK, Fill Information
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* On-Page Refund Confirmation Modal */}
+      {refundConfirmTarget && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            onClick={() => setRefundConfirmTarget(null)}
+          />
+          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/90 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-8 pt-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30 mb-6 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <Check size={32} />
+              </div>
+              
+              <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
+                Mark as <span className="text-emerald-400">Refunded</span>?
+              </h3>
+              
+              <p className="text-xs font-bold text-[var(--text-main)] leading-relaxed max-w-[280px]">
+                Mark expense for {refundConfirmTarget.month} (${parseFloat(refundConfirmTarget.exp.total || 0).toFixed(2)}) as refunded?
+              </p>
+              <p className="text-[10px] font-medium text-[var(--text-dim)] mt-2">
+                This will update the status to refunded and sync across records.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 w-full mt-8">
+                <button 
+                  onClick={() => setRefundConfirmTarget(null)}
+                  className="px-6 py-4 rounded-[18px] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--text-main)] transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    const target = refundConfirmTarget;
+                    setRefundConfirmTarget(null);
+                    toggleRefund(target.exp);
+                  }}
+                  className="px-6 py-4 rounded-[18px] bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/40 hover:bg-emerald-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Confirm
                 </button>
               </div>
             </div>
