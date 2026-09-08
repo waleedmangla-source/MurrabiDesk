@@ -40,7 +40,8 @@ import {
   ChevronRight,
   Bookmark,
   Lock,
-  Cloud
+  Cloud,
+  Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -170,6 +171,340 @@ const SECS = [
   { idx: 29, label: "Insurance/Maintenance", ref: "6010-03100" }
 ];
 
+const MOCK_EXPENSES = [
+  // --- Drafts ---
+  {
+    id: 'mock_draft_1',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'May',
+    date: '2026-05-18',
+    purpose: 'Vehicle Fuel & Mission Travel',
+    total: 112.50,
+    status: 'draft',
+    isDriveDraft: true,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-05-18',
+        cheque_num: '1042',
+        expense_month: 'May',
+        posting: 'branch',
+        posting_location: 'Toronto West',
+        purpose: 'Vehicle Fuel & Mission Travel',
+        comments: 'Travel for regional visits and mission activities in the western sector.'
+      },
+      itemData: {
+        0: { ref: '1', hst: '12.95', total: '112.50' }
+      },
+      activeIndices: [0],
+      receipts: [
+        { id: 'rcpt_mock_1', name: 'Shell_Gas_Station_May18.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_draft_2',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'June',
+    date: '2026-06-02',
+    purpose: 'Curriculum Books & Printing Material',
+    total: 64.20,
+    status: 'draft',
+    isDriveDraft: true,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-06-02',
+        cheque_num: '',
+        expense_month: 'June',
+        posting: 'branch',
+        posting_location: 'Brampton North',
+        purpose: 'Curriculum Books & Printing Material',
+        comments: 'Printing of syllabus handouts and binding for weekly classes.'
+      },
+      itemData: {
+        5: { ref: '2', hst: '7.38', total: '64.20' }
+      },
+      activeIndices: [5],
+      receipts: [
+        { id: 'rcpt_mock_2', name: 'Staples_Printing_Receipt.jpg', type: 'image/jpeg' }
+      ]
+    })
+  },
+  {
+    id: 'mock_draft_3',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'April',
+    date: '2026-04-20',
+    purpose: 'Jamia IT Cables & Hardware Adapter',
+    total: 230.00,
+    status: 'draft',
+    isDriveDraft: true,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-04-20',
+        cheque_num: '1038',
+        expense_month: 'April',
+        posting: 'hq',
+        posting_location: 'Jamia Ahmadiyya',
+        purpose: 'Jamia IT Cables & Hardware Adapter',
+        comments: 'Ethernet cables, HDMI splitters, and multi-port USB hubs for computer lab.'
+      },
+      itemData: {
+        5: { ref: '3', hst: '26.46', total: '230.00' }
+      },
+      activeIndices: [5],
+      receipts: [
+        { id: 'rcpt_mock_3', name: 'BestBuy_Invoice_7821.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+
+  // --- Pending ---
+  {
+    id: 'mock_pending_1',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'May',
+    date: '2026-05-12',
+    purpose: 'Stationery & Office Supplies',
+    total: 72.88,
+    status: 'sent',
+    refunded: 0,
+    isSheet: true,
+    rowIndex: 2,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-05-12',
+        cheque_num: '1040',
+        expense_month: 'May',
+        posting: 'branch',
+        posting_location: 'Toronto Central',
+        purpose: 'Stationery & Office Supplies',
+        comments: 'Folders, pens, notebooks, and dry-erase markers for committee meetings.'
+      },
+      itemData: {
+        5: { ref: '1', hst: '8.39', total: '72.88' }
+      },
+      activeIndices: [5],
+      receipts: [
+        { id: 'rcpt_p1', name: 'Walmart_Supplies_May12.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_pending_2',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'May',
+    date: '2026-05-04',
+    purpose: 'Regional Inspection Travel Fuel',
+    total: 185.40,
+    status: 'sent',
+    refunded: 0,
+    isSheet: true,
+    rowIndex: 3,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-05-04',
+        cheque_num: '1039',
+        expense_month: 'May',
+        posting: 'hq',
+        posting_location: 'Ontario Region',
+        purpose: 'Regional Inspection Travel Fuel',
+        comments: 'Quarterly visit to regional chapters and Halqa centers across southern Ontario.'
+      },
+      itemData: {
+        0: { ref: '1', hst: '21.33', total: '185.40' }
+      },
+      activeIndices: [0],
+      receipts: [
+        { id: 'rcpt_p2', name: 'PetroCanada_Fuel_May04.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_pending_3',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'April',
+    date: '2026-04-28',
+    purpose: 'Vehicle Oil Change & Maintenance',
+    total: 142.10,
+    status: 'sent',
+    refunded: 0,
+    isSheet: true,
+    rowIndex: 4,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-04-28',
+        cheque_num: '1036',
+        expense_month: 'April',
+        posting: 'branch',
+        posting_location: 'Toronto West',
+        purpose: 'Vehicle Oil Change & Maintenance',
+        comments: 'Synthetic oil replacement, filter change, and tire rotation at 60,000 km.'
+      },
+      itemData: {
+        1: { ref: '1', hst: '16.35', total: '142.10' }
+      },
+      activeIndices: [1],
+      receipts: [
+        { id: 'rcpt_p3', name: 'MrLube_Invoice_April28.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_pending_4',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'April',
+    date: '2026-04-15',
+    purpose: 'Mobile & Internet Reimbursement',
+    total: 175.00,
+    status: 'sent',
+    refunded: 0,
+    isSheet: true,
+    rowIndex: 5,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-04-15',
+        cheque_num: '1035',
+        expense_month: 'April',
+        posting: 'branch',
+        posting_location: 'Toronto West',
+        purpose: 'Mobile & Internet Reimbursement',
+        comments: 'Monthly communication allowance covering official mobile line and high-speed internet.'
+      },
+      itemData: {
+        7: { ref: '1', hst: '10.00', total: '85.00' },
+        8: { ref: '2', hst: '10.50', total: '90.00' }
+      },
+      activeIndices: [7, 8],
+      receipts: [
+        { id: 'rcpt_p4', name: 'Rogers_Bill_April2026.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+
+  // --- Refunded ---
+  {
+    id: 'mock_refunded_1',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'March',
+    date: '2026-03-22',
+    purpose: 'Book Binding & Postal Delivery',
+    total: 48.50,
+    status: 'refunded',
+    refunded: 1,
+    isSheet: true,
+    rowIndex: 6,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-03-22',
+        cheque_num: '1031',
+        expense_month: 'March',
+        posting: 'branch',
+        posting_location: 'Toronto West',
+        purpose: 'Book Binding & Postal Delivery',
+        comments: 'Registered parcel postage for curriculum books dispatched to regional center.'
+      },
+      itemData: {
+        5: { ref: '1', hst: '5.58', total: '48.50' }
+      },
+      activeIndices: [5],
+      receipts: [
+        { id: 'rcpt_r1', name: 'CanadaPost_Tracking_March22.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_refunded_2',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'February',
+    date: '2026-02-18',
+    purpose: 'Vehicle Fuel & Highway 407 Toll',
+    total: 95.00,
+    status: 'refunded',
+    refunded: 1,
+    isSheet: true,
+    rowIndex: 7,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-02-18',
+        cheque_num: '1028',
+        expense_month: 'February',
+        posting: 'branch',
+        posting_location: 'Toronto West',
+        purpose: 'Vehicle Fuel & Highway 407 Toll',
+        comments: 'Urgent transit across the GTA via ETR 407 and fuel top-up.'
+      },
+      itemData: {
+        0: { ref: '1', hst: '8.50', total: '65.00' },
+        11: { ref: '2', hst: '3.45', total: '30.00' }
+      },
+      activeIndices: [0, 11],
+      receipts: [
+        { id: 'rcpt_r2', name: 'Esso_Gas_Feb18.pdf', type: 'application/pdf' }
+      ]
+    })
+  },
+  {
+    id: 'mock_refunded_3',
+    fullName: 'Waleed Ahmad Mangla',
+    memberCode: '31572',
+    month: 'January',
+    date: '2026-01-14',
+    purpose: 'Jamia Library Reference Collection',
+    total: 320.00,
+    status: 'refunded',
+    refunded: 1,
+    isSheet: true,
+    rowIndex: 8,
+    data: JSON.stringify({
+      formData: {
+        fullName: 'Waleed Ahmad Mangla',
+        memberCode: '31572',
+        date: '2026-01-14',
+        cheque_num: '1020',
+        expense_month: 'January',
+        posting: 'hq',
+        posting_location: 'Jamia Ahmadiyya',
+        purpose: 'Jamia Library Reference Collection',
+        comments: 'Arabic lexicons and classical theological references procured for student research.'
+      },
+      itemData: {
+        5: { ref: '1', hst: '15.20', total: '320.00' }
+      },
+      activeIndices: [5],
+      receipts: [
+        { id: 'rcpt_r3', name: 'Books_Acquisition_Jan14.pdf', type: 'application/pdf' }
+      ]
+    })
+  }
+];
+
 export default function ExpensesPage() {
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -290,6 +625,25 @@ export default function ExpensesPage() {
     });
   };
 
+  // Search Query for Expense List / Table View
+  const [expenseSearchQuery, setExpenseSearchQuery] = useState('');
+
+  // Category item filter helper
+  const getCategoryItems = (category: Category) => {
+    return expensesHistory.filter(f => {
+      if (category === 'Drafts') {
+        return f.status === 'draft' || (!f.isSheet && f.status !== 'sent' && f.status !== 'refunded' && !f.refunded);
+      }
+      if (category === 'Pending') {
+        return !f.refunded && f.status !== 'refunded' && (f.status === 'sent' || f.status === 'pending' || (f.isSheet && f.status !== 'draft'));
+      }
+      if (category === 'Refunded') {
+        return f.status === 'refunded' || !!f.refunded;
+      }
+      return true;
+    });
+  };
+
   // Presets State
   interface ExpensePreset {
     id: string;
@@ -362,11 +716,28 @@ export default function ExpensesPage() {
   const fetchExpenses = async () => {
     try {
       setSyncStatus('syncing');
+      
+      const deletedMockIds: string[] = typeof window !== 'undefined'
+        ? JSON.parse(localStorage.getItem('waqfeen_deleted_mock_ids') || '[]')
+        : [];
+      const availableMocks = MOCK_EXPENSES.filter(m => !deletedMockIds.includes(m.id));
+
       // 1. Load from LocalStorage first for instant results
       if (typeof window !== 'undefined') {
         const localHistory = localStorage.getItem('waqfeen_expenses_history');
         if (localHistory) {
-          setExpensesHistory(JSON.parse(localHistory));
+          try {
+            const parsed = JSON.parse(localHistory);
+            const existingIds = new Set(parsed.map((p: any) => p.id));
+            const missingMocks = availableMocks.filter(m => !existingIds.has(m.id));
+            const merged = [...missingMocks, ...parsed];
+            setExpensesHistory(merged);
+          } catch (e) {
+            setExpensesHistory(availableMocks);
+          }
+        } else {
+          setExpensesHistory(availableMocks);
+          localStorage.setItem('waqfeen_expenses_history', JSON.stringify(availableMocks));
         }
       }
 
@@ -445,6 +816,14 @@ export default function ExpensesPage() {
         const key = `${lexp.fullName}-${lexp.month}-${lexp.date}`;
         if (!sheetKeys.has(key)) {
           combined.push(lexp);
+        }
+      });
+
+      // Include available mock expenses for testing
+      const existingIds = new Set(combined.map((c: any) => c.id));
+      availableMocks.forEach(m => {
+        if (!existingIds.has(m.id)) {
+          combined.push(m);
         }
       });
 
@@ -796,6 +1175,17 @@ export default function ExpensesPage() {
     const target = targetExp || currentOpenReport?.report || (isCurrentDraft ? { id: currentReportId, isDriveDraft: true, fileId: currentReportId } : null);
 
     try {
+      // 0. If it's a mock expense, record as deleted so it's not re-seeded
+      if (target?.id?.startsWith('mock_')) {
+        if (typeof window !== 'undefined') {
+          const deletedMocks = JSON.parse(localStorage.getItem('waqfeen_deleted_mock_ids') || '[]');
+          if (!deletedMocks.includes(target.id)) {
+            deletedMocks.push(target.id);
+            localStorage.setItem('waqfeen_deleted_mock_ids', JSON.stringify(deletedMocks));
+          }
+        }
+      }
+
       const googleSync = await GoogleSyncService.fromLocalStorage();
 
       // 1. If it's a Drive Draft, delete file from Google Drive
@@ -888,6 +1278,25 @@ export default function ExpensesPage() {
 
   const toggleRefund = async (exp: any) => {
     try {
+      // --- If mock expense, update in-memory and localStorage immediately ---
+      if (exp.id?.startsWith('mock_')) {
+        setExpensesHistory(prev => {
+          const updated = prev.map(item => {
+            if (item.id === exp.id) {
+              const newStatus = (item.status === 'refunded' || item.refunded) ? 'sent' : 'refunded';
+              const newRefunded = newStatus === 'refunded' ? 1 : 0;
+              return { ...item, status: newStatus, refunded: newRefunded };
+            }
+            return item;
+          });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('waqfeen_expenses_history', JSON.stringify(updated));
+          }
+          return updated;
+        });
+        return;
+      }
+
       const isRefunded = exp.status === 'refunded' || exp.refunded;
       const newStatus = !isRefunded;
 
@@ -1453,9 +1862,9 @@ ${formData.comments || 'None'}
   const availableSECS = useMemo(() => SECS.filter(s => !s.isH && !activeIndices.includes(s.idx!)), [activeIndices]);
 
   const currentOpenReport = openExpenseTabs.find(t => t.id === activeReportTabId);
-  const draftsCount = useMemo(() => expensesHistory.filter(f => !f.isSheet && !f.isGmail).length, [expensesHistory]);
-  const pendingCount = useMemo(() => expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded).length, [expensesHistory]);
-  const refundedCount = useMemo(() => expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded)).length, [expensesHistory]);
+  const draftsCount = useMemo(() => getCategoryItems('Drafts').length, [expensesHistory]);
+  const pendingCount = useMemo(() => getCategoryItems('Pending').length, [expensesHistory]);
+  const refundedCount = useMemo(() => getCategoryItems('Refunded').length, [expensesHistory]);
 
   const isDraftsActive = (activeTab === 'history' && activeCategory === 'Drafts') ||
     (activeTab === 'create' && currentOpenReport?.category === 'Drafts');
@@ -1569,8 +1978,8 @@ ${formData.comments || 'None'}
 
            {expandedCategories.has('Drafts') && (
              <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
-               {(() => {
-                 const items = expensesHistory.filter(f => !f.isSheet && !f.isGmail);
+                {(() => {
+                  const items = getCategoryItems('Drafts');
                  if (items.length === 0) {
                    return (
                      <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
@@ -1660,7 +2069,7 @@ ${formData.comments || 'None'}
            {expandedCategories.has('Pending') && (
              <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                 {(() => {
-                  const items = expensesHistory.filter(f => f.isSheet && f.status !== 'refunded' && !f.refunded);
+                  const items = getCategoryItems('Pending');
                   if (items.length === 0) {
                     return (
                       <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
@@ -1772,7 +2181,7 @@ ${formData.comments || 'None'}
            {expandedCategories.has('Refunded') && (
              <div className="space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                 {(() => {
-                  const items = expensesHistory.filter(f => f.isSheet && (f.status === 'refunded' || f.refunded));
+                  const items = getCategoryItems('Refunded');
                   if (items.length === 0) {
                     return (
                       <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
@@ -1877,203 +2286,375 @@ ${formData.comments || 'None'}
         )}
 
         {activeTab === 'history' && (
-          <div className="p-6 md:p-12 pt-8 md:pt-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-7xl mx-auto w-full">
-            <div className="mb-12">
-              <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Expense <span className="text-[var(--accent-main)]">History</span></h1>
-              <p className="text-[var(--text-dim)] max-w-xl mt-2 font-black uppercase tracking-[0.3em] text-[9px]">
-                 Local Secure Access &middot; Synced Reconciliations
-              </p>
-            </div>
-            
-            <div className="space-y-16 pb-20">
-              {(() => {
-                const filteredHistory = expensesHistory.filter(form => {
-                  if (activeCategory === 'Drafts') {
-                    // Local records or explicitly un-synced
-                    return !form.isSheet && !form.isGmail;
-                  }
-                  if (activeCategory === 'Pending') {
-                    // Synced records that aren't refunded
-                    return form.isSheet && form.status !== 'refunded' && !form.refunded;
-                  }
-                  if (activeCategory === 'Refunded') {
-                    // Synced records that are marked as refunded
-                    return form.isSheet && (form.status === 'refunded' || form.refunded);
-                  }
-                  return true;
-                });
+          <div className="p-6 md:p-10 pt-8 md:pt-10 animate-in fade-in slide-in-from-bottom-6 duration-500 max-w-7xl mx-auto w-full flex flex-col gap-6">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-white/5">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]">
+                    Waqfeen Expenses &bull; Records
+                  </span>
+                </div>
+                <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
+                  {activeCategory === 'Drafts' && <>Draft <span className="text-[var(--accent-main)]">Expenses</span></>}
+                  {activeCategory === 'Pending' && <>Pending <span className="text-[var(--accent-main)]">Refunds</span></>}
+                  {activeCategory === 'Refunded' && <>Refunded <span className="text-[var(--accent-main)]">Expenses</span></>}
+                </h1>
+                <p className="text-[var(--text-dim)] font-medium text-xs mt-1">
+                  {activeCategory === 'Drafts' && "Unsubmitted expense reports and saved drafts awaiting completion."}
+                  {activeCategory === 'Pending' && "Submitted claims awaiting review, headquarter approval, and reimbursement."}
+                  {activeCategory === 'Refunded' && "Archived and reconciled claims that have been reimbursed."}
+                </p>
+              </div>
 
-                if (filteredHistory.length === 0) {
+              {/* Category Switcher Tabs */}
+              <div className="flex items-center gap-2 bg-black/40 p-1 rounded-2xl border border-white/5 self-start md:self-auto">
+                {(['Drafts', 'Pending', 'Refunded'] as const).map(cat => {
+                  const isActive = activeCategory === cat;
+                  const count = cat === 'Drafts' ? draftsCount : (cat === 'Pending' ? pendingCount : refundedCount);
                   return (
-                    <div className="flex flex-col items-center justify-center py-20 text-center glass bg-white/5 rounded-[32px] border border-dashed border-white/10">
-                      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 opacity-30">
-                        <History size={32} className="text-[var(--text-dim)]" />
-                      </div>
-                      <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-2 italic">No {activeCategory} <span className="text-[var(--accent-main)]">Reports</span></h3>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] max-w-xs">There are no expense records in this category currently.</p>
-                    </div>
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setActiveCategory(cat)}
+                      className={clsx(
+                        "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all",
+                        isActive
+                          ? "bg-[var(--accent-main)] text-white shadow-lg"
+                          : "text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-white/5"
+                      )}
+                    >
+                      <span>{cat}</span>
+                      <span className={clsx(
+                        "text-[10px] font-black px-1.5 py-0.5 rounded-full",
+                        isActive ? "bg-black/20 text-white" : "bg-white/10 text-[var(--text-dim)]"
+                      )}>
+                        {count}
+                      </span>
+                    </button>
                   );
-                }
+                })}
+              </div>
+            </div>
 
-                return months.map(m => {
-                  const monthForms = filteredHistory.filter(e => e.month === m);
-                  if (monthForms.length === 0) return null;
-                  const monthTotal = monthForms.reduce((sum, e) => sum + e.total, 0);
-
+            {/* Filter & Metric Bar */}
+            {(() => {
+              const allCategoryItems = getCategoryItems(activeCategory);
+              const filteredItems = allCategoryItems.filter(item => {
+                if (!expenseSearchQuery.trim()) return true;
+                const q = expenseSearchQuery.toLowerCase();
                 return (
-                  <div key={m} className="space-y-6">
-                    <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-                      <h3 className="text-lg font-black tracking-widest text-[var(--text-main)] uppercase">{m}</h3>
-                      <span className="text-sm font-black text-[var(--accent-main)] uppercase px-3 py-1 bg-[var(--accent-soft)] border border-[var(--accent-soft)] rounded-lg shadow-inner">${parseFloat(monthTotal).toFixed(2)}</span>
+                  (item.purpose && item.purpose.toLowerCase().includes(q)) ||
+                  (item.month && item.month.toLowerCase().includes(q)) ||
+                  (item.date && item.date.toLowerCase().includes(q)) ||
+                  (item.fullName && item.fullName.toLowerCase().includes(q)) ||
+                  (item.memberCode && item.memberCode.toLowerCase().includes(q))
+                );
+              });
+              const totalAmount = filteredItems.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+
+              return (
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    {/* Search Bar */}
+                    <div className="relative flex-1 max-w-md">
+                      <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
+                      <input
+                        type="text"
+                        value={expenseSearchQuery}
+                        onChange={(e) => setExpenseSearchQuery(e.target.value)}
+                        placeholder={`Search ${activeCategory.toLowerCase()} by date, purpose, or member...`}
+                        className="w-full pl-9 pr-9 py-2 bg-black/30 border border-white/10 rounded-xl text-xs text-[var(--text-main)] placeholder-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent-main)] transition-colors"
+                      />
+                      {expenseSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setExpenseSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[var(--text-main)]"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
                     </div>
-                    
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                      {monthForms.map(form => (
-                        <div key={form.id} className="glass bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col gap-4 relative group transition-all hover:bg-white/10 hover:border-white/10">
-                           <div className="flex items-start justify-between">
-                              <div className="pr-4 flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <p className="text-[11px] font-black text-[var(--text-main)] uppercase tracking-wider">{form.date} &bull; <span className="text-[var(--text-main)]/40">{form.fullName}</span></p>
-                                  {form.isSheet && (
-                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] text-[8px] font-black uppercase tracking-widest border border-[var(--accent-soft)]">
-                                      <RefreshCw size={8} className="animate-spin-slow" /> Cloud Synced
-                                    </span>
-                                  )}
-                                  {form.isGmail && (
-                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[var(--text-dim)] text-[8px] font-black uppercase tracking-widest border border-white/5">
-                                      <Mail size={8} /> Gmail
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm font-bold text-[var(--text-main)]/80 uppercase mt-2 leading-relaxed">{form.purpose}</p>
-                                {form.folderLink && (
-                                  <a 
-                                    href={form.folderLink} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] hover:text-[var(--accent-main)]/80 mt-3 transition-colors group/link"
-                                  >
-                                    <Folder size={10} className="group-hover/link:scale-110 transition-transform" /> 
-                                    View Drive Folder
-                                    <ExternalLink size={8} />
-                                  </a>
-                                )}
-                                {form.snippet && (
-                                  <p className="text-[10px] text-[var(--text-dim)] mt-2 line-clamp-1 italic font-medium">"{form.snippet}"</p>
-                                )}
-                              </div>
-                              <div className="flex flex-col items-end shrink-0">
-                                <p className="text-lg font-black text-[var(--text-main)] bg-black/40 px-4 py-2 rounded-xl border border-white/10 shadow-inner">${parseFloat(form.total).toFixed(2)}</p>
-                              </div>
-                           </div>
 
-                           {(() => {
-                             let parsedData: any = null;
-                             if (form.data) {
-                               try {
-                                 parsedData = typeof form.data === 'string' ? JSON.parse(form.data) : form.data;
-                               } catch (e) {
-                                 console.warn(e);
-                               }
-                             }
-
-                             const hasBreakdown = parsedData && parsedData.activeIndices && parsedData.activeIndices.length > 0;
-                             const commentsToShow = form.comments || parsedData?.formData?.comments || '';
-                             const otherLabelToShow = parsedData?.formData?.other_label || '';
-
-                             if (!hasBreakdown && !commentsToShow && !otherLabelToShow) return null;
-
-                             return (
-                               <div className="pt-3 border-t border-white/5 space-y-3">
-                                 {hasBreakdown && (
-                                   <div className="space-y-1.5">
-                                     <span className="text-[9px] font-black uppercase text-[var(--text-dim)] tracking-wider">Itemized Claims</span>
-                                     <div className="grid grid-cols-1 gap-1.5 bg-black/20 rounded-xl p-3 border border-white/5">
-                                       {parsedData.activeIndices.map((idx: number) => {
-                                         const sec = SECS.find(s => s.idx === idx);
-                                         if (!sec) return null;
-                                         const item = parsedData.itemData?.[idx];
-                                         const hasHST = item?.hst && parseFloat(item.hst) > 0;
-                                         return (
-                                           <div key={idx} className="flex justify-between items-center text-[11px] text-[var(--text-main)]">
-                                             <div className="flex flex-col">
-                                               <span className="font-bold">{sec.label}</span>
-                                               {(idx === 5 || idx === 15 || idx === 21) && otherLabelToShow && (
-                                                 <span className="text-[10px] text-[var(--accent-main)] italic">Desc: "{otherLabelToShow}"</span>
-                                               )}
-                                             </div>
-                                             <div className="flex items-center gap-4 text-right">
-                                               {hasHST && (
-                                                 <span className="text-[10px] text-[var(--text-dim)]">HST: ${parseFloat(item.hst).toFixed(2)}</span>
-                                               )}
-                                               <span className="font-black text-[var(--text-main)]">${parseFloat(item?.total || '0').toFixed(2)}</span>
-                                             </div>
-                                           </div>
-                                         );
-                                       })}
-                                     </div>
-                                   </div>
-                                 )}
-
-                                 {commentsToShow && (
-                                   <div className="space-y-1">
-                                     <span className="text-[9px] font-black uppercase text-[var(--text-dim)] tracking-wider">Executive Comments</span>
-                                     <p className="text-[11px] leading-relaxed text-[var(--text-main)] bg-black/10 rounded-xl p-3 border border-white/5 italic">
-                                       "{commentsToShow}"
-                                     </p>
-                                   </div>
-                                 )}
-                               </div>
-                             );
-                           })()}
-                           
-                           <div className="mt-2 pt-4 border-t border-white/5 flex items-center justify-between">
-                              <label className="flex items-center gap-3 cursor-pointer group/chk select-none">
-                                <div className={clsx(
-                                  "w-5 h-5 rounded-md border flex items-center justify-center transition-all",
-                                  form.refunded ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "border-white/20 bg-black/50 group-hover/chk:border-emerald-500/50"
-                                )}>
-                                  {form.refunded ? <div className="w-2 h-2 bg-white rounded-sm" /> : null}
-                                </div>
-                                <input 
-                                  type="checkbox" 
-                                  className="hidden" 
-                                  checked={!!form.refunded} 
-                                  onChange={() => toggleRefund(form)} 
-                                />
-                                <span className={clsx(
-                                  "text-[10px] font-black uppercase tracking-widest transition-colors",
-                                  form.refunded ? "text-[var(--accent-main)]" : "text-[var(--text-dim)] group-hover/chk:text-[var(--text-main)]/50"
-                                )}>
-                                  {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
-                                </span>
-                              </label>
-                              <div className="flex items-center gap-2">
-                                 <button
-                                   type="button"
-                                   onClick={() => setExpenseToDelete(form)}
-                                   className="p-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-500 transition-all border border-red-600/20 cursor-pointer"
-                                   title="Delete Expense"
-                                 >
-                                   <Trash2 size={13} />
-                                 </button>
-                                 <button
-                                   type="button"
-                                   onClick={() => openExpenseInTab(form, activeCategory)}
-                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[var(--text-main)] transition-all border border-white/5 hover:border-[var(--accent-main)]/40"
-                                 >
-                                   <Edit3 size={12} className="text-[var(--accent-main)]" />
-                                   <span>Open as Expense</span>
-                                 </button>
-                               </div>
-                           </div>
+                    {/* Stats & Actions */}
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
+                      <div className="flex items-center gap-3 px-4 py-2 bg-black/30 border border-white/5 rounded-xl">
+                        <div className="flex flex-col text-right">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Total Claims</span>
+                          <span className="text-sm font-black text-[var(--accent-main)] font-mono">
+                            ${totalAmount.toFixed(2)}
+                          </span>
                         </div>
-                      ))}
+                        <div className="w-px h-6 bg-white/10" />
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Records</span>
+                          <span className="text-sm font-bold text-[var(--text-main)]">
+                            {filteredItems.length}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          startNewReport();
+                          setActiveTab('create');
+                        }}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-main)] hover:bg-[var(--accent-main)]/90 text-white text-xs font-bold transition-all shadow-lg active:scale-95 shrink-0"
+                      >
+                        <Plus size={13} />
+                        <span>New Expense</span>
+                      </button>
                     </div>
                   </div>
-                );
-              })})()}
-            </div>
+
+                  {/* Table Card View */}
+                  <div className="glass bg-black/20 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-white/[0.03] border-b border-white/5 text-[10px] font-black uppercase tracking-wider text-[var(--text-dim)]">
+                            <th className="py-3.5 px-5">Date & Member</th>
+                            <th className="py-3.5 px-4">Period</th>
+                            <th className="py-3.5 px-4">Purpose & Details</th>
+                            <th className="py-3.5 px-4">Status</th>
+                            <th className="py-3.5 px-4 text-right">Amount</th>
+                            <th className="py-3.5 px-5 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-xs">
+                          {filteredItems.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-16 text-center">
+                                <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
+                                  <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3 text-[var(--text-dim)]">
+                                    <History size={24} />
+                                  </div>
+                                  <p className="text-sm font-bold text-[var(--text-main)] mb-1">
+                                    {expenseSearchQuery ? 'No matching expenses found' : `No ${activeCategory.toLowerCase()} available`}
+                                  </p>
+                                  <p className="text-[11px] text-[var(--text-dim)] mb-4">
+                                    {expenseSearchQuery 
+                                      ? 'Try searching for a different keyword or clear the search query.'
+                                      : `There are currently no expenses categorized as ${activeCategory}.`}
+                                  </p>
+                                  {expenseSearchQuery ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpenseSearchQuery('')}
+                                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-[var(--text-main)] transition-colors"
+                                    >
+                                      Clear Search
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        startNewReport();
+                                        setActiveTab('create');
+                                      }}
+                                      className="px-3 py-1.5 rounded-xl bg-[var(--accent-main)] text-white text-xs font-bold transition-all shadow-md"
+                                    >
+                                      Create New Expense
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredItems.map(item => {
+                              let parsedData: any = null;
+                              if (item.data) {
+                                try {
+                                  parsedData = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                                } catch (e) {
+                                  console.warn(e);
+                                }
+                              }
+
+                              const receiptCount = parsedData?.receipts?.length || 0;
+                              const activeIndicesList: number[] = parsedData?.activeIndices || [];
+                              const commentsToShow = item.comments || parsedData?.formData?.comments || '';
+
+                              return (
+                                <tr 
+                                  key={item.id} 
+                                  className="hover:bg-white/[0.03] transition-colors group cursor-pointer"
+                                  onClick={() => openExpenseInTab(item, activeCategory)}
+                                >
+                                  {/* Date & Member */}
+                                  <td className="py-4 px-5 align-top">
+                                    <div className="flex flex-col">
+                                      <span className="font-bold text-sm text-[var(--text-main)] tracking-tight">
+                                        {item.date}
+                                      </span>
+                                      <span className="text-[11px] text-[var(--text-dim)] truncate max-w-[150px]">
+                                        {item.fullName || 'Waleed Ahmad Mangla'}
+                                      </span>
+                                      {item.memberCode && (
+                                        <span className="text-[9px] font-mono text-[var(--text-dim)]/70">
+                                          #{item.memberCode}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+
+                                  {/* Period */}
+                                  <td className="py-4 px-4 align-top">
+                                    <span className="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-white/5 border border-white/5 text-[var(--text-main)]">
+                                      {item.month || 'Other'}
+                                    </span>
+                                  </td>
+
+                                  {/* Purpose & Breakdown */}
+                                  <td className="py-4 px-4 align-top">
+                                    <div className="flex flex-col gap-1 max-w-md">
+                                      <span className="font-bold text-xs text-[var(--text-main)] group-hover:text-[var(--accent-main)] transition-colors line-clamp-1">
+                                        {item.purpose || 'Expense Submission'}
+                                      </span>
+                                      
+                                      {/* Subtext info: receipt pills, breakdown, drive link */}
+                                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                        {receiptCount > 0 && (
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--text-dim)] bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                                            <Paperclip size={9} />
+                                            <span>{receiptCount} receipt{receiptCount > 1 ? 's' : ''}</span>
+                                          </span>
+                                        )}
+
+                                        {activeIndicesList.length > 0 && (
+                                          <span className="text-[10px] text-[var(--text-dim)]">
+                                            {activeIndicesList.length} item{activeIndicesList.length > 1 ? 's' : ''} claimed
+                                          </span>
+                                        )}
+
+                                        {item.folderLink && (
+                                          <a
+                                            href={item.folderLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--accent-main)] hover:underline"
+                                            title="Open Drive Folder"
+                                          >
+                                            <Folder size={10} />
+                                            <span>Drive Folder</span>
+                                            <ExternalLink size={8} />
+                                          </a>
+                                        )}
+                                      </div>
+
+                                      {commentsToShow && (
+                                        <p className="text-[10px] text-[var(--text-dim)] italic line-clamp-1 mt-0.5">
+                                          "{commentsToShow}"
+                                        </p>
+                                      )}
+                                    </div>
+                                  </td>
+
+                                  {/* Status */}
+                                  <td className="py-4 px-4 align-top">
+                                    {activeCategory === 'Drafts' && (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        <FileText size={10} />
+                                        <span>DRAFT</span>
+                                      </span>
+                                    )}
+                                    {activeCategory === 'Pending' && (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                        <Clock size={10} />
+                                        <span>PENDING REFUND</span>
+                                      </span>
+                                    )}
+                                    {activeCategory === 'Refunded' && (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        <CheckCircle size={10} />
+                                        <span>REFUNDED</span>
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* Total Amount */}
+                                  <td className="py-4 px-4 align-top text-right">
+                                    <span className="font-mono font-bold text-sm text-[var(--text-main)] group-hover:text-[var(--accent-main)] transition-colors">
+                                      ${parseFloat(item.total || 0).toFixed(2)}
+                                    </span>
+                                  </td>
+
+                                  {/* Actions */}
+                                  <td className="py-4 px-5 align-top text-right" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      {/* Quick Refund Toggle */}
+                                      {activeCategory === 'Pending' && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setRefundConfirmTarget({ exp: item, month: item.month || 'Other' })}
+                                          className="p-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-[var(--text-dim)] hover:text-emerald-400 border border-white/5 hover:border-emerald-500/30 transition-all cursor-pointer"
+                                          title="Mark as Refunded"
+                                        >
+                                          <Check size={12} />
+                                        </button>
+                                      )}
+                                      {activeCategory === 'Refunded' && (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleRefund(item)}
+                                          className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-white/5 text-emerald-400 hover:text-[var(--text-dim)] border border-emerald-500/20 transition-all cursor-pointer"
+                                          title="Undo Refund (Mark as Pending)"
+                                        >
+                                          <CheckCircle size={12} />
+                                        </button>
+                                      )}
+
+                                      {/* Delete Button */}
+                                      <button
+                                        type="button"
+                                        onClick={() => setExpenseToDelete(item)}
+                                        className="p-1.5 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-500 hover:text-red-400 border border-red-600/20 hover:border-red-600/40 transition-all cursor-pointer"
+                                        title="Delete Expense"
+                                      >
+                                        <Trash2 size={12} />
+                                      </button>
+
+                                      {/* Open / Edit Tab Button */}
+                                      <button
+                                        type="button"
+                                        onClick={() => openExpenseInTab(item, activeCategory)}
+                                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-[var(--text-main)] transition-all border border-white/5 hover:border-[var(--accent-main)]/40 ml-1 cursor-pointer"
+                                        title="Open in Tab"
+                                      >
+                                        <Edit3 size={11} className="text-[var(--accent-main)]" />
+                                        <span>Open</span>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Table Footer */}
+                    {filteredItems.length > 0 && (
+                      <div className="px-5 py-3.5 bg-black/30 border-t border-white/5 flex items-center justify-between text-xs text-[var(--text-dim)]">
+                        <span>
+                          Showing <strong className="text-[var(--text-main)]">{filteredItems.length}</strong> of <strong className="text-[var(--text-main)]">{allCategoryItems.length}</strong> expenses
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider">Subtotal:</span>
+                          <span className="font-mono font-bold text-sm text-[var(--accent-main)]">
+                            ${totalAmount.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
