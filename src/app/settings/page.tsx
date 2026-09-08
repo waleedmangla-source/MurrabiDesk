@@ -254,35 +254,6 @@ function AppearanceTab({ settings, setSettings }: { settings: SettingsState; set
           ))}
         </div>
       </Card>
-
-      <Card>
-        <CardHeader icon={<Monitor size={18} />} title="Display" subtitle="Density and layout preferences" />
-        <div className="space-y-3">
-          <ToggleRow
-            icon={<ArrowUpDown size={16} />}
-            label="High Density Mode"
-            description="Minimize padding for expert users"
-            active={settings.highDensityMode}
-            onToggle={() => setSettings(s => ({ ...s, highDensityMode: !s.highDensityMode }))}
-          />
-        </div>
-        <div className="mt-5 space-y-2">
-          <FieldLabel>Default Launch Tab</FieldLabel>
-          <select
-            value={settings.defaultLaunchTab}
-            onChange={e => setSettings(s => ({ ...s, defaultLaunchTab: e.target.value }))}
-            className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] focus:outline-none [color-scheme:dark]"
-          >
-            {[
-              { v: '/', label: 'Dashboard' },
-              { v: '/emails', label: 'Mail' },
-              { v: '/expenses', label: 'Expenses' },
-              { v: '/notes', label: 'Notes' },
-              { v: '/calendar', label: 'Calendar' },
-            ].map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
-          </select>
-        </div>
-      </Card>
     </div>
   );
 }
