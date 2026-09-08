@@ -37,9 +37,8 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { QRCodeSVG } from 'qrcode.react';
-import RuhaniKhazainReader from './RuhaniKhazainReader';
 
-type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr' | 'khazain';
+type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
 
 const Sparkles = ({ size, className }: { size: number, className: string }) => (
   <svg 
@@ -409,7 +408,6 @@ export default function BetaToolsPage() {
   const tabs = [
     { id: 'overview', label: 'Lab Overview', icon: LayoutDashboard, color: 'text-blue-500', desc: 'System Diagnostic' },
     { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurabbiAI Beta' },
-    { id: 'khazain', label: 'Ruhani Khazain', icon: BookOpen, color: 'text-indigo-500', desc: 'AI Reader' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
     { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' },
     { id: 'ocr', label: 'OCR Scanner', icon: ScanText, color: 'text-amber-500', desc: 'Mobile Link' }
@@ -879,12 +877,6 @@ export default function BetaToolsPage() {
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        {activeTab === 'khazain' && (
-          <div className="flex-1 overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <RuhaniKhazainReader />
           </div>
         )}
 

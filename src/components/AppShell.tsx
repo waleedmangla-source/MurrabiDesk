@@ -19,6 +19,7 @@ import {
   ScrollText,
   Users,
   X,
+  BookOpen,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -58,6 +59,7 @@ const navLinks = [
   { icon: ScrollText, label: "Letters", href: "/letters" },
   { icon: Users, label: "Tajnid", href: "/tajnid" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
+  { icon: BookOpen, label: "Reader", href: "/reader" },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {

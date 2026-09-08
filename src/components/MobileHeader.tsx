@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/expenses": "Expenses",
   "/habits": "Routine",
   "/beta-tools": "Beta Tools",
+  "/reader": "Reader",
   "/profile": "Command ID",
   "/settings": "HQ Protocol",
 };
