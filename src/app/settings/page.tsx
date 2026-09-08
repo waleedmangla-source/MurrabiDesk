@@ -203,15 +203,6 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
         </div>
       </Card>
       <Card>
-        <CardHeader icon={<Activity size={18} />} title="Bio / Mission Statement" subtitle="Scholarly focus and objectives" />
-        <textarea
-          value={settings.bio}
-          onChange={e => setSettings(s => ({ ...s, bio: e.target.value }))}
-          className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-xs leading-relaxed text-[var(--foreground)] focus:border-[var(--accent-main)]/50 focus:outline-none transition-all h-36 resize-none italic"
-          placeholder="Enter your scholarly mission statement..."
-        />
-      </Card>
-      <Card>
         <CardHeader icon={<FileDigit size={18} />} title="Signature" subtitle="Used on exported expense reports" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="relative h-40 border-2 border-dashed border-white/10 rounded-2xl bg-black/20 flex flex-col items-center justify-center gap-3 cursor-pointer">
