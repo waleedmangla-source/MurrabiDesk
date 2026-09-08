@@ -20,7 +20,6 @@ import { useRouter } from 'next/navigation';
 type Tab =
   | 'profile'
   | 'appearance'
-  | 'sync'
   | 'notifications'
   | 'language'
   | 'accounts'
@@ -65,7 +64,6 @@ interface SettingsState {
 const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType; desc: string }[] = [
   { id: 'profile',       label: 'Profile',           icon: User,         desc: 'Identity & bio' },
   { id: 'appearance',    label: 'Appearance',         icon: Palette,      desc: 'Themes & display' },
-  { id: 'sync',          label: 'Sync & Data',        icon: RefreshCw,    desc: 'Google sync settings' },
   { id: 'notifications', label: 'Notifications',      icon: Bell,         desc: 'Alerts & widgets' },
   { id: 'language',      label: 'Language & Region',  icon: Languages,    desc: 'Format & locale' },
   { id: 'accounts',      label: 'Connected Accounts', icon: Plug,         desc: 'Google, OAuth' },
@@ -252,76 +250,6 @@ function AppearanceTab({ settings, setSettings }: { settings: SettingsState; set
               {settings.accentColor === t.id && <span className="text-[8px] font-black uppercase tracking-widest text-white whitespace-nowrap">{t.name}</span>}
             </button>
           ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// TAB: Sync & Data
-// ─────────────────────────────────────────────────────────────
-function SyncTab({ settings, setSettings }: { settings: SettingsState; setSettings: React.Dispatch<React.SetStateAction<SettingsState>> }) {
-  const [syncing, setSyncing] = useState(false);
-  const handleForceSync = () => { setSyncing(true); setTimeout(() => setSyncing(false), 2000); };
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader icon={<Cloud size={18} />} title="Sync Gateway" subtitle="Google Workspace connectivity" />
-        <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Cloud size={16} className="text-white/40" />
-            <div>
-              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">Protocol Status</div>
-              <div className="text-xs font-bold text-[var(--foreground)]">Encrypted WebSocket Active</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20 text-[8px] font-black uppercase text-green-500">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live
-          </div>
-        </div>
-
-        <div className="space-y-3 mb-6">
-          <FieldLabel>Sync Frequency</FieldLabel>
-          <div className="grid grid-cols-3 gap-3">
-            {['5m', '15m', '1h'].map(f => (
-              <button key={f} onClick={() => setSettings(s => ({ ...s, syncFrequency: f }))}
-                className={clsx("py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
-                  settings.syncFrequency === f ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white" : "bg-white/5 border-white/5 text-white/40")}>
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <button onClick={handleForceSync} disabled={syncing}
-          className="w-full h-12 rounded-2xl bg-white/5 border border-white/5 text-[var(--foreground)]/60 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-          <RefreshCw size={14} className={clsx(syncing && "animate-spin")} />
-          {syncing ? 'Syncing...' : 'Force Protocol Resync'}
-        </button>
-      </Card>
-
-      <Card>
-        <CardHeader icon={<Info size={18} />} title="Local Cache Info" subtitle="Stored data breakdown" />
-        <div className="space-y-3">
-          {[
-            { label: 'Gmail Cache', icon: <Mail size={14} />, key: 'cache_gmail' },
-            { label: 'Calendar Cache', icon: <Calendar size={14} />, key: 'cache_calendar' },
-            { label: 'Notes Cache', icon: <StickyNote size={14} />, key: 'mission_notes_browser_fallback' },
-          ].map(item => {
-            const hasData = typeof window !== 'undefined' && !!localStorage.getItem(item.key);
-            return (
-              <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                <div className="flex items-center gap-3 text-[var(--text-dim)]">
-                  {item.icon}
-                  <span className="text-[11px] font-bold text-[var(--foreground)]">{item.label}</span>
-                </div>
-                <span className={clsx("text-[9px] font-black uppercase tracking-widest", hasData ? "text-green-400" : "text-white/20")}>
-                  {hasData ? 'Cached' : 'Empty'}
-                </span>
-              </div>
-            );
-          })}
         </div>
       </Card>
     </div>
@@ -954,7 +882,6 @@ export default function SettingsPage() {
   const TABS: Record<Tab, React.ReactNode> = {
     profile:       <ProfileTab settings={settings} setSettings={setSettings} />,
     appearance:    <AppearanceTab settings={settings} setSettings={setSettings} />,
-    sync:          <SyncTab settings={settings} setSettings={setSettings} />,
     notifications: <NotificationsTab settings={settings} setSettings={setSettings} />,
     language:      <LanguageTab settings={settings} setSettings={setSettings} />,
     accounts:      <AccountsTab />,
