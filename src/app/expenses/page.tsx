@@ -38,7 +38,8 @@ import {
   CreditCard,
   ChevronDown,
   ChevronRight,
-  Bookmark
+  Bookmark,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -68,7 +69,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 // --- Sortable Item Component ---
-function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: number, onRemove: (id: string) => void }) {
+function SortableReceiptItem({ receipt, idx, onRemove, isReadOnly }: { receipt: any, idx: number, onRemove: (id: string) => void, isReadOnly?: boolean }) {
   const {
     attributes,
     listeners,
@@ -76,7 +77,7 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: receipt.id });
+  } = useSortable({ id: receipt.id, disabled: !!isReadOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -95,9 +96,9 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
       )}
     >
       <div 
-        {...attributes} 
-        {...listeners} 
-        className="cursor-grab active:cursor-grabbing p-1  rounded-md transition-colors"
+        {...(!isReadOnly ? attributes : {})} 
+        {...(!isReadOnly ? listeners : {})} 
+        className={clsx("p-1 rounded-md transition-colors", !isReadOnly ? "cursor-grab active:cursor-grabbing" : "cursor-default opacity-40")}
       >
         <GripVertical size={16} className="text-[var(--text-main)]/20 " />
       </div>
@@ -112,12 +113,16 @@ function SortableReceiptItem({ receipt, idx, onRemove }: { receipt: any, idx: nu
           <p className="text-[8px] font-black text-[var(--text-main)]/20 uppercase tracking-widest mt-1">{receipt.type.split('/')[1]}</p>
       </div>
 
-      <button 
-          onClick={() => onRemove(receipt.id)}
-          className="p-1.5 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
-      >
-          <Trash2 size={14} />
-      </button>
+      {!isReadOnly && (
+        <button 
+            type="button"
+            onClick={() => onRemove(receipt.id)}
+            className="p-1.5 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+            title="Remove receipt"
+        >
+            <Trash2 size={14} />
+        </button>
+      )}
     </div>
   );
 }
@@ -233,6 +238,7 @@ export default function ExpensesPage() {
   const [showSendConfirm, setShowSendConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<any | null>(null);
   const [showInfoErrorModal, setShowInfoErrorModal] = useState(false);
   const [refundConfirmTarget, setRefundConfirmTarget] = useState<{ exp: any; month: string } | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -398,14 +404,14 @@ export default function ExpensesPage() {
               rowIndex: index + 2, // A2 is row 2
               folderLink
             };
-          });
+          }).filter((e: any) => e.fullName && e.fullName !== 'Unknown' && e.fullName.trim() !== '' && e.total > 0 && e.status !== 'deleted');
         }
       }
 
       // 3. Fetch from local DB for local-only records (non-drafts)
       const res = await fetch('/api/expenses');
       const data = await res.json();
-      const localExpenses = (data.success && data.expenses) ? data.expenses.filter((e: any) => e.status !== 'draft') : [];
+      const localExpenses = (data.success && data.expenses) ? data.expenses.filter((e: any) => e.status !== 'draft' && e.status !== 'deleted') : [];
 
       // 4. Fetch Drafts from Google Drive
       let driveDrafts: any[] = [];
@@ -785,24 +791,95 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleDeleteDraft = async () => {
-    if (isCurrentDraft && currentReportId) {
-      try {
-        const googleSync = await GoogleSyncService.fromLocalStorage();
-        if (googleSync) {
-          await googleSync.deleteDriveFile(currentReportId);
+  const handleDeleteExpense = async (targetExp?: any) => {
+    const target = targetExp || currentOpenReport?.report || (isCurrentDraft ? { id: currentReportId, isDriveDraft: true, fileId: currentReportId } : null);
+
+    try {
+      const googleSync = await GoogleSyncService.fromLocalStorage();
+
+      // 1. If it's a Drive Draft, delete file from Google Drive
+      if (target?.isDriveDraft || (isCurrentDraft && currentReportId)) {
+        const fileId = target?.fileId || currentReportId;
+        if (fileId && googleSync) {
+          try {
+            await (googleSync as any).deleteDriveFile(fileId);
+          } catch (e) {
+            console.warn('Failed to delete Drive draft:', e);
+          }
         }
-        fetchExpenses();
-      } catch (e) {
-        console.warn('Failed to delete draft from Drive:', e);
       }
+
+      // 2. If it has a Google Sheet row (Murabbi Expenses Master)
+      if (target?.isSheet && target.rowIndex && googleSync) {
+        try {
+          const emptyRow = Array(14).fill('');
+          emptyRow[10] = 'DELETED';
+          await googleSync.updateSheetData(`Sheet1!A${target.rowIndex}:N${target.rowIndex}`, [emptyRow]);
+        } catch (e) {
+          console.warn('Failed to delete Google Sheet row:', e);
+        }
+      }
+
+      // 3. If it has an associated Drive folder (e.g. from folderLink)
+      if (target?.folderLink && googleSync) {
+        try {
+          const match = target.folderLink.match(/folders\/([a-zA-Z0-9_-]+)/) || target.folderLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            await (googleSync as any).deleteDriveFile(match[1]);
+          }
+        } catch (e) {
+          console.warn('Failed to delete Drive folder:', e);
+        }
+      }
+
+      // 4. Delete from SQLite DB
+      if (target?.id || (target?.fullName && target?.date)) {
+        try {
+          await fetch('/api/expenses', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              id: target?.id, 
+              fullName: target?.fullName || formData.fullName, 
+              date: target?.date || formData.date 
+            })
+          });
+        } catch (e) {
+          console.warn('Failed to delete from local DB:', e);
+        }
+      }
+
+      // 5. Delete from LocalStorage
+      if (typeof window !== 'undefined') {
+        const curLocal = JSON.parse(localStorage.getItem('waqfeen_expenses_history') || '[]');
+        const updatedLocal = curLocal.filter((h: any) => {
+          if (target?.id && h.id === target.id) return false;
+          if (target && h.fullName === target.fullName && h.date === target.date && h.month === target.month) return false;
+          return true;
+        });
+        localStorage.setItem('waqfeen_expenses_history', JSON.stringify(updatedLocal));
+        setExpensesHistory(updatedLocal);
+      }
+
+      // 6. Refresh full history from sources
+      fetchExpenses();
+
+      // 7. Tab handling
+      const tabToClose = target?.id 
+        ? openExpenseTabs.find(t => t.id === target.id)?.id 
+        : (activeReportTabId !== 'new' ? activeReportTabId : null);
+
+      if (tabToClose) {
+        closeExpenseTab(tabToClose);
+      } else if (activeReportTabId === 'new') {
+        startNewReport();
+      }
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+    } finally {
+      setShowDeleteConfirm(false);
+      setExpenseToDelete(null);
     }
-    if (activeReportTabId !== 'new') {
-      closeExpenseTab(activeReportTabId);
-    } else {
-      startNewReport();
-    }
-    setShowDeleteConfirm(false);
   };
 
   // Draft recovery disabled per user request
@@ -1621,8 +1698,8 @@ ${formData.comments || 'None'}
                                 {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Pending')}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-bold text-[var(--accent-main)]">${parseFloat(exp.total || 0).toFixed(2)}</span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-xs font-bold text-[var(--accent-main)] mr-0.5">${parseFloat(exp.total || 0).toFixed(2)}</span>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1632,6 +1709,16 @@ ${formData.comments || 'None'}
                                 title="Mark as Refunded"
                               >
                                 <Check size={9} className="text-[var(--accent-main)] opacity-0 group-hover/check:opacity-100" />
+                              </div>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpenseToDelete(exp);
+                                }}
+                                className="w-4 h-4 rounded-[4px] border border-white/20 hover:border-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center cursor-pointer group/del"
+                                title="Delete Expense"
+                              >
+                                <Trash2 size={9} className="text-red-500 opacity-0 group-hover/del:opacity-100" />
                               </div>
                             </div>
                           </button>
@@ -1960,14 +2047,24 @@ ${formData.comments || 'None'}
                                   {form.refunded ? 'Marked Refunded' : 'Mark Refunded'}
                                 </span>
                               </label>
-                               <button
-                                 type="button"
-                                 onClick={() => openExpenseInTab(form, activeCategory)}
-                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[var(--text-main)] transition-all border border-white/5 hover:border-[var(--accent-main)]/40"
-                               >
-                                 <Edit3 size={12} className="text-[var(--accent-main)]" />
-                                 <span>Open as Expense</span>
-                               </button>
+                              <div className="flex items-center gap-2">
+                                 <button
+                                   type="button"
+                                   onClick={() => setExpenseToDelete(form)}
+                                   className="p-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-500 transition-all border border-red-600/20 cursor-pointer"
+                                   title="Delete Expense"
+                                 >
+                                   <Trash2 size={13} />
+                                 </button>
+                                 <button
+                                   type="button"
+                                   onClick={() => openExpenseInTab(form, activeCategory)}
+                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[var(--text-main)] transition-all border border-white/5 hover:border-[var(--accent-main)]/40"
+                                 >
+                                   <Edit3 size={12} className="text-[var(--accent-main)]" />
+                                   <span>Open as Expense</span>
+                                 </button>
+                               </div>
                            </div>
                         </div>
                       ))}
@@ -2045,20 +2142,27 @@ ${formData.comments || 'None'}
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
             <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{formData.expense_month}</span>
           </div>
+          {isReadOnly && (
+            <>
+              <div className="w-px h-10 bg-white/10" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                <Lock size={12} />
+                <span className="text-[9px] font-black uppercase tracking-widest">Locked • Pending</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          {!isReadOnly && (
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              title="Delete draft"
-              style={{ backgroundColor: '#dc2626', borderColor: '#ef4444', color: '#ffffff' }}
-              className="p-4 btn-delete-draft-permanent rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/40 cursor-pointer"
-            >
-              <Trash2 size={18} color="#ffffff" className="stroke-white" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            title={isCurrentDraft ? "Delete draft" : "Delete expense"}
+            style={{ backgroundColor: '#dc2626', borderColor: '#ef4444', color: '#ffffff' }}
+            className="p-4 btn-delete-draft-permanent rounded-[18px] transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-lg shadow-red-600/40 cursor-pointer"
+          >
+            <Trash2 size={18} color="#ffffff" className="stroke-white" />
+          </button>
 
           <button 
             onClick={handleSaveDraft}
@@ -2075,7 +2179,7 @@ ${formData.comments || 'None'}
               isReadOnly ? <Shield size={18} /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
             )}
             <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">
-              {isReadOnly ? "Archived" : (isJustSaved ? "Draft saved" : "Save as draft")}
+              {isReadOnly ? "Locked (Pending)" : (isJustSaved ? "Draft saved" : "Save as draft")}
             </span>
           </button>
         </div>
@@ -2168,18 +2272,23 @@ ${formData.comments || 'None'}
                 presets.map(p => (
                   <div 
                     key={p.id}
-                    onClick={() => applyPreset(p)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-[var(--accent-main)]/40 hover:bg-white/10 transition-all cursor-pointer group"
-                    title={`Click to load preset: ${p.name}`}
+                    onClick={() => !isReadOnly && applyPreset(p)}
+                    className={clsx(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 transition-all group",
+                      !isReadOnly ? "hover:border-[var(--accent-main)]/40 hover:bg-white/10 cursor-pointer" : "cursor-not-allowed opacity-50"
+                    )}
+                    title={isReadOnly ? "Locked: expense is read-only" : `Click to load preset: ${p.name}`}
                   >
                     <span className="text-xs font-bold text-[var(--text-main)] group-hover:text-[var(--accent-main)] transition-colors">{p.name}</span>
-                    <button
-                      onClick={(e) => removePreset(p.id, e)}
-                      className="p-0.5 rounded-md hover:bg-red-500/20 hover:text-red-400 text-[var(--text-dim)] transition-all opacity-0 group-hover:opacity-100"
-                      title="Delete Preset"
-                    >
-                      <X size={12} />
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        onClick={(e) => removePreset(p.id, e)}
+                        className="p-0.5 rounded-md hover:bg-red-500/20 hover:text-red-400 text-[var(--text-dim)] transition-all opacity-0 group-hover:opacity-100"
+                        title="Delete Preset"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
                   </div>
                 ))
               )}
@@ -2188,14 +2297,14 @@ ${formData.comments || 'None'}
             <button
               type="button"
               onClick={handleAddPreset}
-              disabled={presets.length >= 5}
+              disabled={presets.length >= 5 || isReadOnly}
               className={clsx(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all text-xs font-bold shrink-0 shadow-sm group",
-                presets.length >= 5
+                (presets.length >= 5 || isReadOnly)
                   ? "bg-white/5 text-[var(--text-dim)] border-white/5 opacity-50 cursor-not-allowed"
                   : "bg-[var(--accent-soft)] text-[var(--accent-main)] border-[var(--accent-main)]/30 hover:bg-[var(--accent-main)] hover:text-white"
               )}
-              title={presets.length >= 5 ? "Maximum 5 presets reached. Delete one to add a new preset." : "Save current form as a new preset (named after Expense Description)"}
+              title={isReadOnly ? "Cannot add preset to locked expense" : (presets.length >= 5 ? "Maximum 5 presets reached. Delete one to add a new preset." : "Save current form as a new preset (named after Expense Description)")}
             >
               <Plus size={14} />
               <span>Add Preset</span>
@@ -2320,9 +2429,10 @@ ${formData.comments || 'None'}
                     </span>
                   </div>
                   <textarea 
-                    className="h-20 resize-none" 
+                    className={clsx("h-20 resize-none", isReadOnly && "bg-white/5 opacity-60 cursor-not-allowed text-stone-300")} 
                     value={formData.purpose}
                     onChange={(e) => handleInputChange('purpose', e.target.value)}
+                    disabled={isReadOnly}
                     placeholder="Describe the reason for these expenses in one paragraph..."
                     maxLength={300}
                   />
@@ -2359,9 +2469,10 @@ ${formData.comments || 'None'}
                         <td className="py-2 px-3 font-bold text-v4-ink">{sec.label}</td>
                         <td className="py-2 px-3">
                           <select 
-                            className="!p-1 !text-[10px] !bg-transparent !border-0 font-mono text-v4-ink-muted focus:!bg-white/10 outline-none cursor-pointer" 
+                            className={clsx("!p-1 !text-[10px] !bg-transparent !border-0 font-mono text-v4-ink-muted focus:!bg-white/10 outline-none", !isReadOnly ? "cursor-pointer" : "cursor-not-allowed opacity-70")} 
                             value={itemData[idx]?.ref || '1'}
                             onChange={(e) => handleItemChange(idx, 'ref', e.target.value)}
+                            disabled={isReadOnly}
                           >
                             {Array.from({ length: 20 }, (_, i) => (
                               <option key={i + 1} value={i + 1}>{i + 1}</option>
@@ -2372,62 +2483,69 @@ ${formData.comments || 'None'}
                         <td className="py-2 px-3">
                           <input 
                             type="text" 
-                            className="!p-1 !text-xs !bg-transparent !border-0 text-right focus:!bg-white/10" 
+                            className={clsx("!p-1 !text-xs !bg-transparent !border-0 text-right focus:!bg-white/10", isReadOnly && "opacity-70 cursor-not-allowed")} 
                             placeholder="0.00"
                             value={itemData[idx]?.hst || ''}
                             onChange={(e) => handleItemChange(idx, 'hst', e.target.value)}
+                            disabled={isReadOnly}
                           />
                         </td>
                         <td className="py-2 px-3">
                           <input 
                             type="text" 
-                            className="!p-1 !text-xs !bg-transparent !border-0 text-right font-bold focus:!bg-white/10" 
+                            className={clsx("!p-1 !text-xs !bg-transparent !border-0 text-right font-bold focus:!bg-white/10", isReadOnly && "opacity-70 cursor-not-allowed")} 
                             placeholder="0.00"
                             value={itemData[idx]?.total || ''}
                             onChange={(e) => handleItemChange(idx, 'total', e.target.value)}
+                            disabled={isReadOnly}
                           />
                         </td>
                         <td className="py-2 px-3 text-center">
-                          <button 
-                              onClick={() => removeCategory(idx)}
-                              className="text-v4-rule  transition-colors active:scale-90"
-                          >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                          </button>
+                          {!isReadOnly && (
+                            <button 
+                                onClick={() => removeCategory(idx)}
+                                className="text-v4-rule  transition-colors active:scale-90"
+                                title="Remove item"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
                   })}
                   
-                  {/* Add Expense Row */}
-                  <tr className="bg-v4-warm/30 italic">
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-2">
-                         <select 
-                            value={selectedIdx}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              setSelectedIdx(val);
-                            }}
-                            className="!bg-black/20 !text-[var(--text-main)] !py-2 !px-3 !text-[11px] !w-full !border !border-white/10 rounded-[14px] font-medium appearance-none"
-                         >
-                            <option value="-1">Add Expense (Pick Category)...</option>
-                            {availableSECS.map(s => (
-                                <option key={s.idx} value={s.idx}>{s.label}</option>
-                            ))}
-                        </select>
-                         <button 
-                             onClick={addCategory}
-                             className="!bg-red-600 !text-[var(--text-main)] !py-1 !px-4 rounded-[14px] !text-[9px] font-bold  active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
-                         >
-                            ADD
-                        </button>
-                      </div>
-                    </td>
-                    <td colSpan={4} className="text-right pr-6 text-[10px] text-v4-ink-muted uppercase tracking-tighter">
-                        Select a category to add to your claim
-                    </td>
-                  </tr>
+                  {/* Add Expense Row (Hidden when Read-Only) */}
+                  {!isReadOnly && (
+                    <tr className="bg-v4-warm/30 italic">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                           <select 
+                              value={selectedIdx}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setSelectedIdx(val);
+                              }}
+                              className="!bg-black/20 !text-[var(--text-main)] !py-2 !px-3 !text-[11px] !w-full !border !border-white/10 rounded-[14px] font-medium appearance-none"
+                           >
+                              <option value="-1">Add Expense (Pick Category)...</option>
+                              {availableSECS.map(s => (
+                                  <option key={s.idx} value={s.idx}>{s.label}</option>
+                              ))}
+                          </select>
+                           <button 
+                               onClick={addCategory}
+                               className="!bg-red-600 !text-[var(--text-main)] !py-1 !px-4 rounded-[14px] !text-[9px] font-bold  active:scale-95 transition-all h-full shadow-lg shadow-red-900/40"
+                           >
+                              ADD
+                          </button>
+                        </div>
+                      </td>
+                      <td colSpan={4} className="text-right pr-6 text-[10px] text-v4-ink-muted uppercase tracking-tighter">
+                          Select a category to add to your claim
+                      </td>
+                    </tr>
+                  )}
 
                   {activeIndices.length > 0 && (
                     <tr className="tot-r">
@@ -2451,9 +2569,10 @@ ${formData.comments || 'None'}
                 </div>
                 <div className="card-body h-full">
                     <textarea 
-                        className="h-32 resize-none" 
+                        className={clsx("h-32 resize-none", isReadOnly && "bg-white/5 opacity-60 cursor-not-allowed text-stone-300")} 
                         value={formData.comments}
                         onChange={(e) => handleInputChange('comments', e.target.value)}
+                        disabled={isReadOnly}
                         placeholder="Detail specialized expenses (e.g. Jamia equipment, property repair notes)..."
                     />
                 </div>
@@ -2477,13 +2596,18 @@ ${formData.comments || 'None'}
                   </p>
                   <div className="space-y-4">
                       {receipts.length === 0 ? (
-                          <div className="border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 group  transition-all cursor-pointer"
-                               onClick={() => fileInputRef.current?.click()}>
-                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center   transition-all">
+                          <div className={clsx(
+                            "border-2 border-dashed border-white/5 rounded-[20px] p-8 flex flex-col items-center justify-center gap-4 transition-all",
+                            !isReadOnly ? "group cursor-pointer hover:border-white/10" : "cursor-not-allowed opacity-50"
+                          )}
+                               onClick={() => !isReadOnly && fileInputRef.current?.click()}>
+                              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center transition-all">
                                   <Paperclip size={20} className="text-[var(--text-main)]/40 " />
                               </div>
                               <div className="text-center">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]/50  transition-colors">Click to upload receipts</p>
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-main)]/50 transition-colors">
+                                    {isReadOnly ? "No receipts attached" : "Click to upload receipts"}
+                                  </p>
                                   <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-main)]/10 mt-1">PDF, JPG, PNG (Max 10 files)</p>
                               </div>
                           </div>
@@ -2505,6 +2629,7 @@ ${formData.comments || 'None'}
                                               receipt={receipt} 
                                               idx={idx} 
                                               onRemove={removeReceipt} 
+                                              isReadOnly={isReadOnly}
                                           />
                                       ))}
                                   </div>
@@ -2512,15 +2637,17 @@ ${formData.comments || 'None'}
                           </DndContext>
                       )}
 
-                      <button 
-                          onClick={() => fileInputRef.current?.click()}
-                          className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2   transition-all group"
-                      >
-                          <Plus size={14} className="text-[var(--text-main)]/20 " />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-main)]/20 ">Add Another Receipt</span>
-                      </button>
+                      {!isReadOnly && (
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="mt-2 w-full p-3 rounded-[16px] border border-dashed border-white/10 flex items-center justify-center gap-2 transition-all group"
+                        >
+                            <Plus size={14} className="text-[var(--text-main)]/20 " />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-main)]/20 ">Add Another Receipt</span>
+                        </button>
+                      )}
 
-                      {receipts.length > 0 && (
+                      {!isReadOnly && receipts.length > 0 && (
                           <button
                               type="button"
                               disabled={isAnalyzing || hasUsedAiInCurrentReport}
@@ -2601,20 +2728,30 @@ ${formData.comments || 'None'}
             )}
           </button>
           
-          <button 
-            onClick={handleExportAndSend}
-            disabled={isSending}
-            className="btn-ruby py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag shadow-2xl shadow-red-900/40"
-          >
-            {isSending ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-4 border-white/20 border-t-white" />
-            ) : (
-              <>
-                <Send size={20} />
-                Export & Send (With Receipts)
-              </>
-            )}
-          </button>
+          {isReadOnly ? (
+            <button 
+              disabled={true}
+              className="py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag bg-white/5 border border-white/10 text-[var(--text-dim)] cursor-not-allowed opacity-60"
+            >
+              <Shield size={20} />
+              Submitted • Pending Refund
+            </button>
+          ) : (
+            <button 
+              onClick={handleExportAndSend}
+              disabled={isSending}
+              className="btn-ruby py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag shadow-2xl shadow-red-900/40"
+            >
+              {isSending ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-4 border-white/20 border-t-white" />
+              ) : (
+                <>
+                  <Send size={20} />
+                  Export & Send (With Receipts)
+                </>
+              )}
+            </button>
+          )}
 
 
         </div>
@@ -2710,36 +2847,45 @@ ${formData.comments || 'None'}
       )}
 
       {/* Custom Delete Confirmation Modal */}
-      {showDeleteConfirm && (
+      {(showDeleteConfirm || expenseToDelete) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            onClick={() => setShowDeleteConfirm(false)}
+            onClick={() => { setShowDeleteConfirm(false); setExpenseToDelete(null); }}
           />
-          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/80 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-sm glass bg-[#0a0a0a]/90 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="p-8 pt-10 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center text-red-500 border border-red-600/30 mb-6 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
                 <Trash2 size={32} />
               </div>
               
               <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-main)] mb-3 italic">
-                Delete <span className="text-red-500">Draft</span>?
+                Delete <span className="text-red-500">{(expenseToDelete?.isDriveDraft || (isCurrentDraft && !expenseToDelete)) ? 'Draft' : 'Expense'}</span>?
               </h3>
               
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-dim)] leading-relaxed max-w-[280px]">
-                Are you sure you want to delete this draft? This action cannot be undone.
+              <p className="text-xs font-bold text-[var(--text-main)] leading-relaxed max-w-[280px]">
+                {expenseToDelete ? (
+                  <>Are you sure you want to delete the expense for <span className="text-red-400">{expenseToDelete.month || expenseToDelete.date}</span> (${parseFloat(expenseToDelete.total || 0).toFixed(2)})?</>
+                ) : (
+                  isCurrentDraft 
+                    ? "Are you sure you want to delete this draft? This action cannot be undone."
+                    : "Are you sure you want to delete this entire expense record? This action cannot be undone."
+                )}
+              </p>
+              <p className="text-[10px] font-medium text-[var(--text-dim)] mt-2">
+                This will permanently delete the expense and cannot be undone.
               </p>
 
-              <div className="grid grid-cols-2 gap-4 w-full mt-10">
+              <div className="grid grid-cols-2 gap-4 w-full mt-8">
                 <button 
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-6 py-4 rounded-[18px] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--text-main)] transition-all"
+                  onClick={() => { setShowDeleteConfirm(false); setExpenseToDelete(null); }}
+                  className="px-6 py-4 rounded-[18px] border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--text-main)] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
-                  onClick={handleDeleteDraft}
-                  className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  onClick={() => handleDeleteExpense(expenseToDelete)}
+                  className="px-6 py-4 rounded-[18px] bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-900/40 hover:bg-red-500 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Delete
                 </button>

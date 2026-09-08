@@ -40,3 +40,21 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const db = getDb();
+    const body = await request.json();
+    const { id, fullName, date } = body;
+    if (id) {
+      db.prepare('DELETE FROM expenses WHERE id = ?').run(id);
+    }
+    if (fullName && date) {
+      db.prepare('DELETE FROM expenses WHERE fullName = ? AND date = ?').run(fullName, date);
+    }
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('Data Delete Error:', err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
