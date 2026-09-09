@@ -913,9 +913,7 @@ export default function RuhaniKhazainReader() {
                               "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group",
                               isVolumeRowSelected
                                 ? "font-black text-white border-[var(--accent-main)] bg-white/10"
-                                : isSelectedVolume && isExpanded
-                                  ? "font-semibold text-white/90 border-transparent hover:bg-white/5"
-                                  : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
+                                : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                             )}
                           >
                             <span className="text-xs flex-1 truncate">Volume {vol}</span>
