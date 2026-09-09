@@ -667,7 +667,151 @@ export default function LettersPage() {
   }, [activeCategoryId, huzoorSubCat, currentCategory, name]);
 
   const handlePrintPdf = () => {
-    window.print();
+    // Create an isolated, hidden iframe for clean US Letter PDF export (only the letter is printed)
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html lang="ur" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>${subject || "Official Letter"}</title>
+        <style>
+          @page {
+            size: letter portrait;
+            margin: 0;
+          }
+          @font-face {
+            font-family: 'Jameel Noori Nastaleeq Regular';
+            src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
+          }
+          @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          html, body {
+            width: 8.5in;
+            height: 11in;
+            margin: 0;
+            padding: 0;
+            background: #ffffff !important;
+            color: #111827 !important;
+            font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif;
+            direction: rtl;
+            text-align: right;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .page-sheet {
+            width: 8.5in;
+            min-height: 11in;
+            height: 11in;
+            padding: 1in 1in 0.8in 1in;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #ffffff;
+            box-sizing: border-box;
+          }
+          .header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.8;
+            border-bottom: 1.5px solid #e5e7eb;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+          }
+          .greeting {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1f2937;
+          }
+          .body-text {
+            font-size: 16px;
+            line-height: 2.2;
+            white-space: pre-wrap;
+            color: #111827;
+            flex: 1;
+          }
+          .footer {
+            border-top: 1.5px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 24px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #111827;
+          }
+          .sign-title {
+            font-weight: bold;
+            font-size: 17px;
+            margin-top: 4px;
+          }
+          .meta-text {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            color: #4b5563;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="page-sheet">
+          <div class="header">
+            <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
+            <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
+          </div>
+
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
+            <div class="body-text">${computedUrduBody}</div>
+          </div>
+
+          <div class="footer">
+            <div>والسلام</div>
+            <div>خاکسار</div>
+            <div class="sign-title">${name}</div>
+            <div class="meta-text">${code}</div>
+            <div>${designation}</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(printHtml);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1500);
+    }, 400);
   };
 
   const handleSendEmail = async () => {
@@ -1175,14 +1319,14 @@ export default function LettersPage() {
                 )}
               >
                 <Eye size={13} />
-                <span>PDF Document</span>
+                <span>US Letter</span>
               </button>
             </div>
 
             <button
               onClick={handlePrintPdf}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white/80 hover:text-white glass border border-white/10 hover:border-white/20 transition-all"
-              title="Download / Print PDF"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white/80 hover:text-white glass border border-white/10 hover:border-white/20 transition-all shadow-sm"
+              title="Export US Letter PDF"
             >
               <Download size={14} />
               <span>Export PDF</span>
@@ -1555,19 +1699,19 @@ export default function LettersPage() {
               <div className="lg:col-span-5 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-widest text-white/50">
-                    Live Letter Preview
+                    Live US Letter Preview
                   </span>
                   <button
                     onClick={() => setViewMode("preview")}
                     className="text-xs font-bold text-[var(--accent-main)] hover:underline flex items-center gap-1"
                   >
-                    <span>Full Screen PDF</span>
+                    <span>Full US Letter</span>
                     <Eye size={12} />
                   </button>
                 </div>
 
-                {/* Simulated A4 Paper */}
-                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[480px] border border-gray-200 dir-rtl text-right font-urdu">
+                {/* Simulated US Letter Sheet */}
+                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between aspect-[8.5/11] min-h-[500px] border border-gray-200 dir-rtl text-right font-urdu">
                   {/* Bismillah Header */}
                   <div className="text-center space-y-1 text-sm font-bold text-gray-800 border-b pb-4 border-gray-100 font-urdu">
                     <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
@@ -1600,12 +1744,56 @@ export default function LettersPage() {
                     <div className="text-[11px] text-gray-600 font-urdu">{designation}</div>
                   </div>
                 </div>
+
+                {/* Hidden print container for edit mode fallback */}
+                <div
+                  id="printable-letter"
+                  className="hidden print:flex bg-white text-gray-900 p-[1in] flex-col justify-between text-right font-urdu w-[8.5in] h-[11in]"
+                >
+                  <div className="text-center space-y-2 text-lg font-bold text-gray-900 border-b pb-6 border-gray-200 font-urdu">
+                    <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                    <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
+                    <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
+                  </div>
+                  <div className="my-8 flex-1 space-y-6">
+                    <div className="text-base font-bold text-gray-800 font-urdu">
+                      السلام علیکم ورحمۃ اللہ وبرکاته
+                    </div>
+                    <div
+                      className="text-base leading-loose whitespace-pre-wrap font-urdu text-gray-900"
+                      style={{
+                        fontFamily:
+                          "'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', serif",
+                      }}
+                    >
+                      {computedUrduBody}
+                    </div>
+                  </div>
+                  <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu">
+                    <div>والسلام</div>
+                    <div>خاکسار</div>
+                    <div className="font-bold text-lg font-urdu">{name}</div>
+                    <div className="text-sm text-gray-700 font-sans">{code}</div>
+                    <div className="text-sm text-gray-700 font-urdu">{designation}</div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
-            /* Full Page PDF Document View (Print-ready A4) */
-            <div className="max-w-3xl mx-auto my-4 font-urdu">
-              <div className="bg-white text-gray-900 rounded-none shadow-2xl p-12 md:p-16 min-h-[900px] flex flex-col justify-between border border-gray-300 print:border-none print:shadow-none print:m-0 text-right font-urdu">
+            /* Full Page PDF Document View (Standard US Letter 8.5" x 11") */
+            <div className="flex flex-col items-center py-6 px-4">
+              <div className="w-full max-w-[8.5in] flex items-center justify-between pb-3 text-xs text-white/50 print:hidden">
+                <span className="font-bold uppercase tracking-wider text-[10px] text-[var(--accent-main)]">
+                  Standard US Letter (8.5&quot; × 11&quot;)
+                </span>
+                <span className="text-[10px] text-white/40">
+                  Print &amp; Export Ready
+                </span>
+              </div>
+              <div
+                id="printable-letter"
+                className="w-full max-w-[8.5in] min-h-[11in] bg-white text-gray-900 shadow-2xl p-12 md:p-[1in] flex flex-col justify-between border border-gray-300 text-right font-urdu aspect-[8.5/11]"
+              >
                 {/* Header */}
                 <div className="text-center space-y-2 text-base md:text-lg font-bold text-gray-900 border-b pb-6 border-gray-200 font-urdu">
                   <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
