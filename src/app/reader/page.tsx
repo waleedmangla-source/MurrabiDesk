@@ -804,13 +804,12 @@ export default function RuhaniKhazainReader() {
         {/* Sidebar Book & Volume Search Input */}
         <div className="px-5 pb-3">
           <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] pointer-events-none" />
             <input
               type="text"
               value={sidebarBookSearch}
               onChange={(e) => setSidebarBookSearch(e.target.value)}
               placeholder="Search books or volumes..."
-              className="w-full pl-8 pr-7 py-2 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)]/50 focus:ring-1 focus:ring-[var(--accent-main)]/30 transition-all font-medium"
+              className="w-full px-3 py-2 pr-7 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)]/50 focus:ring-1 focus:ring-[var(--accent-main)]/30 transition-all font-medium"
             />
             {sidebarBookSearch && (
               <button
@@ -828,8 +827,7 @@ export default function RuhaniKhazainReader() {
         <div className="px-5 pb-4 border-b border-white/5 mb-2">
           <div className="p-3 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex flex-col gap-1.5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1">
-                <BookOpen size={11} />
+              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]">
                 Now Reading
               </span>
               <span className="text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded bg-white/10">
@@ -862,26 +860,21 @@ export default function RuhaniKhazainReader() {
             <div className="flex flex-col">
               <div
                 onClick={() => setIsRuhaniKhazainOpen(!isRuhaniKhazainOpen)}
-                className="w-full flex items-center gap-2.5 px-5 py-3 transition-all text-left border-l-2 border-transparent hover:bg-black/10 cursor-pointer select-none group"
+                className="w-full flex items-center justify-between px-5 py-3 transition-all text-left border-l-2 border-transparent hover:bg-black/10 cursor-pointer select-none group"
               >
-                <Library size={16} className="shrink-0 text-[var(--accent-main)]" />
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
                     Ruhani Khazain
                   </span>
-                  <span className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
+                  <span className="text-[10px] font-serif text-[var(--text-dim)] text-left" dir="rtl">
                     روحانی خزائن
                   </span>
                 </div>
 
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] shrink-0">
-                  {sidebarBookSearch.trim() ? `${filteredVolumeData.length} Vols` : '23 Vols'}
-                </span>
-
                 <ChevronDown 
                   size={13} 
                   className={clsx(
-                    "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-white",
+                    "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-white shrink-0 ml-2",
                     (isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && "rotate-180 text-[var(--accent-main)]"
                   )} 
                 />
@@ -906,13 +899,12 @@ export default function RuhaniKhazainReader() {
                           <div
                             onClick={() => setSelectedVolume(vol)}
                             className={clsx(
-                              "w-full flex items-center gap-2.5 px-3 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group rounded-r-lg",
+                              "w-full flex items-center justify-between px-3 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group rounded-r-lg",
                               isSelected
                                 ? "font-black text-white border-[var(--accent-main)] bg-black/20"
                                 : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                             )}
                           >
-                            <BookOpen size={14} className={clsx("shrink-0", isSelected ? "text-[var(--accent-main)]" : "opacity-60")} />
                             <span className="text-xs font-bold flex-1 truncate">Volume {vol}</span>
 
                             {/* Book Dropdown Chevron Toggle */}
