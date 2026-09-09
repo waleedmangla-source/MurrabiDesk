@@ -848,24 +848,10 @@ export default function LettersPage() {
           </h1>
         </div>
 
-        {/* Account / Sub-Header */}
+        {/* Sub-Header / Controls */}
         <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
-          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
-                  Official Correspondence
-                </span>
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] shrink-0">
-                  <Sparkles size={10} />
-                  HQ OS
-                </span>
-              </div>
-            </div>
-          </div>
-
           {/* Search Box — identical styling to Mail tab */}
-          <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-3 py-2 mt-2">
+          <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-3 py-2">
             <Search size={13} className="text-[var(--text-dim)] shrink-0" />
             <input
               type="text"

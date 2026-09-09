@@ -286,3 +286,162 @@ export const THEOLOGICAL_TOPIC_MAP: Record<string, string[]> = {
   "chashma": ["چشمہ معرفت", "چشمہ مسیحی"],
   "paigham-e-sulh": ["پیغام صلح"]
 };
+
+export interface EnglishBookEntry {
+  id: string;
+  title: string;
+  year?: string;
+  description?: string;
+  url?: string;
+}
+
+export const ENGLISH_BOOKS: EnglishBookEntry[] = [
+  {
+    id: 'philosophy-teachings-islam',
+    title: 'The Philosophy of the Teachings of Islam',
+    year: '1896',
+    description: 'A masterpiece presenting the physical, moral, and spiritual states of man, delivered at the Conference of Great Religions in Lahore.',
+    url: 'https://www.alislam.org/book/philosophy-teachings-islam/'
+  },
+  {
+    id: 'jesus-in-india',
+    title: 'Jesus in India',
+    year: '1899',
+    description: 'Groundbreaking treatise presenting historical, medical, and biblical evidence of Jesus’ journey to Kashmir after surviving the crucifixion.',
+    url: 'https://www.alislam.org/book/jesus-in-india/'
+  },
+  {
+    id: 'noahs-ark',
+    title: "Noah's Ark (Kashti-e-Nuh)",
+    year: '1902',
+    description: 'An invitation to faith, guidance, and spiritual protection against physical and spiritual plagues.',
+    url: 'https://www.alislam.org/book/noahs-ark/'
+  },
+  {
+    id: 'the-will',
+    title: 'The Will (Al-Wasiyyat)',
+    year: '1905',
+    description: 'Prophecy and institutional foundation of the Second Manifestation of Khilafat and the Nizam-e-Wasiyyat.',
+    url: 'https://www.alislam.org/book/the-will/'
+  },
+  {
+    id: 'barahin-ahmadiyya-1-2',
+    title: 'Barahin-e-Ahmadiyya (Part I & II)',
+    year: '1880',
+    description: 'The monumental defense of the truth of Islam and the Holy Quran against all philosophical challenges.',
+    url: 'https://www.alislam.org/book/barahin-e-ahmadiyya-part-i-ii/'
+  },
+  {
+    id: 'barahin-ahmadiyya-3',
+    title: 'Barahin-e-Ahmadiyya (Part III)',
+    year: '1882',
+    description: 'Exposition of 300 arguments on the truth of the Quran and the superiority of Islamic teachings.',
+    url: 'https://www.alislam.org/book/barahin-e-ahmadiyya-part-iii/'
+  },
+  {
+    id: 'barahin-ahmadiyya-4',
+    title: 'Barahin-e-Ahmadiyya (Part IV)',
+    year: '1884',
+    description: 'Signs, revelations, and miracles proving that God speaks today as He did in the past.',
+    url: 'https://www.alislam.org/book/barahin-e-ahmadiyya-part-iv/'
+  },
+  {
+    id: 'barahin-ahmadiyya-5',
+    title: 'Barahin-e-Ahmadiyya (Part V)',
+    year: '1905',
+    description: 'Fulfillment of magnificent prophecies, conclusive signs, and divine support.',
+    url: 'https://www.alislam.org/book/barahin-e-ahmadiyya-part-v/'
+  },
+  {
+    id: 'elucidation-of-objectives',
+    title: 'Elucidation of Objectives (Taudih-e-Maram)',
+    year: '1891',
+    description: 'Theological exposition on the ascension, death of Jesus, and the reality of angels.',
+    url: 'https://www.alislam.org/book/elucidation-of-objectives/'
+  },
+  {
+    id: 'victory-of-islam',
+    title: 'Victory of Islam (Fath-e-Islam)',
+    year: '1891',
+    description: 'Outlining five distinct branches of the divine mission to revive Islam in modern times.',
+    url: 'https://www.alislam.org/book/victory-of-islam/'
+  },
+  {
+    id: 'the-heavenly-decree',
+    title: 'The Heavenly Decree (Asmani Faislah)',
+    year: '1891',
+    description: 'Addressing religious controversies and issuing a solemn call for divine arbitration.',
+    url: 'https://www.alislam.org/book/the-heavenly-decree/'
+  },
+  {
+    id: 'a-message-of-peace',
+    title: 'A Message of Peace (Paigham-e-Sulh)',
+    year: '1908',
+    description: 'Final written work calling for communal harmony, mutual respect, and reconciliation.',
+    url: 'https://www.alislam.org/book/message-of-peace/'
+  },
+  {
+    id: 'fountain-of-christianity',
+    title: 'Fountain of Christianity (Chashma-e-Masihi)',
+    year: '1906',
+    description: 'In-depth critical analysis of Christian doctrines and dogmas.',
+    url: 'https://www.alislam.org/book/fountain-of-christianity/'
+  },
+  {
+    id: 'the-green-announcement',
+    title: 'The Green Announcement (Sabz Ishtihar)',
+    year: '1888',
+    description: 'Historic notice announcing criteria for sincere seekers and followers.',
+    url: 'https://www.alislam.org/book/green-announcement/'
+  },
+  {
+    id: 'lecture-lahore',
+    title: 'Lecture Lahore',
+    year: '1904',
+    description: 'Historic public lecture on Islam, God, and spiritual enlightenment delivered in Lahore.',
+    url: 'https://www.alislam.org/book/lecture-lahore/'
+  },
+  {
+    id: 'lecture-sialkot',
+    title: 'Lecture Sialkot',
+    year: '1904',
+    description: 'Address expounding the true nature of prophecy, revelation, and fellowship with God.',
+    url: 'https://www.alislam.org/book/lecture-sialkot/'
+  },
+  {
+    id: 'lecture-ludhiana',
+    title: 'Lecture Ludhiana',
+    year: '1900',
+    description: 'Discourse on moral reformation, living faith, and adherence to Islamic injunctions.',
+    url: 'https://www.alislam.org/book/lecture-ludhiana/'
+  },
+  {
+    id: 'british-government-and-jihad',
+    title: 'The British Government and Jihad',
+    year: '1900',
+    description: 'Comprehensive theological refutation of militant misconceptions surrounding jihad.',
+    url: 'https://www.alislam.org/book/british-government-jihad/'
+  },
+  {
+    id: 'a-misconception-removed',
+    title: 'A Misconception Removed (Aik Ghalti Ka Izala)',
+    year: '1901',
+    description: 'Detailed explanation regarding the status of Ummati Nabi in complete subordination to the Holy Prophet (pbuh).',
+    url: 'https://www.alislam.org/book/a-misconception-removed/'
+  },
+  {
+    id: 'four-questions-answered',
+    title: 'Four Questions Answered (Siraj-ud-Din)',
+    year: '1897',
+    description: 'Scholarly answers resolving four theological questions on sinlessness and intercession.',
+    url: 'https://www.alislam.org/book/four-questions-answered/'
+  },
+  {
+    id: 'need-for-the-imam',
+    title: 'Need for the Imam (Zarurat-ul-Imam)',
+    year: '1898',
+    description: 'The necessity and characteristics of the appointed spiritual guide in every era.',
+    url: 'https://www.alislam.org/book/need-for-the-imam/'
+  }
+];
+

@@ -23,6 +23,7 @@ import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
 import AIBlobIcon from '@/components/AIBlobIcon';
 import { 
   KHAZAIN_BOOKS, 
+  ENGLISH_BOOKS,
   getBookForPage, 
   normalizeKhazainText, 
   normalizeWithIndexMap 
@@ -127,8 +128,12 @@ export default function RuhaniKhazainReader() {
   // Dropdown states for each volume book breakdown
   const [expandedVolumes, setExpandedVolumes] = useState<Record<number, boolean>>({ 1: true });
 
+  // Language toggle for reader: 'urdu' | 'english'
+  const [bookLanguage, setBookLanguage] = useState<'urdu' | 'english'>('urdu');
+  const [selectedEnglishBookId, setSelectedEnglishBookId] = useState<string | null>('philosophy-teachings-islam');
+
   // Secondary Sidebar Collection Dropdown & Book Search Filter
-  const [isRuhaniKhazainOpen, setIsRuhaniKhazainOpen] = useState<boolean>(true);
+  const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(true);
   const [sidebarBookSearch, setSidebarBookSearch] = useState<string>('');
 
   // Suggest a Book modal state
@@ -207,6 +212,15 @@ export default function RuhaniKhazainReader() {
 
     return list;
   }, [volumes, sidebarBookSearch]);
+
+  // Filtered English books for the secondary sidebar
+  const filteredEnglishBooks = useMemo(() => {
+    const q = sidebarBookSearch.trim().toLowerCase();
+    if (!q) return ENGLISH_BOOKS;
+    return ENGLISH_BOOKS.filter(
+      b => b.title.toLowerCase().includes(q) || (b.year && b.year.includes(q))
+    );
+  }, [sidebarBookSearch]);
 
   // Pre-compiled English dictionary & Selected Word Inspector
   const [dictionary, setDictionary] = useState<Record<string, { translit?: string; meaning: string }>>({});
@@ -873,10 +887,20 @@ export default function RuhaniKhazainReader() {
                 Now Reading
               </span>
               <span className="text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded bg-white/10">
-                Vol {selectedVolume || 1}
+                {bookLanguage === 'english' ? 'English' : `Vol ${selectedVolume || 1}`}
               </span>
             </div>
             {(() => {
+              if (bookLanguage === 'english') {
+                const activeEngBook = ENGLISH_BOOKS.find(b => b.id === selectedEnglishBookId) || ENGLISH_BOOKS[0];
+                return (
+                  <div className="flex flex-col pt-0.5">
+                    <span className="text-xs font-bold text-[var(--foreground)] truncate">
+                      {activeEngBook ? activeEngBook.title : 'English Library'}
+                    </span>
+                  </div>
+                );
+              }
               const pageNum = currentPage?.page_num || (currentPageIndex + 1);
               const activeBook = getBookForPage(selectedVolume || 1, pageNum);
               return (
@@ -890,113 +914,180 @@ export default function RuhaniKhazainReader() {
           </div>
         </div>
 
-        {/* Tab Content & Ruhani Khazain Dropdown Navigation */}
+        {/* ── Language Toggle: Urdu / English Books ── */}
+        <div className="px-5 pb-3">
+          <div className="relative flex bg-white/5 rounded-xl p-1 border border-white/10">
+            {/* Animated Background Pill */}
+            <div 
+              className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm bg-[var(--accent-main)]"
+              style={{
+                left: bookLanguage === 'urdu' ? '0.25rem' : 'calc(50%)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setBookLanguage('urdu')}
+              className={clsx(
+                "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-wider transition-colors duration-200 text-center",
+                bookLanguage === 'urdu' ? "text-white font-black" : "text-[var(--text-dim)] hover:text-white"
+              )}
+            >
+              Urdu
+            </button>
+            <button
+              type="button"
+              onClick={() => setBookLanguage('english')}
+              className={clsx(
+                "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-wider transition-colors duration-200 text-center",
+                bookLanguage === 'english' ? "text-white font-black" : "text-[var(--text-dim)] hover:text-white"
+              )}
+            >
+              English
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content & Library Dropdown Navigation */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           <nav className="py-2 space-y-1">
-            {/* ── Parent Collection Dropdown: Ruhani Khazain ── */}
+            {/* ── Parent Collection Dropdown: Library ── */}
             <div className="flex flex-col">
               <div
-                onClick={() => setIsRuhaniKhazainOpen(!isRuhaniKhazainOpen)}
+                onClick={() => setIsLibraryOpen(!isLibraryOpen)}
                 className="w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 border-transparent hover:bg-white/5 cursor-pointer select-none group"
               >
                 <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
-                  Ruhani Khazain
+                  Library
                 </span>
 
                 <ChevronDown 
                   size={13} 
                   className={clsx(
                     "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-white shrink-0 ml-2",
-                    (isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && "rotate-180 text-[var(--accent-main)]"
+                    (isLibraryOpen || !!sidebarBookSearch.trim()) && "rotate-180 text-[var(--accent-main)]"
                   )} 
                 />
               </div>
 
-              {/* ── Collapsible Ruhani Khazain Volumes 1-23 ── */}
-              {(isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && (
+              {/* ── Collapsible Books (Urdu or English) ── */}
+              {(isLibraryOpen || !!sidebarBookSearch.trim()) && (
                 <div className="w-full flex flex-col space-y-px bg-black/15 py-1">
-                  {filteredVolumeData.length === 0 ? (
-                    <div className="px-6 py-4 text-center text-xs text-[var(--text-dim)]">
-                      No books found matching &quot;{sidebarBookSearch}&quot;
-                    </div>
-                  ) : (
-                    filteredVolumeData.map(({ vol, matchingBooks, isMatchByBook }) => {
-                      const isSelectedVolume = selectedVolume === vol;
-                      const isExpanded = isMatchByBook || !!expandedVolumes[vol];
-                      const books = matchingBooks;
-                      const hasSubBooks = books.length > 0;
+                  {bookLanguage === 'urdu' ? (
+                    filteredVolumeData.length === 0 ? (
+                      <div className="px-6 py-4 text-center text-xs text-[var(--text-dim)]">
+                        No books found matching &quot;{sidebarBookSearch}&quot;
+                      </div>
+                    ) : (
+                      filteredVolumeData.map(({ vol, matchingBooks, isMatchByBook }) => {
+                        const isSelectedVolume = selectedVolume === vol;
+                        const isExpanded = isMatchByBook || !!expandedVolumes[vol];
+                        const books = matchingBooks;
+                        const hasSubBooks = books.length > 0;
 
-                      // Determine active book for this volume
-                      const pageNum = currentPage?.page_num || (currentPageIndex + 1);
-                      const activeBook = isSelectedVolume ? getBookForPage(vol, pageNum) : null;
+                        // Determine active book for this volume
+                        const pageNum = currentPage?.page_num || (currentPageIndex + 1);
+                        const activeBook = isSelectedVolume ? getBookForPage(vol, pageNum) : null;
 
-                      // The volume row is only selected if it's the active volume AND its sub-books are not expanded
-                      const isVolumeRowSelected = isSelectedVolume && (!hasSubBooks || !isExpanded);
+                        // The volume row is only selected if it's the active volume AND its sub-books are not expanded
+                        const isVolumeRowSelected = isSelectedVolume && (!hasSubBooks || !isExpanded);
 
-                      return (
-                        <div key={vol} className="w-full flex flex-col">
-                          {/* Volume Navigation Row (Spans edge-to-edge) */}
-                          <div
-                            onClick={() => setSelectedVolume(vol)}
-                            className={clsx(
-                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group",
-                              isVolumeRowSelected
-                                ? "font-black text-white border-[var(--accent-main)] bg-white/10"
-                                : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
-                            )}
-                          >
-                            <span className="text-xs flex-1 truncate">Volume {vol}</span>
+                        return (
+                          <div key={vol} className="w-full flex flex-col">
+                            {/* Volume Navigation Row (Spans edge-to-edge) */}
+                            <div
+                              onClick={() => setSelectedVolume(vol)}
+                              className={clsx(
+                                "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group",
+                                isVolumeRowSelected
+                                  ? "font-black text-white border-[var(--accent-main)] bg-white/10"
+                                  : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
+                              )}
+                            >
+                              <span className="text-xs flex-1 truncate">Volume {vol}</span>
 
-                            {/* Book Dropdown Chevron Toggle */}
-                            {hasSubBooks && (
-                              <button
-                                onClick={(e) => toggleVolumeDropdown(vol, e)}
-                                className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-1 shrink-0"
-                                title="Toggle books"
-                              >
-                                <ChevronDown 
-                                  size={12} 
-                                  className={clsx("transition-transform duration-200", isExpanded && "rotate-180 text-[var(--accent-main)]")} 
-                                />
-                              </button>
+                              {/* Book Dropdown Chevron Toggle */}
+                              {hasSubBooks && (
+                                <button
+                                  onClick={(e) => toggleVolumeDropdown(vol, e)}
+                                  className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-1 shrink-0"
+                                  title="Toggle books"
+                                >
+                                  <ChevronDown 
+                                    size={12} 
+                                    className={clsx("transition-transform duration-200", isExpanded && "rotate-180 text-[var(--accent-main)]")} 
+                                  />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Sub-books Dropdown List (Spans edge-to-edge) */}
+                            {isExpanded && hasSubBooks && (
+                              <div className="w-full flex flex-col bg-black/25 py-0.5 space-y-px">
+                                {books.map((book, idx) => {
+                                  const isCurrentBook = isSelectedVolume && activeBook?.title === book.title;
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => {
+                                        if (selectedVolume !== vol) {
+                                          pendingTargetPageRef.current = book.pageStart;
+                                          setSelectedVolume(vol);
+                                        } else {
+                                          const targetIdx = pages.findIndex(p => p.page_num === book.pageStart);
+                                          if (targetIdx !== -1) {
+                                            setCurrentPageIndex(targetIdx);
+                                          }
+                                        }
+                                      }}
+                                      className={clsx(
+                                        "w-full text-left pl-12 pr-6 py-2 transition-all flex items-center justify-between text-[11px] border-l-2 group",
+                                        isCurrentBook
+                                          ? "font-bold text-white border-[var(--accent-main)] bg-white/10"
+                                          : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                                      )}
+                                    >
+                                      <span className="truncate flex-1 font-medium">{book.title}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             )}
                           </div>
-
-                          {/* Sub-books Dropdown List (Spans edge-to-edge) */}
-                          {isExpanded && hasSubBooks && (
-                            <div className="w-full flex flex-col bg-black/25 py-0.5 space-y-px">
-                              {books.map((book, idx) => {
-                                const isCurrentBook = isSelectedVolume && activeBook?.title === book.title;
-                                return (
-                                  <button
-                                    key={idx}
-                                    onClick={() => {
-                                      if (selectedVolume !== vol) {
-                                        pendingTargetPageRef.current = book.pageStart;
-                                        setSelectedVolume(vol);
-                                      } else {
-                                        const targetIdx = pages.findIndex(p => p.page_num === book.pageStart);
-                                        if (targetIdx !== -1) {
-                                          setCurrentPageIndex(targetIdx);
-                                        }
-                                      }
-                                    }}
-                                    className={clsx(
-                                      "w-full text-left pl-12 pr-6 py-2 transition-all flex items-center justify-between text-[11px] border-l-2 group",
-                                      isCurrentBook
-                                        ? "font-bold text-white border-[var(--accent-main)] bg-white/10"
-                                        : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
-                                    )}
-                                  >
-                                    <span className="truncate flex-1 font-medium">{book.title}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
+                        );
+                      })
+                    )
+                  ) : (
+                    filteredEnglishBooks.length === 0 ? (
+                      <div className="px-6 py-4 text-center text-xs text-[var(--text-dim)]">
+                        No English books found matching &quot;{sidebarBookSearch}&quot;
+                      </div>
+                    ) : (
+                      filteredEnglishBooks.map((book) => {
+                        const isCurrentBook = selectedEnglishBookId === book.id;
+                        return (
+                          <button
+                            key={book.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedEnglishBookId(book.id);
+                            }}
+                            className={clsx(
+                              "w-full text-left pl-9 pr-6 py-2.5 transition-all flex items-center justify-between text-xs border-l-2 group",
+                              isCurrentBook
+                                ? "font-bold text-white border-[var(--accent-main)] bg-white/10"
+                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                            )}
+                          >
+                            <span className="truncate flex-1 font-medium">{book.title}</span>
+                            {book.year && (
+                              <span className="text-[10px] font-mono text-[var(--text-dim)] ml-2 shrink-0">
+                                {book.year}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
+                    )
                   )}
                 </div>
               )}
@@ -1043,7 +1134,68 @@ export default function RuhaniKhazainReader() {
 
         {/* Scrollable Reading Canvas */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 pb-28 flex justify-center">
-          {loading ? (
+          {bookLanguage === 'english' ? (
+            (() => {
+              const activeEngBook = ENGLISH_BOOKS.find(b => b.id === selectedEnglishBookId) || ENGLISH_BOOKS[0];
+              return (
+                <div className="w-full max-w-2xl my-auto flex flex-col glass bg-zinc-950/80 border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl gap-6 animate-in fade-in duration-300">
+                  <div className="flex flex-col gap-2 border-b border-white/10 pb-5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                        English Publication
+                      </span>
+                      {activeEngBook?.year && (
+                        <span className="text-xs font-mono font-bold text-[var(--text-muted)] px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                          Published {activeEngBook.year}
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                      {activeEngBook?.title}
+                    </h1>
+                    <p className="text-xs text-[var(--text-muted)] font-medium">
+                      Hazrat Mirza Ghulam Ahmad, The Promised Messiah &amp; Mahdi (as)
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">
+                      About this Book
+                    </h3>
+                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                      {activeEngBook?.description}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
+                    {activeEngBook?.url && (
+                      <a
+                        href={activeEngBook.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-95 text-xs font-bold text-white shadow-lg shadow-[var(--accent-main)]/20 transition-all"
+                      >
+                        <ExternalLink size={14} />
+                        <span>Read on Alislam.org</span>
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSuggestBookName(activeEngBook?.title || '');
+                        setSuggestBookUrl(activeEngBook?.url || '');
+                        setSuggestSubmitted(false);
+                        setIsSuggestModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 glass bg-white/5 hover:bg-white/10 hover:border-white/20 text-xs font-semibold text-white transition-all active:scale-95"
+                    >
+                      <span>Suggest Digital Edition / Scans</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })()
+          ) : loading ? (
             <div className="flex flex-col items-center justify-center gap-3 h-full my-auto opacity-70">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
               <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
@@ -1130,7 +1282,7 @@ export default function RuhaniKhazainReader() {
         </div>
 
         {/* ── FLOATING BOTTOM-CENTER PAGE CONTROLS ── */}
-        {currentPage && !loading && (
+        {bookLanguage === 'urdu' && currentPage && !loading && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center justify-center">
             <div className="pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-2xl glass bg-black/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all">
               {/* Previous Page Button */}
