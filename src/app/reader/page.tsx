@@ -873,7 +873,7 @@ export default function RuhaniKhazainReader() {
             <div className="flex flex-col">
               <div
                 onClick={() => setIsRuhaniKhazainOpen(!isRuhaniKhazainOpen)}
-                className="w-full flex items-center justify-between px-5 py-3 transition-all text-left border-l-2 border-transparent hover:bg-black/10 cursor-pointer select-none group"
+                className="w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 border-transparent hover:bg-white/5 cursor-pointer select-none group"
               >
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
@@ -895,9 +895,9 @@ export default function RuhaniKhazainReader() {
 
               {/* ── Collapsible Ruhani Khazain Volumes 1-23 ── */}
               {(isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && (
-                <div className="space-y-px bg-black/10 py-1 pl-2 border-l-2 border-[var(--accent-main)]/20 ml-4">
+                <div className="w-full flex flex-col space-y-px bg-black/15 py-1">
                   {filteredVolumeData.length === 0 ? (
-                    <div className="px-4 py-3 text-center text-xs text-[var(--text-dim)]">
+                    <div className="px-6 py-4 text-center text-xs text-[var(--text-dim)]">
                       No books found matching &quot;{sidebarBookSearch}&quot;
                     </div>
                   ) : (
@@ -907,14 +907,14 @@ export default function RuhaniKhazainReader() {
                       const books = matchingBooks;
 
                       return (
-                        <div key={vol} className="flex flex-col">
-                          {/* Volume Navigation Row */}
+                        <div key={vol} className="w-full flex flex-col">
+                          {/* Volume Navigation Row (Spans edge-to-edge) */}
                           <div
                             onClick={() => setSelectedVolume(vol)}
                             className={clsx(
-                              "w-full flex items-center justify-between px-3 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group rounded-r-lg",
+                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group",
                               isSelected
-                                ? "font-black text-white border-[var(--accent-main)] bg-black/20"
+                                ? "font-black text-white border-[var(--accent-main)] bg-white/10"
                                 : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                             )}
                           >
@@ -924,7 +924,7 @@ export default function RuhaniKhazainReader() {
                             {books.length > 0 && (
                               <button
                                 onClick={(e) => toggleVolumeDropdown(vol, e)}
-                                className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-0.5"
+                                className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-1 shrink-0"
                                 title="Toggle books"
                               >
                                 <ChevronDown 
@@ -935,9 +935,9 @@ export default function RuhaniKhazainReader() {
                             )}
                           </div>
 
-                          {/* Sub-books Dropdown List */}
+                          {/* Sub-books Dropdown List (Spans edge-to-edge) */}
                           {isExpanded && books.length > 0 && (
-                            <div className="bg-black/10 py-1 space-y-0.5 border-l-2 border-[var(--accent-main)]/30 ml-4 pl-2">
+                            <div className="w-full flex flex-col bg-black/25 py-0.5 space-y-px">
                               {books.map((book, idx) => {
                                 const isCurrentBook = isSelected && (currentPage?.page_num || (currentPageIndex + 1)) >= book.pageStart;
                                 return (
@@ -955,14 +955,14 @@ export default function RuhaniKhazainReader() {
                                       }
                                     }}
                                     className={clsx(
-                                      "w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition-all flex items-center justify-between group",
+                                      "w-full text-left pl-12 pr-6 py-2 transition-all flex items-center justify-between text-[11px] border-l-2 group",
                                       isCurrentBook
-                                        ? "font-bold text-white bg-white/10"
-                                        : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                                        ? "font-bold text-white border-[var(--accent-main)]/70 bg-white/10"
+                                        : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
                                     )}
                                   >
                                     <span className="truncate flex-1 font-medium">{book.title}</span>
-                                    <span className="text-[10px] font-serif text-[var(--text-dim)] group-hover:text-[var(--text-muted)] ml-1 shrink-0" dir="rtl">
+                                    <span className="text-[10px] font-serif text-[var(--text-dim)] group-hover:text-[var(--text-muted)] ml-2 shrink-0" dir="rtl">
                                       {book.urduTitle}
                                     </span>
                                   </button>
