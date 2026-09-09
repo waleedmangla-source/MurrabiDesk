@@ -257,12 +257,12 @@ export default function TajnidPage() {
         <AddContactModal onClose={() => setIsAddModalOpen(false)} onAdd={handleAddMember} />
       )}
 
-      {/* Left Pane - Secondary Sidebar styled like Mail Panel 2 */}
-      <div className="w-[340px] xl:w-[380px] shrink-0 border-r border-white/5 flex flex-col bg-transparent overflow-hidden h-full">
+      {/* Left Pane - Secondary Sidebar styled like Mail sidebar */}
+      <div className="w-[240px] shrink-0 border-r border-white/5 glass bg-black/20 flex flex-col overflow-hidden h-full">
         {/* Header */}
-        <div className="shrink-0 px-4 lg:px-5 pt-4 lg:pt-8 pb-4 border-b border-white/5">
+        <div className="shrink-0 px-4 pt-6 pb-3 border-b border-white/5">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl lg:text-4xl font-black tracking-tighter text-white uppercase truncate leading-none">
+            <h1 className="text-2xl lg:text-3xl font-black tracking-tighter text-white uppercase truncate leading-none">
               Tajnid
             </h1>
             <div className="flex items-center gap-1.5">
@@ -345,7 +345,7 @@ export default function TajnidPage() {
         </div>
 
         {/* Selection Header */}
-        <div className="px-4 lg:px-5 py-2.5 border-b border-white/5 bg-black/10 flex items-center justify-between shrink-0">
+        <div className="px-3.5 py-2 border-b border-white/5 bg-black/10 flex items-center justify-between shrink-0">
           <label className="flex items-center gap-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] hover:text-white transition-all">
             <input 
               type="checkbox" 
@@ -382,7 +382,7 @@ export default function TajnidPage() {
                   key={contact.id}
                   onClick={() => setSelectedContactId(contact.id)}
                   className={clsx(
-                    "w-full flex items-start gap-3 px-4 lg:px-5 py-3 border-b border-white/5 text-left transition-all group cursor-pointer",
+                    "w-full flex items-start gap-2.5 px-3.5 py-2.5 border-b border-white/5 text-left transition-all group cursor-pointer",
                     isSelected ? "bg-black/40 border-l-2 border-l-[var(--accent-main)]" : "hover:bg-black/10"
                   )}
                 >
