@@ -34,6 +34,8 @@ import {
   Mic,
   Upload,
   HardDrive,
+  Edit3,
+  X,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -492,11 +494,20 @@ export default function LettersPage() {
   };
   // Search & Recent Categories State
   const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarTab, setSidebarTab] = useState<"categories" | "recent">("categories");
   const [recentCategoryKeys, setRecentCategoryKeys] = useState<string[]>([
     "huzoor-prayers",
     "huzoor-leave_international",
     "amir-main",
   ]);
+
+  // Start a fresh letter / reset
+  const handleNewLetter = () => {
+    setCustomMessage("");
+    setActiveCategoryId("huzoor");
+    setHuzoorSubCat("prayers");
+    setViewMode("edit");
+  };
 
   // Handle selecting a category or sub-category item
   const handleSelectCategoryItem = (catId: string, subId?: HuzoorSubCategory) => {
@@ -828,136 +839,114 @@ export default function LettersPage() {
         }}
       />
 
-      {/* ── Left Category Navigation Sidebar ── */}
-      <div className="hidden lg:flex w-[300px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 print:hidden">
-        <div className="px-5 pt-7 pb-4 border-b border-white/5 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20">
-              <ScrollText size={20} className="text-[var(--accent-main)]" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase leading-none">
-                Letters
-              </h1>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-70 mt-1">
-                Official Protocols
-              </p>
+      {/* ── Left Category Navigation Sidebar — Styled like Mail Tab ── */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 print:hidden">
+        {/* Sidebar Title */}
+        <div className="px-5 pt-8 pb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+            Letters
+          </h1>
+        </div>
+
+        {/* Account / Sub-Header */}
+        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
+          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
+                  Official Correspondence
+                </span>
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] shrink-0">
+                  <Sparkles size={10} />
+                  HQ OS
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* AI-Powered Smart Search & Voice Input Box */}
-          <div className="relative">
-            <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-            />
+          {/* Search Box — identical styling to Mail tab */}
+          <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-3 py-2 mt-2">
+            <Search size={13} className="text-[var(--text-dim)] shrink-0" />
             <input
               type="text"
+              placeholder="Search or ask AI..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAiSmartSearch();
               }}
-              placeholder="Ask AI or search templates..."
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-16 py-2 text-xs text-white placeholder-white/40 outline-none focus:border-[var(--accent-main)] transition-all font-sans"
+              className="flex-1 bg-transparent text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none min-w-0"
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {searchQuery && (
               <button
-                type="button"
-                onClick={handleVoiceSearch}
+                onClick={() => setSearchQuery("")}
+                className="text-[var(--text-dim)] hover:text-white transition-colors shrink-0"
+              >
+                <X size={12} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleVoiceSearch}
+              className={clsx(
+                "p-1 rounded-lg transition-all shrink-0",
+                isListening
+                  ? "bg-red-500 text-white animate-pulse"
+                  : "text-[var(--text-dim)] hover:text-[var(--foreground)]"
+              )}
+              title="Voice query"
+            >
+              <Mic size={12} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAiSmartSearch()}
+              disabled={isAiLoading || !searchQuery}
+              className="p-1 rounded-lg text-[var(--accent-main)] hover:bg-white/10 transition-all shrink-0 disabled:opacity-30"
+              title="AI Smart Search & Prefill"
+            >
+              {aiMode === "search" && isAiLoading ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Sparkles size={12} />
+              )}
+            </button>
+          </div>
+
+          {/* Animated Sidebar Tabs — identical to Mail tab */}
+          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-white/5">
+            {/* Animated Background Pill */}
+            <div
+              className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
+              style={{
+                left: sidebarTab === "categories" ? "0.25rem" : "calc(50%)",
+                background: "var(--accent-main)",
+              }}
+            />
+            {[
+              { id: "categories", label: "Categories" },
+              { id: "recent", label: "Recent" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSidebarTab(t.id as any)}
                 className={clsx(
-                  "p-1 rounded-lg transition-all",
-                  isListening
-                    ? "bg-red-500 text-white animate-pulse"
-                    : "text-white/40 hover:text-white hover:bg-white/10"
+                  "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
+                  sidebarTab === t.id
+                    ? "text-white drop-shadow-md"
+                    : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
                 )}
-                title="Speak request"
               >
-                <Mic size={12} />
+                {t.label}
               </button>
-              <button
-                type="button"
-                onClick={() => handleAiSmartSearch()}
-                disabled={isAiLoading || !searchQuery}
-                className="p-1.5 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)] transition-all disabled:opacity-30"
-                title="AI Smart Search & Prefill"
-              >
-                {aiMode === "search" && isAiLoading ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <Sparkles size={12} />
-                )}
-              </button>
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-6">
-          {/* ── Recent Categories Section (if no active search) ── */}
-          {!searchQuery && recentCategoryKeys.length > 0 && (
-            <div className="space-y-1.5">
-              <div className="px-5">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-80">
-                  ⚡ Recent Categories
-                </span>
-              </div>
-              <div className="space-y-0.5">
-                {recentCategoryKeys.slice(0, 3).map((key) => {
-                  const [catId, subId] = key.split("-");
-                  const cat = CATEGORIES.find((c) => c.id === catId);
-                  if (!cat) return null;
-                  const Icon = cat.icon;
-                  const subLabel =
-                    catId === "huzoor" && subId !== "main"
-                      ? HUZOOR_SUB_CATEGORIES.find((s) => s.id === subId)?.label
-                      : null;
-                  const isSelected =
-                    activeCategoryId === catId &&
-                    (catId !== "huzoor" || huzoorSubCat === subId);
-
-                  return (
-                    <button
-                      key={`recent-${key}`}
-                      onClick={() =>
-                        handleSelectCategoryItem(
-                          catId,
-                          subId !== "main" ? (subId as HuzoorSubCategory) : undefined
-                        )
-                      }
-                      className={clsx(
-                        "w-full flex items-center gap-2.5 px-5 py-2 transition-all text-left group",
-                        isSelected
-                          ? "bg-[var(--accent-soft)] text-white font-bold"
-                          : "text-white/70 hover:bg-white/5 hover:text-white"
-                      )}
-                    >
-                      <Icon
-                        size={13}
-                        className={clsx(
-                          "shrink-0",
-                          isSelected ? "text-[var(--accent-main)]" : "text-white/40"
-                        )}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs truncate">
-                          {cat.label} {subLabel ? `• ${subLabel}` : ""}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* ── All Categories & Sub-Categories ── */}
-          <div className="space-y-2">
-            <div className="px-5">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
-                All Letter Categories
-              </span>
-            </div>
-            <nav className="space-y-1">
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+          {sidebarTab === "categories" ? (
+            <nav className="py-2 space-y-px">
               {CATEGORIES.filter((cat) => {
                 if (!searchQuery) return true;
                 const q = searchQuery.toLowerCase();
@@ -977,36 +966,36 @@ export default function LettersPage() {
                 const Icon = cat.icon;
                 const active = activeCategoryId === cat.id;
                 return (
-                  <div key={cat.id} className="space-y-0.5">
+                  <div key={cat.id} className="space-y-px">
                     <button
                       onClick={() => handleSelectCategoryItem(cat.id)}
                       className={clsx(
-                        "w-full flex items-center gap-3 px-5 py-3 transition-all text-left border-l-2",
+                        "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
                         active
-                          ? "font-black text-[var(--accent-main)] border-[var(--accent-main)] bg-black/30"
-                          : "text-slate-300 hover:bg-white/5 hover:text-white border-transparent"
+                          ? "font-black text-white border-[var(--accent-main)]"
+                          : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
                       )}
+                      style={active ? { background: "rgba(0, 0, 0, 0.2)" } : {}}
                     >
-                      <Icon
-                        size={16}
+                      <Icon size={15} className="shrink-0" />
+                      <span className="text-xs font-bold flex-1 truncate">
+                        {cat.label}
+                      </span>
+                      <span
                         className={clsx(
-                          "shrink-0",
-                          active ? "text-[var(--accent-main)]" : "text-slate-400"
+                          "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
+                          active
+                            ? "bg-white/20 text-white"
+                            : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
                         )}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate leading-snug">
-                          {cat.label}
-                        </p>
-                        <p className="text-[9px] text-slate-400 truncate mt-0.5">
-                          {cat.tag}
-                        </p>
-                      </div>
+                      >
+                        {cat.tag}
+                      </span>
                     </button>
 
-                    {/* Show Sub-Categories nested under Letter to Huzoor */}
+                    {/* Sub-Categories nested under Letter to Huzoor */}
                     {cat.id === "huzoor" && (
-                      <div className="pl-9 pr-3 space-y-0.5 py-1">
+                      <div className="pl-10 pr-3 space-y-0.5 py-1 bg-black/5">
                         {HUZOOR_SUB_CATEGORIES.filter((sub) => {
                           if (!searchQuery) return true;
                           return sub.label
@@ -1023,8 +1012,8 @@ export default function LettersPage() {
                               className={clsx(
                                 "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
                                 isSubActive
-                                  ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black border border-[var(--accent-main)]/30"
-                                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                                  ? "bg-[var(--accent-soft)] text-white font-bold"
+                                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
                               )}
                             >
                               <SubIcon
@@ -1033,10 +1022,12 @@ export default function LettersPage() {
                                   "shrink-0",
                                   isSubActive
                                     ? "text-[var(--accent-main)]"
-                                    : "text-slate-500"
+                                    : "opacity-60"
                                 )}
                               />
-                              <span className="truncate">{sub.label}</span>
+                              <span className="truncate text-[11px]">
+                                {sub.label}
+                              </span>
                             </button>
                           );
                         })}
@@ -1046,47 +1037,126 @@ export default function LettersPage() {
                 );
               })}
             </nav>
-          </div>
+          ) : (
+            <div className="p-4 flex flex-col flex-1">
+              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-4 shrink-0">
+                Recent Categories
+              </div>
+              <div className="flex flex-col gap-2 pb-4">
+                {recentCategoryKeys.length === 0 ? (
+                  <div className="text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
+                    No recent categories
+                  </div>
+                ) : (
+                  recentCategoryKeys.map((key) => {
+                    const [catId, subId] = key.split("-");
+                    const cat = CATEGORIES.find((c) => c.id === catId);
+                    if (!cat) return null;
+                    const Icon = cat.icon;
+                    const subLabel =
+                      catId === "huzoor" && subId !== "main"
+                        ? HUZOOR_SUB_CATEGORIES.find((s) => s.id === subId)?.label
+                        : null;
+                    const isSelected =
+                      activeCategoryId === catId &&
+                      (catId !== "huzoor" || huzoorSubCat === subId);
+
+                    return (
+                      <div
+                        key={`recent-${key}`}
+                        onClick={() =>
+                          handleSelectCategoryItem(
+                            catId,
+                            subId !== "main"
+                              ? (subId as HuzoorSubCategory)
+                              : undefined
+                          )
+                        }
+                        className={clsx(
+                          "flex items-center gap-3 p-2 pr-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group cursor-pointer",
+                          isSelected &&
+                            "border-[var(--accent-main)]/40 bg-[var(--accent-soft)]"
+                        )}
+                      >
+                        <div
+                          className={clsx(
+                            "w-8 h-8 rounded-full flex items-center justify-center font-black text-white shrink-0",
+                            isSelected
+                              ? "bg-[var(--accent-main)]"
+                              : "bg-white/10 text-[var(--accent-main)]"
+                          )}
+                        >
+                          <Icon size={14} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className={clsx(
+                              "text-[10px] font-black tracking-tight truncate transition-colors",
+                              isSelected
+                                ? "text-white"
+                                : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
+                            )}
+                          >
+                            {cat.label}
+                          </div>
+                          {subLabel && (
+                            <div className="text-[9px] text-[var(--text-dim)] truncate">
+                              {subLabel}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Button at bottom (New Letter) — identical to Mail Compose */}
+        <div className="p-4 border-t border-white/5">
+          <button
+            onClick={handleNewLetter}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-md"
+            style={{ background: "var(--accent-main)" }}
+          >
+            <Edit3 size={14} />
+            New Letter
+          </button>
         </div>
       </div>
 
-      {/* Mobile Horizontal Category Tabs */}
-      <div className="lg:hidden shrink-0 px-4 pt-4 pb-2 glass border-b border-white/5 bg-black/20 print:hidden">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20">
-            <ScrollText size={18} className="text-[var(--accent-main)]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">
-              Letters
-            </h1>
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-70 mt-0.5">
-              Official Protocols
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const active = activeCategoryId === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategoryId(cat.id)}
-                className={clsx(
-                  "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-all border",
-                  active
-                    ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-[0_0_12px_var(--accent-glow)]"
-                    : "bg-white/5 text-white/60 border-white/10 hover:text-white hover:bg-white/10"
-                )}
-              >
-                <Icon size={14} />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* ── Mobile Category Strip — matching Mail tab ── */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar print:hidden">
+        <button
+          onClick={handleNewLetter}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95"
+          style={{ background: "var(--accent-main)" }}
+        >
+          <Edit3 size={12} />
+          New
+        </button>
+        {CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          const active = activeCategoryId === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleSelectCategoryItem(cat.id)}
+              className={clsx(
+                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                active
+                  ? "text-white"
+                  : "text-[var(--text-muted)] border border-white/10"
+              )}
+              style={active ? { background: "var(--accent-main)" } : {}}
+            >
+              <Icon size={11} />
+              <span>{cat.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Main Workspace Area ── */}
