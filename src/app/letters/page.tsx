@@ -740,13 +740,11 @@ export default function LettersPage() {
             color: #111827 !important;
             direction: rtl;
             text-align: right;
-            overflow: hidden !important;
           }
           .letter-sheet-export {
             width: 8.5in !important;
-            height: 11in !important;
-            max-width: 8.5in !important;
             min-height: 11in !important;
+            max-width: 8.5in !important;
             margin: 0 !important;
             padding: 1in !important;
             box-sizing: border-box !important;
@@ -1752,7 +1750,7 @@ export default function LettersPage() {
                 </div>
 
                 {/* Simulated US Letter Sheet */}
-                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between aspect-[8.5/11] min-h-[500px] border border-gray-200 dir-rtl text-right font-urdu text-[16px]">
+                <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[640px] border border-gray-200 dir-rtl text-right font-urdu text-[16px]">
                   {/* Bismillah Header */}
                   <div className="text-center space-y-1 text-[16px] font-bold text-gray-800 border-b pb-4 border-gray-100 font-urdu">
                     <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
@@ -1761,7 +1759,7 @@ export default function LettersPage() {
                   </div>
 
                   {/* Greeting & Body */}
-                  <div className="my-6 space-y-4 flex-1">
+                  <div className="my-5 space-y-3 flex-1">
                     <div className="text-[16px] font-bold text-gray-800 font-urdu">
                       السلام علیکم ورحمۃ اللہ وبرکاته
                     </div>
@@ -1854,7 +1852,7 @@ export default function LettersPage() {
                 {/* Hidden print container for edit mode fallback */}
                 <div
                   id="printable-letter"
-                  className="hidden print:flex bg-white text-gray-900 p-[1in] flex-col justify-between text-right font-urdu w-[8.5in] h-[11in] text-[16px]"
+                  className="hidden print:flex bg-white text-gray-900 p-[1in] flex-col justify-between text-right font-urdu w-[8.5in] min-h-[11in] text-[16px]"
                 >
                   <div className="text-center space-y-2 text-[16px] font-bold text-gray-900 border-b pb-6 border-gray-200 font-urdu">
                     <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
@@ -1921,7 +1919,7 @@ export default function LettersPage() {
               </div>
               <div
                 id="printable-letter"
-                className="w-full max-w-[8.5in] min-h-[11in] bg-white text-gray-900 shadow-2xl p-12 md:p-[1in] flex flex-col justify-between border border-gray-300 text-right font-urdu aspect-[8.5/11] text-[16px]"
+                className="w-full max-w-[8.5in] min-h-[11in] bg-white text-gray-900 shadow-2xl p-12 md:p-[1in] flex flex-col justify-between border border-gray-300 text-right font-urdu text-[16px]"
               >
                 {/* Header */}
                 <div className="text-center space-y-2 text-[16px] font-bold text-gray-900 border-b pb-6 border-gray-200 font-urdu">
