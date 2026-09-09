@@ -892,9 +892,17 @@ export default function RuhaniKhazainReader() {
                     </div>
                   ) : (
                     filteredVolumeData.map(({ vol, matchingBooks, isMatchByBook }) => {
-                      const isSelected = selectedVolume === vol;
+                      const isSelectedVolume = selectedVolume === vol;
                       const isExpanded = isMatchByBook || !!expandedVolumes[vol];
                       const books = matchingBooks;
+                      const hasSubBooks = books.length > 0;
+
+                      // Determine active book for this volume
+                      const pageNum = currentPage?.page_num || (currentPageIndex + 1);
+                      const activeBook = isSelectedVolume ? getBookForPage(vol, pageNum) : null;
+
+                      // The volume row is only selected if it's the active volume AND its sub-books are not expanded
+                      const isVolumeRowSelected = isSelectedVolume && (!hasSubBooks || !isExpanded);
 
                       return (
                         <div key={vol} className="w-full flex flex-col">
@@ -903,15 +911,17 @@ export default function RuhaniKhazainReader() {
                             onClick={() => setSelectedVolume(vol)}
                             className={clsx(
                               "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group",
-                              isSelected
+                              isVolumeRowSelected
                                 ? "font-black text-white border-[var(--accent-main)] bg-white/10"
-                                : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
+                                : isSelectedVolume && isExpanded
+                                  ? "font-semibold text-white/90 border-transparent hover:bg-white/5"
+                                  : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                             )}
                           >
-                            <span className="text-xs font-bold flex-1 truncate">Volume {vol}</span>
+                            <span className="text-xs flex-1 truncate">Volume {vol}</span>
 
                             {/* Book Dropdown Chevron Toggle */}
-                            {books.length > 0 && (
+                            {hasSubBooks && (
                               <button
                                 onClick={(e) => toggleVolumeDropdown(vol, e)}
                                 className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-1 shrink-0"
@@ -926,10 +936,10 @@ export default function RuhaniKhazainReader() {
                           </div>
 
                           {/* Sub-books Dropdown List (Spans edge-to-edge) */}
-                          {isExpanded && books.length > 0 && (
+                          {isExpanded && hasSubBooks && (
                             <div className="w-full flex flex-col bg-black/25 py-0.5 space-y-px">
                               {books.map((book, idx) => {
-                                const isCurrentBook = isSelected && (currentPage?.page_num || (currentPageIndex + 1)) >= book.pageStart;
+                                const isCurrentBook = isSelectedVolume && activeBook?.title === book.title;
                                 return (
                                   <button
                                     key={idx}
@@ -947,7 +957,7 @@ export default function RuhaniKhazainReader() {
                                     className={clsx(
                                       "w-full text-left pl-12 pr-6 py-2 transition-all flex items-center justify-between text-[11px] border-l-2 group",
                                       isCurrentBook
-                                        ? "font-bold text-white border-[var(--accent-main)]/70 bg-white/10"
+                                        ? "font-bold text-white border-[var(--accent-main)] bg-white/10"
                                         : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
                                     )}
                                   >
