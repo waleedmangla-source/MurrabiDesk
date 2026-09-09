@@ -517,14 +517,8 @@ export default function LettersPage() {
 
     recognition.start();
   };
-  // Search & Recent Categories State
+  // Search State
   const [searchQuery, setSearchQuery] = useState("");
-  const [sidebarTab, setSidebarTab] = useState<"categories" | "recent">("categories");
-  const [recentCategoryKeys, setRecentCategoryKeys] = useState<string[]>([
-    "huzoor-prayers",
-    "huzoor-leave_international",
-    "amir-main",
-  ]);
 
   // Start a fresh letter / reset
   const handleNewLetter = () => {
@@ -540,8 +534,6 @@ export default function LettersPage() {
     if (catId === "huzoor" && subId) {
       setHuzoorSubCat(subId);
     }
-    const itemKey = catId === "huzoor" ? `huzoor-${subId || huzoorSubCat}` : `${catId}-main`;
-    setRecentCategoryKeys((prev) => [itemKey, ...prev.filter((k) => k !== itemKey)]);
   };
 
   // AI Translate Handler
@@ -1109,193 +1101,89 @@ export default function LettersPage() {
               )}
             </button>
           </div>
-
-          {/* Animated Sidebar Tabs — identical to Mail tab */}
-          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-white/5">
-            {/* Animated Background Pill */}
-            <div
-              className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
-              style={{
-                left: sidebarTab === "categories" ? "0.25rem" : "calc(50%)",
-                background: "var(--accent-main)",
-              }}
-            />
-            {[
-              { id: "categories", label: "Categories" },
-              { id: "recent", label: "Recent" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setSidebarTab(t.id as any)}
-                className={clsx(
-                  "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                  sidebarTab === t.id
-                    ? "text-white drop-shadow-md"
-                    : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Tab Content */}
+        {/* Categories List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-          {sidebarTab === "categories" ? (
-            <nav className="py-2 space-y-px">
-              {CATEGORIES.filter((cat) => {
-                if (!searchQuery) return true;
-                const q = searchQuery.toLowerCase();
-                const matchesCat =
-                  cat.label.toLowerCase().includes(q) ||
-                  cat.tag.toLowerCase().includes(q) ||
-                  cat.description.toLowerCase().includes(q);
+          <nav className="py-2 space-y-px">
+            {CATEGORIES.filter((cat) => {
+              if (!searchQuery) return true;
+              const q = searchQuery.toLowerCase();
+              const matchesCat =
+                cat.label.toLowerCase().includes(q) ||
+                cat.tag.toLowerCase().includes(q) ||
+                cat.description.toLowerCase().includes(q);
 
-                if (cat.id === "huzoor") {
-                  const matchesSub = HUZOOR_SUB_CATEGORIES.some((sub) =>
-                    sub.label.toLowerCase().includes(q)
-                  );
-                  return matchesCat || matchesSub;
-                }
-                return matchesCat;
-              }).map((cat) => {
-                const active = activeCategoryId === cat.id;
-                return (
-                  <div key={cat.id} className="space-y-px">
-                    <button
-                      onClick={() => handleSelectCategoryItem(cat.id)}
-                      className={clsx(
-                        "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2",
-                        active
-                          ? "font-black text-white border-[var(--accent-main)]"
-                          : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
-                      )}
-                      style={active ? { background: "rgba(0, 0, 0, 0.2)" } : {}}
-                    >
-                      <span className="text-xs font-bold flex-1 truncate">
-                        {cat.label}
-                      </span>
-                      <span
-                        className={clsx(
-                          "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
-                          active
-                            ? "bg-white/20 text-white"
-                            : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
-                        )}
-                      >
-                        {cat.tag}
-                      </span>
-                    </button>
-
-                    {/* Sub-Categories nested under Letter to Huzoor */}
-                    {cat.id === "huzoor" && (
-                      <div className="pl-8 pr-3 space-y-0.5 py-1 bg-black/5">
-                        {HUZOOR_SUB_CATEGORIES.filter((sub) => {
-                          if (!searchQuery) return true;
-                          return sub.label
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase());
-                        }).map((sub) => {
-                          const isSubActive =
-                            activeCategoryId === "huzoor" && huzoorSubCat === sub.id;
-                          return (
-                            <button
-                              key={sub.id}
-                              onClick={() => handleSelectCategoryItem("huzoor", sub.id)}
-                              className={clsx(
-                                "w-full flex items-center px-3 py-1.5 rounded-lg text-xs transition-all text-left",
-                                isSubActive
-                                  ? "bg-[var(--accent-soft)] text-white font-bold"
-                                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
-                              )}
-                            >
-                              <span className="truncate text-[11px]">
-                                {sub.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+              if (cat.id === "huzoor") {
+                const matchesSub = HUZOOR_SUB_CATEGORIES.some((sub) =>
+                  sub.label.toLowerCase().includes(q)
                 );
-              })}
-            </nav>
-          ) : (
-            <div className="p-4 flex flex-col flex-1">
-              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-4 shrink-0">
-                Recent Categories
-              </div>
-              <div className="flex flex-col gap-2 pb-4">
-                {recentCategoryKeys.length === 0 ? (
-                  <div className="text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
-                    No recent categories
-                  </div>
-                ) : (
-                  recentCategoryKeys.map((key) => {
-                    const [catId, subId] = key.split("-");
-                    const cat = CATEGORIES.find((c) => c.id === catId);
-                    if (!cat) return null;
-                    const subLabel =
-                      catId === "huzoor" && subId !== "main"
-                        ? HUZOOR_SUB_CATEGORIES.find((s) => s.id === subId)?.label
-                        : null;
-                    const isSelected =
-                      activeCategoryId === catId &&
-                      (catId !== "huzoor" || huzoorSubCat === subId);
+                return matchesCat || matchesSub;
+              }
+              return matchesCat;
+            }).map((cat) => {
+              const active = activeCategoryId === cat.id;
+              return (
+                <div key={cat.id} className="space-y-px">
+                  <button
+                    onClick={() => handleSelectCategoryItem(cat.id)}
+                    className={clsx(
+                      "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2",
+                      active
+                        ? "font-black text-white border-[var(--accent-main)]"
+                        : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                    )}
+                    style={active ? { background: "rgba(0, 0, 0, 0.2)" } : {}}
+                  >
+                    <span className="text-xs font-bold flex-1 truncate">
+                      {cat.label}
+                    </span>
+                    <span
+                      className={clsx(
+                        "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
+                        active
+                          ? "bg-white/20 text-white"
+                          : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                      )}
+                    >
+                      {cat.tag}
+                    </span>
+                  </button>
 
-                    return (
-                      <div
-                        key={`recent-${key}`}
-                        onClick={() =>
-                          handleSelectCategoryItem(
-                            catId,
-                            subId !== "main"
-                              ? (subId as HuzoorSubCategory)
-                              : undefined
-                          )
-                        }
-                        className={clsx(
-                          "flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group cursor-pointer",
-                          isSelected &&
-                            "border-[var(--accent-main)]/40 bg-[var(--accent-soft)]"
-                        )}
-                      >
-                        <div className="flex-1 min-w-0 pr-2">
-                          <div
+                  {/* Sub-Categories nested under Letter to Huzoor */}
+                  {cat.id === "huzoor" && (
+                    <div className="pl-8 pr-3 space-y-0.5 py-1 bg-black/5">
+                      {HUZOOR_SUB_CATEGORIES.filter((sub) => {
+                        if (!searchQuery) return true;
+                        return sub.label
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase());
+                      }).map((sub) => {
+                        const isSubActive =
+                          activeCategoryId === "huzoor" && huzoorSubCat === sub.id;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => handleSelectCategoryItem("huzoor", sub.id)}
                             className={clsx(
-                              "text-xs font-bold tracking-tight truncate transition-colors",
-                              isSelected
-                                ? "text-white"
-                                : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
+                              "w-full flex items-center px-3 py-1.5 rounded-lg text-xs transition-all text-left",
+                              isSubActive
+                                ? "bg-[var(--accent-soft)] text-white font-bold"
+                                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
                             )}
                           >
-                            {cat.label}
-                          </div>
-                          {subLabel && (
-                            <div className="text-[10px] text-[var(--text-dim)] truncate mt-0.5">
-                              {subLabel}
-                            </div>
-                          )}
-                        </div>
-                        <span
-                          className={clsx(
-                            "text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 uppercase tracking-wider",
-                            isSelected
-                              ? "bg-white/20 text-white"
-                              : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
-                          )}
-                        >
-                          Recent
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+                            <span className="truncate text-[11px]">
+                              {sub.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
         </div>
 
         {/* Action Button at bottom (New Letter) — identical to Mail Compose */}
