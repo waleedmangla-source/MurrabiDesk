@@ -683,14 +683,21 @@ export default function LettersPage() {
     }
   }, [activeCategoryId, huzoorSubCat, currentCategory, name]);
 
-  const handlePrintPdf = () => {
-    // Create an isolated, hidden iframe for clean US Letter PDF export (only the letter is printed)
+  const handlePrintPdf = async () => {
+    // 1. Target the active letter element in the DOM
+    const sourceEl = document.getElementById("printable-letter");
+    if (!sourceEl) {
+      window.print();
+      return;
+    }
+
+    // 2. Create an isolated, hidden iframe for clean US Letter PDF export
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
     iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
+    iframe.style.width = "8.5in";
+    iframe.style.height = "11in";
     iframe.style.border = "0";
     iframe.style.visibility = "hidden";
     document.body.appendChild(iframe);
@@ -701,136 +708,64 @@ export default function LettersPage() {
       return;
     }
 
+    // 3. Extract all head styles from main window to ensure 100% identical styling and font definitions
+    const headStyles = Array.from(document.querySelectorAll("style, link[rel='stylesheet']"))
+      .map((node) => node.outerHTML)
+      .join("\n");
+
     const printHtml = `
       <!DOCTYPE html>
       <html lang="ur" dir="rtl">
       <head>
         <meta charset="UTF-8">
+        <base href="${window.location.origin}/">
         <title>${subject || "Official Letter"}</title>
+        ${headStyles}
         <style>
           @page {
             size: letter portrait;
             margin: 0;
           }
-          @font-face {
-            font-family: 'Jameel Noori Nastaleeq Regular';
-            src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
-          }
-          @font-face {
-            font-family: 'Jameel Noori Nastaleeq';
-            src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
-          }
           * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            box-sizing: border-box !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           html, body {
-            width: 8.5in;
-            height: 11in;
-            margin: 0;
-            padding: 0;
+            width: 8.5in !important;
+            height: 11in !important;
+            margin: 0 !important;
+            padding: 0 !important;
             background: #ffffff !important;
             color: #111827 !important;
-            font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
-            font-size: 16px;
             direction: rtl;
             text-align: right;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            overflow: hidden !important;
           }
-          .page-sheet {
-            width: 8.5in;
-            min-height: 11in;
-            height: 11in;
-            padding: 1in 1in 0.8in 1in;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: #ffffff;
-            box-sizing: border-box;
+          .letter-sheet-export {
+            width: 8.5in !important;
+            height: 11in !important;
+            max-width: 8.5in !important;
+            min-height: 11in !important;
+            margin: 0 !important;
+            padding: 1in !important;
+            box-sizing: border-box !important;
+            background: #ffffff !important;
+            color: #111827 !important;
+            box-shadow: none !important;
+            border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
           }
-          .header {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            line-height: 1.8;
-            border-bottom: 1.5px solid #e5e7eb;
-            padding-bottom: 18px;
-            margin-bottom: 24px;
-          }
-          .greeting {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #1f2937;
-          }
-          .body-text {
-            font-size: 16px;
-            line-height: 2.2;
-            white-space: pre-wrap;
-            color: #111827;
-            flex: 1;
-          }
-          .footer {
-            border-top: 1.5px solid #e5e7eb;
-            padding-top: 20px;
-            margin-top: 24px;
-            font-size: 16px;
-            line-height: 1.8;
-            color: #111827;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-          }
-          .passport-photo {
-            width: 1.15in;
-            height: 1.45in;
-            object-fit: cover;
-            border: 1px solid #9ca3af;
-            border-radius: 2px;
-          }
-          .sign-title {
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 4px;
-          }
-          .meta-text {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 13px;
-            color: #4b5563;
+          .print-hidden, [class*="print:hidden"] {
+            display: none !important;
           }
         </style>
       </head>
       <body>
-        <div class="page-sheet">
-          <div class="header">
-            <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-            <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
-            <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
-          </div>
-
-          <div style="flex: 1; display: flex; flex-direction: column;">
-            <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
-            <div class="body-text">${computedUrduBody}</div>
-          </div>
-
-          <div class="footer">
-            <div>
-              <div>والسلام</div>
-              <div>خاکسار</div>
-              <div class="sign-title">${name}</div>
-              <div class="meta-text">${code}</div>
-              <div>${designation}</div>
-            </div>
-            ${
-              activeCategoryId === "huzoor" && passportPhoto
-                ? `<div>
-                    <img src="${passportPhoto}" alt="Passport Photo" class="passport-photo" />
-                   </div>`
-                : ""
-            }
-          </div>
+        <div class="letter-sheet-export">
+          ${sourceEl.innerHTML}
         </div>
       </body>
       </html>
@@ -840,6 +775,17 @@ export default function LettersPage() {
     doc.write(printHtml);
     doc.close();
 
+    // 4. Wait for fonts to be ready in both the host window and the iframe
+    try {
+      await document.fonts.ready;
+      if (iframe.contentWindow?.document?.fonts) {
+        await iframe.contentWindow.document.fonts.ready;
+      }
+    } catch (e) {
+      console.warn("Font readiness wait error:", e);
+    }
+
+    // 5. Trigger print after layout is stable
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
@@ -847,8 +793,8 @@ export default function LettersPage() {
         if (document.body.contains(iframe)) {
           document.body.removeChild(iframe);
         }
-      }, 1500);
-    }, 400);
+      }, 2000);
+    }, 250);
   };
 
   const handleSendEmail = async () => {
@@ -934,73 +880,122 @@ export default function LettersPage() {
         <head>
           <meta charset="UTF-8">
           <title>${subject || "Official Letter"}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
           <style>
             @font-face {
               font-family: 'Jameel Noori Nastaleeq Regular';
               src: url('https://fonts.gstatic.com/ea/jameelnoorinastaleeq/v1/JameelNooriNastaleeq-Regular.ttf') format('truetype');
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
             }
             body {
               font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
               font-size: 16px;
               direction: rtl;
               text-align: right;
-              padding: 40px;
+              background-color: #f1f5f9;
+              padding: 40px 16px;
               color: #111827;
-              background-color: #ffffff;
+            }
+            .letter-sheet {
+              width: 8.5in;
+              max-width: 100%;
+              min-height: 11in;
+              margin: 0 auto;
+              padding: 1in;
+              background: #ffffff;
+              box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+              border: 1px solid #e2e8f0;
+              border-radius: 4px;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              box-sizing: border-box;
             }
             .header {
               text-align: center;
               font-size: 16px;
               font-weight: bold;
-              margin-bottom: 24px;
               line-height: 1.8;
+              border-bottom: 1.5px solid #e5e7eb;
+              padding-bottom: 24px;
+              margin-bottom: 32px;
             }
             .greeting {
               font-size: 16px;
               font-weight: bold;
-              margin-bottom: 20px;
+              margin-bottom: 24px;
+              color: #1f2937;
             }
             .body-text {
               font-size: 16px;
               line-height: 2.2;
               white-space: pre-wrap;
-              margin-bottom: 40px;
+              color: #111827;
+              flex: 1;
             }
             .footer {
+              border-top: 1.5px solid #e5e7eb;
+              padding-top: 24px;
+              margin-top: 32px;
               font-size: 16px;
               line-height: 1.8;
-              margin-top: 30px;
-              border-top: 1px solid #e5e7eb;
-              padding-top: 20px;
+              color: #111827;
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
             }
+            .passport-photo {
+              width: 1.15in;
+              height: 1.45in;
+              object-fit: cover;
+              border: 1px solid #9ca3af;
+              border-radius: 2px;
+            }
+            .sign-title {
+              font-weight: bold;
+              font-size: 16px;
+              margin-top: 4px;
+            }
+            .meta-text {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              font-size: 13px;
+              color: #4b5563;
+            }
           </style>
         </head>
         <body>
-          <div class="header">
-            <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-            <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
-            <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
-          </div>
-          <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
-          <div class="body-text">${computedUrduBody}</div>
-          <div class="footer">
-            <div>
-              <div>والسلام</div>
-              <div>خاکسار</div>
-              <div style="font-weight: bold;">${name}</div>
-              <div>${code}</div>
-              <div>${designation}</div>
+          <div class="letter-sheet">
+            <div class="header">
+              <div>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+              <div>نَحْمَدُهُ وَنُصَلِّي عَلَىٰ رَسُولِهِ الْكَرِيمِ ؐ</div>
+              <div>وَعَلَىٰ عَبْدِهِ الْمَسِيحِ الْمَوْعُودِ ؑ</div>
             </div>
-            ${
-              activeCategoryId === "huzoor" && passportPhoto
-                ? `<div>
-                    <img src="${passportPhoto}" alt="Passport Photo" style="width: 110px; height: 140px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 4px;" />
-                   </div>`
-                : ""
-            }
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
+              <div class="body-text">${computedUrduBody}</div>
+            </div>
+            <div class="footer">
+              <div>
+                <div>والسلام</div>
+                <div>خاکسار</div>
+                <div class="sign-title">${name}</div>
+                <div class="meta-text">${code}</div>
+                <div>${designation}</div>
+              </div>
+              ${
+                activeCategoryId === "huzoor" && passportPhoto
+                  ? `<div>
+                      <img src="${passportPhoto}" alt="Passport Photo" class="passport-photo" />
+                     </div>`
+                  : ""
+              }
+            </div>
           </div>
         </body>
         </html>
