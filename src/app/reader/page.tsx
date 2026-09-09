@@ -878,14 +878,6 @@ export default function RuhaniKhazainReader() {
                             <BookOpen size={14} className={clsx("shrink-0", isSelected ? "text-[var(--accent-main)]" : "opacity-60")} />
                             <span className="text-xs font-bold flex-1 truncate">Volume {vol}</span>
 
-                            {/* Volume Pill Badge */}
-                            <span className={clsx(
-                              "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
-                              isSelected ? "bg-white/20 text-white" : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
-                            )}>
-                              V{vol}
-                            </span>
-
                             {/* Book Dropdown Chevron Toggle */}
                             {books.length > 0 && (
                               <button

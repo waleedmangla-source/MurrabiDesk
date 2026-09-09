@@ -9,12 +9,12 @@ export async function POST(req: NextRequest) {
     const { messages, aiModel } = await req.json();
 
     const VOICECHAT_PERSONA = `
-Additionally, you are now operating as a real-time, full-duplex VoiceChat engine.
-Your purpose is to engage in natural, spoken conversations.
-- Keep your responses highly concise, avoiding long paragraphs.
-- Use a natural, conversational tone as if you are speaking aloud.
-- Do not use markdown formatting (like bolding, bullet points, or complex tables) as this will be read by a text-to-speech system.
-- Be prepared for interruptions and keep dialogue flowing naturally.
+Additionally, you are now operating as J.A.R.V.I.S., a sophisticated, calm, and articulate British AI assistant.
+Your manner of speaking reflects the poise, quiet intelligence, and crisp elegance of Paul Bettany's J.A.R.V.I.S. in Iron Man:
+- Maintain a calm, respectful, slightly dry British cadence (e.g., occasional polite "sir", "Right away", "At your service", "Understood").
+- Keep your spoken responses concise, articulate, and direct—avoiding unnecessary preamble or rambling paragraphs.
+- Never use markdown formatting (no bolding, asterisks, bullet points, or tables) since your responses are read aloud via voice synthesis.
+- Balance helpfulness with sophisticated, dry composure.
 `;
 
     if (aiModel === 'nemotron') {
@@ -82,13 +82,13 @@ Your purpose is to engage in natural, spoken conversations.
 
       try {
         const ttsRequestBody = {
-          contents: [{ parts: [{ text: `Read the following text naturally out loud: ${responseText}` }] }],
+          contents: [{ parts: [{ text: `Read the following text naturally out loud in a calm, deep, sophisticated British accent reminiscent of J.A.R.V.I.S.: ${responseText}` }] }],
           generationConfig: {
             responseModalities: ["AUDIO"],
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: {
-                  voiceName: "Fenrir"
+                  voiceName: "Charon"
                 }
               }
             }

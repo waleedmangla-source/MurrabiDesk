@@ -138,6 +138,16 @@ export default function BetaToolsPage() {
     }
   }, []);
 
+  // Pre-load voices so getVoices() is immediately available
+  useEffect(() => {
+    if (typeof window !== "undefined" && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+
   const speakText = (text: string) => {
     if (typeof window !== "undefined" && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -146,24 +156,32 @@ export default function BetaToolsPage() {
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       
-      // Select a deeper, masculine voice
+      // Select J.A.R.V.I.S. (UK Deep British Male) voice profile
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => 
-        v.name.includes('Daniel') ||
-        v.name.includes('Oliver') ||
-        v.name.includes('Alex') ||
-        v.name.includes('Guy') ||
-        v.name.includes('George') ||
-        v.name.includes('David') ||
-        (v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
-      ) || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Samantha') && !v.name.includes('Victoria'));
+      const femaleExcludes = ['serena', 'kate', 'victoria', 'fiona', 'libby', 'sonia', 'mia', 'flo', 'sandy', 'shelley', 'grandma', 'karen', 'samantha', 'stephanie'];
       
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      const jarvisVoice = voices.find(v => {
+        const nameLower = v.name.toLowerCase();
+        return nameLower.includes('daniel') || nameLower.includes('google uk english male');
+      }) || voices.find(v => {
+        const nameLower = v.name.toLowerCase();
+        const langLower = v.lang.toLowerCase().replace('_', '-');
+        const isUK = langLower.startsWith('en-gb') || nameLower.includes('uk') || nameLower.includes('british');
+        const isFemale = femaleExcludes.some(f => nameLower.includes(f));
+        return isUK && !isFemale && (nameLower.includes('male') || nameLower.includes('oliver') || nameLower.includes('george') || nameLower.includes('ryan') || nameLower.includes('thomas') || nameLower.includes('reed') || nameLower.includes('rocko') || nameLower.includes('eddy'));
+      }) || voices.find(v => {
+        const langLower = v.lang.toLowerCase().replace('_', '-');
+        const nameLower = v.name.toLowerCase();
+        return langLower.startsWith('en-gb') && !femaleExcludes.some(f => nameLower.includes(f));
+      }) || voices.find(v => v.name.includes('Alex') || v.name.includes('David'));
+      
+      if (jarvisVoice) {
+        utterance.voice = jarvisVoice;
       }
       
-      utterance.rate = 1.0;
-      utterance.pitch = 0.88; // Lower pitch for a deeper, masculine tone
+      // J.A.R.V.I.S. acoustic signature: calm, articulate, deeper British baritone
+      utterance.rate = 0.94; // Measured, polite British cadence
+      utterance.pitch = 0.85; // Deep baritone tone
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -532,6 +550,9 @@ export default function BetaToolsPage() {
                 <div className="flex items-center gap-3">
                   <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-500 text-[8px] font-black uppercase tracking-widest">Protocol V4</span>
                   <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">LLM Sandbox environment</span>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
+                    <Activity size={10} /> Voice: J.A.R.V.I.S. (UK Deep)
+                  </span>
                 </div>
               </div>
               <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
@@ -626,8 +647,8 @@ export default function BetaToolsPage() {
                   </div>
                 </form>
                 {isSpeaking && (
-                  <div className="flex items-center justify-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest animate-pulse">
-                    <Activity size={14} /> Agent Speaking
+                  <div className="flex items-center justify-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-widest animate-pulse">
+                    <Activity size={14} /> J.A.R.V.I.S. Speaking
                   </div>
                 )}
               </div>
