@@ -125,6 +125,59 @@ export default function RuhaniKhazainReader() {
   // Dropdown states for each volume book breakdown
   const [expandedVolumes, setExpandedVolumes] = useState<Record<number, boolean>>({ 1: true });
 
+  // Secondary Sidebar Collection Dropdown & Book Search Filter
+  const [isRuhaniKhazainOpen, setIsRuhaniKhazainOpen] = useState<boolean>(true);
+  const [sidebarBookSearch, setSidebarBookSearch] = useState<string>('');
+
+  // Filtered volumes and constituent books for the secondary sidebar
+  const filteredVolumeData = useMemo(() => {
+    const q = sidebarBookSearch.trim().toLowerCase();
+    const qNorm = normalizeKhazainText(sidebarBookSearch);
+
+    if (!q) {
+      return volumes.map(vol => ({
+        vol,
+        matchingBooks: KHAZAIN_BOOKS[vol] || [],
+        allBooks: KHAZAIN_BOOKS[vol] || [],
+        isMatchByBook: false
+      }));
+    }
+
+    const list: {
+      vol: number;
+      matchingBooks: { title: string; urduTitle: string; pageStart: number }[];
+      allBooks: { title: string; urduTitle: string; pageStart: number }[];
+      isMatchByBook: boolean;
+    }[] = [];
+
+    for (const vol of volumes) {
+      const books = KHAZAIN_BOOKS[vol] || [];
+      const isVolMatch =
+        q === String(vol) ||
+        q === `vol ${vol}` ||
+        q === `volume ${vol}` ||
+        q === `v${vol}` ||
+        `volume ${vol}`.includes(q);
+
+      const matchingBooks = books.filter(b => {
+        const enMatch = b.title.toLowerCase().includes(q);
+        const urduMatch = qNorm ? normalizeKhazainText(b.urduTitle).includes(qNorm) : false;
+        return enMatch || urduMatch;
+      });
+
+      if (isVolMatch || matchingBooks.length > 0) {
+        list.push({
+          vol,
+          matchingBooks: matchingBooks.length > 0 ? matchingBooks : books,
+          allBooks: books,
+          isMatchByBook: matchingBooks.length > 0
+        });
+      }
+    }
+
+    return list;
+  }, [volumes, sidebarBookSearch]);
+
   // Pre-compiled English dictionary & Selected Word Inspector
   const [dictionary, setDictionary] = useState<Record<string, { translit?: string; meaning: string }>>({});
   const [selectedWord, setSelectedWord] = useState<SelectedWordInfo | null>(null);
@@ -703,16 +756,39 @@ export default function RuhaniKhazainReader() {
   return (
     <div className="flex flex-col lg:flex-row h-full w-full overflow-hidden bg-transparent">
       {/* ── Panel 1: Folder Sidebar — Desktop only (Identical to Mail Tab) ── */}
-      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
+      <div className="hidden lg:flex w-[250px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
         {/* Sidebar Title */}
-        <div className="px-5 pt-8 pb-2">
+        <div className="px-5 pt-8 pb-3">
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
             Reader
           </h1>
         </div>
 
+        {/* Sidebar Book & Volume Search Input */}
+        <div className="px-5 pb-3">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] pointer-events-none" />
+            <input
+              type="text"
+              value={sidebarBookSearch}
+              onChange={(e) => setSidebarBookSearch(e.target.value)}
+              placeholder="Search books or volumes..."
+              className="w-full pl-8 pr-7 py-2 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)]/50 focus:ring-1 focus:ring-[var(--accent-main)]/30 transition-all font-medium"
+            />
+            {sidebarBookSearch && (
+              <button
+                onClick={() => setSidebarBookSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-[var(--text-dim)] hover:text-white"
+                title="Clear filter"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Currently Reading Header */}
-        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
+        <div className="px-5 pb-4 border-b border-white/5 mb-2">
           <div className="p-3 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex flex-col gap-1.5 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1">
@@ -742,89 +818,131 @@ export default function RuhaniKhazainReader() {
           </div>
         </div>
 
-        {/* Tab Content & Volumes Navigation */}
+        {/* Tab Content & Ruhani Khazain Dropdown Navigation */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-          <nav className="py-2 space-y-px">
-            {volumes.map(vol => {
-              const isSelected = selectedVolume === vol;
-              const isExpanded = !!expandedVolumes[vol];
-              const books = KHAZAIN_BOOKS[vol] || [];
+          <nav className="py-2 space-y-1">
+            {/* ── Parent Collection Dropdown: Ruhani Khazain ── */}
+            <div className="flex flex-col">
+              <div
+                onClick={() => setIsRuhaniKhazainOpen(!isRuhaniKhazainOpen)}
+                className="w-full flex items-center gap-2.5 px-5 py-3 transition-all text-left border-l-2 border-transparent hover:bg-black/10 cursor-pointer select-none group"
+              >
+                <Library size={16} className="shrink-0 text-[var(--accent-main)]" />
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
+                    Ruhani Khazain
+                  </span>
+                  <span className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
+                    روحانی خزائن
+                  </span>
+                </div>
 
-              return (
-                <div key={vol} className="flex flex-col">
-                  {/* Volume Navigation Row */}
-                  <div
-                    onClick={() => setSelectedVolume(vol)}
-                    className={clsx(
-                      "w-full flex items-center gap-3 px-5 py-3 transition-all text-left border-l-2 cursor-pointer select-none group",
-                      isSelected
-                        ? "font-black text-white border-[var(--accent-main)]"
-                        : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
-                    )}
-                    style={isSelected ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
-                  >
-                    <BookOpen size={15} className={clsx("shrink-0", isSelected ? "text-[var(--accent-main)]" : "opacity-60")} />
-                    <span className="text-xs font-bold flex-1 truncate">Volume {vol}</span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] shrink-0">
+                  {sidebarBookSearch.trim() ? `${filteredVolumeData.length} Vols` : '23 Vols'}
+                </span>
 
-                    {/* Volume Pill Badge */}
-                    <span className={clsx(
-                      "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
-                      isSelected ? "bg-white/20 text-white" : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
-                    )}>
-                      V{vol}
-                    </span>
+                <ChevronDown 
+                  size={13} 
+                  className={clsx(
+                    "transition-transform duration-200 text-[var(--text-dim)] group-hover:text-white",
+                    (isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && "rotate-180 text-[var(--accent-main)]"
+                  )} 
+                />
+              </div>
 
-                    {/* Book Dropdown Chevron Toggle */}
-                    {books.length > 0 && (
-                      <button
-                        onClick={(e) => toggleVolumeDropdown(vol, e)}
-                        className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-0.5"
-                        title="Toggle books"
-                      >
-                        <ChevronDown 
-                          size={12} 
-                          className={clsx("transition-transform duration-200", isExpanded && "rotate-180 text-[var(--accent-main)]")} 
-                        />
-                      </button>
-                    )}
-                  </div>
+              {/* ── Collapsible Ruhani Khazain Volumes 1-23 ── */}
+              {(isRuhaniKhazainOpen || !!sidebarBookSearch.trim()) && (
+                <div className="space-y-px bg-black/10 py-1 pl-2 border-l-2 border-[var(--accent-main)]/20 ml-4">
+                  {filteredVolumeData.length === 0 ? (
+                    <div className="px-4 py-3 text-center text-xs text-[var(--text-dim)]">
+                      No books found matching &quot;{sidebarBookSearch}&quot;
+                    </div>
+                  ) : (
+                    filteredVolumeData.map(({ vol, matchingBooks, isMatchByBook }) => {
+                      const isSelected = selectedVolume === vol;
+                      const isExpanded = isMatchByBook || !!expandedVolumes[vol];
+                      const books = matchingBooks;
 
-                  {/* Sub-books Dropdown List */}
-                  {isExpanded && books.length > 0 && (
-                    <div className="bg-black/10 py-1 space-y-0.5 border-l-2 border-[var(--accent-main)]/30 ml-5 pl-2">
-                      {books.map((book, idx) => {
-                        const isCurrentBook = isSelected && (currentPage?.page_num || (currentPageIndex + 1)) >= book.pageStart;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              if (selectedVolume !== vol) {
-                                setSelectedVolume(vol);
-                              }
-                              const targetIdx = pages.findIndex(p => p.page_num === book.pageStart);
-                              if (targetIdx !== -1) {
-                                setCurrentPageIndex(targetIdx);
-                              }
-                            }}
+                      return (
+                        <div key={vol} className="flex flex-col">
+                          {/* Volume Navigation Row */}
+                          <div
+                            onClick={() => setSelectedVolume(vol)}
                             className={clsx(
-                              "w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all flex items-center justify-between group",
-                              isCurrentBook
-                                ? "font-bold text-white bg-white/10"
-                                : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              "w-full flex items-center gap-2.5 px-3 py-2.5 transition-all text-left border-l-2 cursor-pointer select-none group rounded-r-lg",
+                              isSelected
+                                ? "font-black text-white border-[var(--accent-main)] bg-black/20"
+                                : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--foreground)] border-transparent"
                             )}
                           >
-                            <span className="truncate flex-1 font-medium">{book.title}</span>
-                            <span className="text-[10px] font-serif text-[var(--text-dim)] group-hover:text-[var(--text-muted)] ml-1 shrink-0" dir="rtl">
-                              {book.urduTitle}
+                            <BookOpen size={14} className={clsx("shrink-0", isSelected ? "text-[var(--accent-main)]" : "opacity-60")} />
+                            <span className="text-xs font-bold flex-1 truncate">Volume {vol}</span>
+
+                            {/* Volume Pill Badge */}
+                            <span className={clsx(
+                              "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
+                              isSelected ? "bg-white/20 text-white" : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                            )}>
+                              V{vol}
                             </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+
+                            {/* Book Dropdown Chevron Toggle */}
+                            {books.length > 0 && (
+                              <button
+                                onClick={(e) => toggleVolumeDropdown(vol, e)}
+                                className="p-1 rounded hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all ml-0.5"
+                                title="Toggle books"
+                              >
+                                <ChevronDown 
+                                  size={12} 
+                                  className={clsx("transition-transform duration-200", isExpanded && "rotate-180 text-[var(--accent-main)]")} 
+                                />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Sub-books Dropdown List */}
+                          {isExpanded && books.length > 0 && (
+                            <div className="bg-black/10 py-1 space-y-0.5 border-l-2 border-[var(--accent-main)]/30 ml-4 pl-2">
+                              {books.map((book, idx) => {
+                                const isCurrentBook = isSelected && (currentPage?.page_num || (currentPageIndex + 1)) >= book.pageStart;
+                                return (
+                                  <button
+                                    key={idx}
+                                    onClick={() => {
+                                      if (selectedVolume !== vol) {
+                                        pendingTargetPageRef.current = book.pageStart;
+                                        setSelectedVolume(vol);
+                                      } else {
+                                        const targetIdx = pages.findIndex(p => p.page_num === book.pageStart);
+                                        if (targetIdx !== -1) {
+                                          setCurrentPageIndex(targetIdx);
+                                        }
+                                      }
+                                    }}
+                                    className={clsx(
+                                      "w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition-all flex items-center justify-between group",
+                                      isCurrentBook
+                                        ? "font-bold text-white bg-white/10"
+                                        : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                                    )}
+                                  >
+                                    <span className="truncate flex-1 font-medium">{book.title}</span>
+                                    <span className="text-[10px] font-serif text-[var(--text-dim)] group-hover:text-[var(--text-muted)] ml-1 shrink-0" dir="rtl">
+                                      {book.urduTitle}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
-              );
-            })}
+              )}
+            </div>
           </nav>
         </div>
       </div>
