@@ -949,21 +949,19 @@ export default function LettersPage() {
                 }
                 return matchesCat;
               }).map((cat) => {
-                const Icon = cat.icon;
                 const active = activeCategoryId === cat.id;
                 return (
                   <div key={cat.id} className="space-y-px">
                     <button
                       onClick={() => handleSelectCategoryItem(cat.id)}
                       className={clsx(
-                        "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
+                        "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2",
                         active
                           ? "font-black text-white border-[var(--accent-main)]"
                           : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
                       )}
                       style={active ? { background: "rgba(0, 0, 0, 0.2)" } : {}}
                     >
-                      <Icon size={15} className="shrink-0" />
                       <span className="text-xs font-bold flex-1 truncate">
                         {cat.label}
                       </span>
@@ -981,14 +979,13 @@ export default function LettersPage() {
 
                     {/* Sub-Categories nested under Letter to Huzoor */}
                     {cat.id === "huzoor" && (
-                      <div className="pl-10 pr-3 space-y-0.5 py-1 bg-black/5">
+                      <div className="pl-8 pr-3 space-y-0.5 py-1 bg-black/5">
                         {HUZOOR_SUB_CATEGORIES.filter((sub) => {
                           if (!searchQuery) return true;
                           return sub.label
                             .toLowerCase()
                             .includes(searchQuery.toLowerCase());
                         }).map((sub) => {
-                          const SubIcon = sub.icon;
                           const isSubActive =
                             activeCategoryId === "huzoor" && huzoorSubCat === sub.id;
                           return (
@@ -996,21 +993,12 @@ export default function LettersPage() {
                               key={sub.id}
                               onClick={() => handleSelectCategoryItem("huzoor", sub.id)}
                               className={clsx(
-                                "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
+                                "w-full flex items-center px-3 py-1.5 rounded-lg text-xs transition-all text-left",
                                 isSubActive
                                   ? "bg-[var(--accent-soft)] text-white font-bold"
                                   : "text-[var(--text-dim)] hover:bg-white/5 hover:text-[var(--foreground)]"
                               )}
                             >
-                              <SubIcon
-                                size={12}
-                                className={clsx(
-                                  "shrink-0",
-                                  isSubActive
-                                    ? "text-[var(--accent-main)]"
-                                    : "opacity-60"
-                                )}
-                              />
                               <span className="truncate text-[11px]">
                                 {sub.label}
                               </span>
@@ -1038,7 +1026,6 @@ export default function LettersPage() {
                     const [catId, subId] = key.split("-");
                     const cat = CATEGORIES.find((c) => c.id === catId);
                     if (!cat) return null;
-                    const Icon = cat.icon;
                     const subLabel =
                       catId === "huzoor" && subId !== "main"
                         ? HUZOOR_SUB_CATEGORIES.find((s) => s.id === subId)?.label
@@ -1059,25 +1046,15 @@ export default function LettersPage() {
                           )
                         }
                         className={clsx(
-                          "flex items-center gap-3 p-2 pr-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group cursor-pointer",
+                          "flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group cursor-pointer",
                           isSelected &&
                             "border-[var(--accent-main)]/40 bg-[var(--accent-soft)]"
                         )}
                       >
-                        <div
-                          className={clsx(
-                            "w-8 h-8 rounded-full flex items-center justify-center font-black text-white shrink-0",
-                            isSelected
-                              ? "bg-[var(--accent-main)]"
-                              : "bg-white/10 text-[var(--accent-main)]"
-                          )}
-                        >
-                          <Icon size={14} />
-                        </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 pr-2">
                           <div
                             className={clsx(
-                              "text-[10px] font-black tracking-tight truncate transition-colors",
+                              "text-xs font-bold tracking-tight truncate transition-colors",
                               isSelected
                                 ? "text-white"
                                 : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
@@ -1086,11 +1063,21 @@ export default function LettersPage() {
                             {cat.label}
                           </div>
                           {subLabel && (
-                            <div className="text-[9px] text-[var(--text-dim)] truncate">
+                            <div className="text-[10px] text-[var(--text-dim)] truncate mt-0.5">
                               {subLabel}
                             </div>
                           )}
                         </div>
+                        <span
+                          className={clsx(
+                            "text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 uppercase tracking-wider",
+                            isSelected
+                              ? "bg-white/20 text-white"
+                              : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                          )}
+                        >
+                          Recent
+                        </span>
                       </div>
                     );
                   })
@@ -1104,10 +1091,9 @@ export default function LettersPage() {
         <div className="p-4 border-t border-white/5">
           <button
             onClick={handleNewLetter}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-md"
+            className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-md"
             style={{ background: "var(--accent-main)" }}
           >
-            <Edit3 size={14} />
             New Letter
           </button>
         </div>
@@ -1117,28 +1103,25 @@ export default function LettersPage() {
       <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar print:hidden">
         <button
           onClick={handleNewLetter}
-          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95"
+          className="shrink-0 flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95"
           style={{ background: "var(--accent-main)" }}
         >
-          <Edit3 size={12} />
           New
         </button>
         {CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
           const active = activeCategoryId === cat.id;
           return (
             <button
               key={cat.id}
               onClick={() => handleSelectCategoryItem(cat.id)}
               className={clsx(
-                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                "shrink-0 flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                 active
                   ? "text-white"
                   : "text-[var(--text-muted)] border border-white/10"
               )}
               style={active ? { background: "var(--accent-main)" } : {}}
             >
-              <Icon size={11} />
               <span>{cat.label}</span>
             </button>
           );
