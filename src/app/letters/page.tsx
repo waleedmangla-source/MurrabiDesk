@@ -36,6 +36,8 @@ import {
   HardDrive,
   Edit3,
   X,
+  Camera,
+  Trash2,
 } from "lucide-react";
 import clsx from "clsx";
 import { liquid } from "@/lib/sync/bridge";
@@ -403,6 +405,29 @@ export default function LettersPage() {
   const [selectedCountry, setSelectedCountry] = useState("United Kingdom");
   const [includeWifePermission, setIncludeWifePermission] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  // Passport photo state (Letters to Huzoor only)
+  const [passportPhoto, setPassportPhoto] = useState<string | null>(null);
+
+  const handlePassportPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Please select a valid image file for the passport photo.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      const result = uploadEvent.target?.result as string;
+      if (result) {
+        setPassportPhoto(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // States
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
@@ -761,6 +786,16 @@ export default function LettersPage() {
             font-size: 16px;
             line-height: 1.8;
             color: #111827;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+          }
+          .passport-photo {
+            width: 1.15in;
+            height: 1.45in;
+            object-fit: cover;
+            border: 1px solid #9ca3af;
+            border-radius: 2px;
           }
           .sign-title {
             font-weight: bold;
@@ -788,11 +823,20 @@ export default function LettersPage() {
           </div>
 
           <div class="footer">
-            <div>والسلام</div>
-            <div>خاکسار</div>
-            <div class="sign-title">${name}</div>
-            <div class="meta-text">${code}</div>
-            <div>${designation}</div>
+            <div>
+              <div>والسلام</div>
+              <div>خاکسار</div>
+              <div class="sign-title">${name}</div>
+              <div class="meta-text">${code}</div>
+              <div>${designation}</div>
+            </div>
+            ${
+              activeCategoryId === "huzoor" && passportPhoto
+                ? `<div>
+                    <img src="${passportPhoto}" alt="Passport Photo" class="passport-photo" />
+                   </div>`
+                : ""
+            }
           </div>
         </div>
       </body>
@@ -839,12 +883,21 @@ export default function LettersPage() {
           ${computedUrduBody}
         </div>
         
-        <div style="font-size: 18px; line-height: 1.8; margin-top: 30px; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif;">
-          <div>والسلام</div>
-          <div>خاکسار</div>
-          <div style="font-weight: bold;">${name}</div>
-          <div>${code}</div>
-          <div>${designation}</div>
+        <div style="font-size: 18px; line-height: 1.8; margin-top: 30px; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', serif; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+          <div>
+            <div>والسلام</div>
+            <div>خاکسار</div>
+            <div style="font-weight: bold;">${name}</div>
+            <div>${code}</div>
+            <div>${designation}</div>
+          </div>
+          ${
+            activeCategoryId === "huzoor" && passportPhoto
+              ? `<div>
+                  <img src="${passportPhoto}" alt="Passport Photo" style="width: 100px; height: 125px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 4px;" />
+                 </div>`
+              : ""
+          }
         </div>
       </div>
     `;
@@ -922,6 +975,11 @@ export default function LettersPage() {
               font-size: 18px;
               line-height: 1.8;
               margin-top: 30px;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
             }
           </style>
         </head>
@@ -934,11 +992,20 @@ export default function LettersPage() {
           <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
           <div class="body-text">${computedUrduBody}</div>
           <div class="footer">
-            <div>والسلام</div>
-            <div>خاکسار</div>
-            <div style="font-weight: bold;">${name}</div>
-            <div>${code}</div>
-            <div>${designation}</div>
+            <div>
+              <div>والسلام</div>
+              <div>خاکسار</div>
+              <div style="font-weight: bold;">${name}</div>
+              <div>${code}</div>
+              <div>${designation}</div>
+            </div>
+            ${
+              activeCategoryId === "huzoor" && passportPhoto
+                ? `<div>
+                    <img src="${passportPhoto}" alt="Passport Photo" style="width: 110px; height: 140px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 4px;" />
+                   </div>`
+                : ""
+            }
           </div>
         </body>
         </html>
@@ -1693,6 +1760,75 @@ export default function LettersPage() {
                   </div>
                 </div>
 
+                {/* Card 4: Passport Photograph (Huzoor Letters Only) */}
+                {activeCategoryId === "huzoor" && (
+                  <div className="card">
+                    <div className="card-hdr flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="dot"></div>
+                        <span>PASSPORT PHOTOGRAPH</span>
+                      </div>
+                      <span className="text-[10px] text-[var(--accent-main)] font-semibold uppercase tracking-wider">
+                        Huzoor Letters Only
+                      </span>
+                    </div>
+                    <div className="card-body">
+                      {passportPhoto ? (
+                        <div className="flex items-center gap-4 bg-white/5 p-3 rounded-lg border border-white/10">
+                          <img
+                            src={passportPhoto}
+                            alt="Passport Preview"
+                            className="w-16 h-20 object-cover rounded border border-white/20 shadow-sm"
+                          />
+                          <div className="flex-1 space-y-1">
+                            <p className="text-xs font-semibold text-white">Passport Photograph Attached</p>
+                            <p className="text-[11px] text-white/50">
+                              Appears on the bottom-left corner of the letter sheet.
+                            </p>
+                            <div className="flex items-center gap-3 pt-1">
+                              <label className="cursor-pointer inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent-main)] hover:underline">
+                                <Camera size={12} />
+                                <span>Change Photo</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handlePassportPhotoUpload}
+                                />
+                              </label>
+                              <span className="text-white/20">•</span>
+                              <button
+                                type="button"
+                                onClick={() => setPassportPhoto(null)}
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-400 hover:underline"
+                              >
+                                <Trash2 size={12} />
+                                <span>Remove</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/15 hover:border-[var(--accent-main)]/60 bg-white/[0.02] hover:bg-white/[0.05] rounded-xl p-5 cursor-pointer transition group">
+                          <Camera size={24} className="text-white/40 group-hover:text-[var(--accent-main)] transition mb-2" />
+                          <span className="text-xs font-semibold text-white group-hover:text-[var(--accent-main)] transition">
+                            Upload Passport Picture
+                          </span>
+                          <span className="text-[11px] text-white/40 mt-0.5 text-center">
+                            Standard portrait photo. Placed on the bottom-left of the letter to Huzoor.
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePassportPhotoUpload}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                )}
+
               </div>
 
               {/* Real-time Document Card Preview */}
@@ -1735,13 +1871,65 @@ export default function LettersPage() {
                     </div>
                   </div>
 
-                  {/* Sign-off */}
-                  <div className="text-xs space-y-1 text-gray-800 border-t pt-4 border-gray-100 font-urdu">
-                    <div>والسلام</div>
-                    <div>خاکسار</div>
-                    <div className="font-bold text-gray-950 font-urdu">{name}</div>
-                    <div className="text-[11px] text-gray-600 font-sans">{code}</div>
-                    <div className="text-[11px] text-gray-600 font-urdu">{designation}</div>
+                  {/* Sign-off & Bottom Left Passport Photo */}
+                  <div className="border-t pt-4 border-gray-100 flex items-end justify-between">
+                    <div className="text-xs space-y-1 text-gray-800 font-urdu">
+                      <div>والسلام</div>
+                      <div>خاکسار</div>
+                      <div className="font-bold text-gray-950 font-urdu">{name}</div>
+                      <div className="text-[11px] text-gray-600 font-sans">{code}</div>
+                      <div className="text-[11px] text-gray-600 font-urdu">{designation}</div>
+                    </div>
+
+                    {activeCategoryId === "huzoor" && (
+                      <div className="print:hidden">
+                        {passportPhoto ? (
+                          <div className="relative group">
+                            <img
+                              src={passportPhoto}
+                              alt="Passport Photo"
+                              className="w-16 h-20 md:w-20 md:h-24 object-cover rounded border border-gray-300 shadow-sm"
+                            />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition rounded flex flex-col items-center justify-center gap-1">
+                              <label className="cursor-pointer text-[10px] text-white hover:text-[var(--accent-main)] font-sans flex items-center gap-1 font-medium">
+                                <Camera size={10} />
+                                <span>Change</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handlePassportPhotoUpload}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setPassportPhoto(null)}
+                                className="text-[10px] text-rose-300 hover:text-rose-400 font-sans flex items-center gap-1 font-medium"
+                              >
+                                <Trash2 size={10} />
+                                <span>Remove</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="w-16 h-20 md:w-20 md:h-24 border-2 border-dashed border-gray-300 hover:border-[var(--accent-main)] bg-gray-50/80 hover:bg-gray-100/90 rounded flex flex-col items-center justify-center p-1.5 cursor-pointer transition text-gray-400 hover:text-[var(--accent-main)] group">
+                            <Camera size={16} className="mb-1 group-hover:scale-110 transition-transform" />
+                            <span className="text-[9px] font-sans font-medium text-center leading-tight">
+                              Passport Photo
+                            </span>
+                            <span className="text-[8px] font-sans text-gray-400 group-hover:text-[var(--accent-main)]/80 mt-0.5">
+                              + Upload
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handlePassportPhotoUpload}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1769,12 +1957,23 @@ export default function LettersPage() {
                       {computedUrduBody}
                     </div>
                   </div>
-                  <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu">
-                    <div>والسلام</div>
-                    <div>خاکسار</div>
-                    <div className="font-bold text-lg font-urdu">{name}</div>
-                    <div className="text-sm text-gray-700 font-sans">{code}</div>
-                    <div className="text-sm text-gray-700 font-urdu">{designation}</div>
+                  <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end">
+                    <div>
+                      <div>والسلام</div>
+                      <div>خاکسار</div>
+                      <div className="font-bold text-lg font-urdu">{name}</div>
+                      <div className="text-sm text-gray-700 font-sans">{code}</div>
+                      <div className="text-sm text-gray-700 font-urdu">{designation}</div>
+                    </div>
+                    {activeCategoryId === "huzoor" && passportPhoto && (
+                      <div>
+                        <img
+                          src={passportPhoto}
+                          alt="Passport Photo"
+                          className="w-24 h-32 object-cover rounded-sm border border-gray-400"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1817,13 +2016,65 @@ export default function LettersPage() {
                   </div>
                 </div>
 
-                {/* Footer Signoff */}
-                <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu">
-                  <div>والسلام</div>
-                  <div>خاکسار</div>
-                  <div className="font-bold text-lg font-urdu">{name}</div>
-                  <div className="text-sm text-gray-700 font-sans">{code}</div>
-                  <div className="text-sm text-gray-700 font-urdu">{designation}</div>
+                {/* Footer Signoff & Bottom Left Passport Photo */}
+                <div className="text-base space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end">
+                  <div>
+                    <div>والسلام</div>
+                    <div>خاکسار</div>
+                    <div className="font-bold text-lg font-urdu">{name}</div>
+                    <div className="text-sm text-gray-700 font-sans">{code}</div>
+                    <div className="text-sm text-gray-700 font-urdu">{designation}</div>
+                  </div>
+
+                  {activeCategoryId === "huzoor" && (
+                    <div>
+                      {passportPhoto ? (
+                        <div className="relative group">
+                          <img
+                            src={passportPhoto}
+                            alt="Passport Photo"
+                            className="w-24 h-32 object-cover rounded-sm border border-gray-300 shadow-sm"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition rounded flex flex-col items-center justify-center gap-1.5 print:hidden">
+                            <label className="cursor-pointer text-xs text-white hover:text-[var(--accent-main)] font-sans flex items-center gap-1 font-medium">
+                              <Camera size={12} />
+                              <span>Change</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handlePassportPhotoUpload}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => setPassportPhoto(null)}
+                              className="text-xs text-rose-300 hover:text-rose-400 font-sans flex items-center gap-1 font-medium"
+                            >
+                              <Trash2 size={12} />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="w-24 h-32 border-2 border-dashed border-gray-300 hover:border-[var(--accent-main)] bg-gray-50/80 hover:bg-gray-100/90 rounded flex flex-col items-center justify-center p-2 cursor-pointer transition text-gray-400 hover:text-[var(--accent-main)] group print:hidden">
+                          <Camera size={20} className="mb-1.5 group-hover:scale-110 transition-transform" />
+                          <span className="text-[11px] font-sans font-medium text-center leading-tight">
+                            Passport Photo
+                          </span>
+                          <span className="text-[9px] font-sans text-gray-400 group-hover:text-[var(--accent-main)]/80 mt-0.5">
+                            + Upload Photo
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePassportPhotoUpload}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
