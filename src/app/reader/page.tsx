@@ -1,9 +1,31 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Loader2, BookOpen, Search, Info, ChevronLeft, ChevronRight, Wand2, ChevronDown, Bookmark, BookText, ExternalLink, Globe, X, Sparkles } from 'lucide-react';
+import { 
+  Loader2, 
+  BookOpen, 
+  Search, 
+  Info, 
+  ChevronLeft, 
+  ChevronRight, 
+  Wand2, 
+  ChevronDown, 
+  Bookmark, 
+  BookText, 
+  ExternalLink, 
+  Globe, 
+  X, 
+  Sparkles,
+  Library
+} from 'lucide-react';
 import { clsx } from 'clsx';
 import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
 import AIBlobIcon from '@/components/AIBlobIcon';
+import { 
+  KHAZAIN_BOOKS, 
+  getBookForPage, 
+  normalizeKhazainText, 
+  normalizeWithIndexMap 
+} from '@/lib/khazain-data';
 
 interface SelectedWordInfo {
   word: string;
@@ -14,118 +36,78 @@ interface SelectedWordInfo {
   loading?: boolean;
 }
 
+interface SearchResult {
+  volume: number;
+  pageNum: number;
+  bookTitle: string;
+  bookUrduTitle: string;
+  snippetBefore: string;
+  matchedSlice: string;
+  snippetAfter: string;
+  matchedTerm: string;
+  isExactPhrase: boolean;
+}
+
 function toUrduNumerals(num: number | string): string {
   const urduDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return String(num).replace(/[0-9]/g, (d) => urduDigits[parseInt(d, 10)]);
 }
 
-// Map of Ruhani Khazain Volumes to major books contained within them
-const KHAZAIN_BOOKS: Record<number, { title: string; urduTitle: string; pageStart: number }[]> = {
-  1: [
-    { title: "Barahin-e-Ahmadiyya Part 1", urduTitle: "براہین احمدیہ حصہ اول", pageStart: 1 },
-    { title: "Barahin-e-Ahmadiyya Part 2", urduTitle: "براہین احمدیہ حصہ دوم", pageStart: 55 }
-  ],
-  2: [
-    { title: "Barahin-e-Ahmadiyya Part 3", urduTitle: "براہین احمدیہ حصہ سوم", pageStart: 1 },
-    { title: "Purani Tehrirain", urduTitle: "پرانی تحریریں", pageStart: 275 }
-  ],
-  3: [
-    { title: "Fath-e-Islam", urduTitle: "فتح اسلام", pageStart: 1 },
-    { title: "Taudih-e-Maram", urduTitle: "توضیح مرام", pageStart: 41 },
-    { title: "Izala-e-Auham", urduTitle: "ازالہ اوہام", pageStart: 101 }
-  ],
-  4: [
-    { title: "Al-Haq Mubahatha Ludhiana", urduTitle: "مباحثہ لدھیانہ", pageStart: 1 },
-    { title: "Al-Haq Mubahatha Delhi", urduTitle: "مباحثہ دہلی", pageStart: 131 },
-    { title: "Asmani Faislah", urduTitle: "آسمانی فیصلہ", pageStart: 311 },
-    { title: "Nishan-e-Asmani", urduTitle: "نشان آسمانی", pageStart: 361 }
-  ],
-  5: [
-    { title: "Aina-e-Kamalat-e-Islam", urduTitle: "آئینہ کمالات اسلام", pageStart: 1 }
-  ],
-  6: [
-    { title: "Barakat-ud-Dua", urduTitle: "برکات الدعا", pageStart: 1 },
-    { title: "Hujjat-ul-Islam", urduTitle: "حجۃ الاسلام", pageStart: 45 },
-    { title: "Sachai Ka Izhar", urduTitle: "سچائی کا اظہار", pageStart: 77 },
-    { title: "Jang-e-Muqaddas", urduTitle: "جنگ مقدس", pageStart: 93 }
-  ],
-  7: [
-    { title: "Shahadat-ul-Quran", urduTitle: "شہادت القرآن", pageStart: 1 },
-    { title: "Tuhfa-e-Baghdad", urduTitle: "تحفہ بغداد", pageStart: 127 },
-    { title: "Karamat-us-Sadiqeen", urduTitle: "کرامات الصادقین", pageStart: 153 },
-    { title: "Hamamat-ul-Bushra", urduTitle: "حمامة البشرى", pageStart: 179 }
-  ],
-  8: [
-    { title: "Nur-ul-Haq Part 1 & 2", urduTitle: "نور الحق حصہ اول و دوم", pageStart: 1 },
-    { title: "Itmam-ul-Hujjah", urduTitle: "اتمام الحجة", pageStart: 275 },
-    { title: "Sirr-ul-Khilafah", urduTitle: "سر الخلافة", pageStart: 317 }
-  ],
-  9: [
-    { title: "Anwar-ul-Islam", urduTitle: "انوار الاسلام", pageStart: 1 },
-    { title: "Minan-ur-Rahman", urduTitle: "منن الرحمٰن", pageStart: 125 },
-    { title: "Arya Dharam", urduTitle: "آریہ دھرم", pageStart: 181 },
-    { title: "Zia-ul-Haq", urduTitle: "ضیاء الحق", pageStart: 221 }
-  ],
-  10: [
-    { title: "Islami Usul Ki Philosophy", urduTitle: "اسلامی اصول کی فلاسفی", pageStart: 1 },
-    { title: "Sat Bachan", urduTitle: "ست بچن", pageStart: 111 }
-  ],
-  11: [
-    { title: "Anjam-e-Atham", urduTitle: "انجام آتھم", pageStart: 1 }
-  ],
-  12: [
-    { title: "Siraj-e-Munir", urduTitle: "سراج منیر", pageStart: 1 },
-    { title: "Hujjatullah", urduTitle: "حجة الله", pageStart: 109 },
-    { title: "Tuhfa-e-Qaisariyyah", urduTitle: "تحفہ قیصریہ", pageStart: 251 },
-    { title: "Kitab-ul-Bariyyah", urduTitle: "کتاب البریہ", pageStart: 289 }
-  ],
-  13: [
-    { title: "Kitab-ul-Bariyyah (cont.)", urduTitle: "کتاب البریہ (تکملہ)", pageStart: 1 },
-    { title: "Ayyam-us-Sulh", urduTitle: "ایام الصلح", pageStart: 231 }
-  ],
-  14: [
-    { title: "Zarurat-ul-Imam", urduTitle: "ضرورۃ الامام", pageStart: 1 },
-    { title: "Haqiqat-ul-Mahdi", urduTitle: "حقیقت المہدی", pageStart: 49 },
-    { title: "Masih Hindustan Mein", urduTitle: "مسیح ہندوستان میں", pageStart: 167 }
-  ],
-  15: [
-    { title: "Tiryaq-ul-Qulub", urduTitle: "تریاق القلوب", pageStart: 1 }
-  ],
-  16: [
-    { title: "Khutba Ilhamiyya", urduTitle: "خطبہ الہامیہ", pageStart: 1 },
-    { title: "Lujjat-un-Nur", urduTitle: "لجة النور", pageStart: 337 }
-  ],
-  17: [
-    { title: "Tuhfat-un-Nadwah", urduTitle: "تحفۃ الندوہ", pageStart: 1 },
-    { title: "Arbaeen", urduTitle: "اربعین", pageStart: 341 }
-  ],
-  18: [
-    { title: "Ijaz-ul-Masih", urduTitle: "اعجاز المسیح", pageStart: 1 },
-    { title: "Dafi-ul-Bala", urduTitle: "دافع البلاء", pageStart: 221 },
-    { title: "Al-Huda Wat-Tabsirah", urduTitle: "الهدى والتبصرة", pageStart: 247 }
-  ],
-  19: [
-    { title: "Kashti-e-Nuh", urduTitle: "کشتی نوح", pageStart: 1 },
-    { title: "Tadhkirat-ush-Shahadatain", urduTitle: "تذکرۃ الشہادتین", pageStart: 265 }
-  ],
-  20: [
-    { title: "Siraj-ud-Din Isai Ke 4 Sawal", urduTitle: "سراج الدین عیسائی کے چار سوال", pageStart: 1 },
-    { title: "Lecture Lahore", urduTitle: "لیکچر لاہور", pageStart: 145 },
-    { title: "Lecture Sialkot", urduTitle: "لیکچر سیالکوٹ", pageStart: 201 },
-    { title: "Lecture Ludhiana", urduTitle: "لیکچر لدھیانہ", pageStart: 251 }
-  ],
-  21: [
-    { title: "Barahin-e-Ahmadiyya Part 5", urduTitle: "براہین احمدیہ حصہ پنجم", pageStart: 1 }
-  ],
-  22: [
-    { title: "Haqiqat-ul-Wahi", urduTitle: "حقیقت الوحی", pageStart: 1 }
-  ],
-  23: [
-    { title: "Chashma-e-Masihi", urduTitle: "چشمہ مسیحی", pageStart: 1 },
-    { title: "Chashma-e-Marifat", urduTitle: "چشمہ معرفت", pageStart: 93 },
-    { title: "Paigham-e-Sulh", urduTitle: "پیغام صلح", pageStart: 437 }
-  ]
-};
+function highlightSegments(text: string, searchTerms: string[]) {
+  if (!searchTerms || searchTerms.length === 0) return [{ text, isMatch: false }];
+
+  const { norm, indexMap } = normalizeWithIndexMap(text);
+  const matches: { start: number; end: number; term: string }[] = [];
+
+  for (const term of searchTerms) {
+    const normTerm = normalizeKhazainText(term);
+    if (!normTerm || normTerm.length < 2) continue;
+
+    let pos = 0;
+    while ((pos = norm.indexOf(normTerm, pos)) !== -1) {
+      const rawStart = indexMap[pos] ?? pos;
+      const endPosInNorm = Math.min(indexMap.length - 1, pos + normTerm.length - 1);
+      const rawEnd = (indexMap[endPosInNorm] ?? rawStart + normTerm.length - 1) + 1;
+      matches.push({ start: rawStart, end: rawEnd, term });
+      pos += normTerm.length;
+    }
+  }
+
+  if (matches.length === 0) return [{ text, isMatch: false }];
+
+  // Sort matches by start position
+  matches.sort((a, b) => a.start - b.start);
+
+  // Deduplicate and merge overlapping intervals
+  const merged: { start: number; end: number }[] = [];
+  for (const m of matches) {
+    if (merged.length === 0) {
+      merged.push({ start: m.start, end: m.end });
+    } else {
+      const last = merged[merged.length - 1];
+      if (m.start <= last.end) {
+        last.end = Math.max(last.end, m.end);
+      } else {
+        merged.push({ start: m.start, end: m.end });
+      }
+    }
+  }
+
+  const segments: { text: string; isMatch: boolean }[] = [];
+  let cursor = 0;
+  for (const m of merged) {
+    if (m.start > cursor) {
+      segments.push({ text: text.slice(cursor, m.start), isMatch: false });
+    }
+    segments.push({ text: text.slice(m.start, m.end), isMatch: true });
+    cursor = m.end;
+  }
+  if (cursor < text.length) {
+    segments.push({ text: text.slice(cursor), isMatch: false });
+  }
+
+  return segments;
+}
 
 export default function RuhaniKhazainReader() {
   const [volumes, setVolumes] = useState<number[]>([]);
@@ -153,6 +135,23 @@ export default function RuhaniKhazainReader() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiCache, setAiCache] = useState<Record<string, any>>({});
 
+  // Right Panel Tab Navigation: 'ai' (MurabbiAI Context) | 'search' (Book & Library Search)
+  const [activeRightTab, setActiveRightTab] = useState<'ai' | 'search'>('ai');
+
+  // Search States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchScope, setSearchScope] = useState<'volume' | 'library'>('volume');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchTotalMatches, setSearchTotalMatches] = useState<number | null>(null);
+  const [activeSearchTerms, setActiveSearchTerms] = useState<string[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // On-screen highlighting state
+  const [highlightTerms, setHighlightTerms] = useState<string[]>([]);
+  const pendingTargetPageRef = useRef<number | null>(null);
+
   // Dynamic font sizing to fit the 9x11 sheet of paper
   const [fontSize, setFontSize] = useState<number>(15.5);
   const innerContainerRef = useRef<HTMLDivElement>(null);
@@ -171,8 +170,6 @@ export default function RuhaniKhazainReader() {
 
     if (maxAllowedHeight <= 60) return;
 
-    // Fast binary search to find maximum font size (10px to 21px in 0.5px steps)
-    // where content fits inside the available inner Jadwal frame
     let low = 10;
     let high = 21;
     let best = 14.5;
@@ -233,7 +230,6 @@ export default function RuhaniKhazainReader() {
   };
   
   useEffect(() => {
-    // We know we processed volumes 1-23. Let's list them.
     const vols = Array.from({length: 23}, (_, i) => i + 1);
     setVolumes(vols);
     setSelectedVolume(1);
@@ -249,8 +245,16 @@ export default function RuhaniKhazainReader() {
         const res = await fetch(`/ruhani-khazain/volume_${selectedVolume}.json`);
         if (!res.ok) throw new Error('Volume not found');
         const data = await res.json();
-        setPages(data.pages || []);
-        setCurrentPageIndex(0);
+        const newPages = data.pages || [];
+        setPages(newPages);
+
+        if (pendingTargetPageRef.current !== null) {
+          const targetIdx = newPages.findIndex((p: any) => p.page_num === pendingTargetPageRef.current);
+          setCurrentPageIndex(targetIdx !== -1 ? targetIdx : 0);
+          pendingTargetPageRef.current = null;
+        } else {
+          setCurrentPageIndex(0);
+        }
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -270,9 +274,9 @@ export default function RuhaniKhazainReader() {
         fitTextToPage();
       });
     }
-  }, [fitTextToPage, currentPageIndex, selectedVolume, pages, currentPage?.text]);
+  }, [fitTextToPage, currentPageIndex, selectedVolume, pages, currentPage?.text, highlightTerms]);
 
-  // Re-fit text on container resize (e.g., window resizing or sidebar toggle)
+  // Re-fit text on container resize
   useEffect(() => {
     const container = innerContainerRef.current;
     if (!container || typeof ResizeObserver === 'undefined') return;
@@ -302,6 +306,9 @@ export default function RuhaniKhazainReader() {
       loading: !localEntry?.meaning
     });
 
+    // Make sure user sees the inspected word
+    setActiveRightTab('ai');
+
     if (!localEntry?.meaning) {
       try {
         const res = await fetch(`/api/dictionary/lookup?word=${encodeURIComponent(word)}`);
@@ -330,7 +337,7 @@ export default function RuhaniKhazainReader() {
     }
   }, [dictionary]);
 
-  // Analyze current page with MurrabiAI to get theological context and vocabulary
+  // Analyze current page with MurrabiAI
   const handleAnalyzePage = useCallback(async () => {
     if (!currentPage?.text) return;
 
@@ -344,9 +351,8 @@ export default function RuhaniKhazainReader() {
     setAiError(null);
 
     try {
-      const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
       const pageNum = currentPage?.page_num || (currentPageIndex + 1);
-      const activeBook = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
+      const activeBook = getBookForPage(selectedVolume || 1, pageNum);
 
       const res = await fetch('/api/beta/khazain-analyze', {
         method: 'POST',
@@ -369,7 +375,6 @@ export default function RuhaniKhazainReader() {
       setAiData(data);
       setAiCache(prev => ({ ...prev, [cacheKey]: data }));
 
-      // Automatically register any newly identified hard words into the dictionary
       if (Array.isArray(data.hardWords) && data.hardWords.length > 0) {
         setDictionary(prev => {
           const next = { ...prev };
@@ -400,7 +405,69 @@ export default function RuhaniKhazainReader() {
     setAiError(null);
   }, [selectedVolume, currentPageIndex, aiCache]);
 
-  // Helper to render text with automatic vocabulary tooltips and click-to-inspect
+  // Execute Search across Book or Entire Library
+  const handleExecuteSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    setIsSearching(true);
+    setSearchError(null);
+    setHasSearched(true);
+
+    try {
+      const res = await fetch('/api/ruhani-khazain/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          scope: searchScope,
+          volume: selectedVolume || 1,
+          limit: 100
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Search failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      setSearchResults(data.results || []);
+      setSearchTotalMatches(data.totalMatches ?? (data.results?.length || 0));
+      setActiveSearchTerms(data.searchTerms || []);
+
+      // If matches exist, automatically highlight primary search terms on screen
+      if (data.searchTerms && data.searchTerms.length > 0) {
+        setHighlightTerms(data.searchTerms);
+      }
+    } catch (err: any) {
+      console.error('[Search Error]:', err);
+      setSearchError(err.message || 'Search failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Jump to specific search result on screen & highlight term
+  const handleSelectSearchResult = (result: SearchResult) => {
+    const matched = result.matchedTerm || activeSearchTerms[0];
+    if (matched) {
+      setHighlightTerms([matched]);
+    }
+
+    if (selectedVolume !== result.volume) {
+      pendingTargetPageRef.current = result.pageNum;
+      setSelectedVolume(result.volume);
+    } else {
+      const targetIdx = pages.findIndex(p => p.page_num === result.pageNum);
+      if (targetIdx !== -1) {
+        setCurrentPageIndex(targetIdx);
+      }
+    }
+  };
+
+  // Helper to render text with search highlights and automatic vocabulary tooltips
   const renderText = (text: string) => {
     if (!text) return null;
 
@@ -413,108 +480,128 @@ export default function RuhaniKhazainReader() {
             return <div key={pIdx} className="h-2" />;
           }
 
-          // Split line into words and delimiters while preserving spaces & punctuation
-          const tokens = para.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
+          // If search highlights are active, segment paragraph into matches and regular text
+          const segments = highlightTerms.length > 0
+            ? highlightSegments(para, highlightTerms)
+            : [{ text: para, isMatch: false }];
 
           return (
             <p key={pIdx} className="mb-1 sm:mb-1.5 leading-[1.82] text-justify">
-              {tokens.map((token, tIdx) => {
-                const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
-                if (!clean) {
-                  return <React.Fragment key={tIdx}>{token}</React.Fragment>;
-                }
-
-                const dictEntry = dictionary[clean];
-                const isSelected = selectedWord?.word === clean;
-
-                // Word is in pre-identified vocabulary dictionary
-                if (dictEntry) {
-                  const meaning = dictEntry.meaning;
-                  const translit = dictEntry.translit;
-                  const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(clean)}`;
-                  const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(clean + ' urdu meaning in english')}`;
-
+              {segments.map((seg, sIdx) => {
+                if (seg.isMatch) {
                   return (
-                    <span
-                      key={tIdx}
-                      onClick={() => handleSelectWord(clean)}
-                      className={clsx(
-                        "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
-                        isSelected
-                          ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
-                          : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
-                      )}
+                    <mark
+                      key={sIdx}
+                      onClick={() => handleSelectWord(seg.text.trim())}
+                      className="bg-amber-300 text-amber-950 font-black px-1.5 py-0.5 rounded shadow-sm ring-2 ring-amber-400/80 cursor-pointer select-text mx-0.5 transition-all inline hover:ring-amber-500 hover:bg-amber-400"
+                      title="Click to inspect this word in MurabbiAI"
                     >
-                      {token}
-                      {/* White Tooltip Bubble with English definition & Rekhta/Google links */}
-                      <span
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
-                        dir="ltr"
-                      >
-                        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-serif font-bold text-lg text-zinc-900" dir="rtl">
-                              {clean}
-                            </span>
-                            {translit && (
-                              <span className="text-[11px] font-mono italic text-zinc-500">
-                                ({translit})
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">
-                            Vocabulary
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-zinc-700 font-medium leading-relaxed mb-2.5">
-                          {meaning}
-                        </p>
-
-                        <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-100 text-[10px] font-bold">
-                          <a
-                            href={rekhtaUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1 px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-colors"
-                            title="Open entry in Rekhta Dictionary"
-                          >
-                            <Globe size={11} />
-                            <span>Rekhta</span>
-                            <ExternalLink size={9} />
-                          </a>
-                          <a
-                            href={googleUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200/60 transition-colors"
-                            title="Search meaning on Google"
-                          >
-                            <Search size={11} />
-                            <span>Google</span>
-                            <ExternalLink size={9} />
-                          </a>
-                        </div>
-                      </span>
-                    </span>
+                      {seg.text}
+                    </mark>
                   );
                 }
 
-                // Regular word: also clickable to inspect in the right-hand panel
-                return (
-                  <span
-                    key={tIdx}
-                    onClick={() => handleSelectWord(clean)}
-                    className={clsx(
-                      "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
-                      isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
-                    )}
-                  >
-                    {token}
-                  </span>
-                );
+                // Non-match segment: tokenize for vocabulary tooltips & click-to-inspect
+                const tokens = seg.text.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
+
+                return tokens.map((token, tIdx) => {
+                  const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
+                  if (!clean) {
+                    return <React.Fragment key={`${sIdx}-${tIdx}`}>{token}</React.Fragment>;
+                  }
+
+                  const dictEntry = dictionary[clean];
+                  const isSelected = selectedWord?.word === clean;
+
+                  // Word is in pre-identified vocabulary dictionary
+                  if (dictEntry) {
+                    const meaning = dictEntry.meaning;
+                    const translit = dictEntry.translit;
+                    const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(clean)}`;
+                    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(clean + ' urdu meaning in english')}`;
+
+                    return (
+                      <span
+                        key={`${sIdx}-${tIdx}`}
+                        onClick={() => handleSelectWord(clean)}
+                        className={clsx(
+                          "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
+                          isSelected
+                            ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
+                            : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
+                        )}
+                      >
+                        {token}
+                        {/* White Tooltip Bubble with English definition & Rekhta/Google links */}
+                        <span
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
+                          dir="ltr"
+                        >
+                          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-serif font-bold text-lg text-zinc-900" dir="rtl">
+                                {clean}
+                              </span>
+                              {translit && (
+                                <span className="text-[11px] font-mono italic text-zinc-500">
+                                  ({translit})
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">
+                              Vocabulary
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-zinc-700 font-medium leading-relaxed mb-2.5">
+                            {meaning}
+                          </p>
+
+                          <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-100 text-[10px] font-bold">
+                            <a
+                              href={rekhtaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1 px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-colors"
+                              title="Open entry in Rekhta Dictionary"
+                            >
+                              <Globe size={11} />
+                              <span>Rekhta</span>
+                              <ExternalLink size={9} />
+                            </a>
+                            <a
+                              href={googleUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200/60 transition-colors"
+                              title="Search meaning on Google"
+                            >
+                              <Search size={11} />
+                              <span>Google</span>
+                              <ExternalLink size={9} />
+                            </a>
+                          </div>
+                        </span>
+                      </span>
+                    );
+                  }
+
+                  // Regular word: also clickable to inspect in the right-hand panel
+                  return (
+                    <span
+                      key={`${sIdx}-${tIdx}`}
+                      onClick={() => handleSelectWord(clean)}
+                      className={clsx(
+                        "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
+                        isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
+                      )}
+                    >
+                      {token}
+                    </span>
+                  );
+                });
               })}
             </p>
           );
@@ -538,19 +625,17 @@ export default function RuhaniKhazainReader() {
         <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
           <div className="p-3 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex flex-col gap-1.5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                <Bookmark size={11} /> Currently Reading
+              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1">
+                <BookOpen size={11} />
+                Now Reading
               </span>
-              <span className="text-[9px] font-mono font-bold text-[var(--accent-main)]">
-                Vol {selectedVolume || 1} · P.{currentPage?.page_num || (currentPageIndex + 1)}
+              <span className="text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded bg-white/10">
+                Vol {selectedVolume || 1}
               </span>
             </div>
-
-            {/* Current Book title */}
             {(() => {
-              const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
               const pageNum = currentPage?.page_num || (currentPageIndex + 1);
-              const activeBook = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
+              const activeBook = getBookForPage(selectedVolume || 1, pageNum);
               return (
                 <div className="flex flex-col pt-0.5">
                   <span className="text-xs font-bold text-[var(--foreground)] truncate">
@@ -577,7 +662,7 @@ export default function RuhaniKhazainReader() {
 
               return (
                 <div key={vol} className="flex flex-col">
-                  {/* Volume Navigation Row (Identical to Mail Folder Row) */}
+                  {/* Volume Navigation Row */}
                   <div
                     onClick={() => setSelectedVolume(vol)}
                     className={clsx(
@@ -656,7 +741,7 @@ export default function RuhaniKhazainReader() {
 
       {/* ── MAIN CONTENT: BOOK READING VIEW ── */}
       <div className="flex-1 flex flex-col h-full min-w-0 bg-black/10 relative overflow-hidden">
-        {/* Top Control Bar (Clean header with volume title) */}
+        {/* Top Control Bar (Clean header with volume title & search highlight pill) */}
         <div className="h-16 border-b border-white/5 px-6 flex items-center justify-between glass bg-black/20 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
@@ -670,6 +755,24 @@ export default function RuhaniKhazainReader() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Search Highlight Indicator Badge */}
+            {highlightTerms.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs shadow-sm animate-in fade-in duration-200">
+                <Search size={12} className="text-amber-400" />
+                <span className="text-[10px] font-sans text-amber-300/80">Highlight:</span>
+                <span className="font-serif font-bold text-sm text-amber-200" dir="rtl">
+                  {highlightTerms[0]}
+                </span>
+                <button
+                  onClick={() => setHighlightTerms([])}
+                  className="p-1 rounded hover:bg-white/10 text-amber-400 hover:text-white transition-colors ml-0.5"
+                  title="Clear highlight"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+
             <div className="px-3 py-1.5 rounded-xl glass border border-white/5 bg-white/5 text-xs font-mono font-bold text-[var(--foreground)] flex items-center gap-1.5">
               <span>Page</span>
               <span className="text-[var(--accent-main)]">{currentPage?.page_num || (currentPageIndex + 1)}</span>
@@ -724,9 +827,8 @@ export default function RuhaniKhazainReader() {
 
                     {/* Left in RTL: Current Book Title */}
                     {(() => {
-                      const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
                       const pageNum = currentPage?.page_num || (currentPageIndex + 1);
-                      const active = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
+                      const active = getBookForPage(selectedVolume || 1, pageNum);
                       return (
                         <span className="text-xs sm:text-sm md:text-base font-bold truncate max-w-[45%] text-left">
                           {active?.urduTitle || "براہین احمدیہ"}
@@ -807,9 +909,10 @@ export default function RuhaniKhazainReader() {
         )}
       </div>
 
-      {/* ── RIGHT PANEL: MurrabiAI (Context Analysis & Vocabulary) ── */}
-      <div className="w-full lg:w-[340px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
-        <div className="p-5 border-b border-white/5 flex items-center justify-between">
+      {/* ── RIGHT PANEL: MurrabiAI & Multilingual Search ── */}
+      <div className="w-full lg:w-[350px] shrink-0 border-l border-white/5 glass bg-black/20 flex flex-col h-auto lg:h-full">
+        {/* Panel Header */}
+        <div className="p-4 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex items-center justify-center">
               <AIBlobIcon size={18} active={true} />
@@ -822,7 +925,7 @@ export default function RuhaniKhazainReader() {
                 </span>
               </h2>
               <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
-                Context & Analysis
+                Analysis & Search Core
               </p>
             </div>
           </div>
@@ -840,207 +943,438 @@ export default function RuhaniKhazainReader() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
-          {/* ── Action: Analyze Page Context Button ── */}
-          <div className="space-y-2">
+        {/* Tab Switcher: MurabbiAI Analysis vs Search */}
+        <div className="px-4 py-2 border-b border-white/5 bg-black/15 shrink-0">
+          <div className="flex items-center p-1 bg-black/40 rounded-xl border border-white/10">
             <button
-              onClick={handleAnalyzePage}
-              disabled={aiLoading || !currentPage}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent-main)]/15 transition-all disabled:opacity-40 disabled:pointer-events-none"
+              onClick={() => setActiveRightTab('ai')}
+              className={clsx(
+                "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
+                activeRightTab === 'ai'
+                  ? "bg-white/15 text-white shadow-sm border border-white/10"
+                  : "text-[var(--text-muted)] hover:text-white"
+              )}
             >
-              {aiLoading ? (
-                <>
-                  <Loader2 size={15} className="animate-spin" />
-                  <span>Analyzing Page Context...</span>
-                </>
-              ) : (
-                <>
-                  <AIBlobIcon size={15} active={true} />
-                  <span>{aiData ? "Re-Analyze Page Context" : "Analyze Page & Context"}</span>
-                </>
+              <AIBlobIcon size={13} active={activeRightTab === 'ai'} />
+              <span>MurabbiAI</span>
+            </button>
+            <button
+              onClick={() => setActiveRightTab('search')}
+              className={clsx(
+                "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
+                activeRightTab === 'search'
+                  ? "bg-[var(--accent-main)] text-white shadow-sm font-bold"
+                  : "text-[var(--text-muted)] hover:text-white"
+              )}
+            >
+              <Search size={13} />
+              <span>Search</span>
+              {searchResults.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono bg-black/30 text-white font-bold">
+                  {searchResults.length}
+                </span>
               )}
             </button>
+          </div>
+        </div>
 
-            {aiError && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
-                <Info size={14} className="shrink-0 mt-0.5" />
-                <span>{aiError}</span>
+        {/* ── TAB 1: MURABBIAI ANALYSIS & VOCABULARY ── */}
+        {activeRightTab === 'ai' && (
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
+            {/* Action: Analyze Page Context Button */}
+            <div className="space-y-2">
+              <button
+                onClick={handleAnalyzePage}
+                disabled={aiLoading || !currentPage}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent-main)]/15 transition-all disabled:opacity-40 disabled:pointer-events-none"
+              >
+                {aiLoading ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    <span>Analyzing Page Context...</span>
+                  </>
+                ) : (
+                  <>
+                    <AIBlobIcon size={15} active={true} />
+                    <span>{aiData ? "Re-Analyze Page Context" : "Analyze Page & Context"}</span>
+                  </>
+                )}
+              </button>
+
+              {aiError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
+                  <Info size={14} className="shrink-0 mt-0.5" />
+                  <span>{aiError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Selected Term Card (if any word is selected) */}
+            {selectedWord && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 border-b border-white/10 pb-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
+                    <Search size={11} /> Selected Term
+                  </span>
+                  <button
+                    onClick={() => setSelectedWord(null)}
+                    className="text-[10px] text-[var(--text-dim)] hover:text-white flex items-center gap-0.5"
+                  >
+                    <X size={11} /> Dismiss
+                  </button>
+                </div>
+
+                {/* Word Header Card */}
+                <div className="glass-card p-5 rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center text-center relative overflow-hidden shadow-sm">
+                  <div className="text-3xl font-serif font-bold text-[var(--foreground)] py-1 select-text" dir="rtl">
+                    {selectedWord.word}
+                  </div>
+                  {selectedWord.translit && (
+                    <span className="text-xs font-mono italic text-[var(--accent-main)] font-semibold mt-0.5">
+                      /{selectedWord.translit}/
+                    </span>
+                  )}
+                </div>
+
+                {/* English Definition Card */}
+                <div className="glass-card p-4 rounded-xl border border-white/10 bg-white/5 space-y-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)] flex items-center gap-1">
+                    <BookText size={11} /> English Definition
+                  </span>
+
+                  {selectedWord.loading ? (
+                    <div className="flex items-center gap-2 py-2 text-xs text-[var(--text-muted)]">
+                      <Loader2 size={14} className="animate-spin text-[var(--accent-main)]" />
+                      <span>Searching Rekhta...</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[var(--foreground)] leading-relaxed font-medium select-text">
+                      {selectedWord.englishMeaning || "Detailed entry available on Rekhta or Google Search."}
+                    </p>
+                  )}
+                </div>
+
+                {/* External Links */}
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={selectedWord.rekhtaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-amber-500/40 hover:bg-amber-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
+                  >
+                    <Globe size={13} className="text-amber-400" />
+                    <span>Rekhta</span>
+                    <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
+                  </a>
+
+                  <a
+                    href={selectedWord.googleUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-blue-500/40 hover:bg-blue-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
+                  >
+                    <Search size={13} className="text-blue-400" />
+                    <span>Google</span>
+                    <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
+                  </a>
+                </div>
               </div>
             )}
-          </div>
 
-          {/* ── Selected Term Card (if any word is selected) ── */}
-          {selectedWord && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200 border-b border-white/10 pb-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
-                  <Search size={11} /> Selected Term
-                </span>
+            {/* Page Context & Analysis Content */}
+            {aiData ? (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {/* MurabbiAI Context & Synopsis */}
+                {aiData.summary && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
+                        <BookOpen size={12} /> MurabbiAI Synopsis & Context
+                      </span>
+                      <span className="text-[9px] font-mono text-[var(--text-dim)]">
+                        Vol {selectedVolume || 1} · P.{currentPage?.page_num || (currentPageIndex + 1)}
+                      </span>
+                    </div>
+                    <div className="p-4 rounded-2xl glass border border-white/10 bg-white/5 text-xs text-[var(--foreground)] leading-relaxed select-text space-y-3">
+                      <p>{aiData.summary}</p>
+
+                      {aiData.theologicalInsight && (
+                        <div className="pt-2.5 mt-2.5 border-t border-white/10 text-[11px] text-[var(--foreground)] bg-[var(--accent-soft)] p-3 rounded-xl border border-[var(--accent-main)]/20">
+                          <div className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[9px] text-[var(--accent-main)] mb-1">
+                            <Info size={11} /> Theological Logic & Murabbi Takeaway
+                          </div>
+                          <p className="opacity-90 leading-relaxed font-medium">
+                            {aiData.theologicalInsight}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Themes */}
+                {Array.isArray(aiData.themes) && aiData.themes.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+                      Central Themes
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {aiData.themes.map((theme, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]"
+                        >
+                          {theme}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Identified Classical Terms on this Page */}
+                {Array.isArray(aiData.hardWords) && aiData.hardWords.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] flex items-center justify-between">
+                      <span>Key Terms Identified</span>
+                      <span className="font-mono text-[9px] text-[var(--accent-main)]">
+                        {aiData.hardWords.length} terms
+                      </span>
+                    </span>
+
+                    <div className="space-y-1.5">
+                      {aiData.hardWords.map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSelectWord(item.word)}
+                          className="w-full p-2.5 rounded-xl glass border border-white/5 bg-white/5 hover:border-[var(--accent-main)]/30 hover:bg-white/10 transition-all flex items-center justify-between text-left group"
+                        >
+                          <div className="flex-1 min-w-0 pr-2">
+                            <p className="text-[11px] text-[var(--text-muted)] group-hover:text-[var(--foreground)] truncate">
+                              {item.meaning}
+                            </p>
+                            {item.urduMeaning && (
+                              <p className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
+                                {item.urduMeaning}
+                              </p>
+                            )}
+                          </div>
+                          <span className="font-serif font-bold text-sm text-[var(--accent-main)] shrink-0" dir="rtl">
+                            {item.word}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              !selectedWord && (
+                <div className="flex flex-col items-center justify-center min-h-[260px] text-center p-5 border border-dashed border-white/10 rounded-2xl opacity-70">
+                  <AIBlobIcon size={32} active={true} className="mb-3" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
+                    MurrabiAI Context Engine
+                  </h3>
+                  <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[220px]">
+                    Click <span className="font-bold text-white">"Analyze Page & Context"</span> to generate an English synthesis of the arguments and key concepts, or click any word to inspect its definition.
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        )}
+
+        {/* ── TAB 2: MULTILINGUAL BOOK & LIBRARY SEARCH ── */}
+        {activeRightTab === 'search' && (
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+            {/* Search Input and Scope Toggle Form */}
+            <form onSubmit={handleExecuteSearch} className="space-y-3">
+              {/* Scope Selector: Current Book vs Entire 23 Volumes */}
+              <div className="p-1 bg-black/40 rounded-xl border border-white/10 flex items-center gap-1">
                 <button
-                  onClick={() => setSelectedWord(null)}
-                  className="text-[10px] text-[var(--text-dim)] hover:text-white flex items-center gap-0.5"
+                  type="button"
+                  onClick={() => setSearchScope('volume')}
+                  className={clsx(
+                    "flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center text-[11px] flex items-center justify-center gap-1.5",
+                    searchScope === 'volume'
+                      ? "bg-[var(--accent-main)] text-white shadow"
+                      : "text-[var(--text-muted)] hover:text-white"
+                  )}
                 >
-                  <X size={11} /> Dismiss
+                  <BookOpen size={12} />
+                  <span>This Book (Vol {selectedVolume || 1})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchScope('library')}
+                  className={clsx(
+                    "flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center text-[11px] flex items-center justify-center gap-1.5",
+                    searchScope === 'library'
+                      ? "bg-[var(--accent-main)] text-white shadow"
+                      : "text-[var(--text-muted)] hover:text-white"
+                  )}
+                >
+                  <Library size={12} />
+                  <span>Entire Library (23 Vols)</span>
                 </button>
               </div>
 
-              {/* Word Header Card */}
-              <div className="glass-card p-5 rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center text-center relative overflow-hidden shadow-sm">
-                <div className="text-3xl font-serif font-bold text-[var(--foreground)] py-1 select-text" dir="rtl">
-                  {selectedWord.word}
-                </div>
-                {selectedWord.translit && (
-                  <span className="text-xs font-mono italic text-[var(--accent-main)] font-semibold mt-0.5">
-                    /{selectedWord.translit}/
-                  </span>
+              {/* Multilingual Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search topic or word (Urdu, English, Arabic)..."
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all font-medium"
+                />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] pointer-events-none" />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(''); setSearchResults([]); setHasSearched(false); }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-[var(--text-dim)] hover:text-white transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
                 )}
               </div>
 
-              {/* English Definition Card */}
-              <div className="glass-card p-4 rounded-xl border border-white/10 bg-white/5 space-y-1.5">
-                <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)] flex items-center gap-1">
-                  <BookText size={11} /> English Definition
-                </span>
-
-                {selectedWord.loading ? (
-                  <div className="flex items-center gap-2 py-2 text-xs text-[var(--text-muted)]">
-                    <Loader2 size={14} className="animate-spin text-[var(--accent-main)]" />
-                    <span>Searching Rekhta...</span>
-                  </div>
+              {/* Submit Search Button */}
+              <button
+                type="submit"
+                disabled={isSearching || !searchQuery.trim()}
+                className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[var(--accent-main)]/15 transition-all disabled:opacity-40 disabled:pointer-events-none"
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Searching {searchScope === 'library' ? 'All 23 Volumes' : `Volume ${selectedVolume || 1}`}...</span>
+                  </>
                 ) : (
-                  <p className="text-xs text-[var(--foreground)] leading-relaxed font-medium select-text">
-                    {selectedWord.englishMeaning || "Detailed entry available on Rekhta or Google Search."}
-                  </p>
+                  <>
+                    <Search size={14} />
+                    <span>{searchScope === 'library' ? 'Search Entire Library' : `Search Volume ${selectedVolume || 1}`}</span>
+                  </>
                 )}
+              </button>
+            </form>
+
+            {/* Error Message */}
+            {searchError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
+                <Info size={14} className="shrink-0 mt-0.5" />
+                <span>{searchError}</span>
               </div>
+            )}
 
-              {/* External Links */}
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href={selectedWord.rekhtaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-amber-500/40 hover:bg-amber-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
-                >
-                  <Globe size={13} className="text-amber-400" />
-                  <span>Rekhta</span>
-                  <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
-                </a>
-
-                <a
-                  href={selectedWord.googleUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl glass border border-white/10 bg-white/5 hover:border-blue-500/40 hover:bg-blue-500/10 text-[var(--foreground)] transition-all text-xs font-bold group"
-                >
-                  <Search size={13} className="text-blue-400" />
-                  <span>Google</span>
-                  <ExternalLink size={10} className="opacity-40 group-hover:opacity-100" />
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* ── Page Context & Analysis Content ── */}
-          {aiData ? (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* MurabbiAI Context & Synopsis */}
-              {aiData.summary && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
-                      <BookOpen size={12} /> MurabbiAI Synopsis & Context
-                    </span>
-                    <span className="text-[9px] font-mono text-[var(--text-dim)]">
-                      Vol {selectedVolume || 1} · P.{currentPage?.page_num || (currentPageIndex + 1)}
-                    </span>
-                  </div>
-                  <div className="p-4 rounded-2xl glass border border-white/10 bg-white/5 text-xs text-[var(--foreground)] leading-relaxed select-text space-y-3">
-                    <p>{aiData.summary}</p>
-
-                    {aiData.theologicalInsight && (
-                      <div className="pt-2.5 mt-2.5 border-t border-white/10 text-[11px] text-[var(--foreground)] bg-[var(--accent-soft)] p-3 rounded-xl border border-[var(--accent-main)]/20">
-                        <div className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[9px] text-[var(--accent-main)] mb-1">
-                          <Info size={11} /> Theological Logic & Murabbi Takeaway
-                        </div>
-                        <p className="opacity-90 leading-relaxed font-medium">
-                          {aiData.theologicalInsight}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Themes */}
-              {Array.isArray(aiData.themes) && aiData.themes.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)]">
-                    Central Themes
+            {/* Search Summary & Keyword Chips */}
+            {hasSearched && !isSearching && (
+              <div className="space-y-2 border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-[var(--foreground)]">
+                    {searchTotalMatches === 0
+                      ? 'No matches found'
+                      : `${searchTotalMatches} match${searchTotalMatches === 1 ? '' : 'es'} found`}
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {aiData.themes.map((theme, idx) => (
-                      <span
-                        key={idx}
-                        className="text-[10px] font-medium px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-[var(--accent-main)]"
-                      >
-                        {theme}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Identified Classical Terms on this Page */}
-              {Array.isArray(aiData.hardWords) && aiData.hardWords.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] flex items-center justify-between">
-                    <span>Key Terms Identified</span>
-                    <span className="font-mono text-[9px] text-[var(--accent-main)]">
-                      {aiData.hardWords.length} terms
-                    </span>
+                  <span className="text-[10px] text-[var(--text-dim)] font-mono">
+                    {searchScope === 'library' ? 'Across 23 Volumes' : `In Volume ${selectedVolume || 1}`}
                   </span>
+                </div>
 
-                  <div className="space-y-1.5">
-                    {aiData.hardWords.map((item, idx) => (
+                {/* Expanded Search Terms / Chips */}
+                {activeSearchTerms.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[9px] font-mono text-[var(--text-dim)] uppercase">Terms:</span>
+                    {activeSearchTerms.map((term, tIdx) => (
                       <button
-                        key={idx}
-                        onClick={() => handleSelectWord(item.word)}
-                        className="w-full p-2.5 rounded-xl glass border border-white/5 bg-white/5 hover:border-[var(--accent-main)]/30 hover:bg-white/10 transition-all flex items-center justify-between text-left group"
+                        key={tIdx}
+                        onClick={() => setHighlightTerms([term])}
+                        className={clsx(
+                          "px-2 py-0.5 rounded text-[11px] font-serif font-bold transition-all",
+                          highlightTerms.includes(term)
+                            ? "bg-amber-400/25 border border-amber-400/50 text-amber-300"
+                            : "bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white"
+                        )}
+                        dir="rtl"
+                        title="Click to highlight on screen"
                       >
-                        <div className="flex-1 min-w-0 pr-2">
-                          <p className="text-[11px] text-[var(--text-muted)] group-hover:text-[var(--foreground)] truncate">
-                            {item.meaning}
-                          </p>
-                          {item.urduMeaning && (
-                            <p className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
-                              {item.urduMeaning}
-                            </p>
-                          )}
-                        </div>
-                        <span className="font-serif font-bold text-sm text-[var(--accent-main)] shrink-0" dir="rtl">
-                          {item.word}
-                        </span>
+                        {term}
                       </button>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Search Results List */}
+            <div className="space-y-2.5">
+              {searchResults.map((res, rIdx) => {
+                const isCurrentPage = (selectedVolume === res.volume) && 
+                  (currentPage?.page_num === res.pageNum);
+
+                return (
+                  <button
+                    key={rIdx}
+                    onClick={() => handleSelectSearchResult(res)}
+                    className={clsx(
+                      "w-full p-3 rounded-xl glass border transition-all text-left group flex flex-col gap-2 cursor-pointer",
+                      isCurrentPage
+                        ? "bg-amber-500/10 border-amber-400/60 shadow-md ring-1 ring-amber-400/30"
+                        : "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10"
+                    )}
+                  >
+                    {/* Card Header: Book title, Volume, and Page pill */}
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-white group-hover:text-[var(--accent-main)] truncate">
+                          {res.bookTitle}
+                        </span>
+                        <span className="text-[10px] font-serif text-[var(--text-dim)] text-right" dir="rtl">
+                          {res.bookUrduTitle}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-[var(--text-muted)]">
+                          Vol {res.volume}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/20">
+                          P. {res.pageNum}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Excerpt Snippet with Matched Keyword */}
+                    <div 
+                      className="text-xs text-[var(--foreground)] leading-relaxed font-serif text-justify border-t border-white/5 pt-1.5 w-full select-text"
+                      dir="rtl"
+                    >
+                      <span className="text-[var(--text-dim)]">{res.snippetBefore}</span>
+                      <span className="bg-amber-300 text-amber-950 px-1 py-0.2 mx-0.5 rounded font-black shadow-sm">
+                        {res.matchedSlice}
+                      </span>
+                      <span className="text-[var(--text-dim)]">{res.snippetAfter}</span>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* Initial empty state */}
+              {!hasSearched && !isSearching && (
+                <div className="flex flex-col items-center justify-center min-h-[220px] text-center p-5 border border-dashed border-white/10 rounded-2xl opacity-70">
+                  <Search size={28} className="mb-2.5 text-[var(--accent-main)]" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
+                    Book & Library Search
+                  </h3>
+                  <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[220px]">
+                    Search any word or theological topic in <span className="text-white font-bold">Urdu, English, or Arabic</span>.
+                    Toggle to search the current volume or all 23 volumes.
+                  </p>
                 </div>
               )}
             </div>
-          ) : (
-            !selectedWord && (
-              <div className="flex flex-col items-center justify-center min-h-[260px] text-center p-5 border border-dashed border-white/10 rounded-2xl opacity-70">
-                <AIBlobIcon size={32} active={true} className="mb-3" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--foreground)] mb-1">
-                  MurrabiAI Context Engine
-                </h3>
-                <p className="text-[11px] text-[var(--text-muted)] leading-relaxed max-w-[220px]">
-                  Click <span className="font-bold text-white">"Analyze Page & Context"</span> to generate an English synthesis of the arguments and key concepts, or click any word to inspect its definition.
-                </p>
-              </div>
-            )
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
