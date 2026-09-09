@@ -119,6 +119,7 @@ export default function RuhaniKhazainReader() {
   const [selectedVolume, setSelectedVolume] = useState<number | null>(null);
   const [pages, setPages] = useState<any[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
+  const [pageInput, setPageInput] = useState<string>('1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -345,6 +346,42 @@ export default function RuhaniKhazainReader() {
     observer.observe(container);
     return () => observer.disconnect();
   }, [fitTextToPage]);
+
+  // Sync pageInput with current page
+  useEffect(() => {
+    if (currentPage) {
+      setPageInput(String(currentPage.page_num || (currentPageIndex + 1)));
+    }
+  }, [currentPage?.page_num, currentPageIndex]);
+
+  // Jump to specific page number typed by user
+  const handleJumpToPage = useCallback((customVal?: string) => {
+    const rawVal = (customVal !== undefined ? customVal : pageInput).trim();
+    const urduArabicMap: Record<string, string> = {
+      '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
+      '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+    };
+    const cleaned = rawVal.replace(/[۰-۹٠-٩]/g, d => urduArabicMap[d] || d).replace(/[^0-9]/g, '');
+    const num = parseInt(cleaned, 10);
+
+    if (isNaN(num) || pages.length === 0) {
+      if (currentPage) {
+        setPageInput(String(currentPage.page_num || (currentPageIndex + 1)));
+      }
+      return;
+    }
+
+    // Try finding by page_num
+    let targetIdx = pages.findIndex(p => p.page_num === num);
+    if (targetIdx === -1) {
+      // Fallback: 1-indexed clamped index
+      targetIdx = Math.max(0, Math.min(pages.length - 1, num - 1));
+    }
+
+    setCurrentPageIndex(targetIdx);
+    const targetPage = pages[targetIdx];
+    setPageInput(String(targetPage?.page_num || (targetIdx + 1)));
+  }, [pageInput, pages, currentPage, currentPageIndex]);
 
   // Select a word to inspect in the right-hand panel & fetch live definition if needed
   const handleSelectWord = useCallback(async (rawWord: string) => {
@@ -1073,33 +1110,49 @@ export default function RuhaniKhazainReader() {
         {/* ── FLOATING BOTTOM-CENTER PAGE CONTROLS ── */}
         {currentPage && !loading && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center justify-center">
-            <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl glass bg-black/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:scale-[1.02]">
+            <div className="pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-2xl glass bg-black/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all">
               {/* Previous Page Button */}
               <button 
                 onClick={() => setCurrentPageIndex(Math.max(0, currentPageIndex - 1))}
                 disabled={currentPageIndex === 0 || loading}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
                 title="Previous Page"
+                aria-label="Previous Page"
               >
                 <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
-                <span className="text-xs font-bold uppercase tracking-wider">Prev</span>
               </button>
 
-              {/* Page Indicator Badge */}
-              <div className="px-3 py-1 text-xs font-mono font-black text-white flex items-center gap-1.5 border-x border-white/10">
-                <span className="text-[var(--accent-main)]">{currentPage?.page_num || (currentPageIndex + 1)}</span>
-                <span className="opacity-30">/</span>
-                <span className="opacity-60">{pages.length || "..."}</span>
+              {/* Page Indicator & Direct Page Input */}
+              <div className="px-2 py-0.5 text-xs font-mono font-black text-white flex items-center gap-1.5 border-x border-white/10">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleJumpToPage();
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  onBlur={() => handleJumpToPage()}
+                  onFocus={(e) => e.target.select()}
+                  className="w-12 text-center py-0.5 px-1 rounded-lg bg-white/10 text-[var(--accent-main)] font-mono font-black text-xs border border-white/15 focus:border-[var(--accent-main)] focus:bg-black/40 focus:ring-1 focus:ring-[var(--accent-main)] focus:outline-none transition-all cursor-pointer select-all"
+                  title="Click to type page number and press Enter"
+                  aria-label="Current Page Number"
+                />
+                <span className="opacity-30 select-none">/</span>
+                <span className="opacity-60 select-none">{pages.length || "..."}</span>
               </div>
 
               {/* Next Page Button */}
               <button 
                 onClick={() => setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1))}
                 disabled={currentPageIndex === pages.length - 1 || loading}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
                 title="Next Page"
+                aria-label="Next Page"
               >
-                <span className="text-xs font-bold uppercase tracking-wider">Next</span>
                 <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </button>
             </div>
