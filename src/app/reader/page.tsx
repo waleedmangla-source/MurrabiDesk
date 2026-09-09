@@ -383,10 +383,21 @@ export default function RuhaniKhazainReader() {
     setPageInput(String(targetPage?.page_num || (targetIdx + 1)));
   }, [pageInput, pages, currentPage, currentPageIndex]);
 
+  // Reset selected word when navigating pages or volumes so no word is preselected on the new page
+  useEffect(() => {
+    setSelectedWord(null);
+  }, [currentPageIndex, selectedVolume]);
+
   // Select a word to inspect in the right-hand panel & fetch live definition if needed
   const handleSelectWord = useCallback(async (rawWord: string) => {
     const word = rawWord.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '').trim();
     if (!word) return;
+
+    // Toggle off if clicking the already selected word
+    if (selectedWord?.word === word) {
+      setSelectedWord(null);
+      return;
+    }
 
     const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(word)}`;
     const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(word + ' urdu meaning in english')}`;
@@ -430,7 +441,7 @@ export default function RuhaniKhazainReader() {
         setSelectedWord(prev => prev ? { ...prev, loading: false } : null);
       }
     }
-  }, [dictionary]);
+  }, [dictionary, selectedWord]);
 
   // Analyze current page with MurrabiAI
   const handleAnalyzePage = useCallback(async () => {
@@ -613,14 +624,14 @@ export default function RuhaniKhazainReader() {
               className={clsx(
                 "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
                 isSelected
-                  ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
-                  : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
+                  ? "font-bold underline underline-offset-4 decoration-2 decoration-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)] ring-1 ring-[var(--accent-main)]/40"
+                  : "text-black font-normal hover:bg-zinc-100/80 transition-colors"
               )}
             >
               {token}
               {/* Tooltip Bubble */}
               <span
-                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
+                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none font-normal"
                 dir="ltr"
               >
                 <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
@@ -680,8 +691,10 @@ export default function RuhaniKhazainReader() {
             key={`${sIdx}-${tIdx}`}
             onClick={() => handleSelectWord(clean)}
             className={clsx(
-              "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
-              isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
+              "cursor-pointer rounded px-0.5 transition-colors select-text text-black",
+              isSelected
+                ? "font-bold underline underline-offset-4 decoration-2 decoration-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)] ring-1 ring-[var(--accent-main)]/40"
+                : "font-normal hover:bg-zinc-100/80"
             )}
           >
             {token}
