@@ -146,22 +146,24 @@ export default function BetaToolsPage() {
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       
-      // Select a better voice
+      // Select a deeper, masculine voice
       const voices = window.speechSynthesis.getVoices();
-      // Try to find a premium/natural sounding English voice
       const preferredVoice = voices.find(v => 
-        v.name.includes('Google US English') || 
-        v.name.includes('Samantha') || 
-        v.name.includes('Daniel') || 
-        (v.lang.startsWith('en-') && !v.localService)
-      );
+        v.name.includes('Daniel') ||
+        v.name.includes('Oliver') ||
+        v.name.includes('Alex') ||
+        v.name.includes('Guy') ||
+        v.name.includes('George') ||
+        v.name.includes('David') ||
+        (v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+      ) || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Samantha') && !v.name.includes('Victoria'));
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
       
-      utterance.rate = 1.05;
-      utterance.pitch = 1.0;
+      utterance.rate = 1.0;
+      utterance.pitch = 0.88; // Lower pitch for a deeper, masculine tone
       window.speechSynthesis.speak(utterance);
     }
   };

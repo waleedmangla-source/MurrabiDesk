@@ -26,6 +26,11 @@ import {
   normalizeKhazainText, 
   normalizeWithIndexMap 
 } from '@/lib/khazain-data';
+import { 
+  parsePageToBlocks, 
+  PageBlock, 
+  Couplet 
+} from '@/lib/poetry-parser';
 
 interface SelectedWordInfo {
   word: string;
@@ -467,144 +472,229 @@ export default function RuhaniKhazainReader() {
     }
   };
 
-  // Helper to render text with search highlights and automatic vocabulary tooltips
+  // Helper to render inline words/tokens with search highlights and vocabulary tooltips
+  const renderLineContent = (content: string) => {
+    if (!content) return null;
+
+    const segments = highlightTerms.length > 0
+      ? highlightSegments(content, highlightTerms)
+      : [{ text: content, isMatch: false }];
+
+    return segments.map((seg, sIdx) => {
+      if (seg.isMatch) {
+        return (
+          <mark
+            key={sIdx}
+            onClick={() => {
+              handleSelectWord(seg.text.trim());
+              setActiveRightTab('ai');
+            }}
+            className="bg-amber-300 text-amber-950 font-black px-1.5 py-0.5 rounded shadow-sm ring-2 ring-amber-400/80 cursor-pointer select-text mx-0.5 transition-all inline hover:ring-amber-500 hover:bg-amber-400"
+            title="Click to inspect this word in MurabbiAI"
+          >
+            {seg.text}
+          </mark>
+        );
+      }
+
+      // Non-match segment: tokenize for vocabulary tooltips & click-to-inspect
+      const tokens = seg.text.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
+
+      return tokens.map((token, tIdx) => {
+        const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
+        if (!clean) {
+          return <React.Fragment key={`${sIdx}-${tIdx}`}>{token}</React.Fragment>;
+        }
+
+        const dictEntry = dictionary[clean];
+        const isSelected = selectedWord?.word === clean;
+
+        // Word is in pre-identified vocabulary dictionary
+        if (dictEntry) {
+          const meaning = dictEntry.meaning;
+          const translit = dictEntry.translit;
+          const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(clean)}`;
+          const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(clean + ' urdu meaning in english')}`;
+
+          return (
+            <span
+              key={`${sIdx}-${tIdx}`}
+              onClick={() => handleSelectWord(clean)}
+              className={clsx(
+                "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
+                isSelected
+                  ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
+                  : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
+              )}
+            >
+              {token}
+              {/* Tooltip Bubble */}
+              <span
+                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
+                dir="ltr"
+              >
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-serif font-bold text-lg text-zinc-900" dir="rtl">
+                      {clean}
+                    </span>
+                    {translit && (
+                      <span className="text-[11px] font-mono italic text-zinc-500">
+                        ({translit})
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">
+                    Vocabulary
+                  </span>
+                </div>
+
+                <p className="text-xs text-zinc-700 font-medium leading-relaxed mb-2.5">
+                  {meaning}
+                </p>
+
+                <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-100 text-[10px] font-bold">
+                  <a
+                    href={rekhtaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-colors"
+                    title="Open entry in Rekhta Dictionary"
+                  >
+                    <Globe size={11} />
+                    <span>Rekhta</span>
+                    <ExternalLink size={9} />
+                  </a>
+                  <a
+                    href={googleUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200/60 transition-colors"
+                    title="Search meaning on Google"
+                  >
+                    <Search size={11} />
+                    <span>Google</span>
+                    <ExternalLink size={9} />
+                  </a>
+                </div>
+              </span>
+            </span>
+          );
+        }
+
+        // Regular word: clickable to inspect in the right-hand panel
+        return (
+          <span
+            key={`${sIdx}-${tIdx}`}
+            onClick={() => handleSelectWord(clean)}
+            className={clsx(
+              "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
+              isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
+            )}
+          >
+            {token}
+          </span>
+        );
+      });
+    });
+  };
+
+  // Helper to render text structured into prose paragraphs and authentic Urdu literature couplets
   const renderText = (text: string) => {
     if (!text) return null;
 
-    const paragraphs = text.split('\n');
+    const blocks = parsePageToBlocks(text);
 
     return (
       <>
-        {paragraphs.map((para, pIdx) => {
-          if (!para.trim()) {
-            return <div key={pIdx} className="h-2" />;
+        {blocks.map((block, bIdx) => {
+          if (block.type === 'empty') {
+            return <div key={bIdx} className="h-1.5 sm:h-2" />;
           }
 
-          // If search highlights are active, segment paragraph into matches and regular text
-          const segments = highlightTerms.length > 0
-            ? highlightSegments(para, highlightTerms)
-            : [{ text: para, isMatch: false }];
+          if (block.type === 'prose') {
+            return (
+              <p key={bIdx} className="mb-1 sm:mb-1.5 leading-[1.82] text-justify">
+                {renderLineContent(block.text)}
+              </p>
+            );
+          }
 
-          return (
-            <p key={pIdx} className="mb-1 sm:mb-1.5 leading-[1.82] text-justify">
-              {segments.map((seg, sIdx) => {
-                if (seg.isMatch) {
-                  return (
-                    <mark
-                      key={sIdx}
-                      onClick={() => handleSelectWord(seg.text.trim())}
-                      className="bg-amber-300 text-amber-950 font-black px-1.5 py-0.5 rounded shadow-sm ring-2 ring-amber-400/80 cursor-pointer select-text mx-0.5 transition-all inline hover:ring-amber-500 hover:bg-amber-400"
-                      title="Click to inspect this word in MurabbiAI"
-                    >
-                      {seg.text}
-                    </mark>
-                  );
-                }
-
-                // Non-match segment: tokenize for vocabulary tooltips & click-to-inspect
-                const tokens = seg.text.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
-
-                return tokens.map((token, tIdx) => {
-                  const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
-                  if (!clean) {
-                    return <React.Fragment key={`${sIdx}-${tIdx}`}>{token}</React.Fragment>;
-                  }
-
-                  const dictEntry = dictionary[clean];
-                  const isSelected = selectedWord?.word === clean;
-
-                  // Word is in pre-identified vocabulary dictionary
-                  if (dictEntry) {
-                    const meaning = dictEntry.meaning;
-                    const translit = dictEntry.translit;
-                    const rekhtaUrl = `https://www.rekhtadictionary.com/search?keyword=${encodeURIComponent(clean)}`;
-                    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(clean + ' urdu meaning in english')}`;
-
+          if (block.type === 'poetry') {
+            return (
+              <div 
+                key={bIdx} 
+                className={clsx(
+                  "w-full flex flex-col items-center justify-center select-text",
+                  block.isEmbedded 
+                    ? "my-3 sm:my-4 py-1 px-2" 
+                    : "my-2 sm:my-3 px-1"
+                )}
+              >
+                {block.couplets.map((couplet, cIdx) => {
+                  // Side-by-side couplet (when original line had spaced misras)
+                  if (couplet.isSideBySide) {
                     return (
-                      <span
-                        key={`${sIdx}-${tIdx}`}
-                        onClick={() => handleSelectWord(clean)}
-                        className={clsx(
-                          "group relative inline cursor-pointer px-0.5 rounded transition-all select-text",
-                          isSelected
-                            ? "bg-[var(--accent-soft)] text-[var(--accent-main)] font-black ring-2 ring-[var(--accent-main)]/50"
-                            : "text-black font-bold border-b border-indigo-500/70 hover:bg-indigo-50/80 transition-colors"
-                        )}
+                      <div
+                        key={cIdx}
+                        className="w-full max-w-[94%] sm:max-w-[88%] mx-auto my-1.5 sm:my-2 flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 text-center"
                       >
-                        {token}
-                        {/* White Tooltip Bubble with English definition & Rekhta/Google links */}
-                        <span
-                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 md:w-72 bg-white text-zinc-900 border border-zinc-200 shadow-2xl p-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 text-left font-sans cursor-default pointer-events-none group-hover:pointer-events-auto select-none"
-                          dir="ltr"
-                        >
-                          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-100">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-serif font-bold text-lg text-zinc-900" dir="rtl">
-                                {clean}
-                              </span>
-                              {translit && (
-                                <span className="text-[11px] font-mono italic text-zinc-500">
-                                  ({translit})
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">
-                              Vocabulary
-                            </span>
-                          </div>
+                        {/* First Misra (Right in RTL) */}
+                        <div className="flex-1 w-full text-center font-serif leading-[2] tracking-normal text-black font-medium">
+                          {renderLineContent(couplet.misra1)}
+                        </div>
 
-                          <p className="text-xs text-zinc-700 font-medium leading-relaxed mb-2.5">
-                            {meaning}
-                          </p>
+                        {/* Classical ornament */}
+                        <div className="shrink-0 flex items-center justify-center opacity-40 select-none text-[10px] text-zinc-600 px-1">
+                          <span>✤</span>
+                        </div>
 
-                          <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-100 text-[10px] font-bold">
-                            <a
-                              href={rekhtaUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex items-center gap-1 px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-colors"
-                              title="Open entry in Rekhta Dictionary"
-                            >
-                              <Globe size={11} />
-                              <span>Rekhta</span>
-                              <ExternalLink size={9} />
-                            </a>
-                            <a
-                              href={googleUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200/60 transition-colors"
-                              title="Search meaning on Google"
-                            >
-                              <Search size={11} />
-                              <span>Google</span>
-                              <ExternalLink size={9} />
-                            </a>
+                        {/* Second Misra (Left in RTL) */}
+                        {couplet.misra2 && (
+                          <div className="flex-1 w-full text-center font-serif leading-[2] tracking-normal text-black font-medium">
+                            {renderLineContent(couplet.misra2)}
                           </div>
-                        </span>
-                      </span>
+                        )}
+                      </div>
                     );
                   }
 
-                  // Regular word: also clickable to inspect in the right-hand panel
+                  // Classic Stacked Urdu Literature Couplet (شعر / بیت)
                   return (
-                    <span
-                      key={`${sIdx}-${tIdx}`}
-                      onClick={() => handleSelectWord(clean)}
-                      className={clsx(
-                        "cursor-pointer hover:bg-zinc-100 rounded px-0.5 transition-colors select-text text-black",
-                        isSelected && "bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold ring-2 ring-[var(--accent-main)]/50"
-                      )}
+                    <div
+                      key={cIdx}
+                      className="w-full max-w-[92%] sm:max-w-[85%] mx-auto my-1 sm:my-1.5 flex flex-col items-center justify-center text-center group/couplet"
                     >
-                      {token}
-                    </span>
+                      {/* Misra 1 (مصرعِ اوّل) */}
+                      <div className="w-full text-center font-serif leading-[2] tracking-normal text-black font-medium">
+                        {renderLineContent(couplet.misra1)}
+                      </div>
+
+                      {/* Misra 2 (مصرعِ ثانی) */}
+                      {couplet.misra2 && (
+                        <div className="w-full text-center font-serif leading-[2] tracking-normal text-black font-medium mt-0.5 sm:mt-1">
+                          {renderLineContent(couplet.misra2)}
+                        </div>
+                      )}
+
+                      {/* Classical Stanza Separator between couplets */}
+                      {cIdx < block.couplets.length - 1 && (
+                        <div className="flex items-center justify-center gap-2 my-1.5 opacity-30 select-none text-[9px] text-zinc-500">
+                          <span className="w-3 sm:w-5 h-px bg-zinc-400 inline-block" />
+                          <span>❦</span>
+                          <span className="w-3 sm:w-5 h-px bg-zinc-400 inline-block" />
+                        </div>
+                      )}
+                    </div>
                   );
-                });
-              })}
-            </p>
-          );
+                })}
+              </div>
+            );
+          }
+
+          return null;
         })}
       </>
     );
@@ -846,12 +936,10 @@ export default function RuhaniKhazainReader() {
                     >
                       <div 
                         ref={textContentRef}
-                        className="text-justify text-black select-text w-full flex-1 flex flex-col justify-start" 
+                        className="text-black select-text w-full flex-1 flex flex-col justify-start" 
                         dir="rtl"
                         style={{ 
                           fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
-                          textAlignLast: 'right',
-                          lineHeight: 1.82,
                           fontSize: `${fontSize}px`
                         }}
                       >

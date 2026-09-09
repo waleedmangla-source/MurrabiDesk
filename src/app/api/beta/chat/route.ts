@@ -84,7 +84,14 @@ Your purpose is to engage in natural, spoken conversations.
         const ttsRequestBody = {
           contents: [{ parts: [{ text: `Read the following text naturally out loud: ${responseText}` }] }],
           generationConfig: {
-            responseModalities: ["AUDIO"]
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: "Fenrir"
+                }
+              }
+            }
           }
         };
 
