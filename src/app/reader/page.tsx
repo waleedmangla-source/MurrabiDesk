@@ -417,7 +417,7 @@ export default function RuhaniKhazainReader() {
           const tokens = para.split(/(\s+|[۔،؛؟!:\(\)\[\]"'\-_«»]+)/);
 
           return (
-            <p key={pIdx} className="mb-1 sm:mb-1.5 indent-6 sm:indent-8 leading-[1.82] text-justify">
+            <p key={pIdx} className="mb-1 sm:mb-1.5 leading-[1.82] text-justify">
               {tokens.map((token, tIdx) => {
                 const clean = token.trim().replace(/[۔،؛؟!:\(\)\[\]"'\-_«»]/g, '');
                 if (!clean) {
