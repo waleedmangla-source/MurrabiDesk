@@ -12,7 +12,8 @@ const config: Config = {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         arabic: ["Manzoor Naskh", "Inter", "sans-serif"],
-        urdu: ["Noto Nastaliq Urdu", "Inter", "sans-serif"],
+        urdu: ["'Jameel Noori Nastaleeq Regular'", "'Jameel Noori Nastaleeq'", "'Noto Nastaliq Urdu'", "serif"],
+        nastaleeq: ["'Jameel Noori Nastaleeq Regular'", "'Jameel Noori Nastaleeq'", "'Noto Nastaliq Urdu'", "serif"],
       },
       colors: {
         teal: {

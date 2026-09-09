@@ -26,8 +26,14 @@
 @tailwind components;
 @tailwind utilities;
 
-.font-urdu, .font-quran, .font-arabic {
-  font-family: 'Manzoor Naskh Al-Islam', 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
+.font-quran, .font-arabic {
+  font-family: 'Manzoor Naskh Al-Islam', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
+  line-height: 2.2;
+}
+
+.font-urdu, .font-nastaleeq {
+  font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
+  font-size: 16px;
   line-height: 2.2;
 }
 
