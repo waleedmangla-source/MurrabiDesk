@@ -761,6 +761,13 @@ export default function LettersPage() {
           .print-hidden, [class*="print:hidden"] {
             display: none !important;
           }
+          .footer-signoff-row {
+            direction: ltr !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-end !important;
+            width: 100% !important;
+          }
         </style>
       </head>
       <body>
@@ -822,21 +829,21 @@ export default function LettersPage() {
           ${computedUrduBody}
         </div>
         
-        <div style="font-size: 16px; line-height: 1.8; margin-top: 30px; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+        <div style="font-size: 16px; line-height: 1.8; margin-top: 30px; font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e5e7eb; padding-top: 20px; direction: ltr;">
           <div>
+            ${
+              activeCategoryId === "huzoor" && passportPhoto
+                ? `<img src="${passportPhoto}" alt="Passport Photo" style="width: 100px; height: 125px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 4px;" />`
+                : ""
+            }
+          </div>
+          <div style="direction: rtl; text-align: right;">
             <div>والسلام</div>
             <div>خاکسار</div>
             <div style="font-weight: bold; font-size: 16px;">${name}</div>
             <div style="font-size: 13px; font-family: sans-serif;">${code}</div>
             <div style="font-size: 16px;">${designation}</div>
           </div>
-          ${
-            activeCategoryId === "huzoor" && passportPhoto
-              ? `<div>
-                  <img src="${passportPhoto}" alt="Passport Photo" style="width: 100px; height: 125px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 4px;" />
-                 </div>`
-              : ""
-          }
         </div>
       </div>
     `;
@@ -980,21 +987,21 @@ export default function LettersPage() {
               <div class="greeting">السلام علیکم ورحمۃ اللہ وبرکاته</div>
               <div class="body-text">${computedUrduBody}</div>
             </div>
-            <div class="footer">
+            <div class="footer" style="direction: ltr;">
               <div>
+                ${
+                  activeCategoryId === "huzoor" && passportPhoto
+                    ? `<img src="${passportPhoto}" alt="Passport Photo" class="passport-photo" />`
+                    : ""
+                }
+              </div>
+              <div style="direction: rtl; text-align: right;">
                 <div>والسلام</div>
                 <div>خاکسار</div>
                 <div class="sign-title">${name}</div>
                 <div class="meta-text">${code}</div>
                 <div>${designation}</div>
               </div>
-              ${
-                activeCategoryId === "huzoor" && passportPhoto
-                  ? `<div>
-                      <img src="${passportPhoto}" alt="Passport Photo" class="passport-photo" />
-                     </div>`
-                  : ""
-              }
             </div>
           </div>
         </body>
@@ -1771,17 +1778,14 @@ export default function LettersPage() {
                   </div>
 
                   {/* Sign-off & Bottom Left Passport Photo */}
-                  <div className="border-t pt-4 border-gray-100 flex items-end justify-between">
-                    <div className="text-[16px] space-y-1 text-gray-800 font-urdu">
-                      <div>والسلام</div>
-                      <div>خاکسار</div>
-                      <div className="font-bold text-[16px] text-gray-950 font-urdu">{name}</div>
-                      <div className="text-xs text-gray-600 font-sans">{code}</div>
-                      <div className="text-[16px] text-gray-600 font-urdu">{designation}</div>
-                    </div>
-
-                    {activeCategoryId === "huzoor" && (
-                      <div className="print:hidden">
+                  <div
+                    className="border-t pt-4 border-gray-100 flex items-end justify-between w-full footer-signoff-row"
+                    dir="ltr"
+                    style={{ direction: "ltr" }}
+                  >
+                    {/* Left: Passport photo (Huzoor letters only) */}
+                    {activeCategoryId === "huzoor" ? (
+                      <div className="print:hidden shrink-0">
                         {passportPhoto ? (
                           <div className="relative group">
                             <img
@@ -1828,7 +1832,22 @@ export default function LettersPage() {
                           </label>
                         )}
                       </div>
+                    ) : (
+                      <div />
                     )}
+
+                    {/* Right: Sign-off block */}
+                    <div
+                      className="text-[16px] space-y-1 text-gray-800 font-urdu text-right ml-auto"
+                      dir="rtl"
+                      style={{ direction: "rtl", textAlign: "right" }}
+                    >
+                      <div>والسلام</div>
+                      <div>خاکسار</div>
+                      <div className="font-bold text-[16px] text-gray-950 font-urdu">{name}</div>
+                      <div className="text-xs text-gray-600 font-sans">{code}</div>
+                      <div className="text-[16px] text-gray-600 font-urdu">{designation}</div>
+                    </div>
                   </div>
                 </div>
 
@@ -1857,23 +1876,34 @@ export default function LettersPage() {
                       {computedUrduBody}
                     </div>
                   </div>
-                  <div className="text-[16px] space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end">
+                  <div
+                    className="text-[16px] space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end w-full footer-signoff-row"
+                    dir="ltr"
+                    style={{ direction: "ltr" }}
+                  >
+                    {/* Left: Passport photo (Huzoor letters only) */}
                     <div>
+                      {activeCategoryId === "huzoor" && passportPhoto ? (
+                        <img
+                          src={passportPhoto}
+                          alt="Passport Photo"
+                          className="w-24 h-32 object-cover rounded-sm border border-gray-400"
+                        />
+                      ) : null}
+                    </div>
+
+                    {/* Right: Sign-off block */}
+                    <div
+                      className="text-right ml-auto font-urdu"
+                      dir="rtl"
+                      style={{ direction: "rtl", textAlign: "right" }}
+                    >
                       <div>والسلام</div>
                       <div>خاکسار</div>
                       <div className="font-bold text-[16px] font-urdu">{name}</div>
                       <div className="text-sm text-gray-700 font-sans">{code}</div>
                       <div className="text-[16px] text-gray-700 font-urdu">{designation}</div>
                     </div>
-                    {activeCategoryId === "huzoor" && passportPhoto && (
-                      <div>
-                        <img
-                          src={passportPhoto}
-                          alt="Passport Photo"
-                          className="w-24 h-32 object-cover rounded-sm border border-gray-400"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1918,17 +1948,14 @@ export default function LettersPage() {
                 </div>
 
                 {/* Footer Signoff & Bottom Left Passport Photo */}
-                <div className="text-[16px] space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end">
-                  <div>
-                    <div>والسلام</div>
-                    <div>خاکسار</div>
-                    <div className="font-bold text-[16px] font-urdu">{name}</div>
-                    <div className="text-sm text-gray-700 font-sans">{code}</div>
-                    <div className="text-[16px] text-gray-700 font-urdu">{designation}</div>
-                  </div>
-
-                  {activeCategoryId === "huzoor" && (
-                    <div>
+                <div
+                  className="text-[16px] space-y-1.5 text-gray-900 border-t pt-6 border-gray-200 font-urdu flex justify-between items-end w-full footer-signoff-row"
+                  dir="ltr"
+                  style={{ direction: "ltr" }}
+                >
+                  {/* Left: Passport photo (Huzoor letters only) */}
+                  {activeCategoryId === "huzoor" ? (
+                    <div className="shrink-0">
                       {passportPhoto ? (
                         <div className="relative group">
                           <img
@@ -1975,7 +2002,22 @@ export default function LettersPage() {
                         </label>
                       )}
                     </div>
+                  ) : (
+                    <div />
                   )}
+
+                  {/* Right: Sign-off block */}
+                  <div
+                    className="text-right ml-auto font-urdu"
+                    dir="rtl"
+                    style={{ direction: "rtl", textAlign: "right" }}
+                  >
+                    <div>والسلام</div>
+                    <div>خاکسار</div>
+                    <div className="font-bold text-[16px] font-urdu">{name}</div>
+                    <div className="text-sm text-gray-700 font-sans">{code}</div>
+                    <div className="text-[16px] text-gray-700 font-urdu">{designation}</div>
+                  </div>
                 </div>
               </div>
             </div>
