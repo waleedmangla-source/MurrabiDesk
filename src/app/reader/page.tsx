@@ -855,11 +855,6 @@ export default function RuhaniKhazainReader() {
                   <span className="text-xs font-bold text-[var(--foreground)] truncate">
                     {activeBook ? activeBook.title : `Volume ${selectedVolume || 1}`}
                   </span>
-                  {activeBook && (
-                    <span className="text-[11px] font-serif text-[var(--text-muted)] text-right" dir="rtl">
-                      {activeBook.urduTitle}
-                    </span>
-                  )}
                 </div>
               );
             })()}
@@ -875,14 +870,9 @@ export default function RuhaniKhazainReader() {
                 onClick={() => setIsRuhaniKhazainOpen(!isRuhaniKhazainOpen)}
                 className="w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 border-transparent hover:bg-white/5 cursor-pointer select-none group"
               >
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
-                    Ruhani Khazain
-                  </span>
-                  <span className="text-[10px] font-serif text-[var(--text-dim)] text-left" dir="rtl">
-                    روحانی خزائن
-                  </span>
-                </div>
+                <span className="text-xs font-black uppercase tracking-wider text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
+                  Ruhani Khazain
+                </span>
 
                 <ChevronDown 
                   size={13} 
@@ -962,9 +952,6 @@ export default function RuhaniKhazainReader() {
                                     )}
                                   >
                                     <span className="truncate flex-1 font-medium">{book.title}</span>
-                                    <span className="text-[10px] font-serif text-[var(--text-dim)] group-hover:text-[var(--text-muted)] ml-2 shrink-0" dir="rtl">
-                                      {book.urduTitle}
-                                    </span>
                                   </button>
                                 );
                               })}
