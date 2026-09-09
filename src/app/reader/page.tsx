@@ -970,46 +970,23 @@ export default function RuhaniKhazainReader() {
 
       {/* ── MAIN CONTENT: BOOK READING VIEW ── */}
       <div className="flex-1 flex flex-col h-full min-w-0 bg-black/10 relative overflow-hidden">
-        {/* Top Control Bar (Clean header with volume title & search highlight pill) */}
-        <div className="h-16 border-b border-white/5 px-6 flex items-center justify-between glass bg-black/20 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-75">
-                Current Volume
-              </span>
-              <h2 className="text-sm font-black italic tracking-tight text-[var(--foreground)]">
-                {loading ? "Loading..." : `Volume ${selectedVolume || 1}`}
-              </h2>
-            </div>
+        {/* Floating Search Highlight Pill (only appears when a search highlight is active) */}
+        {highlightTerms.length > 0 && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-2xl glass bg-black/70 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs shadow-lg animate-in fade-in duration-200">
+            <Search size={12} className="text-amber-400" />
+            <span className="text-[10px] font-sans text-amber-300/80">Highlight:</span>
+            <span className="font-serif font-bold text-sm text-amber-200" dir="rtl">
+              {highlightTerms[0]}
+            </span>
+            <button
+              onClick={() => setHighlightTerms([])}
+              className="p-1 rounded hover:bg-white/10 text-amber-400 hover:text-white transition-colors ml-0.5"
+              title="Clear highlight"
+            >
+              <X size={12} />
+            </button>
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Search Highlight Indicator Badge */}
-            {highlightTerms.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs shadow-sm animate-in fade-in duration-200">
-                <Search size={12} className="text-amber-400" />
-                <span className="text-[10px] font-sans text-amber-300/80">Highlight:</span>
-                <span className="font-serif font-bold text-sm text-amber-200" dir="rtl">
-                  {highlightTerms[0]}
-                </span>
-                <button
-                  onClick={() => setHighlightTerms([])}
-                  className="p-1 rounded hover:bg-white/10 text-amber-400 hover:text-white transition-colors ml-0.5"
-                  title="Clear highlight"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            )}
-
-            <div className="px-3 py-1.5 rounded-xl glass border border-white/5 bg-white/5 text-xs font-mono font-bold text-[var(--foreground)] flex items-center gap-1.5">
-              <span>Page</span>
-              <span className="text-[var(--accent-main)]">{currentPage?.page_num || (currentPageIndex + 1)}</span>
-              <span className="opacity-30">/</span>
-              <span className="opacity-60">{pages.length || "..."}</span>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Scrollable Reading Canvas */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 pb-28 flex justify-center">
