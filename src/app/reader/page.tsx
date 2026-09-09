@@ -15,7 +15,8 @@ import {
   Globe, 
   X, 
   Sparkles,
-  Library
+  Library,
+  CheckCircle
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { URDU_STOPWORDS } from '@/lib/urdu-stopwords';
@@ -129,6 +130,34 @@ export default function RuhaniKhazainReader() {
   // Secondary Sidebar Collection Dropdown & Book Search Filter
   const [isRuhaniKhazainOpen, setIsRuhaniKhazainOpen] = useState<boolean>(true);
   const [sidebarBookSearch, setSidebarBookSearch] = useState<string>('');
+
+  // Suggest a Book modal state
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [suggestBookName, setSuggestBookName] = useState('');
+  const [suggestBookUrl, setSuggestBookUrl] = useState('');
+  const [suggestSubmitted, setSuggestSubmitted] = useState(false);
+
+  const handleSuggestBookSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!suggestBookName.trim() || !suggestBookUrl.trim()) return;
+
+    const newSuggestion = {
+      id: Date.now().toString(),
+      bookName: suggestBookName.trim(),
+      bookUrl: suggestBookUrl.trim(),
+      submittedAt: new Date().toISOString(),
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('murabbi_book_suggestions') || '[]');
+      existing.unshift(newSuggestion);
+      localStorage.setItem('murabbi_book_suggestions', JSON.stringify(existing));
+    } catch {
+      // ignore localStorage errors
+    }
+
+    setSuggestSubmitted(true);
+  };
 
   // Filtered volumes and constituent books for the secondary sidebar
   const filteredVolumeData = useMemo(() => {
@@ -974,6 +1003,22 @@ export default function RuhaniKhazainReader() {
             </div>
           </nav>
         </div>
+
+        {/* Suggest a Book Button Pinned to Bottom */}
+        <div className="p-3.5 border-t border-white/5 shrink-0 bg-black/20">
+          <button
+            type="button"
+            onClick={() => {
+              setSuggestSubmitted(false);
+              setSuggestBookName('');
+              setSuggestBookUrl('');
+              setIsSuggestModalOpen(true);
+            }}
+            className="w-full py-2.5 px-3 rounded-xl border border-white/10 glass bg-white/5 hover:bg-white/10 hover:border-white/20 text-xs font-bold text-white transition-all active:scale-[0.98] text-center"
+          >
+            Suggest a Book
+          </button>
+        </div>
       </div>
 
       {/* ── MAIN CONTENT: BOOK READING VIEW ── */}
@@ -1604,6 +1649,103 @@ export default function RuhaniKhazainReader() {
           </div>
         )}
       </div>
+
+      {/* ── Suggest a Book Modal ── */}
+      {isSuggestModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsSuggestModalOpen(false)}
+        >
+          <div 
+            className="w-full max-w-md glass bg-zinc-950/95 border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 relative animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight">Suggest a Book</h3>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  Recommend a book to be added to the Murabbi reader.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSuggestModalOpen(false)}
+                className="p-2 rounded-xl text-[var(--text-muted)] hover:text-white hover:bg-white/10 transition-colors"
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {suggestSubmitted ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shadow-inner">
+                  <CheckCircle size={24} />
+                </div>
+                <h4 className="text-sm font-bold text-white">Suggestion Received!</h4>
+                <p className="text-xs text-[var(--text-muted)] max-w-xs leading-relaxed">
+                  Thank you for suggesting <span className="text-white font-semibold">{suggestBookName}</span>. Your request has been recorded.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsSuggestModalOpen(false)}
+                  className="mt-2 px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-all active:scale-95"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSuggestBookSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[var(--foreground)]">
+                    Book Name <span className="text-rose-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={suggestBookName}
+                    onChange={(e) => setSuggestBookName(e.target.value)}
+                    placeholder="e.g. The Philosophy of the Teachings of Islam"
+                    className="w-full px-3.5 py-2.5 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[var(--foreground)]">
+                    Book URL <span className="text-rose-400">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    value={suggestBookUrl}
+                    onChange={(e) => setSuggestBookUrl(e.target.value)}
+                    placeholder="https://alislam.org/book/..."
+                    className="w-full px-3.5 py-2.5 rounded-xl glass bg-white/5 border border-white/10 text-xs text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/10 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsSuggestModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-xs font-semibold text-[var(--text-muted)] hover:text-white transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!suggestBookName.trim() || !suggestBookUrl.trim()}
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-[var(--accent-main)] to-emerald-600 hover:opacity-90 active:scale-95 text-xs font-bold text-white shadow-md shadow-[var(--accent-main)]/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    Submit Suggestion
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
