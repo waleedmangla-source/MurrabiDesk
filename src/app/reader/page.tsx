@@ -145,6 +145,7 @@ export default function RuhaniKhazainReader() {
   // MurrabiAI Page Context Analysis state
   const [aiData, setAiData] = useState<{
     summary?: string;
+    theologicalInsight?: string;
     themes?: string[];
     hardWords?: { word: string; meaning: string; urduMeaning?: string }[];
   } | null>(null);
@@ -343,10 +344,20 @@ export default function RuhaniKhazainReader() {
     setAiError(null);
 
     try {
+      const currentBooks = KHAZAIN_BOOKS[selectedVolume || 1] || [];
+      const pageNum = currentPage?.page_num || (currentPageIndex + 1);
+      const activeBook = [...currentBooks].reverse().find(b => pageNum >= b.pageStart) || currentBooks[0];
+
       const res = await fetch('/api/beta/khazain-analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: currentPage.text })
+        body: JSON.stringify({
+          text: currentPage.text,
+          volume: selectedVolume || 1,
+          pageNum,
+          bookTitle: activeBook?.title,
+          bookUrduTitle: activeBook?.urduTitle
+        })
       });
 
       if (!res.ok) {
@@ -933,19 +944,30 @@ export default function RuhaniKhazainReader() {
           {/* ── Page Context & Analysis Content ── */}
           {aiData ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* Context Summary */}
+              {/* MurabbiAI Context & Synopsis */}
               {aiData.summary && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] flex items-center gap-1.5">
-                      <BookOpen size={12} /> Page Context & Synopsis
+                      <BookOpen size={12} /> MurabbiAI Synopsis & Context
                     </span>
                     <span className="text-[9px] font-mono text-[var(--text-dim)]">
-                      P.{currentPage?.page_num || (currentPageIndex + 1)}
+                      Vol {selectedVolume || 1} · P.{currentPage?.page_num || (currentPageIndex + 1)}
                     </span>
                   </div>
-                  <div className="p-4 rounded-2xl glass border border-white/10 bg-white/5 text-xs text-[var(--foreground)] leading-relaxed select-text">
-                    {aiData.summary}
+                  <div className="p-4 rounded-2xl glass border border-white/10 bg-white/5 text-xs text-[var(--foreground)] leading-relaxed select-text space-y-3">
+                    <p>{aiData.summary}</p>
+
+                    {aiData.theologicalInsight && (
+                      <div className="pt-2.5 mt-2.5 border-t border-white/10 text-[11px] text-[var(--foreground)] bg-[var(--accent-soft)] p-3 rounded-xl border border-[var(--accent-main)]/20">
+                        <div className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[9px] text-[var(--accent-main)] mb-1">
+                          <Info size={11} /> Theological Logic & Murabbi Takeaway
+                        </div>
+                        <p className="opacity-90 leading-relaxed font-medium">
+                          {aiData.theologicalInsight}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
