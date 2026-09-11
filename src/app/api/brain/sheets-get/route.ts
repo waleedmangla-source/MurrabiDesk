@@ -32,17 +32,14 @@ export async function POST(request: Request) {
     let targetId = spreadsheetId;
 
     // If no spreadsheetId provided, find 'Murabbi Expenses Master' in 'Murabbi Desk Drive/Expenses'
-    if (!targetId) {
-       const ROOT_NAME = 'Murabbi Desk Drive';
-       const MODULE_NAME = 'Expenses';
-       
-       const rootSearch = await drive.files.list({
-         q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-         fields: 'files(id)',
-       });
+     if (!targetId) {
+        const MODULE_NAME = 'Expenses';
+        
+        const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+        const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+        const rootId = rootFolder.id;
 
-       if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-         const rootId = rootSearch.data.files[0].id;
+        if (rootId) {
          const moduleSearch = await drive.files.list({
            q: `name = '${MODULE_NAME}' and '${rootId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
            fields: 'files(id)',

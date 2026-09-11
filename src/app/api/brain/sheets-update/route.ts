@@ -30,13 +30,11 @@ export async function POST(request: Request) {
     let sid = spreadsheetId;
 
     if (!sid && !process.env.GOOGLE_SHEET_ID) {
-       const rootSearch = await drive.files.list({
-         q: `name = 'Murabbi Desk Drive' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-         fields: 'files(id)',
-       });
+       const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+       const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+       const rootId = rootFolder.id;
 
-       if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-         const rootId = rootSearch.data.files[0].id;
+       if (rootId) {
          const moduleSearch = await drive.files.list({
            q: `name = 'Expenses' and '${rootId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
            fields: 'files(id)',

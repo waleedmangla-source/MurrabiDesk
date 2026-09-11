@@ -31,6 +31,13 @@ export async function POST(request: Request) {
     const rootId = rootFolder.id;
     if (!rootId) return NextResponse.json([]);
 
+    const getFolderId = async (name: string, parentId?: string) => {
+      let q = `name = '${name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+      if (parentId) q += ` and '${parentId}' in parents`;
+      const res = await drive.files.list({ q, fields: 'files(id)' });
+      return res.data.files?.[0]?.id;
+    };
+
     let targetId = rootId;
     if (module) {
       const moduleId = await getFolderId(module, targetId);
