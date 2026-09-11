@@ -33,6 +33,7 @@ import { GoogleSyncService } from "@/lib/google-sync-service";
 import ScreensaverModal from "@/components/ScreensaverModal";
 import AIBlobIcon from "@/components/AIBlobIcon";
 import { useEmails } from "@/context/EmailContext";
+import JarvisHUD from "@/components/jarvis/JarvisHUD";
 
 const ACCENT_COLORS: Record<
   string,
@@ -452,6 +453,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Global J.A.R.V.I.S. Autonomous Desktop Assistant */}
+      <JarvisHUD />
     </>
   );
 }

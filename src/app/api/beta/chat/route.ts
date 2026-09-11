@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MURABBI_AI_SYSTEM_PROMPT } from '@/lib/murabbiAI-system';
+import { resolveNavigationPath } from '@/lib/jarvis-actions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,6 +77,19 @@ Your manner of speaking reflects the poise, quiet intelligence, and crisp elegan
       const textData = await textRes.json();
       const responseText = textData.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
 
+      // Check if user requested navigation
+      let action: any = null;
+      const lastUserMsg = messages.filter((m: any) => m.role === 'user').slice(-1)[0]?.content || '';
+      if (lastUserMsg) {
+        const lower = lastUserMsg.toLowerCase();
+        const navMatch = lower.match(/(?:open|go to|take me to|navigate to|show me)\s+([a-z0-9\s\-]+)/i);
+        const candidate = navMatch ? navMatch[1].trim() : lower;
+        const resolved = resolveNavigationPath(candidate);
+        if (resolved) {
+          action = { type: 'navigate', path: resolved.path };
+        }
+      }
+
       // Step 2: Synthesize native audio using Gemini TTS model
       let audioBase64: string | null = null;
       let audioMimeType: string | null = null;
@@ -113,7 +127,7 @@ Your manner of speaking reflects the poise, quiet intelligence, and crisp elegan
         console.error('[Gemini TTS] Failed to generate native audio, fallback to WebSpeech:', audioErr);
       }
 
-      return NextResponse.json({ text: responseText, audioBase64, audioMimeType });
+      return NextResponse.json({ text: responseText, action, audioBase64, audioMimeType });
     }
 
   } catch (err: any) {

@@ -34,7 +34,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
 if (typeof window !== 'undefined') {
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 }
 
 import { 
@@ -142,41 +142,96 @@ export default function RuhaniKhazainReader() {
   const [selectedEnglishBookId, setSelectedEnglishBookId] = useState<string | null>('philosophy-teachings-islam');
   
   // OCR & PDF States for Test Tab
+  // OCR & PDF States for Test Tab
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>('/api/pdf-proxy?url=https%3A%2F%2Ffiles.alislam.cloud%2Furdu%2Fpdf%2FRuhani-Khazain-Vol-01.pdf');
+  const [pdfFileName, setPdfFileName] = useState<string>('Ruhani Khazain Vol 1 (Scan)');
   const [isOcrLoading, setIsOcrLoading] = useState(false);
   const [currentOcrText, setCurrentOcrText] = useState('');
+  const [ocrCache, setOcrCache] = useState<Record<number, string>>({});
   const [pdfNumPages, setPdfNumPages] = useState<number | null>(null);
   const [pdfPageNumber, setPdfPageNumber] = useState(1);
+  const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
+  const [testViewMode, setTestViewMode] = useState<'scan' | 'interactive'>('scan');
+  const [testPageInput, setTestPageInput] = useState<string>('1');
+  const pdfFileInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePdfRenderSuccess = async () => {
-    // Small delay to ensure the canvas is fully mounted in the DOM
+  const pdfOptions = useMemo(() => ({
+    cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/',
+  }), []);
+
+  const handleCustomPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setPdfFileUrl(objectUrl);
+    setPdfFileName(file.name.replace(/\.pdf$/i, ''));
+    setPdfPageNumber(1);
+    setTestPageInput('1');
+    setCurrentOcrText('');
+    setOcrCache({});
+    setPdfLoadError(null);
+    setTestViewMode('scan');
+  };
+
+  const handlePdfRenderSuccess = useCallback(async () => {
+    // If we already have OCR cached for this page, load it immediately
+    if (ocrCache[pdfPageNumber]) {
+      setCurrentOcrText(ocrCache[pdfPageNumber]);
+      setIsOcrLoading(false);
+      return;
+    }
+
+    setIsOcrLoading(true);
+
     setTimeout(async () => {
-      const canvas = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
-      if (!canvas) return;
-  
-      setIsOcrLoading(true);
-      setCurrentOcrText('');
-      
       try {
-        const imageBase64 = canvas.toDataURL('image/jpeg');
+        const canvas = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
+        if (!canvas) {
+          setIsOcrLoading(false);
+          return;
+        }
+
+        // Downscale retina/high-res canvas to max 1200px width for fast OCR processing
+        let imageBase64 = '';
+        if (canvas.width > 1200) {
+          const scaledCanvas = document.createElement('canvas');
+          const scale = 1200 / canvas.width;
+          scaledCanvas.width = 1200;
+          scaledCanvas.height = Math.round(canvas.height * scale);
+          const ctx = scaledCanvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+            imageBase64 = scaledCanvas.toDataURL('image/jpeg', 0.85);
+          } else {
+            imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+          }
+        } else {
+          imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        }
+
         const res = await fetch('/api/ocr', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64 }),
         });
         const data = await res.json();
-        if (data.text) {
-          setCurrentOcrText(data.text);
+        if (data.text && data.text.trim()) {
+          const text = data.text.trim();
+          setCurrentOcrText(text);
+          setOcrCache(prev => ({ ...prev, [pdfPageNumber]: text }));
         } else {
-          setCurrentOcrText('OCR Failed or returned empty text.');
+          setCurrentOcrText('No text recognized on this page.');
         }
       } catch (err) {
         console.error('OCR error:', err);
-        setCurrentOcrText('Error connecting to OCR API.');
+        setCurrentOcrText('Error processing OCR for this page.');
       } finally {
         setIsOcrLoading(false);
       }
-    }, 100);
-  };
+    }, 200);
+  }, [ocrCache, pdfPageNumber]);
 
 
   // Secondary Sidebar Collection Dropdown & Book Search Filter
@@ -934,7 +989,7 @@ export default function RuhaniKhazainReader() {
                 Now Reading
               </span>
               <span className="text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded bg-white/10">
-                {bookLanguage === 'english' ? 'English' : `Vol ${selectedVolume || 1}`}
+                {bookLanguage === 'english' ? 'English' : bookLanguage === 'test' ? 'PDF OCR' : `Vol ${selectedVolume || 1}`}
               </span>
             </div>
             {(() => {
@@ -944,6 +999,15 @@ export default function RuhaniKhazainReader() {
                   <div className="flex flex-col pt-0.5">
                     <span className="text-xs font-bold text-[var(--foreground)] truncate">
                       {activeEngBook ? activeEngBook.title : 'English Library'}
+                    </span>
+                  </div>
+                );
+              }
+              if (bookLanguage === 'test') {
+                return (
+                  <div className="flex flex-col pt-0.5">
+                    <span className="text-xs font-bold text-[var(--foreground)] truncate">
+                      {pdfFileName}
                     </span>
                   </div>
                 );
@@ -1113,7 +1177,7 @@ export default function RuhaniKhazainReader() {
                         );
                       })
                     )
-                  ) : (
+                  ) : bookLanguage === 'english' ? (
                     filteredEnglishBooks.length === 0 ? (
                       <div className="px-6 py-4 text-center text-xs text-[var(--text-dim)]">
                         No English books found matching &quot;{sidebarBookSearch}&quot;
@@ -1145,6 +1209,72 @@ export default function RuhaniKhazainReader() {
                         );
                       })
                     )
+                  ) : (
+                    <div className="px-4 py-3 flex flex-col gap-3">
+                      {/* Document Overview Card */}
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--accent-main)]">
+                            PDF Document
+                          </span>
+                          <span className="text-[10px] font-mono text-[var(--text-dim)]">
+                            {pdfNumPages ? `${pdfNumPages} Pages` : 'Loading...'}
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-white truncate" title={pdfFileName}>
+                          {pdfFileName}
+                        </p>
+                        <div className="pt-2 border-t border-white/5 flex flex-col gap-1 text-[11px] text-[var(--text-muted)]">
+                          <div className="flex items-center justify-between">
+                            <span>Page:</span>
+                            <span className="font-mono font-bold text-white">{pdfPageNumber} / {pdfNumPages || '...'}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>OCR Status:</span>
+                            <span className={clsx(
+                              "font-semibold",
+                              isOcrLoading ? "text-amber-400 animate-pulse" : currentOcrText ? "text-emerald-400" : "text-[var(--text-dim)]"
+                            )}>
+                              {isOcrLoading ? 'Scanning...' : currentOcrText ? 'Text Ready' : 'Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Custom Urdu PDF Upload Button */}
+                      <input 
+                        type="file" 
+                        ref={pdfFileInputRef} 
+                        accept="application/pdf" 
+                        className="hidden" 
+                        onChange={handleCustomPdfUpload} 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => pdfFileInputRef.current?.click()}
+                        className="w-full py-2 px-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-xs font-bold text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                      >
+                        <span>Upload Custom Urdu PDF</span>
+                      </button>
+
+                      {pdfFileUrl !== '/api/pdf-proxy?url=https%3A%2F%2Ffiles.alislam.cloud%2Furdu%2Fpdf%2FRuhani-Khazain-Vol-01.pdf' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPdfFileUrl('/api/pdf-proxy?url=https%3A%2F%2Ffiles.alislam.cloud%2Furdu%2Fpdf%2FRuhani-Khazain-Vol-01.pdf');
+                            setPdfFileName('Ruhani Khazain Vol 1 (Scan)');
+                            setPdfPageNumber(1);
+                            setTestPageInput('1');
+                            setCurrentOcrText('');
+                            setOcrCache({});
+                            setPdfLoadError(null);
+                          }}
+                          className="text-[10px] text-[var(--text-dim)] hover:text-white underline text-center"
+                        >
+                          Reset to Ruhani Khazain Vol 1
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -1253,59 +1383,173 @@ export default function RuhaniKhazainReader() {
               );
             })()
           ) : bookLanguage === 'test' ? (
-            <div className="w-full flex flex-col items-center gap-6 animate-in fade-in duration-300">
-              <Document 
-                file="https://files.alislam.cloud/urdu/pdf/Ruhani-Khazain-Vol-01.pdf"
-                onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
-                className={isOcrLoading || currentOcrText ? "hidden" : "block shadow-2xl"}
-                loading={
-                  <div className="flex flex-col items-center justify-center p-20 gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
-                    <p className="text-[var(--text-dim)] font-medium text-sm">Loading PDF...</p>
+            <div className="w-full max-w-3xl flex flex-col items-center gap-4 animate-in fade-in duration-300">
+              {/* Test Mode View Switcher & Status Bar */}
+              <div className="w-full flex items-center justify-between px-3 py-2 rounded-2xl glass bg-black/40 border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setTestViewMode('scan')}
+                    className={clsx(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                      testViewMode === 'scan' ? "bg-[var(--accent-main)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-white"
+                    )}
+                  >
+                    Original Scan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTestViewMode('interactive')}
+                    className={clsx(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                      testViewMode === 'interactive' ? "bg-[var(--accent-main)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-white"
+                    )}
+                  >
+                    <span>Interactive Text</span>
+                    {currentOcrText && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    )}
+                  </button>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="flex items-center gap-2 pr-2 text-xs font-medium">
+                  {isOcrLoading ? (
+                    <div className="flex items-center gap-1.5 text-amber-400 animate-pulse">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Scanning OCR...</span>
+                    </div>
+                  ) : currentOcrText ? (
+                    <div className="flex items-center gap-1.5 text-emerald-400">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Text Ready</span>
+                    </div>
+                  ) : (
+                    <span className="text-[var(--text-dim)]">Ready</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Error Message if PDF failed to load */}
+              {pdfLoadError && (
+                <div className="w-full p-4 rounded-2xl bg-red-950/40 border border-red-500/30 text-red-200 text-xs flex flex-col gap-2">
+                  <div className="flex items-center gap-2 font-bold text-red-400">
+                    <Info size={16} />
+                    <span>Failed to load PDF</span>
                   </div>
-                }
-              >
-                <Page 
-                  pageNumber={pdfPageNumber} 
-                  onRenderSuccess={handlePdfRenderSuccess}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  width={Math.min(640, typeof window !== 'undefined' ? window.innerWidth - 32 : 640)}
-                />
-              </Document>
-              
-              {isOcrLoading && (
-                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                  <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
-                  <p className="text-[var(--text-dim)] font-medium text-sm">Extracting Urdu text via OCR...</p>
+                  <p className="text-red-300/80">{pdfLoadError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfLoadError(null);
+                      setPdfFileUrl('/api/pdf-proxy?url=https%3A%2F%2Ffiles.alislam.cloud%2Furdu%2Fpdf%2FRuhani-Khazain-Vol-01.pdf');
+                    }}
+                    className="self-start px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 font-bold transition-all"
+                  >
+                    Retry Loading
+                  </button>
                 </div>
               )}
 
-              {currentOcrText && !isOcrLoading && (
+              {/* PDF Scan View */}
+              <div className={clsx("w-full flex justify-center", testViewMode !== 'scan' && "hidden")}>
+                <Document 
+                  file={pdfFileUrl}
+                  options={pdfOptions}
+                  onLoadSuccess={({ numPages }) => {
+                    setPdfNumPages(numPages);
+                    setPdfLoadError(null);
+                  }}
+                  onLoadError={(err) => {
+                    console.error("PDF Load Error:", err);
+                    setPdfLoadError(err.message || 'Unable to load PDF');
+                  }}
+                  onSourceError={(err) => {
+                    console.error("PDF Source Error:", err);
+                    setPdfLoadError(err.message || 'Network error fetching PDF');
+                  }}
+                  className="shadow-2xl rounded-2xl overflow-hidden border border-white/10"
+                  loading={
+                    <div className="flex flex-col items-center justify-center p-20 gap-4">
+                      <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
+                      <p className="text-[var(--text-dim)] font-medium text-sm">Streaming PDF scan...</p>
+                    </div>
+                  }
+                >
+                  <Page 
+                    pageNumber={pdfPageNumber} 
+                    onRenderSuccess={handlePdfRenderSuccess}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                    width={Math.min(640, typeof window !== 'undefined' ? window.innerWidth - 48 : 640)}
+                  />
+                </Document>
+              </div>
+
+              {/* Interactive Text View */}
+              {testViewMode === 'interactive' && (
                 <div 
                   className="w-full my-auto flex justify-center py-2 animate-in fade-in duration-300"
                   style={{
                     maxWidth: 'min(640px, calc((100vh - 170px) * 9 / 11))'
                   }}
                 >
-                  <div className="w-full aspect-[9/11] bg-white text-black shadow-2xl p-3.5 sm:p-5 md:p-6 relative select-text border border-zinc-300 flex flex-col justify-between">
-                    <div className="border-[2px] sm:border-[2.5px] border-black bg-white flex flex-col flex-1 min-h-0">
-                      <div className="p-[2.5px] sm:p-[3px] bg-white flex flex-col flex-1 min-h-0">
-                        <div className="border border-black p-2.5 sm:p-3.5 md:p-4 flex flex-col flex-1 min-h-0 bg-white relative">
-                          <div 
-                            className="text-black select-text w-full flex-1 flex flex-col justify-start" 
-                            dir="rtl"
-                            style={{ 
-                              fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
-                              fontSize: `${fontSize}px`
-                            }}
-                          >
-                            {renderText(currentOcrText)}
+                  {isOcrLoading && !currentOcrText ? (
+                    <div className="flex flex-col items-center justify-center p-20 gap-4 glass bg-zinc-950/60 rounded-3xl border border-white/10 w-full">
+                      <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
+                      <p className="text-white font-medium text-sm">Recognizing Urdu characters from scan...</p>
+                      <p className="text-xs text-[var(--text-dim)]">This will be cached for instant flipping</p>
+                    </div>
+                  ) : currentOcrText ? (
+                    <div className="w-full aspect-[9/11] bg-white text-black shadow-2xl p-3.5 sm:p-5 md:p-6 relative select-text border border-zinc-300 flex flex-col justify-between">
+                      <div className="border-[2px] sm:border-[2.5px] border-black bg-white flex flex-col flex-1 min-h-0">
+                        {/* Running Header Bar in Interactive View */}
+                        <div 
+                          className="flex items-center justify-between px-3 py-1 sm:py-1.5 border-b-[1.5px] border-black text-black select-none shrink-0" 
+                          dir="rtl"
+                          style={{ fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif" }}
+                        >
+                          <span className="text-xs sm:text-sm font-bold">
+                            روحانی خزائن (پی ڈی ایف اسکین)
+                          </span>
+                          <span className="text-sm sm:text-base font-bold tracking-widest px-2">
+                            {toUrduNumerals(pdfPageNumber)}
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold truncate max-w-[45%] text-left">
+                            صفحہ {toUrduNumerals(pdfPageNumber)}
+                          </span>
+                        </div>
+
+                        <div className="p-[2.5px] sm:p-[3px] bg-white flex flex-col flex-1 min-h-0">
+                          <div className="border border-black p-2.5 sm:p-3.5 md:p-4 flex flex-col flex-1 min-h-0 bg-white relative">
+                            <div 
+                              className="text-black select-text w-full flex-1 flex flex-col justify-start" 
+                              dir="rtl"
+                              style={{ 
+                                fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
+                                fontSize: `${fontSize}px`
+                              }}
+                            >
+                              {renderText(currentOcrText)}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-16 gap-3 text-center glass bg-zinc-950/60 rounded-3xl border border-white/10 w-full">
+                      <Info className="w-8 h-8 text-[var(--accent-main)]" />
+                      <p className="text-sm font-bold text-white">No text extracted yet for Page {pdfPageNumber}</p>
+                      <p className="text-xs text-[var(--text-muted)]">Switch to &apos;Original Scan&apos; to trigger recognition</p>
+                      <button
+                        type="button"
+                        onClick={() => setTestViewMode('scan')}
+                        className="px-4 py-2 rounded-xl bg-[var(--accent-main)] text-white text-xs font-bold transition-all mt-2"
+                      >
+                        View Scan &amp; Run OCR
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1454,18 +1698,52 @@ export default function RuhaniKhazainReader() {
               {/* Previous Page Button */}
               <button 
                 onClick={() => {
-                   setPdfPageNumber(Math.max(1, pdfPageNumber - 1));
-                   setIsOcrLoading(false);
-                   setCurrentOcrText('');
+                  const targetPage = Math.max(1, pdfPageNumber - 1);
+                  setPdfPageNumber(targetPage);
+                  setTestPageInput(String(targetPage));
+                  setCurrentOcrText(ocrCache[targetPage] || '');
                 }}
                 disabled={pdfPageNumber <= 1 || isOcrLoading}
                 className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                title="Previous Page"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
               </button>
 
+              {/* Direct Page Input */}
               <div className="px-2 py-0.5 text-xs font-mono font-black text-white flex items-center gap-1.5 border-x border-white/10">
-                <span className="text-[var(--accent-main)] px-1">{pdfPageNumber}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={testPageInput}
+                  onChange={(e) => setTestPageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const num = parseInt(testPageInput.trim(), 10);
+                      if (!isNaN(num) && pdfNumPages) {
+                        const clamped = Math.max(1, Math.min(pdfNumPages, num));
+                        setPdfPageNumber(clamped);
+                        setTestPageInput(String(clamped));
+                        setCurrentOcrText(ocrCache[clamped] || '');
+                      }
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  onBlur={() => {
+                    const num = parseInt(testPageInput.trim(), 10);
+                    if (!isNaN(num) && pdfNumPages) {
+                      const clamped = Math.max(1, Math.min(pdfNumPages, num));
+                      setPdfPageNumber(clamped);
+                      setTestPageInput(String(clamped));
+                      setCurrentOcrText(ocrCache[clamped] || '');
+                    } else {
+                      setTestPageInput(String(pdfPageNumber));
+                    }
+                  }}
+                  onFocus={(e) => e.target.select()}
+                  className="w-12 text-center py-0.5 px-1 rounded-lg bg-white/10 text-[var(--accent-main)] font-mono font-black text-xs border border-white/15 focus:border-[var(--accent-main)] focus:bg-black/40 focus:ring-1 focus:ring-[var(--accent-main)] focus:outline-none transition-all cursor-pointer select-all"
+                  title="Click to type page number and press Enter"
+                />
                 <span className="opacity-30 select-none">/</span>
                 <span className="opacity-60 select-none">{pdfNumPages}</span>
               </div>
@@ -1473,14 +1751,16 @@ export default function RuhaniKhazainReader() {
               {/* Next Page Button */}
               <button 
                 onClick={() => {
-                   setPdfPageNumber(Math.min(pdfNumPages, pdfPageNumber + 1));
-                   setIsOcrLoading(false);
-                   setCurrentOcrText('');
+                  const targetPage = Math.min(pdfNumPages, pdfPageNumber + 1);
+                  setPdfPageNumber(targetPage);
+                  setTestPageInput(String(targetPage));
+                  setCurrentOcrText(ocrCache[targetPage] || '');
                 }}
                 disabled={pdfPageNumber >= pdfNumPages || isOcrLoading}
                 className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+                title="Next Page"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </button>
             </div>
           </div>

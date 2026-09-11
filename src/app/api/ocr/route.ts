@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createWorker } from 'tesseract.js';
+import { createWorker, Worker } from 'tesseract.js';
+
+let workerPromise: Promise<Worker> | null = null;
+
+async function getWorker(): Promise<Worker> {
+  if (!workerPromise) {
+    workerPromise = (async () => {
+      const worker = await createWorker('urd');
+      return worker;
+    })().catch((err) => {
+      workerPromise = null;
+      throw err;
+    });
+  }
+  return workerPromise;
+}
 
 export async function POST(request: Request) {
   try {
@@ -9,20 +24,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Remove the data URI prefix if present (e.g. data:image/png;base64,)
-    // Actually tesseract.js recognize can handle data URIs.
-
-    // Initialize the Tesseract worker
-    const worker = await createWorker('urd');
-
-    // Perform OCR
+    const worker = await getWorker();
     const { data: { text } } = await worker.recognize(imageBase64);
-    
-    await worker.terminate();
 
-    return NextResponse.json({ text });
+    return NextResponse.json({ text: text ? text.trim() : '' });
   } catch (error) {
     console.error('OCR Error:', error);
-    return NextResponse.json({ error: 'OCR failed' }, { status: 500 });
+    workerPromise = null;
+    return NextResponse.json({ error: 'OCR processing failed', details: String(error) }, { status: 500 });
   }
 }

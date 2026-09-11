@@ -36,6 +36,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { clsx } from "clsx";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from 'qrcode.react';
 
 type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
@@ -61,6 +62,7 @@ const Sparkles = ({ size, className }: { size: number, className: string }) => (
 );
 
 export default function BetaToolsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<BetaTab>('overview');
 
   // YT-DLP State
@@ -412,6 +414,13 @@ export default function BetaToolsPage() {
           playRawPcmAudio(data.audioBase64);
         } else {
           speakText(data.text);
+        }
+
+        if (data.action && data.action.type === 'navigate' && data.action.path) {
+          addTerminalLog(`[J.A.R.V.I.S.] Routing to ${data.action.path}...`);
+          setTimeout(() => {
+            router.push(data.action.path);
+          }, 900);
         }
       } else {
         setChatMessages(prev => [...prev, { role: 'assistant', content: "[ERROR] " + (data.error || "Unknown error") }]);
