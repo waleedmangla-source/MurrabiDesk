@@ -128,10 +128,9 @@ function SortableReceiptItem({ receipt, idx, onRemove, isReadOnly }: { receipt: 
         <GripVertical size={16} className="text-[var(--text-main)]/20 " />
       </div>
 
-      <div className="w-10 h-10 rounded-[12px] bg-red-600/20 flex flex-col items-center justify-center border border-red-600/30 flex-shrink-0">
-          <span className="text-[8px] font-black text-[var(--accent-main)] uppercase tracking-tighter">REF</span>
-          <span className="text-xs font-black text-[var(--text-main)] italic leading-none">#{idx + 1}</span>
-      </div>
+      <span className="text-xs font-bold text-[var(--text-dim)] font-mono shrink-0 select-none w-5 text-center">
+        {idx + 1}
+      </span>
       
       <div className="flex-1 min-w-0">
           <p className="text-[10px] font-bold text-[var(--text-main)] truncate uppercase tracking-tight">{receipt.name}</p>
