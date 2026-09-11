@@ -167,10 +167,31 @@ export async function POST(request: Request) {
       });
     }
 
+    const folderLink = targetFolderId ? `https://drive.google.com/drive/folders/${targetFolderId}` : (file.data.webViewLink || '');
+
+    // Attempt to make file and folder accessible to anyone with the link
+    try {
+      if (targetFolderId) {
+        await drive.permissions.create({
+          fileId: targetFolderId,
+          requestBody: { role: 'reader', type: 'anyone' },
+        });
+      }
+      if (file.data.id) {
+        await drive.permissions.create({
+          fileId: file.data.id,
+          requestBody: { role: 'reader', type: 'anyone' },
+        });
+      }
+    } catch (permErr: any) {
+      console.warn('Drive permission update note:', permErr?.message);
+    }
+
     return NextResponse.json({
       success: true,
       fileId: file.data.id,
       link: file.data.webViewLink,
+      folderLink,
       folderId: targetFolderId,
       updated: !!existingFileId
     });

@@ -764,7 +764,10 @@ export default function ExpensesPage() {
             const total = parseFloat(String(totalStr).replace(/[^0-9.]/g, '')) || 0;
             const purpose = (isNewSchema ? (row[7] || 'Expense Submission') : (row[4] || 'Expense Submission')).toString().trim();
             const status = (isNewSchema ? (row[10] || 'sent') : (row[5] || 'sent')).toString().trim();
-            const folderLink = isNewSchema ? row[12] : row[6];
+            const rawFolderLink = (isNewSchema ? row[12] : row[6]) || '';
+            const folderLink = (typeof rawFolderLink === 'string' && (rawFolderLink.startsWith('http://') || rawFolderLink.startsWith('https://')))
+              ? rawFolderLink.trim()
+              : '';
             
             return {
               id: `sheet_${index}`,
@@ -1965,6 +1968,7 @@ ${formData.comments || 'None'}
       }
 
       // 4. Append to Google Sheets
+      const driveFolderUrl = driveRes?.folderLink || (driveRes?.folderId ? `https://drive.google.com/drive/folders/${driveRes.folderId}` : (driveRes?.link || ''));
       const sheetRow = [[
         formData.date,
         formData.fullName,
@@ -1978,7 +1982,7 @@ ${formData.comments || 'None'}
         formData.posting_location,
         'SENT',
         formData.comments || '',
-        driveRes?.link || 'View in Drive',
+        driveFolderUrl,
         selectedEmail
       ]];
 
@@ -2993,7 +2997,7 @@ ${formData.comments || 'None'}
                                           </span>
                                         )}
 
-                                        {item.folderLink && (
+                                        {item.folderLink && (item.folderLink.startsWith('http://') || item.folderLink.startsWith('https://')) && (
                                           <a
                                             href={item.folderLink}
                                             target="_blank"

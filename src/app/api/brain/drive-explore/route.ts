@@ -26,8 +26,21 @@ export async function POST(request: Request) {
 
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
     
-    // If folderId is not provided, use 'root'
-    const targetFolderId = folderId || 'root';
+    // If folderId is not provided or is 'root', attempt to resolve 'Murabbi Desk Drive' first
+    let targetFolderId = folderId || 'root';
+    if (!folderId || folderId === 'root') {
+      try {
+        const rootSearch = await drive.files.list({
+          q: `name = 'Murabbi Desk Drive' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+          fields: 'files(id, name)',
+        });
+        if (rootSearch.data.files && rootSearch.data.files.length > 0) {
+          targetFolderId = rootSearch.data.files[0].id!;
+        }
+      } catch (searchErr) {
+        console.warn('Could not find Murabbi Desk Drive folder, falling back to root:', searchErr);
+      }
+    }
 
     const filesRes = await drive.files.list({
       q: `'${targetFolderId}' in parents and trashed = false`,

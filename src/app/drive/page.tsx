@@ -35,46 +35,18 @@ interface DriveFile {
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
-function useGoogleToken(): string | null {
-  const [token, setToken] = useState<string | null>(null);
+function useHasGoogleToken(): boolean {
+  const [hasToken, setHasToken] = useState<boolean>(false);
   useEffect(() => {
-    async function getToken() {
-      if (typeof window === 'undefined') return;
-      if (localStorage.getItem('murabbi_guest_mode') === 'true') return;
-      const encrypted = localStorage.getItem('google_refresh_token_encrypted');
-      if (!encrypted) return;
-      try {
-        const decRes = await fetch('/api/brain/decrypt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-murabbi-token': encrypted },
-          body: JSON.stringify({ encrypted }),
-        });
-        const decData = await decRes.json();
-        const refreshToken = decData?.decrypted;
-        if (!refreshToken) return;
-        const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '834945075004-a5rh91gdl55tqcplv91uh8gs3lajaauu.apps.googleusercontent.com';
-        const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken,
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET,
-          }).toString(),
-        });
-        const tokenData = await tokenRes.json();
-        if (tokenData.access_token) {
-          setToken(tokenData.access_token);
-        }
-      } catch (err) {
-        console.error('Token fetch failed:', err);
-      }
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem('murabbi_guest_mode') === 'true') {
+      setHasToken(false);
+      return;
     }
-    getToken();
+    const token = localStorage.getItem('google_refresh_token_encrypted');
+    setHasToken(Boolean(token));
   }, []);
-  return token;
+  return hasToken;
 }
 
 function getFileIcon(mimeType: string) {
@@ -88,7 +60,7 @@ function getFileIcon(mimeType: string) {
 }
 
 export default function DrivePage() {
-  const token = useGoogleToken();
+  const isConnected = useHasGoogleToken();
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
@@ -98,10 +70,14 @@ export default function DrivePage() {
   const currentFolder = folderStack[folderStack.length - 1];
 
   const fetchFiles = useCallback(async (folderId: string) => {
-    if (!token) { setSyncStatus('offline'); return; }
+    if (typeof window === 'undefined') return;
+    const tokenHeader = localStorage.getItem('google_refresh_token_encrypted');
+    if (!tokenHeader || localStorage.getItem('murabbi_guest_mode') === 'true') {
+      setSyncStatus('offline');
+      return;
+    }
     setSyncStatus('syncing');
     try {
-      const tokenHeader = localStorage.getItem('google_refresh_token_encrypted') || '';
       const res = await fetch('/api/brain/drive-explore', {
         method: 'POST',
         headers: {
@@ -120,13 +96,15 @@ export default function DrivePage() {
     } catch {
       setSyncStatus('error');
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    if (token) {
+    if (isConnected) {
       fetchFiles(currentFolder.id);
+    } else {
+      setSyncStatus('offline');
     }
-  }, [token, currentFolder.id, fetchFiles]);
+  }, [isConnected, currentFolder.id, fetchFiles]);
 
   const handleFileClick = (file: DriveFile) => {
     if (file.mimeType === 'application/vnd.google-apps.folder') {
