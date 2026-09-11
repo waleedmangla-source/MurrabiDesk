@@ -155,6 +155,12 @@ export default function RuhaniKhazainReader() {
   const [testPageInput, setTestPageInput] = useState<string>('1');
   const pdfFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Stable refs to eliminate render loops and race conditions
+  const ocrCacheRef = useRef<Record<number, string>>({});
+  const isOcrScanningRef = useRef<boolean>(false);
+  const pdfPageNumberRef = useRef<number>(1);
+  pdfPageNumberRef.current = pdfPageNumber;
+
   const pdfOptions = useMemo(() => ({
     cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',
     cMapPacked: true,
@@ -171,67 +177,98 @@ export default function RuhaniKhazainReader() {
     setTestPageInput('1');
     setCurrentOcrText('');
     setOcrCache({});
+    ocrCacheRef.current = {};
     setPdfLoadError(null);
     setTestViewMode('scan');
   };
 
-  const handlePdfRenderSuccess = useCallback(async () => {
-    // If we already have OCR cached for this page, load it immediately
-    if (ocrCache[pdfPageNumber]) {
-      setCurrentOcrText(ocrCache[pdfPageNumber]);
+  const triggerOcrForPage = useCallback(async (targetPage: number) => {
+    // 1. If already cached, load immediately
+    if (ocrCacheRef.current[targetPage]) {
+      setCurrentOcrText(ocrCacheRef.current[targetPage]);
       setIsOcrLoading(false);
       return;
     }
 
+    // 2. Prevent concurrent duplicate scans
+    if (isOcrScanningRef.current) return;
+    isOcrScanningRef.current = true;
     setIsOcrLoading(true);
 
-    setTimeout(async () => {
-      try {
-        const canvas = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
-        if (!canvas) {
-          setIsOcrLoading(false);
-          return;
-        }
-
-        // Downscale retina/high-res canvas to max 1200px width for fast OCR processing
-        let imageBase64 = '';
-        if (canvas.width > 1200) {
-          const scaledCanvas = document.createElement('canvas');
-          const scale = 1200 / canvas.width;
-          scaledCanvas.width = 1200;
-          scaledCanvas.height = Math.round(canvas.height * scale);
-          const ctx = scaledCanvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
-            imageBase64 = scaledCanvas.toDataURL('image/jpeg', 0.85);
-          } else {
-            imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
-          }
-        } else {
-          imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
-        }
-
-        const res = await fetch('/api/ocr', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64 }),
-        });
-        const data = await res.json();
-        if (data.text && data.text.trim()) {
-          const text = data.text.trim();
-          setCurrentOcrText(text);
-          setOcrCache(prev => ({ ...prev, [pdfPageNumber]: text }));
-        } else {
-          setCurrentOcrText('No text recognized on this page.');
-        }
-      } catch (err) {
-        console.error('OCR error:', err);
-        setCurrentOcrText('Error processing OCR for this page.');
-      } finally {
+    try {
+      const canvas = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
         setIsOcrLoading(false);
+        isOcrScanningRef.current = false;
+        return;
       }
-    }, 200);
-  }, [ocrCache, pdfPageNumber]);
+
+      // Downscale retina canvas to max 1200px width for fast transmission & AI OCR
+      let imageBase64 = '';
+      if (canvas.width > 1200) {
+        const scaledCanvas = document.createElement('canvas');
+        const scale = 1200 / canvas.width;
+        scaledCanvas.width = 1200;
+        scaledCanvas.height = Math.round(canvas.height * scale);
+        const ctx = scaledCanvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+          imageBase64 = scaledCanvas.toDataURL('image/jpeg', 0.88);
+        } else {
+          imageBase64 = canvas.toDataURL('image/jpeg', 0.88);
+        }
+      } else {
+        imageBase64 = canvas.toDataURL('image/jpeg', 0.88);
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+      const res = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ imageBase64 }),
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await res.json();
+      if (data.text && data.text.trim()) {
+        const text = data.text.trim();
+        ocrCacheRef.current[targetPage] = text;
+        setOcrCache({ ...ocrCacheRef.current });
+        if (pdfPageNumberRef.current === targetPage) {
+          setCurrentOcrText(text);
+        }
+      } else {
+        if (pdfPageNumberRef.current === targetPage) {
+          setCurrentOcrText('No recognizable text found on this page.');
+        }
+      }
+    } catch (err) {
+      console.error('[OCR] Error scanning page:', err);
+      if (pdfPageNumberRef.current === targetPage) {
+        setCurrentOcrText('OCR scanning timed out or encountered an error.');
+      }
+    } finally {
+      isOcrScanningRef.current = false;
+      setIsOcrLoading(false);
+    }
+  }, []);
+
+  const handlePdfRenderSuccess = useCallback(() => {
+    const currentPage = pdfPageNumberRef.current;
+    if (ocrCacheRef.current[currentPage]) {
+      setCurrentOcrText(ocrCacheRef.current[currentPage]);
+      setIsOcrLoading(false);
+      return;
+    }
+    // Small timeout to ensure the canvas drawing is fully rendered on screen
+    setTimeout(() => {
+      triggerOcrForPage(currentPage);
+    }, 250);
+  }, [triggerOcrForPage]);
 
 
   // Secondary Sidebar Collection Dropdown & Book Search Filter
@@ -1412,20 +1449,37 @@ export default function RuhaniKhazainReader() {
                   </button>
                 </div>
 
-                {/* Status Indicator */}
-                <div className="flex items-center gap-2 pr-2 text-xs font-medium">
+                {/* Status Indicator & Re-scan */}
+                <div className="flex items-center gap-2 pr-1 text-xs font-medium">
                   {isOcrLoading ? (
-                    <div className="flex items-center gap-1.5 text-amber-400 animate-pulse">
+                    <div className="flex items-center gap-1.5 text-amber-400 animate-pulse bg-amber-400/10 px-2.5 py-1 rounded-lg border border-amber-400/20">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Scanning OCR...</span>
+                      <span>Scanning with AI...</span>
                     </div>
                   ) : currentOcrText ? (
-                    <div className="flex items-center gap-1.5 text-emerald-400">
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span>Text Ready</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-lg border border-emerald-400/20">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Text Ready</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => triggerOcrForPage(pdfPageNumber)}
+                        className="px-2 py-1 rounded-lg text-[10px] text-[var(--text-dim)] hover:text-white bg-white/5 hover:bg-white/10 transition-all border border-white/5"
+                        title="Re-scan current page"
+                      >
+                        Re-scan
+                      </button>
                     </div>
                   ) : (
-                    <span className="text-[var(--text-dim)]">Ready</span>
+                    <button
+                      type="button"
+                      onClick={() => triggerOcrForPage(pdfPageNumber)}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-[var(--accent-main)] hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Sparkles size={12} />
+                      <span>Scan Page</span>
+                    </button>
                   )}
                 </div>
               </div>
