@@ -29,6 +29,8 @@ type Tab =
   | 'uilibrary';
 
 interface SettingsState {
+  // Identity
+  name: string;
   // Appearance
   accentColor: string;
   highDensityMode: boolean;
@@ -165,7 +167,15 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
           <div className="flex-1 space-y-3">
             <div className="space-y-1">
               <FieldLabel>Full Name</FieldLabel>
-              <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Your name" />
+              <div className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] flex items-center justify-between">
+                <span>{googleProfile?.name || settings.name || 'Fetching from Google account...'}</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                  Google Account
+                </span>
+              </div>
+              <p className="text-[9px] text-[var(--text-dim)] font-medium">
+                Fetched automatically from your linked Google Workspace identity.
+              </p>
             </div>
           </div>
         </div>
@@ -176,7 +186,23 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
           </div>
           <div className="space-y-1">
             <FieldLabel>Member Code</FieldLabel>
-            <FieldInput value={settings.memberCode} onChange={v => setSettings(s => ({ ...s, memberCode: v }))} placeholder="M-XXX" />
+            <FieldInput
+              value={settings.memberCode}
+              onChange={v => {
+                setSettings(s => ({ ...s, memberCode: v }));
+                localStorage.setItem('murabbi_member_code', v);
+                try {
+                  const existing = localStorage.getItem('murabbi_profile_custom');
+                  const parsed = existing ? JSON.parse(existing) : {};
+                  parsed.memberCode = v;
+                  localStorage.setItem('murabbi_profile_custom', JSON.stringify(parsed));
+                } catch {}
+              }}
+              placeholder="e.g. 31572"
+            />
+            <p className="text-[8px] text-[var(--text-dim)] font-medium">
+              Input once to auto-prefill across expenses and mission forms.
+            </p>
           </div>
           <div className="space-y-1">
             <FieldLabel>Mission Area / HQ</FieldLabel>
@@ -828,6 +854,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
 
   const [settings, setSettings] = useState<SettingsState>({
+    name: '',
     accentColor: 'red',
     highDensityMode: false,
     defaultLaunchTab: '/',
@@ -845,7 +872,7 @@ export default function SettingsPage() {
     missionArea: 'Canada HQ / Toronto',
     graduationYear: '2018',
     languages: 'English, Urdu, Arabic',
-    memberCode: 'M-777',
+    memberCode: '',
     alias: 'Administrative Proxy',
     birthday: '1994-01-01',
     bio: '',
@@ -853,9 +880,56 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setMounted(true);
+
+    // 1. Fetch Google account profile for full name
+    GoogleSyncService.getUserProfile().then(p => {
+      if (p?.name) {
+        setSettings(prev => ({ ...prev, name: p.name }));
+      }
+    });
+
+    // 2. Load custom profile from localStorage
+    const savedCustom = localStorage.getItem('murabbi_profile_custom');
+    let customMemberCode = '';
+    let customName = '';
+    if (savedCustom) {
+      try {
+        const parsedCustom = JSON.parse(savedCustom);
+        if (parsedCustom.memberCode) customMemberCode = parsedCustom.memberCode;
+        if (parsedCustom.name) customName = parsedCustom.name;
+        setSettings(prev => ({
+          ...prev,
+          name: parsedCustom.name || prev.name,
+          missionTitle: parsedCustom.missionTitle ?? prev.missionTitle,
+          missionArea: parsedCustom.missionArea ?? prev.missionArea,
+          graduationYear: parsedCustom.graduationYear ?? prev.graduationYear,
+          languages: parsedCustom.languages ?? prev.languages,
+          memberCode: parsedCustom.memberCode ?? prev.memberCode,
+          alias: parsedCustom.alias ?? prev.alias,
+          birthday: parsedCustom.birthday ?? prev.birthday,
+          bio: parsedCustom.bio ?? prev.bio,
+        }));
+      } catch {}
+    }
+
+    // 3. Fallback to direct murabbi_member_code if present
+    const directMemberCode = localStorage.getItem('murabbi_member_code');
+    if (directMemberCode && !customMemberCode) {
+      setSettings(prev => ({ ...prev, memberCode: directMemberCode }));
+    }
+
+    // 4. Load remaining settings v2
     const saved = localStorage.getItem('murabbi_settings_v2');
     if (saved) {
-      try { setSettings(prev => ({ ...prev, ...JSON.parse(saved) })); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        setSettings(prev => ({
+          ...prev,
+          ...parsed,
+          name: prev.name || customName || parsed.name || '',
+          memberCode: customMemberCode || directMemberCode || parsed.memberCode || prev.memberCode,
+        }));
+      } catch {}
     }
   }, []);
 
@@ -865,10 +939,19 @@ export default function SettingsPage() {
     localStorage.setItem('murabbi_settings', JSON.stringify({ accentColor: settings.accentColor }));
     localStorage.setItem('murabbi_show_worldclocks', settings.showWorldClock.toString());
     localStorage.setItem('murabbi_show_prayertimes', settings.showPrayerTimes.toString());
+    if (settings.memberCode) {
+      localStorage.setItem('murabbi_member_code', settings.memberCode);
+    }
     localStorage.setItem('murabbi_profile_custom', JSON.stringify({
-      missionTitle: settings.missionTitle, missionArea: settings.missionArea,
-      graduationYear: settings.graduationYear, languages: settings.languages,
-      memberCode: settings.memberCode, alias: settings.alias, birthday: settings.birthday, bio: settings.bio,
+      name: settings.name,
+      missionTitle: settings.missionTitle,
+      missionArea: settings.missionArea,
+      graduationYear: settings.graduationYear,
+      languages: settings.languages,
+      memberCode: settings.memberCode,
+      alias: settings.alias,
+      birthday: settings.birthday,
+      bio: settings.bio,
     }));
     setTimeout(() => {
       setIsSaving(false);

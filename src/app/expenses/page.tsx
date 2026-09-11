@@ -537,26 +537,25 @@ export default function ExpensesPage() {
     const prefillProtocol = async () => {
       const googleInfo = await GoogleSyncService.getUserProfile();
       const savedCustom = localStorage.getItem('murabbi_profile_custom');
+      const directMemberCode = localStorage.getItem('murabbi_member_code');
       
-      let memberCode = '';
-      let fullName = '';
+      let memberCode = directMemberCode || '';
+      let fullName = googleInfo?.name || '';
 
       if (savedCustom) {
+        try {
           const customData = JSON.parse(savedCustom);
-          memberCode = customData.memberCode || '';
-          fullName = customData.name || '';
-      }
-
-      if (!fullName && googleInfo) {
-          fullName = googleInfo.name || '';
+          if (customData.memberCode && !memberCode) memberCode = customData.memberCode;
+          if (customData.name && !fullName) fullName = customData.name;
+        } catch {}
       }
 
       if (fullName || memberCode) {
-          setFormData(prev => ({
-              ...prev,
-              fullName: fullName || prev.fullName,
-              memberCode: memberCode || prev.memberCode
-          }));
+        setFormData(prev => ({
+          ...prev,
+          fullName: fullName || prev.fullName,
+          memberCode: memberCode || prev.memberCode
+        }));
       }
     };
 
@@ -1142,13 +1141,22 @@ export default function ExpensesPage() {
     setIsCurrentDraft(false);
     setHasUsedAiInCurrentReport(false);
     // Trigger prefill again to restore name/code
+    const directMemberCode = localStorage.getItem('murabbi_member_code');
     const savedCustom = localStorage.getItem('murabbi_profile_custom');
+    let fullName = '';
+    let memberCode = directMemberCode || '';
     if (savedCustom) {
-      const customData = JSON.parse(savedCustom);
+      try {
+        const customData = JSON.parse(savedCustom);
+        if (customData.name) fullName = customData.name;
+        if (customData.memberCode && !memberCode) memberCode = customData.memberCode;
+      } catch {}
+    }
+    if (fullName || memberCode) {
       setFormData(prev => ({
         ...prev,
-        fullName: customData.name || '',
-        memberCode: customData.memberCode || ''
+        fullName: fullName || prev.fullName,
+        memberCode: memberCode || prev.memberCode
       }));
     }
   };
@@ -1398,6 +1406,15 @@ export default function ExpensesPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (exportError && (field === 'fullName' || field === 'memberCode')) {
       setExportError(null);
+    }
+    if (field === 'memberCode') {
+      localStorage.setItem('murabbi_member_code', value);
+      try {
+        const existing = localStorage.getItem('murabbi_profile_custom');
+        const parsed = existing ? JSON.parse(existing) : {};
+        parsed.memberCode = value;
+        localStorage.setItem('murabbi_profile_custom', JSON.stringify(parsed));
+      } catch {}
     }
   };
 
