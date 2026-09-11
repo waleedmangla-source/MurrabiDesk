@@ -710,7 +710,7 @@ export default function ExpensesPage() {
   };
 
   // Expense Policy Summary Minimized State
-  const [isPolicySummaryMinimized, setIsPolicySummaryMinimized] = useState(false);
+  const [isPolicySummaryMinimized, setIsPolicySummaryMinimized] = useState(true);
 
   // History State
   const [expensesHistory, setExpensesHistory] = useState<any[]>([]);
