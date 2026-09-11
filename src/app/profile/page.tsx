@@ -76,7 +76,12 @@ export default function ProfilePage() {
     };
 
     if (googleInfo) {
-      setProfile({ ...googleInfo, ...customData });
+      setProfile({
+        ...customData,
+        ...googleInfo,
+        birthday: googleInfo.birthday || customData.birthday,
+        name: googleInfo.name || customData.name,
+      });
     } else {
        // Fallback for demo
        setProfile({

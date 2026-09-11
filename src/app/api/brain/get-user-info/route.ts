@@ -23,8 +23,35 @@ export async function POST(request: Request) {
     });
 
     const res = await oauth2.userinfo.get();
+    const data: any = { ...res.data };
+
+    try {
+      const people = google.people({
+        auth: oauth2Client,
+        version: 'v1'
+      });
+      const peopleRes = await people.people.get({
+        resourceName: 'people/me',
+        personFields: 'birthdays'
+      });
+      const birthdays = peopleRes.data.birthdays;
+      if (birthdays && birthdays.length > 0) {
+        const primary = birthdays.find(b => b.metadata?.primary) || birthdays[0];
+        if (primary?.date) {
+          const { year, month, day } = primary.date;
+          if (month && day) {
+            const yyyy = year ? String(year).padStart(4, '0') : '1990';
+            const mm = String(month).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            data.birthday = `${yyyy}-${mm}-${dd}`;
+          }
+        }
+      }
+    } catch (peopleErr) {
+      // Birthday scope might not be granted yet on older tokens or not set; keep data.birthday optional
+    }
     
-    return NextResponse.json(res.data);
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error('Get User Info Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

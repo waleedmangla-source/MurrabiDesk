@@ -218,7 +218,15 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
           </div>
           <div className="space-y-1">
             <FieldLabel>Birthday</FieldLabel>
-            <FieldInput type="date" value={settings.birthday} onChange={v => setSettings(s => ({ ...s, birthday: v }))} />
+            <div className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] flex items-center justify-between">
+              <span>{googleProfile?.birthday || settings.birthday || 'Fetching from Google account...'}</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                Google Account
+              </span>
+            </div>
+            <p className="text-[9px] text-[var(--text-dim)] font-medium">
+              Fetched automatically from your linked Google account.
+            </p>
           </div>
           <div className="space-y-1 sm:col-span-2">
             <FieldLabel>Languages</FieldLabel>
@@ -881,10 +889,14 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true);
 
-    // 1. Fetch Google account profile for full name
+    // 1. Fetch Google account profile for full name and birthday
     GoogleSyncService.getUserProfile().then(p => {
-      if (p?.name) {
-        setSettings(prev => ({ ...prev, name: p.name }));
+      if (p) {
+        setSettings(prev => ({
+          ...prev,
+          name: p.name || prev.name,
+          birthday: p.birthday || prev.birthday,
+        }));
       }
     });
 
