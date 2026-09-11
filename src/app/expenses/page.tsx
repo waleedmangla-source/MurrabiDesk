@@ -3684,7 +3684,7 @@ ${formData.comments || 'None'}
           <button 
             onClick={handleDownload}
             disabled={isGenerating}
-            className="btn-v4 py-5 rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag border-white/5 "
+            className="btn-v4 py-5 !rounded-[14px] flex items-center justify-center gap-3 text-sm font-black tracking-widest uppercase no-drag border-white/5 "
           >
             {isGenerating ? (
               <div className="animate-spin rounded-full h-6 w-6 border-4 border-white/20 border-t-white" />
@@ -3715,7 +3715,7 @@ ${formData.comments || 'None'}
               ) : (
                 <>
                   <Send size={20} />
-                  Export & Send (With Receipts)
+                  Send
                 </>
               )}
             </button>
