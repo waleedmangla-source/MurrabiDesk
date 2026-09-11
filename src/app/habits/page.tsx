@@ -9,21 +9,15 @@ import {
   Activity, 
   Save, 
   Search,
-  Filter,
-  ArrowRight,
-  Sparkles,
   ChevronRight,
   ChevronLeft,
-  TrendingUp,
   CheckCircle2,
   XCircle,
-  Clock,
   Cloud,
   CloudOff,
   Minus,
   BookOpen,
   Moon,
-  Home,
   Loader2,
   Sliders,
   Layers,
@@ -202,7 +196,7 @@ export default function HabitsPage() {
     
     setIsCommitting(false);
     setCommitSuccess(true);
-    setTimeout(() => setCommitSuccess(false), 3000);
+    setTimeout(() => setCommitSuccess(false), 2500);
   };
 
   const updateMetric = (id: string, val: number | boolean) => {
@@ -240,7 +234,8 @@ export default function HabitsPage() {
 
   // Date Navigation Helpers
   const shiftDate = (days: number) => {
-    const current = new Date(selectedDate);
+    const parts = selectedDate.split('-');
+    const current = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
     current.setDate(current.getDate() + days);
     const dateStr = current.toISOString().split('T')[0];
     setSelectedDate(dateStr);
@@ -253,7 +248,7 @@ export default function HabitsPage() {
     try {
       const parts = selectedDate.split('-');
       const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     } catch {
       return selectedDate;
     }
@@ -267,7 +262,6 @@ export default function HabitsPage() {
   const { streak, integrity, totalLoggedDays } = useMemo(() => {
     if (!logs || logs.length === 0) return { streak: 0, integrity: 0, totalLoggedDays: 0 };
 
-    // Calculate Streak
     let streakCount = 0;
     const sortedLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date));
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -287,7 +281,6 @@ export default function HabitsPage() {
       }
     }
 
-    // Calculate Integrity (Last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     const recentLogs = logs.filter(l => l.date >= thirtyDaysAgo);
     const spiritualHabits = habits.filter(h => h.category === 'Spiritual');
@@ -329,269 +322,237 @@ export default function HabitsPage() {
   }, [habits, categoryFilter]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-transparent">
+    <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
       
       {/* ──────────────────────────────────────────────────────────────────────────
-          PANEL 1: DEDICATED SECONDARY SIDEBAR (The Complete Daily Form)
+          PANEL 1: SECONDARY SIDEBAR — Sized & Styled exactly like Mail tab (w-[240px])
           Desktop: Fixed width sidebar | Mobile: Displayed when mobileView === 'form'
          ────────────────────────────────────────────────────────────────────────── */}
-      <aside 
+      <div 
         className={clsx(
-          "w-full lg:w-[320px] xl:w-[360px] shrink-0 secondary-sidebar glass bg-black/20 border-r border-white/5 flex flex-col h-full overflow-hidden transition-all duration-300",
+          "w-full lg:w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 secondary-sidebar",
           mobileView === 'form' ? "flex" : "hidden lg:flex"
         )}
       >
-        {/* Sidebar Header */}
-        <div className="px-5 pt-7 pb-4 border-b border-white/5 shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
-                Routine
-              </h1>
-              <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-80 mt-1.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-main)] animate-pulse" />
-                Daily Field Protocol
-              </p>
-            </div>
-            
-            {isGuest ? (
-              <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[8px] font-black uppercase tracking-wider flex items-center gap-1">
-                <CloudOff size={10} /> Local
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-wider flex items-center gap-1">
-                <Cloud size={10} /> Cloud
-              </span>
-            )}
-          </div>
-
-          {/* Date Navigator Strip */}
-          <div className="mt-4 bg-white/5 rounded-xl border border-white/5 p-2 flex items-center justify-between gap-1">
-            <button
-              onClick={() => shiftDate(-1)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+        {/* Sidebar Title — Identical to Mail Tab Header */}
+        <div className="px-5 pt-8 pb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+            Routine
+          </h1>
+        </div>
+        
+        {/* Date Navigator & Status Strip — Styled like Mail Tab's Account Section */}
+        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
+          <div className="flex items-center justify-between gap-1 py-1">
+            <button 
+              onClick={() => shiftDate(-1)} 
+              className="p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
               title="Previous Day"
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={13} />
             </button>
 
-            <div className="flex flex-col items-center min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black italic text-[var(--text-main)] tracking-tight truncate">
-                  {formattedSelectedDate}
-                </span>
-                {isToday && (
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-[var(--accent-main)] px-1 rounded bg-[var(--accent-soft)]">
-                    Today
-                  </span>
-                )}
-              </div>
-              <span className={clsx(
-                "text-[8px] font-bold uppercase tracking-widest mt-0.5",
-                hasLogForSelectedDate ? "text-emerald-400" : "text-amber-400/80"
-              )}>
-                {hasLogForSelectedDate ? "• Recorded in Log" : "• Pending Submission"}
+            <button 
+              onClick={() => setSelectedDate(todayStr)} 
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg hover:bg-black/20 transition-all text-left"
+              title="Click to jump to today"
+            >
+              <span className="text-xs font-black italic text-white tracking-tight">
+                {formattedSelectedDate}
               </span>
-            </div>
-
-            <div className="flex items-center gap-0.5">
-              {!isToday && (
-                <button
-                  onClick={() => setSelectedDate(todayStr)}
-                  className="px-1.5 py-1 rounded-md text-[8px] font-black uppercase tracking-wider text-[var(--accent-main)] hover:bg-white/10 transition-colors"
-                  title="Jump to Today"
-                >
-                  Now
-                </button>
+              {isToday ? (
+                <span className="text-[8px] font-black uppercase tracking-wider text-[var(--accent-main)] bg-[var(--accent-soft)] px-1 rounded">
+                  Today
+                </span>
+              ) : (
+                <span className="text-[8px] font-bold uppercase tracking-wider text-white/30">
+                  {selectedDate.split('-')[0]}
+                </span>
               )}
-              <button
-                onClick={() => shiftDate(1)}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
-                title="Next Day"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+            </button>
+
+            <button 
+              onClick={() => shiftDate(1)} 
+              className="p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
+              title="Next Day"
+            >
+              <ChevronRight size={13} />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between px-1 mt-1">
+            <span className={clsx(
+              "text-[8px] font-bold uppercase tracking-widest",
+              hasLogForSelectedDate ? "text-emerald-400" : "text-[var(--text-dim)]"
+            )}>
+              {hasLogForSelectedDate ? "• Recorded" : "• Pending"}
+            </span>
+            <span className="text-[8px] font-bold uppercase tracking-wider text-[var(--text-dim)]">
+              {isGuest ? "Local" : "Cloud Sync"}
+            </span>
           </div>
         </div>
 
-        {/* Form Body: All Daily Protocols & Reflections */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5 no-drag">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">
-                Discipline Protocols ({activeHabits.length})
-              </span>
-              <button
-                onClick={() => setIsAddingHabit(true)}
-                className="text-[9px] font-bold uppercase tracking-wider text-[var(--accent-main)] hover:underline flex items-center gap-1"
-              >
-                <Plus size={10} /> Add Node
-              </button>
-            </div>
-
-            {activeHabits.map((habit) => {
-              const catTheme = CATEGORY_COLORS[habit.category] || CATEGORY_COLORS.Spiritual;
-
-              return (
-                <div 
-                  key={habit.id} 
-                  className="glass rounded-xl p-3.5 border border-white/5 bg-black/10 hover:border-white/10 transition-all space-y-2.5"
-                >
-                  {/* Protocol Label Header */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className={clsx("text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border", catTheme.bg, catTheme.text, catTheme.border)}>
-                        {habit.category}
-                      </span>
-                      <h4 className="text-xs font-black italic text-[var(--text-main)] tracking-tight mt-1 truncate">
-                        {habit.name}
-                      </h4>
-                    </div>
-
-                    {habit.unit && (
-                      <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest shrink-0">
-                        {habit.unit}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Protocol Input: Bounded Counter vs Numeric Stepper vs Toggle */}
-                  {habit.type === 'counter' ? (
-                    habit.max ? (
-                      /* Segmented Control 0 to Max (e.g. 0-5 for prayers) */
-                      <div className="grid grid-cols-6 gap-1 bg-black/20 p-1 rounded-lg border border-white/5">
-                        {Array.from({ length: habit.max + 1 }).map((_, v) => {
-                          const isSelected = formMetrics[habit.id] === v;
-                          return (
-                            <button
-                              key={v}
-                              type="button"
-                              onClick={() => updateMetric(habit.id, v)}
-                              className={clsx(
-                                "h-8 rounded-md text-xs font-black transition-all flex items-center justify-center",
-                                isSelected
-                                  ? "bg-[var(--accent-main)] text-white shadow-sm shadow-[var(--accent-glow)] font-bold scale-[1.02]"
-                                  : "text-white/40 hover:text-white hover:bg-white/5"
-                              )}
-                            >
-                              {v}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      /* Open Numeric Counter Stepper (e.g. Pages Read) */
-                      <div className="flex items-center justify-between bg-black/20 p-1.5 px-2.5 rounded-lg border border-white/5">
-                        <button
-                          type="button"
-                          onClick={() => updateMetric(habit.id, Math.max(0, ((formMetrics[habit.id] as number) || 0) - 1))}
-                          className="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all active:scale-95"
-                          title="Decrease"
-                        >
-                          <Minus size={13} />
-                        </button>
-                        
-                        <div className="flex items-baseline gap-1">
-                          <input
-                            type="number"
-                            min="0"
-                            value={formMetrics[habit.id] ?? 0}
-                            onChange={(e) => updateMetric(habit.id, Math.max(0, parseInt(e.target.value) || 0))}
-                            className="w-14 bg-transparent text-center font-black text-lg text-[var(--text-main)] italic outline-none"
-                          />
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => updateMetric(habit.id, ((formMetrics[habit.id] as number) || 0) + 1)}
-                          className="w-7 h-7 rounded-md bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
-                          title="Increase"
-                        >
-                          <Plus size={13} />
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    /* Boolean Toggle Switch (e.g. Tahajjud) */
-                    <button
-                      type="button"
-                      onClick={() => updateMetric(habit.id, !formMetrics[habit.id])}
-                      className={clsx(
-                        "w-full p-2.5 rounded-lg border transition-all flex items-center justify-between text-left",
-                        formMetrics[habit.id]
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                          : "bg-black/20 border-white/5 text-white/40 hover:border-white/10 hover:bg-white/5"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={clsx(
-                          "w-6 h-6 rounded-md flex items-center justify-center transition-all",
-                          formMetrics[habit.id] ? "bg-emerald-500 text-white" : "bg-white/5 text-white/30"
-                        )}>
-                          {formMetrics[habit.id] ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                        </div>
-                        <span className="text-[11px] font-black italic tracking-tight text-[var(--text-main)]">
-                          {formMetrics[habit.id] ? "Completed Protocol" : "Pending Protocol"}
-                        </span>
-                      </div>
-                      <span className="text-[8px] font-bold uppercase tracking-wider opacity-60">
-                        {formMetrics[habit.id] ? "Active" : "Void"}
-                      </span>
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+        {/* Clean, Non-Boxy Daily Protocol Form List */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-3 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">
+              Daily Protocols
+            </span>
+            <button
+              onClick={() => setIsAddingHabit(true)}
+              className="text-[8px] font-bold uppercase tracking-wider text-[var(--accent-main)] hover:underline flex items-center gap-0.5"
+            >
+              <Plus size={10} /> Node
+            </button>
           </div>
 
-          {/* Daily Field Notes / Reflections */}
-          <div className="space-y-2 pt-2 border-t border-white/5">
-            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] flex items-center gap-1.5">
-              <FileText size={11} className="text-[var(--accent-main)]" />
-              Observations &amp; Reflections
-            </label>
+          {activeHabits.map((habit) => {
+            return (
+              <div key={habit.id} className="space-y-1.5">
+                {/* Header label */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black italic text-white tracking-tight truncate max-w-[140px]">
+                    {habit.name}
+                  </span>
+                  {habit.type === 'counter' && habit.max && (
+                    <span className="text-[9px] font-bold text-[var(--text-dim)]">
+                      {formMetrics[habit.id] ?? 0}/{habit.max}
+                    </span>
+                  )}
+                  {habit.type === 'counter' && !habit.max && habit.unit && (
+                    <span className="text-[8px] font-bold text-[var(--text-dim)] uppercase">
+                      {habit.unit}
+                    </span>
+                  )}
+                </div>
+
+                {/* Direct Control without heavy card packaging */}
+                {habit.type === 'counter' ? (
+                  habit.max ? (
+                    /* Segmented Control (e.g. 0-5 for prayers) */
+                    <div className="grid grid-cols-6 gap-0.5 bg-black/20 p-0.5 rounded-lg border border-white/5">
+                      {Array.from({ length: habit.max + 1 }).map((_, v) => {
+                        const isSelected = formMetrics[habit.id] === v;
+                        return (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => updateMetric(habit.id, v)}
+                            className={clsx(
+                              "h-7 rounded text-[10px] font-black transition-all flex items-center justify-center",
+                              isSelected
+                                ? "bg-[var(--accent-main)] text-white shadow-sm font-bold"
+                                : "text-white/40 hover:text-white hover:bg-white/5"
+                            )}
+                          >
+                            {v}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Clean Stepper (e.g. Ruhani Khazain pages) */
+                    <div className="flex items-center justify-between bg-black/20 p-1 rounded-lg border border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => updateMetric(habit.id, Math.max(0, ((formMetrics[habit.id] as number) || 0) - 1))}
+                        className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all active:scale-95"
+                      >
+                        <Minus size={11} />
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formMetrics[habit.id] ?? 0}
+                        onChange={(e) => updateMetric(habit.id, Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-12 bg-transparent text-center font-black text-sm text-white italic outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateMetric(habit.id, ((formMetrics[habit.id] as number) || 0) + 1)}
+                        className="w-6 h-6 rounded bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white flex items-center justify-center transition-all active:scale-95"
+                      >
+                        <Plus size={11} />
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  /* Clean Toggle Switch (e.g. Tahajjud) */
+                  <button
+                    type="button"
+                    onClick={() => updateMetric(habit.id, !formMetrics[habit.id])}
+                    className={clsx(
+                      "w-full px-2.5 py-1.5 rounded-lg border transition-all flex items-center justify-between text-left",
+                      formMetrics[habit.id]
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                        : "bg-black/20 border-white/5 text-white/40 hover:bg-white/5"
+                    )}
+                  >
+                    <span className="text-[10px] font-bold">
+                      {formMetrics[habit.id] ? "Completed" : "Pending"}
+                    </span>
+                    <div 
+                      className={clsx(
+                        "w-7 h-4 rounded-full transition-colors relative p-0.5",
+                        formMetrics[habit.id] ? "bg-emerald-500" : "bg-white/10"
+                      )}
+                    >
+                      <div 
+                        className={clsx(
+                          "w-3 h-3 rounded-full bg-white transition-transform shadow-xs",
+                          formMetrics[habit.id] ? "translate-x-3" : "translate-x-0"
+                        )} 
+                      />
+                    </div>
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Daily Field Notes */}
+          <div className="space-y-1.5 pt-2 border-t border-white/5">
+            <span className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">
+              Daily Notes
+            </span>
             <textarea
               value={formNotes}
               onChange={(e) => setFormNotes(e.target.value)}
-              placeholder="Record tactical field observations, thoughts, or spiritual reflections..."
-              className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-xs leading-relaxed text-[var(--foreground)] placeholder:text-[var(--text-dim)]/50 focus:border-[var(--accent-main)] outline-none min-h-[90px] resize-none transition-all shadow-inner"
+              placeholder="Tactical observations..."
+              rows={3}
+              className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-xs text-[var(--foreground)] placeholder:text-[var(--text-dim)]/40 focus:border-[var(--accent-main)] outline-none resize-none transition-all"
             />
           </div>
         </div>
 
         {/* Sidebar Footer: Commit to Record Button */}
-        <div className="p-5 border-t border-white/5 shrink-0 bg-black/10 space-y-2">
+        <div className="p-4 border-t border-white/5 shrink-0 bg-black/10">
           <button
             type="button"
             onClick={commitReport}
             disabled={isCommitting}
-            className="w-full py-3.5 btn-ruby rounded-xl font-black uppercase tracking-[0.25em] text-[11px] flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+            className="w-full py-2.5 btn-ruby rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow transition-all active:scale-95 disabled:opacity-50"
           >
             {isCommitting ? (
               <>
-                <Loader2 size={15} className="animate-spin" />
-                Committing Data...
+                <Loader2 size={13} className="animate-spin" />
+                <span>Committing...</span>
               </>
             ) : commitSuccess ? (
               <>
-                <CheckCircle2 size={15} className="text-emerald-300" />
-                Committed to Record
+                <CheckCircle2 size={13} className="text-emerald-300" />
+                <span>Committed!</span>
               </>
             ) : (
               <>
-                <Save size={15} />
-                Commit to Record
+                <Save size={13} />
+                <span>Commit Record</span>
               </>
             )}
           </button>
-          
-          <div className="flex items-center justify-between px-1 text-[8px] font-bold text-[var(--text-dim)] tracking-wider uppercase">
-            <span>Marker: {selectedDate}</span>
-            <span>{hasLogForSelectedDate ? "Status: Synced" : "Status: Draft"}</span>
-          </div>
         </div>
-      </aside>
+      </div>
 
       {/* ──────────────────────────────────────────────────────────────────────────
           PANEL 2: MAIN WORKSPACE (Matrix, Archival Ledger, & Protocol Directory)
@@ -604,13 +565,13 @@ export default function HabitsPage() {
         )}
       >
         {/* Workspace Top Navigation Bar */}
-        <header className="px-6 lg:px-8 pt-7 pb-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-4 shrink-0 bg-black/10">
+        <header className="px-6 lg:px-8 pt-8 pb-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-4 shrink-0 bg-black/10">
           <div>
             <h2 className="text-2xl lg:text-3xl font-black tracking-tighter italic text-[var(--text-main)] uppercase leading-none">
-              Routine Discipline Ledger
+              Daily Field Report
             </h2>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)] mt-1 flex items-center gap-2">
-              Spiritual Integrity &amp; Mission Telemetry
+              Routine Discipline &amp; Spiritual Integrity Protocol
             </p>
           </div>
 
@@ -620,7 +581,7 @@ export default function HabitsPage() {
               <button
                 onClick={() => setActiveTab('matrix')}
                 className={clsx(
-                  "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
+                  "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
                   activeTab === 'matrix' 
                     ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)]" 
                     : "text-white/40 hover:bg-white/5 hover:text-white"
@@ -632,7 +593,7 @@ export default function HabitsPage() {
               <button
                 onClick={() => setActiveTab('archival')}
                 className={clsx(
-                  "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
+                  "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
                   activeTab === 'archival' 
                     ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)]" 
                     : "text-white/40 hover:bg-white/5 hover:text-white"
@@ -644,7 +605,7 @@ export default function HabitsPage() {
               <button
                 onClick={() => setActiveTab('protocols')}
                 className={clsx(
-                  "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
+                  "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
                   activeTab === 'protocols' 
                     ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)]" 
                     : "text-white/40 hover:bg-white/5 hover:text-white"
@@ -658,7 +619,7 @@ export default function HabitsPage() {
             <button
               onClick={loadData}
               disabled={isSyncing}
-              className="p-2.5 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all active:scale-95"
+              className="p-2 rounded-xl glass border border-white/10 text-white/40 hover:text-white transition-all active:scale-95"
               title="Refresh and sync cloud data"
             >
               <Save size={14} className={clsx(isSyncing && "animate-spin text-[var(--accent-main)]")} />
@@ -762,7 +723,7 @@ export default function HabitsPage() {
                       Consistency Matrix (90 Days)
                     </h3>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-dim)] mt-0.5">
-                      Visual operational compliance across daily spiritual &amp; mission protocols
+                      Visual compliance across daily spiritual &amp; mission protocols
                     </p>
                   </div>
 
@@ -829,11 +790,11 @@ export default function HabitsPage() {
                   })}
                 </div>
                 <div className="text-[9px] font-bold text-white/30 uppercase tracking-widest pt-2">
-                  * Click any node to load and inspect that day's field report into the sidebar.
+                  * Click any node to load and inspect that day's field report in the sidebar.
                 </div>
               </section>
 
-              {/* Protocol Discipline Summaries */}
+              {/* Protocol Summaries */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <section className="glass rounded-2xl p-6 border border-white/5 space-y-4">
                   <div className="flex items-center gap-3">
@@ -850,12 +811,12 @@ export default function HabitsPage() {
                     </div>
                   </div>
                   
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-2 pt-2">
                     {habits.filter(h => h.category === 'Spiritual' && !h.archived).map(h => (
                       <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                         <span className="text-xs font-bold text-[var(--text-main)]">{h.name}</span>
                         <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">
-                          {h.type === 'counter' ? `Max ${h.max || 'N/A'} ${h.unit || ''}` : 'Toggle Status'}
+                          {h.type === 'counter' ? `0–${h.max || 'N/A'} ${h.unit || ''}` : 'Toggle'}
                         </span>
                       </div>
                     ))}
@@ -877,7 +838,7 @@ export default function HabitsPage() {
                     </div>
                   </div>
                   
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-2 pt-2">
                     {habits.filter(h => h.category !== 'Spiritual' && !h.archived).map(h => (
                       <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                         <span className="text-xs font-bold text-[var(--text-main)]">{h.name}</span>
