@@ -33,24 +33,11 @@ export async function POST(request: Request) {
     // If no spreadsheetId provided, we search for one named 'Murabbi Expenses Master' inside the module folder
     if (!targetId) {
        const drive = google.drive({ version: 'v3', auth: oauth2Client });
-       
-       // 0. Resolve Root Folder
-       const ROOT_NAME = 'Murabbi Desk Drive';
-       const MODULE_NAME = 'Expenses';
-       let rootId = '';
-       const rootSearch = await drive.files.list({
-         q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-         fields: 'files(id)',
-       });
-       if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-         rootId = rootSearch.data.files[0].id!;
-       } else {
-         const rootCreate = await drive.files.create({
-           requestBody: { name: ROOT_NAME, mimeType: 'application/vnd.google-apps.folder' },
-           fields: 'id',
-         });
-         rootId = rootCreate.data.id!;
-       }
+              // 0. Resolve Root Folder
+        const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+        const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+        const rootId = rootFolder.id;
+        const MODULE_NAME = 'Expenses';
 
        // 1. Resolve Expenses Folder
        let expensesFolderId = '';

@@ -1325,7 +1325,7 @@ export default function LettersPage() {
           <div className="shrink-0 mx-6 mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center justify-between gap-2 animate-in fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle size={15} />
-              <span>Letter uploaded to Murabbi Desk Drive / Letters!</span>
+              <span>Letter uploaded to Murabbi Desk / Letters!</span>
             </div>
             {driveLink && (
               <a
