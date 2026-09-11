@@ -28,6 +28,15 @@ import {
   normalizeKhazainText, 
   normalizeWithIndexMap 
 } from '@/lib/khazain-data';
+
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+if (typeof window !== 'undefined') {
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+}
+
 import { 
   parsePageToBlocks, 
   PageBlock, 
@@ -128,9 +137,47 @@ export default function RuhaniKhazainReader() {
   // Dropdown states for each volume book breakdown
   const [expandedVolumes, setExpandedVolumes] = useState<Record<number, boolean>>({ 1: true });
 
-  // Language toggle for reader: 'urdu' | 'english'
-  const [bookLanguage, setBookLanguage] = useState<'urdu' | 'english'>('urdu');
+  // Language toggle for reader: 'urdu' | 'english' | 'test'
+  const [bookLanguage, setBookLanguage] = useState<'urdu' | 'english' | 'test'>('urdu');
   const [selectedEnglishBookId, setSelectedEnglishBookId] = useState<string | null>('philosophy-teachings-islam');
+  
+  // OCR & PDF States for Test Tab
+  const [isOcrLoading, setIsOcrLoading] = useState(false);
+  const [currentOcrText, setCurrentOcrText] = useState('');
+  const [pdfNumPages, setPdfNumPages] = useState<number | null>(null);
+  const [pdfPageNumber, setPdfPageNumber] = useState(1);
+
+  const handlePdfRenderSuccess = async () => {
+    // Small delay to ensure the canvas is fully mounted in the DOM
+    setTimeout(async () => {
+      const canvas = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
+      if (!canvas) return;
+  
+      setIsOcrLoading(true);
+      setCurrentOcrText('');
+      
+      try {
+        const imageBase64 = canvas.toDataURL('image/jpeg');
+        const res = await fetch('/api/ocr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64 }),
+        });
+        const data = await res.json();
+        if (data.text) {
+          setCurrentOcrText(data.text);
+        } else {
+          setCurrentOcrText('OCR Failed or returned empty text.');
+        }
+      } catch (err) {
+        console.error('OCR error:', err);
+        setCurrentOcrText('Error connecting to OCR API.');
+      } finally {
+        setIsOcrLoading(false);
+      }
+    }, 100);
+  };
+
 
   // Secondary Sidebar Collection Dropdown & Book Search Filter
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(true);
@@ -919,9 +966,9 @@ export default function RuhaniKhazainReader() {
           <div className="relative flex bg-white/5 rounded-xl p-1 border border-white/10">
             {/* Animated Background Pill */}
             <div 
-              className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm bg-[var(--accent-main)]"
+              className="absolute top-1 bottom-1 w-[calc(33.333%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm bg-[var(--accent-main)]"
               style={{
-                left: bookLanguage === 'urdu' ? '0.25rem' : 'calc(50%)',
+                left: bookLanguage === 'urdu' ? '0.25rem' : bookLanguage === 'english' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666%)',
               }}
             />
             <button
@@ -943,6 +990,16 @@ export default function RuhaniKhazainReader() {
               )}
             >
               English
+            </button>
+            <button
+              type="button"
+              onClick={() => setBookLanguage('test')}
+              className={clsx(
+                "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-wider transition-colors duration-200 text-center",
+                bookLanguage === 'test' ? "text-white font-black" : "text-[var(--text-dim)] hover:text-white"
+              )}
+            >
+              Test
             </button>
           </div>
         </div>
@@ -1195,6 +1252,63 @@ export default function RuhaniKhazainReader() {
                 </div>
               );
             })()
+          ) : bookLanguage === 'test' ? (
+            <div className="w-full flex flex-col items-center gap-6 animate-in fade-in duration-300">
+              <Document 
+                file="https://files.alislam.cloud/urdu/pdf/Ruhani-Khazain-Vol-01.pdf"
+                onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
+                className={isOcrLoading || currentOcrText ? "hidden" : "block shadow-2xl"}
+                loading={
+                  <div className="flex flex-col items-center justify-center p-20 gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
+                    <p className="text-[var(--text-dim)] font-medium text-sm">Loading PDF...</p>
+                  </div>
+                }
+              >
+                <Page 
+                  pageNumber={pdfPageNumber} 
+                  onRenderSuccess={handlePdfRenderSuccess}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  width={Math.min(640, typeof window !== 'undefined' ? window.innerWidth - 32 : 640)}
+                />
+              </Document>
+              
+              {isOcrLoading && (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
+                  <p className="text-[var(--text-dim)] font-medium text-sm">Extracting Urdu text via OCR...</p>
+                </div>
+              )}
+
+              {currentOcrText && !isOcrLoading && (
+                <div 
+                  className="w-full my-auto flex justify-center py-2 animate-in fade-in duration-300"
+                  style={{
+                    maxWidth: 'min(640px, calc((100vh - 170px) * 9 / 11))'
+                  }}
+                >
+                  <div className="w-full aspect-[9/11] bg-white text-black shadow-2xl p-3.5 sm:p-5 md:p-6 relative select-text border border-zinc-300 flex flex-col justify-between">
+                    <div className="border-[2px] sm:border-[2.5px] border-black bg-white flex flex-col flex-1 min-h-0">
+                      <div className="p-[2.5px] sm:p-[3px] bg-white flex flex-col flex-1 min-h-0">
+                        <div className="border border-black p-2.5 sm:p-3.5 md:p-4 flex flex-col flex-1 min-h-0 bg-white relative">
+                          <div 
+                            className="text-black select-text w-full flex-1 flex flex-col justify-start" 
+                            dir="rtl"
+                            style={{ 
+                              fontFamily: "'Jameel Noori Nastaleeq', 'Jameel Noori Nastaleeq Regular', 'Noto Nastaliq Urdu', serif",
+                              fontSize: `${fontSize}px`
+                            }}
+                          >
+                            {renderText(currentOcrText)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : loading ? (
             <div className="flex flex-col items-center justify-center gap-3 h-full my-auto opacity-70">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-main)]" />
@@ -1328,6 +1442,45 @@ export default function RuhaniKhazainReader() {
                 aria-label="Next Page"
               >
                 <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── FLOATING BOTTOM-CENTER PAGE CONTROLS (TEST MODE) ── */}
+        {bookLanguage === 'test' && pdfNumPages && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center justify-center">
+            <div className="pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-2xl glass bg-black/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all">
+              {/* Previous Page Button */}
+              <button 
+                onClick={() => {
+                   setPdfPageNumber(Math.max(1, pdfPageNumber - 1));
+                   setIsOcrLoading(false);
+                   setCurrentOcrText('');
+                }}
+                disabled={pdfPageNumber <= 1 || isOcrLoading}
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <div className="px-2 py-0.5 text-xs font-mono font-black text-white flex items-center gap-1.5 border-x border-white/10">
+                <span className="text-[var(--accent-main)] px-1">{pdfPageNumber}</span>
+                <span className="opacity-30 select-none">/</span>
+                <span className="opacity-60 select-none">{pdfNumPages}</span>
+              </div>
+
+              {/* Next Page Button */}
+              <button 
+                onClick={() => {
+                   setPdfPageNumber(Math.min(pdfNumPages, pdfPageNumber + 1));
+                   setIsOcrLoading(false);
+                   setCurrentOcrText('');
+                }}
+                disabled={pdfPageNumber >= pdfNumPages || isOcrLoading}
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 group"
+              >
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
