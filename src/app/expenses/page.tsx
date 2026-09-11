@@ -643,9 +643,6 @@ export default function ExpensesPage() {
     });
   };
 
-  // Search Query for Expense List / Table View
-  const [expenseSearchQuery, setExpenseSearchQuery] = useState('');
-
   // Category item filter helper
   const getCategoryItems = (category: Category) => {
     return expensesHistory.filter(f => {
@@ -2313,125 +2310,42 @@ ${formData.comments || 'None'}
 
         {activeTab === 'history' && (
           <div className="p-6 md:p-10 pt-8 md:pt-10 animate-in fade-in slide-in-from-bottom-6 duration-500 max-w-7xl mx-auto w-full flex flex-col gap-6">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-white/5">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--accent-main)]">
-                    Waqfeen Expenses &bull; Records
-                  </span>
-                </div>
-                <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
-                  {activeCategory === 'Drafts' && <>Draft <span className="text-[var(--accent-main)]">Expenses</span></>}
-                  {activeCategory === 'Pending' && <>Pending <span className="text-[var(--accent-main)]">Refunds</span></>}
-                  {activeCategory === 'Refunded' && <>Refunded <span className="text-[var(--accent-main)]">Expenses</span></>}
-                </h1>
-                <p className="text-[var(--text-dim)] font-medium text-xs mt-1">
-                  {activeCategory === 'Drafts' && "Unsubmitted expense reports and saved drafts awaiting completion."}
-                  {activeCategory === 'Pending' && "Submitted claims awaiting review, headquarter approval, and reimbursement."}
-                  {activeCategory === 'Refunded' && "Archived and reconciled claims that have been reimbursed."}
-                </p>
-              </div>
-
-              {/* Category Switcher Tabs */}
-              <div className="flex items-center gap-2 bg-black/40 p-1 rounded-2xl border border-white/5 self-start md:self-auto">
-                {(['Drafts', 'Pending', 'Refunded'] as const).map(cat => {
-                  const isActive = activeCategory === cat;
-                  const count = cat === 'Drafts' ? draftsCount : (cat === 'Pending' ? pendingCount : refundedCount);
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setActiveCategory(cat)}
-                      className={clsx(
-                        "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all",
-                        isActive
-                          ? "bg-[var(--accent-main)] text-white shadow-lg"
-                          : "text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-white/5"
-                      )}
-                    >
-                      <span>{cat}</span>
-                      <span className={clsx(
-                        "text-[10px] font-black px-1.5 py-0.5 rounded-full",
-                        isActive ? "bg-black/20 text-white" : "bg-white/10 text-[var(--text-dim)]"
-                      )}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Filter & Metric Bar */}
             {(() => {
-              const allCategoryItems = getCategoryItems(activeCategory);
-              const filteredItems = allCategoryItems.filter(item => {
-                if (!expenseSearchQuery.trim()) return true;
-                const q = expenseSearchQuery.toLowerCase();
-                return (
-                  (item.purpose && item.purpose.toLowerCase().includes(q)) ||
-                  (item.month && item.month.toLowerCase().includes(q)) ||
-                  (item.date && item.date.toLowerCase().includes(q)) ||
-                  (item.fullName && item.fullName.toLowerCase().includes(q)) ||
-                  (item.memberCode && item.memberCode.toLowerCase().includes(q))
-                );
-              });
-              const totalAmount = filteredItems.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+              const categoryItems = getCategoryItems(activeCategory);
+              const totalAmount = categoryItems.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
 
               return (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {/* Search Bar */}
-                    <div className="relative flex-1 max-w-md">
-                      <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
-                      <input
-                        type="text"
-                        value={expenseSearchQuery}
-                        onChange={(e) => setExpenseSearchQuery(e.target.value)}
-                        placeholder={`Search ${activeCategory.toLowerCase()} by date, purpose, or member...`}
-                        className="w-full pl-9 pr-9 py-2 bg-black/30 border border-white/10 rounded-xl text-xs text-[var(--text-main)] placeholder-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent-main)] transition-colors"
-                      />
-                      {expenseSearchQuery && (
-                        <button
-                          type="button"
-                          onClick={() => setExpenseSearchQuery('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[var(--text-main)]"
-                        >
-                          <X size={12} />
-                        </button>
-                      )}
+                <>
+                  {/* Header Section */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-white/5">
+                    <div>
+                      <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
+                        {activeCategory === 'Drafts' && <>Draft <span className="text-[var(--accent-main)]">Expenses</span></>}
+                        {activeCategory === 'Pending' && <>Pending <span className="text-[var(--accent-main)]">Refunds</span></>}
+                        {activeCategory === 'Refunded' && <>Refunded <span className="text-[var(--accent-main)]">Expenses</span></>}
+                      </h1>
+                      <p className="text-[var(--text-dim)] font-medium text-xs mt-1">
+                        {activeCategory === 'Drafts' && "Unsubmitted expense reports and saved drafts awaiting completion."}
+                        {activeCategory === 'Pending' && "Submitted claims awaiting review, headquarter approval, and reimbursement."}
+                        {activeCategory === 'Refunded' && "Archived and reconciled claims that have been reimbursed."}
+                      </p>
                     </div>
 
-                    {/* Stats & Actions */}
-                    <div className="flex items-center gap-3 self-end sm:self-auto">
-                      <div className="flex items-center gap-3 px-4 py-2 bg-black/30 border border-white/5 rounded-xl">
-                        <div className="flex flex-col text-right">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Total Claims</span>
-                          <span className="text-sm font-black text-[var(--accent-main)] font-mono">
-                            ${totalAmount.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="w-px h-6 bg-white/10" />
-                        <div className="flex flex-col">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Records</span>
-                          <span className="text-sm font-bold text-[var(--text-main)]">
-                            {filteredItems.length}
-                          </span>
-                        </div>
+                    {/* Total Claims Metric Badge (moved where toggle switch was) */}
+                    <div className="flex items-center gap-3 px-4 py-2 bg-black/30 border border-white/5 rounded-xl self-start sm:self-auto">
+                      <div className="flex flex-col text-right">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Total Claims</span>
+                        <span className="text-sm font-black text-[var(--accent-main)] font-mono">
+                          ${totalAmount.toFixed(2)}
+                        </span>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          startNewReport();
-                          setActiveTab('create');
-                        }}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-main)] hover:bg-[var(--accent-main)]/90 text-white text-xs font-bold transition-all shadow-lg active:scale-95 shrink-0"
-                      >
-                        <Plus size={13} />
-                        <span>New Expense</span>
-                      </button>
+                      <div className="w-px h-6 bg-white/10" />
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">Records</span>
+                        <span className="text-sm font-bold text-[var(--text-main)]">
+                          {categoryItems.length}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -2441,55 +2355,32 @@ ${formData.comments || 'None'}
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-white/[0.03] border-b border-white/5 text-[10px] font-black uppercase tracking-wider text-[var(--text-dim)]">
-                            <th className="py-3.5 px-5">Date & Member</th>
+                            <th className="py-3.5 px-5">Date</th>
                             <th className="py-3.5 px-4">Period</th>
                             <th className="py-3.5 px-4">Purpose & Details</th>
-                            <th className="py-3.5 px-4">Status</th>
                             <th className="py-3.5 px-4 text-right">Amount</th>
                             <th className="py-3.5 px-5 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-xs">
-                          {filteredItems.length === 0 ? (
+                          {categoryItems.length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="py-16 text-center">
+                              <td colSpan={5} className="py-16 text-center">
                                 <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
                                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3 text-[var(--text-dim)]">
                                     <History size={24} />
                                   </div>
                                   <p className="text-sm font-bold text-[var(--text-main)] mb-1">
-                                    {expenseSearchQuery ? 'No matching expenses found' : `No ${activeCategory.toLowerCase()} available`}
+                                    No {activeCategory.toLowerCase()} available
                                   </p>
-                                  <p className="text-[11px] text-[var(--text-dim)] mb-4">
-                                    {expenseSearchQuery 
-                                      ? 'Try searching for a different keyword or clear the search query.'
-                                      : `There are currently no expenses categorized as ${activeCategory}.`}
+                                  <p className="text-[11px] text-[var(--text-dim)]">
+                                    There are currently no expenses categorized as {activeCategory}.
                                   </p>
-                                  {expenseSearchQuery ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => setExpenseSearchQuery('')}
-                                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-[var(--text-main)] transition-colors"
-                                    >
-                                      Clear Search
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        startNewReport();
-                                        setActiveTab('create');
-                                      }}
-                                      className="px-3 py-1.5 rounded-xl bg-[var(--accent-main)] text-white text-xs font-bold transition-all shadow-md"
-                                    >
-                                      Create New Expense
-                                    </button>
-                                  )}
                                 </div>
                               </td>
                             </tr>
                           ) : (
-                            filteredItems.map(item => {
+                            categoryItems.map(item => {
                               let parsedData: any = null;
                               if (item.data) {
                                 try {
@@ -2509,21 +2400,11 @@ ${formData.comments || 'None'}
                                   className="hover:bg-white/[0.03] transition-colors group cursor-pointer"
                                   onClick={() => openExpenseInTab(item, activeCategory)}
                                 >
-                                  {/* Date & Member */}
+                                  {/* Date */}
                                   <td className="py-4 px-5 align-top">
-                                    <div className="flex flex-col">
-                                      <span className="font-bold text-sm text-[var(--text-main)] tracking-tight">
-                                        {item.date}
-                                      </span>
-                                      <span className="text-[11px] text-[var(--text-dim)] truncate max-w-[150px]">
-                                        {item.fullName || 'Waleed Ahmad Mangla'}
-                                      </span>
-                                      {item.memberCode && (
-                                        <span className="text-[9px] font-mono text-[var(--text-dim)]/70">
-                                          #{item.memberCode}
-                                        </span>
-                                      )}
-                                    </div>
+                                    <span className="font-bold text-sm text-[var(--text-main)] tracking-tight">
+                                      {item.date}
+                                    </span>
                                   </td>
 
                                   {/* Period */}
@@ -2577,28 +2458,6 @@ ${formData.comments || 'None'}
                                         </p>
                                       )}
                                     </div>
-                                  </td>
-
-                                  {/* Status */}
-                                  <td className="py-4 px-4 align-top">
-                                    {activeCategory === 'Drafts' && (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                        <FileText size={10} />
-                                        <span>DRAFT</span>
-                                      </span>
-                                    )}
-                                    {activeCategory === 'Pending' && (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                                        <Clock size={10} />
-                                        <span>PENDING REFUND</span>
-                                      </span>
-                                    )}
-                                    {activeCategory === 'Refunded' && (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                        <CheckCircle size={10} />
-                                        <span>REFUNDED</span>
-                                      </span>
-                                    )}
                                   </td>
 
                                   {/* Total Amount */}
@@ -2664,10 +2523,10 @@ ${formData.comments || 'None'}
                     </div>
 
                     {/* Table Footer */}
-                    {filteredItems.length > 0 && (
+                    {categoryItems.length > 0 && (
                       <div className="px-5 py-3.5 bg-black/30 border-t border-white/5 flex items-center justify-between text-xs text-[var(--text-dim)]">
                         <span>
-                          Showing <strong className="text-[var(--text-main)]">{filteredItems.length}</strong> of <strong className="text-[var(--text-main)]">{allCategoryItems.length}</strong> expenses
+                          Showing <strong className="text-[var(--text-main)]">{categoryItems.length}</strong> {categoryItems.length === 1 ? 'expense' : 'expenses'}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black uppercase tracking-wider">Subtotal:</span>
@@ -2678,7 +2537,7 @@ ${formData.comments || 'None'}
                       </div>
                     )}
                   </div>
-                </div>
+                </>
               );
             })()}
           </div>
