@@ -70,6 +70,25 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
+function formatExpenseDate(dateStr: string) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      const d = new Date(year, month, day);
+      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+  }
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  return dateStr;
+}
+
 // --- Sortable Item Component ---
 function SortableReceiptItem({ receipt, idx, onRemove, isReadOnly }: { receipt: any, idx: number, onRemove: (id: string) => void, isReadOnly?: boolean }) {
   const {
@@ -1982,7 +2001,7 @@ ${formData.comments || 'None'}
                   const items = getCategoryItems('Drafts');
                  if (items.length === 0) {
                    return (
-                     <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                     <div className="px-6 py-2 text-[10px] text-[var(--text-dim)] italic">
                        No drafts
                      </div>
                    );
@@ -1996,7 +2015,7 @@ ${formData.comments || 'None'}
 
                  return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                    <div key={month} className="space-y-0.5">
-                     <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                     <div className="px-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
                        {month}
                      </div>
                      {monthItems.map((exp: any) => {
@@ -2006,15 +2025,15 @@ ${formData.comments || 'None'}
                            key={exp.id}
                            onClick={() => openExpenseInTab(exp, 'Drafts')}
                            className={clsx(
-                             "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
+                             "w-full flex items-center justify-between px-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                              isOpen
                                ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                                : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                            )}
                          >
                            <div className="flex flex-col min-w-0 pr-2">
-                             <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                             <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
+                             <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{formatExpenseDate(exp.date)}</span>
+                             <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[140px]">
                                {exp.purpose && exp.purpose !== 'Cloud Draft' ? exp.purpose : (exp.month || 'Draft')}
                              </span>
                            </div>
@@ -2072,7 +2091,7 @@ ${formData.comments || 'None'}
                   const items = getCategoryItems('Pending');
                   if (items.length === 0) {
                     return (
-                      <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                      <div className="px-6 py-2 text-[10px] text-[var(--text-dim)] italic">
                         No pending expenses
                       </div>
                     );
@@ -2086,7 +2105,7 @@ ${formData.comments || 'None'}
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                     <div key={month} className="space-y-0.5">
-                      <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                      <div className="px-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
                         {month}
                       </div>
                       {monthItems.map((exp: any) => {
@@ -2096,15 +2115,15 @@ ${formData.comments || 'None'}
                             key={exp.id}
                             onClick={() => openExpenseInTab(exp, 'Pending')}
                             className={clsx(
-                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
+                              "w-full flex items-center justify-between px-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                               isOpen
                                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                             )}
                           >
                             <div className="flex flex-col min-w-0 pr-2">
-                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
+                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{formatExpenseDate(exp.date)}</span>
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[140px]">
                                 {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Pending')}
                               </span>
                             </div>
@@ -2119,16 +2138,6 @@ ${formData.comments || 'None'}
                                 title="Mark as Refunded"
                               >
                                 <Check size={9} className="text-[var(--accent-main)] opacity-0 group-hover/check:opacity-100" />
-                              </div>
-                              <div 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setExpenseToDelete(exp);
-                                }}
-                                className="w-4 h-4 rounded-[4px] border border-white/20 hover:border-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center cursor-pointer group/del"
-                                title="Delete Expense"
-                              >
-                                <Trash2 size={9} className="text-red-500 opacity-0 group-hover/del:opacity-100" />
                               </div>
                             </div>
                           </button>
@@ -2184,7 +2193,7 @@ ${formData.comments || 'None'}
                   const items = getCategoryItems('Refunded');
                   if (items.length === 0) {
                     return (
-                      <div className="pl-9 pr-6 py-2 text-[10px] text-[var(--text-dim)] italic">
+                      <div className="px-6 py-2 text-[10px] text-[var(--text-dim)] italic">
                         No refunded expenses
                       </div>
                     );
@@ -2198,7 +2207,7 @@ ${formData.comments || 'None'}
 
                   return Object.entries(groups).map(([month, monthItems]: [string, any]) => (
                     <div key={month} className="space-y-0.5">
-                      <div className="pl-9 pr-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
+                      <div className="px-6 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[var(--text-dim)] opacity-50">
                         {month}
                       </div>
                       {monthItems.map((exp: any) => {
@@ -2208,15 +2217,15 @@ ${formData.comments || 'None'}
                             key={exp.id}
                             onClick={() => openExpenseInTab(exp, 'Refunded')}
                             className={clsx(
-                              "w-full flex items-center justify-between pl-9 pr-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
+                              "w-full flex items-center justify-between px-6 py-2.5 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group/item",
                               isOpen
                                 ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                                 : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
                             )}
                           >
                             <div className="flex flex-col min-w-0 pr-2">
-                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{exp.date}</span>
-                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[110px]">
+                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">{formatExpenseDate(exp.date)}</span>
+                              <span className="text-[10px] text-[var(--text-dim)] truncate max-w-[140px]">
                                 {exp.purpose && exp.purpose !== 'Expense Submission' ? exp.purpose : (exp.month || 'Refunded')}
                               </span>
                             </div>
