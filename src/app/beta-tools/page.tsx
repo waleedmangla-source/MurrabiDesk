@@ -660,6 +660,30 @@ export default function BetaToolsPage() {
                     <Activity size={14} /> J.A.R.V.I.S. Speaking
                   </div>
                 )}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30 mr-1">Direct Commands:</span>
+                  {[
+                    "Open Reader",
+                    "Take me to Calendar",
+                    "Show Expenses",
+                    "Open Notes"
+                  ].map((sugg, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setChatInput(sugg);
+                        setTimeout(() => {
+                          const form = document.getElementById('chat-form');
+                          if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        }, 50);
+                      }}
+                      className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-white/50 hover:text-cyan-300 border border-white/5 hover:border-cyan-500/30 transition-all active:scale-95"
+                    >
+                      {sugg}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
