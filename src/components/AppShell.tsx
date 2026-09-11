@@ -265,12 +265,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </p>
               <div className="relative group/tooltip">
                 <Info
-                  size={10}
-                  className="cursor-pointer transition-opacity hover:opacity-100 opacity-50 text-[#10b981]"
+                  size={12}
+                  className="cursor-pointer transition-all hover:scale-110 opacity-70 hover:opacity-100 text-[#10b981]"
                 />
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 px-3 py-2 rounded-xl text-[8px] font-bold leading-relaxed text-white/90 bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-center">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 rounded-xl text-[9px] font-semibold leading-relaxed text-slate-800 dark:text-slate-100 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-white/15 shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 pointer-events-none z-[100] text-center">
                   This is a volunteer project created for productivity purposes only.
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/80" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-white/95 dark:border-b-slate-900/95" />
                 </div>
               </div>
             </div>
