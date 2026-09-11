@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  ClipboardCheck, 
   Plus, 
   Calendar, 
   Table as TableIcon, 
@@ -13,13 +12,9 @@ import {
   ChevronLeft,
   CheckCircle2,
   XCircle,
-  Cloud,
-  CloudOff,
   Minus,
-  BookOpen,
   Moon,
   Loader2,
-  Sliders,
   Layers,
   FileText,
   Flame,
@@ -56,15 +51,8 @@ const DEFAULT_PROTOCOLS: Habit[] = [
   { id: 'tahajjud', name: 'Tahajjud Protocol', category: 'Spiritual', type: 'toggle' },
 ];
 
-const CATEGORY_COLORS: Record<HabitCategory, { bg: string; text: string; border: string }> = {
-  Spiritual: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
-  Scholarly: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
-  Health: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
-  Admin: { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/20' },
-};
-
 export default function HabitsPage() {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'archival' | 'protocols'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'table'>('matrix');
   const [mobileView, setMobileView] = useState<'form' | 'workspace'>('form');
   const [habits, setHabits] = useState<Habit[]>(DEFAULT_PROTOCOLS);
   const [logs, setLogs] = useState<HabitLog[]>([]);
@@ -82,9 +70,8 @@ export default function HabitsPage() {
   const [formMetrics, setFormMetrics] = useState<Record<string, number | boolean>>({});
   const [formNotes, setFormNotes] = useState('');
 
-  // Archival Search & Filter
-  const [searchArchive, setSearchArchive] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<'All' | HabitCategory>('All');
+  // Table Search Filter
+  const [searchTable, setSearchTable] = useState('');
   
   // New Habit Modal State
   const [isAddingHabit, setIsAddingHabit] = useState(false);
@@ -203,18 +190,6 @@ export default function HabitsPage() {
     setFormMetrics(prev => ({ ...prev, [id]: val }));
   };
 
-  const toggleArchiveHabit = async (id: string, archive: boolean = true) => {
-    const msg = archive 
-      ? "Archive this mission protocol? It will be hidden from the daily report, but past logs remain intact."
-      : "Reactivate this mission protocol?";
-      
-    if (!confirm(msg)) return;
-    
-    const updated = habits.map(h => h.id === id ? { ...h, archived: archive } : h);
-    setHabits(updated);
-    await saveData(updated);
-  };
-
   const addNewHabit = async () => {
     if (!newHabit.name?.trim()) return;
     const habit: Habit = {
@@ -310,16 +285,11 @@ export default function HabitsPage() {
 
   const activeHabits = useMemo(() => habits.filter(h => !h.archived), [habits]);
 
-  const filteredArchiveLogs = useMemo(() => {
-    if (!searchArchive.trim()) return logs;
-    const q = searchArchive.toLowerCase();
+  const filteredTableLogs = useMemo(() => {
+    if (!searchTable.trim()) return logs;
+    const q = searchTable.toLowerCase();
     return logs.filter(l => l.date.includes(q) || (l.notes && l.notes.toLowerCase().includes(q)));
-  }, [logs, searchArchive]);
-
-  const filteredHabitsList = useMemo(() => {
-    if (categoryFilter === 'All') return habits;
-    return habits.filter(h => h.category === categoryFilter);
-  }, [habits, categoryFilter]);
+  }, [logs, searchTable]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
@@ -555,7 +525,7 @@ export default function HabitsPage() {
       </div>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          PANEL 2: MAIN WORKSPACE (Matrix, Archival Ledger, & Protocol Directory)
+          PANEL 2: MAIN WORKSPACE (Matrix & Table View)
           Desktop: Pinned right canvas | Mobile: Displayed when mobileView === 'workspace'
          ────────────────────────────────────────────────────────────────────────── */}
       <div 
@@ -576,7 +546,7 @@ export default function HabitsPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Tab Switcher */}
+            {/* Tab Switcher: Matrix vs Table */}
             <div className="flex bg-black/20 p-1 rounded-xl border border-white/5 no-drag">
               <button
                 onClick={() => setActiveTab('matrix')}
@@ -591,27 +561,15 @@ export default function HabitsPage() {
               </button>
 
               <button
-                onClick={() => setActiveTab('archival')}
+                onClick={() => setActiveTab('table')}
                 className={clsx(
                   "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
-                  activeTab === 'archival' 
+                  activeTab === 'table' 
                     ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)]" 
                     : "text-white/40 hover:bg-white/5 hover:text-white"
                 )}
               >
-                <TableIcon size={13} /> Archival
-              </button>
-
-              <button
-                onClick={() => setActiveTab('protocols')}
-                className={clsx(
-                  "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
-                  activeTab === 'protocols' 
-                    ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)]" 
-                    : "text-white/40 hover:bg-white/5 hover:text-white"
-                )}
-              >
-                <Sliders size={13} /> Protocols
+                <TableIcon size={13} /> Table
               </button>
             </div>
 
@@ -826,7 +784,7 @@ export default function HabitsPage() {
                 <section className="glass rounded-2xl p-6 border border-white/5 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                      <BookOpen size={18} />
+                      <Layers size={18} />
                     </div>
                     <div>
                       <h4 className="text-base font-black italic text-[var(--text-main)] uppercase tracking-tight">
@@ -853,8 +811,8 @@ export default function HabitsPage() {
             </div>
           )}
 
-          {/* TAB 2: ARCHIVAL LEDGER */}
-          {activeTab === 'archival' && (
+          {/* TAB 2: TABLE VIEW */}
+          {activeTab === 'table' && (
             <div className="space-y-6 animate-in fade-in duration-300 pb-16">
               {/* Search & Filter Bar */}
               <div className="flex flex-wrap items-center justify-between gap-4 glass p-4 rounded-xl border border-white/5">
@@ -862,20 +820,20 @@ export default function HabitsPage() {
                   <Search size={14} className="text-white/30 shrink-0" />
                   <input
                     type="text"
-                    value={searchArchive}
-                    onChange={(e) => setSearchArchive(e.target.value)}
-                    placeholder="Search logs by date or notes..."
+                    value={searchTable}
+                    onChange={(e) => setSearchTable(e.target.value)}
+                    placeholder="Search records by date or notes..."
                     className="bg-transparent text-xs text-[var(--foreground)] placeholder:text-[var(--text-dim)] outline-none w-full"
                   />
-                  {searchArchive && (
-                    <button onClick={() => setSearchArchive('')} className="text-white/30 hover:text-white">
+                  {searchTable && (
+                    <button onClick={() => setSearchTable('')} className="text-white/30 hover:text-white">
                       <X size={12} />
                     </button>
                   )}
                 </div>
 
                 <div className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">
-                  {filteredArchiveLogs.length} Archival Markers Recorded
+                  {filteredTableLogs.length} Records In Ledger
                 </div>
               </div>
 
@@ -896,14 +854,14 @@ export default function HabitsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredArchiveLogs.length === 0 ? (
+                      {filteredTableLogs.length === 0 ? (
                         <tr>
                           <td colSpan={activeHabits.length + 3} className="p-12 text-center text-white/30 text-xs italic">
-                            No field records match your search criteria.
+                            No field records match your search query.
                           </td>
                         </tr>
                       ) : (
-                        filteredArchiveLogs.map((log) => (
+                        filteredTableLogs.map((log) => (
                           <tr 
                             key={log.date} 
                             className={clsx(
@@ -963,88 +921,6 @@ export default function HabitsPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: PROTOCOLS DIRECTORY */}
-          {activeTab === 'protocols' && (
-            <div className="space-y-6 animate-in fade-in duration-300 pb-16">
-              {/* Filter Tabs */}
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex bg-black/20 p-1 rounded-xl border border-white/5">
-                  {(['All', 'Spiritual', 'Scholarly', 'Health', 'Admin'] as const).map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setCategoryFilter(cat)}
-                      className={clsx(
-                        "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                        categoryFilter === cat ? "bg-[var(--accent-main)] text-white" : "text-white/40 hover:text-white"
-                      )}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => setIsAddingHabit(true)}
-                  className="px-4 py-2 btn-ruby rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-md"
-                >
-                  <Plus size={12} /> Initialize Protocol
-                </button>
-              </div>
-
-              {/* Protocol Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredHabitsList.map((habit) => {
-                  const catTheme = CATEGORY_COLORS[habit.category] || CATEGORY_COLORS.Spiritual;
-
-                  return (
-                    <div 
-                      key={habit.id}
-                      className={clsx(
-                        "glass p-5 rounded-xl border transition-all space-y-4",
-                        habit.archived ? "opacity-50 border-white/5 bg-black/40" : "border-white/5 hover:border-white/15"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className={clsx("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border", catTheme.bg, catTheme.text, catTheme.border)}>
-                            {habit.category}
-                          </span>
-                          <h4 className="text-base font-black italic text-[var(--text-main)] tracking-tight mt-2">
-                            {habit.name}
-                          </h4>
-                        </div>
-                        
-                        <span className="text-[8px] font-black uppercase tracking-wider text-white/30 bg-white/5 px-2 py-0.5 rounded">
-                          {habit.type}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[9px] font-bold text-white/40 border-t border-white/5 pt-3">
-                        <span>
-                          {habit.type === 'counter' 
-                            ? (habit.max ? `Bounded (0–${habit.max})` : `Open Stepper (${habit.unit || 'units'})`) 
-                            : 'Binary Toggle'}
-                        </span>
-
-                        <button
-                          onClick={() => toggleArchiveHabit(habit.id, !habit.archived)}
-                          className={clsx(
-                            "px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all",
-                            habit.archived 
-                              ? "bg-[var(--accent-main)] text-white hover:bg-[var(--accent-hover)]" 
-                              : "bg-white/5 text-white/40 hover:text-red-400 hover:bg-red-500/10"
-                          )}
-                        >
-                          {habit.archived ? 'Reactivate' : 'Archive'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </div>
           )}
