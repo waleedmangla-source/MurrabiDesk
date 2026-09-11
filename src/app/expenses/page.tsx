@@ -2101,7 +2101,7 @@ ${formData.comments || 'None'}
           </h1>
         </div>
         
-        <nav className="flex-1 py-4 space-y-1 no-drag overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 py-4 space-y-1 no-drag overflow-y-auto no-scrollbar">
            <button 
              onClick={() => setActiveTab('overview')}
              className={clsx(

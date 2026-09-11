@@ -1138,9 +1138,19 @@ body {
 }
 
 
-/* Hide scrollbar while keeping scroll — used for mobile horizontal strips */
+/* Hide scrollbar while keeping scroll — used for mobile horizontal strips & sidebars */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.secondary-sidebar *::-webkit-scrollbar,
+.secondary-sidebar::-webkit-scrollbar {
+  display: none !important;
+}
+.secondary-sidebar *,
+.secondary-sidebar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
 
 /* Subtle animated glow for user chat box featuring AI Blob colors (red / royal blue / deep ruby / indigo) */
 @keyframes userBlobGlow {
