@@ -28,18 +28,15 @@ export async function POST(request: Request) {
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
     
     // 1. Find the root folder
-    const ROOT_NAME = 'Murabbi Desk Drive';
     const NOTES_FOLDER_NAME = 'Notes';
     
-    const rootSearch = await drive.files.list({
-      q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-      fields: 'files(id)',
-    });
+    const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+    const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+    const rootId = rootFolder.id;
 
-    if (!rootSearch.data.files || rootSearch.data.files.length === 0) {
+    if (!rootId) {
       return NextResponse.json([]); // No root, no notes
     }
-    const rootId = rootSearch.data.files[0].id;
 
     // 2. Find the Notes folder inside Root
     const notesSearch = await drive.files.list({

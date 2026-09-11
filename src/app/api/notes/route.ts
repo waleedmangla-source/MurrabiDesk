@@ -18,38 +18,10 @@ async function getDrive(req: NextRequest) {
 }
 
 async function resolveNotesFolder(drive: any) {
-  // 0. Resolve Root
-  let rootId = '';
-  const rootSearch = await drive.files.list({
-    q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-    fields: 'files(id)',
-  });
-  if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-    rootId = rootSearch.data.files[0].id!;
-  } else {
-    const rootCreate = await drive.files.create({
-      requestBody: { name: ROOT_NAME, mimeType: 'application/vnd.google-apps.folder' },
-      fields: 'id',
-    });
-    rootId = rootCreate.data.id!;
-  }
-
-  // 1. Resolve Notes Folder
-  let parentId = rootId;
-  const notesSearch = await drive.files.list({
-    q: `name = '${NOTES_FOLDER}' and '${rootId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-    fields: 'files(id)',
-  });
-  if (notesSearch.data.files && notesSearch.data.files.length > 0) {
-    parentId = notesSearch.data.files[0].id!;
-  } else {
-    const notesCreate = await drive.files.create({
-      requestBody: { name: NOTES_FOLDER, mimeType: 'application/vnd.google-apps.folder', parents: [rootId] },
-      fields: 'id',
-    });
-    parentId = notesCreate.data.id!;
-  }
-  return parentId;
+  const { getOrCreateMurabbiDeskRoot, getOrCreateSubfolder } = await import('@/lib/drive-root');
+  const root = await getOrCreateMurabbiDeskRoot(drive);
+  const notesFolderId = await getOrCreateSubfolder(drive, root.id, NOTES_FOLDER);
+  return notesFolderId;
 }
 
 export async function GET(req: NextRequest) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
+import { createAuthorizedDriveClient, getOrCreateMurabbiDeskRoot } from '@/lib/drive-root';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,32 +13,30 @@ export async function POST(request: Request) {
     }
 
     const url = new URL(request.url);
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`
-    );
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`;
+    const drive = createAuthorizedDriveClient(tokenHeader, redirectUri);
 
-    oauth2Client.setCredentials({ 
-      refresh_token: tokenHeader,
-      access_token: tokenHeader.startsWith('ya29.') ? tokenHeader : undefined
-    });
+    // Resolve the native Murabbi Desk root folder
+    const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
 
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
-    
-    // If folderId is not provided or is 'root', attempt to resolve 'Murabbi Desk Drive' first
-    let targetFolderId = folderId || 'root';
-    if (!folderId || folderId === 'root') {
+    let targetFolderId = folderId;
+    let currentFolderName = 'Murabbi Desk';
+
+    if (!targetFolderId || targetFolderId === 'root' || targetFolderId === rootFolder.id) {
+      targetFolderId = rootFolder.id;
+      currentFolderName = rootFolder.name;
+    } else {
+      // If browsing a subfolder, retrieve its name for display
       try {
-        const rootSearch = await drive.files.list({
-          q: `name = 'Murabbi Desk Drive' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-          fields: 'files(id, name)',
+        const folderMeta = await drive.files.get({
+          fileId: targetFolderId,
+          fields: 'id, name',
         });
-        if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-          targetFolderId = rootSearch.data.files[0].id!;
+        if (folderMeta.data.name) {
+          currentFolderName = folderMeta.data.name;
         }
-      } catch (searchErr) {
-        console.warn('Could not find Murabbi Desk Drive folder, falling back to root:', searchErr);
+      } catch (metaErr) {
+        console.warn('Could not fetch subfolder metadata:', metaErr);
       }
     }
 
@@ -49,9 +47,18 @@ export async function POST(request: Request) {
       pageSize: 100,
     });
 
-    return NextResponse.json({ files: filesRes.data.files || [] });
+    return NextResponse.json({
+      files: filesRes.data.files || [],
+      rootFolderId: rootFolder.id,
+      rootFolderName: rootFolder.name,
+      currentFolder: {
+        id: targetFolderId,
+        name: currentFolderName,
+      },
+    });
   } catch (error: any) {
     console.error('Explore Drive Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

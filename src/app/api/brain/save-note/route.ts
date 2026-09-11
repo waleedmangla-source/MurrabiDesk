@@ -30,24 +30,11 @@ export async function POST(request: Request) {
     const docs = google.docs({ version: 'v1', auth: oauth2Client });
     
     // 1. Ensure Root Folder exists
-    const ROOT_NAME = 'Murabbi Desk Drive';
     const NOTES_FOLDER_NAME = 'Notes';
-    let rootId = '';
     
-    const rootSearch = await drive.files.list({
-      q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-      fields: 'files(id)',
-    });
-    
-    if (rootSearch.data.files && rootSearch.data.files.length > 0) {
-      rootId = rootSearch.data.files[0].id!;
-    } else {
-      const rootCreate = await drive.files.create({
-        requestBody: { name: ROOT_NAME, mimeType: 'application/vnd.google-apps.folder' },
-        fields: 'id',
-      });
-      rootId = rootCreate.data.id!;
-    }
+    const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+    const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+    const rootId = rootFolder.id;
 
     // 2. Ensure Notes Folder exists inside Root
     let notesFolderId = '';

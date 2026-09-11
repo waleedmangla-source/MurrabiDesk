@@ -30,16 +30,12 @@ export async function POST(request: Request) {
     const DASHBOARD_FOLDER = 'Dashboard';
     const FILE_NAME = 'mission_notes.html';
     
-    // 0. Resolve Root
-    const rootSearch = await drive.files.list({
-      q: `name = '${ROOT_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-      fields: 'files(id)',
-    });
-    
-    if (!rootSearch.data.files || rootSearch.data.files.length === 0) {
+    const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+    const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+    const rootId = rootFolder.id;
+    if (!rootId) {
       return NextResponse.json({ content: '' });
     }
-    const rootId = rootSearch.data.files[0].id!;
 
     // 1. Resolve Dashboard Folder
     const dashSearch = await drive.files.list({

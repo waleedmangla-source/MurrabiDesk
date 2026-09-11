@@ -111,6 +111,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         GoogleSyncService.getUserProfile().then((profile) => {
           if (profile) setUserProfile(profile);
         });
+
+        // Ensure Murabbi Desk folder exists on user's Google Drive
+        if (!localStorage.getItem("murabbi_drive_root_id")) {
+          fetch('/api/brain/init-drive', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-murabbi-token': existingToken,
+            },
+          })
+            .then((r) => r.json())
+            .then((driveData) => {
+              if (driveData.rootId) {
+                localStorage.setItem('murabbi_drive_root_id', driveData.rootId);
+              }
+            })
+            .catch(() => {});
+        }
       });
     } else if (isGuest) {
       setUserProfile({ name: "Guest User", email: "guest@murabbi.local", picture: null });

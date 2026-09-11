@@ -20,7 +20,18 @@ export async function POST(request: Request) {
       throw new Error('No valid token returned from Google.');
     }
 
-    return NextResponse.json({ token: tokenToStore });
+    // Automatically ensure the Murabbi Desk folder exists on user's Google Drive
+    let rootFolderId = '';
+    try {
+      const drive = google.drive({ version: 'v3', auth: oauth2Client });
+      const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+      const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+      rootFolderId = rootFolder.id;
+    } catch (driveErr) {
+      console.warn('Drive folder auto-creation warning during exchange:', driveErr);
+    }
+
+    return NextResponse.json({ token: tokenToStore, rootFolderId });
   } catch (error: any) {
     console.error('Exchange error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

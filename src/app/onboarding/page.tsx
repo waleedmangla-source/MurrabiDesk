@@ -26,8 +26,11 @@ function OnboardingContent() {
         if (data.token) {
           localStorage.setItem('google_refresh_token_encrypted', data.token);
           localStorage.removeItem('murabbi_guest_mode');
+          if (data.rootFolderId) {
+            localStorage.setItem('murabbi_drive_root_id', data.rootFolderId);
+          }
           
-          // Initialize Murabbi Desk Drive folder
+          // Ensure Murabbi Desk Drive folder is created and initialized
           fetch('/api/brain/init-drive', {
             method: 'POST',
             headers: { 
@@ -43,7 +46,7 @@ function OnboardingContent() {
             window.location.href = '/';
           })
           .catch(() => {
-            // Even if drive init fails, we proceed to dashboard
+            // Proceed to dashboard even if network hiccup
             window.location.href = '/';
           });
         } else {

@@ -64,8 +64,28 @@ export default function DrivePage() {
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
-  const [folderStack, setFolderStack] = useState<{id: string, name: string}[]>([{id: 'root', name: 'My Drive'}]);
+  const [rootFolderId, setRootFolderId] = useState<string>('');
+  const [folderStack, setFolderStack] = useState<{id: string, name: string}[]>([
+    { id: 'root', name: 'Murabbi Desk' }
+  ]);
   const [query, setQuery] = useState('');
+
+  // Hydrate root folder ID if cached locally
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const cachedRoot = localStorage.getItem('murabbi_drive_root_id');
+    if (cachedRoot) {
+      setRootFolderId(cachedRoot);
+      setFolderStack(prev => {
+        if (prev.length > 0 && prev[0].id === 'root') {
+          const next = [...prev];
+          next[0] = { id: cachedRoot, name: 'Murabbi Desk' };
+          return next;
+        }
+        return prev;
+      });
+    }
+  }, []);
 
   const currentFolder = folderStack[folderStack.length - 1];
 
@@ -90,6 +110,18 @@ export default function DrivePage() {
       if (data.files) {
         setFiles(data.files);
         setSyncStatus('synced');
+        if (data.rootFolderId) {
+          setRootFolderId(data.rootFolderId);
+          localStorage.setItem('murabbi_drive_root_id', data.rootFolderId);
+          setFolderStack(prev => {
+            if (prev.length > 0 && (prev[0].id === 'root' || prev[0].id === data.rootFolderId)) {
+              const next = [...prev];
+              next[0] = { id: data.rootFolderId, name: 'Murabbi Desk' };
+              return next;
+            }
+            return prev;
+          });
+        }
       } else {
         setSyncStatus('error');
       }
@@ -131,6 +163,10 @@ export default function DrivePage() {
     !query || f.name.toLowerCase().includes(query.toLowerCase())
   );
 
+  const currentFolderDriveLink = currentFolder.id && currentFolder.id !== 'root'
+    ? `https://drive.google.com/drive/folders/${currentFolder.id}`
+    : (rootFolderId ? `https://drive.google.com/drive/folders/${rootFolderId}` : null);
+
   const SyncIcon = syncStatus === 'syncing' ? Loader2
     : syncStatus === 'synced' ? CheckCircle
     : syncStatus === 'error' ? AlertCircle
@@ -146,17 +182,35 @@ export default function DrivePage() {
       <div className="w-full lg:w-[320px] shrink-0 h-full border-r border-white/5 glass bg-black/20 flex flex-col z-10">
         <div className="px-5 pt-6 pb-4 border-b border-white/5">
           <div className="flex items-center justify-between mb-4 mt-8 lg:mt-6">
-            <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] uppercase flex items-center gap-2">
-              <HardDrive size={20} className="text-[var(--accent-main)]" />
-              Drive
-            </h1>
-            <button
-              onClick={() => fetchFiles(currentFolder.id)}
-              className={clsx("p-2 rounded-xl hover:bg-white/5 transition-all", syncColor)}
-              title={syncStatus}
-            >
-              <SyncIcon size={16} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
-            </button>
+            <div>
+              <h1 className="text-2xl font-black italic tracking-tighter text-[var(--foreground)] uppercase flex items-center gap-2">
+                <HardDrive size={20} className="text-[var(--accent-main)]" />
+                Drive
+              </h1>
+              <p className="text-[9px] font-bold text-[var(--text-dim)] uppercase tracking-widest mt-0.5">
+                Murabbi Desk Native Folder
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              {currentFolderDriveLink && (
+                <a
+                  href={currentFolderDriveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-xl hover:bg-white/5 text-white/30 hover:text-white transition-all"
+                  title="Open folder in Google Drive"
+                >
+                  <ExternalLink size={15} />
+                </a>
+              )}
+              <button
+                onClick={() => fetchFiles(currentFolder.id)}
+                className={clsx("p-2 rounded-xl hover:bg-white/5 transition-all", syncColor)}
+                title={syncStatus}
+              >
+                <SyncIcon size={16} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
+              </button>
+            </div>
           </div>
 
           {/* Breadcrumbs */}
@@ -205,8 +259,15 @@ export default function DrivePage() {
               <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
             </div>
           ) : filteredFiles.length === 0 ? (
-            <div className="text-center p-8 text-xs text-white/40 font-medium">
-              No files found in this folder.
+            <div className="text-center p-8 space-y-2">
+              <p className="text-xs text-white/50 font-bold">
+                {query ? 'No files match your search.' : folderStack.length === 1 ? 'Murabbi Desk folder is empty.' : 'This folder is empty.'}
+              </p>
+              {!query && (
+                <p className="text-[10px] text-white/30 font-medium max-w-xs mx-auto">
+                  Files and documents created or saved in Murabbi Desk will appear here natively.
+                </p>
+              )}
             </div>
           ) : (
             filteredFiles.map(file => {
@@ -298,13 +359,24 @@ export default function DrivePage() {
               <HardDrive size={32} className="text-[var(--accent-main)]" />
             </div>
             <div>
-              <h2 className="text-xl font-black italic tracking-tight text-white/80">
-                GOOGLE DRIVE
+              <h2 className="text-xl font-black italic tracking-tight text-white/80 uppercase">
+                Murabbi Desk Drive
               </h2>
               <p className="text-xs text-white/40 mt-2 max-w-sm font-medium">
-                Select a file from the sidebar to preview its contents, or navigate through your folders.
+                Select a file from the sidebar to preview its contents, or navigate through your Murabbi Desk folders.
               </p>
             </div>
+            {currentFolderDriveLink && (
+              <a
+                href={currentFolderDriveLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 text-xs font-bold transition-all uppercase tracking-wider"
+              >
+                <ExternalLink size={14} />
+                Open in Google Drive
+              </a>
+            )}
           </div>
         )}
       </div>

@@ -52,7 +52,9 @@ export async function POST(request: Request) {
     };
 
     // 1. Resolve Root
-    const rootId = await getOrCreateFolderId(ROOT_NAME);
+    const { getOrCreateMurabbiDeskRoot } = await import('@/lib/drive-root');
+    const rootFolder = await getOrCreateMurabbiDeskRoot(drive);
+    const rootId = rootFolder.id;
     if (!rootId) throw new Error('Root folder not found/created');
 
     // 2. Resolve Module
