@@ -25,7 +25,7 @@ import { GoogleSyncService } from '@/lib/google-sync-service';
 
 // --- Types ---
 type HabitType = 'toggle' | 'counter';
-type HabitCategory = 'Spiritual' | 'Scholarly' | 'Health' | 'Admin';
+type HabitCategory = 'Spiritual' | 'Scholarly' | 'Pastoral' | 'Health' | 'Admin';
 
 interface Habit {
   id: string;
@@ -47,8 +47,10 @@ interface HabitLog {
 const DEFAULT_PROTOCOLS: Habit[] = [
   { id: 'prayers_total', name: 'Total Prayers', category: 'Spiritual', type: 'counter', max: 5, unit: 'offered' },
   { id: 'prayers_mosque', name: 'Mosque Attendance', category: 'Spiritual', type: 'counter', max: 5, unit: 'prayers' },
-  { id: 'rk_pages', name: 'Ruhani Khazain', category: 'Scholarly', type: 'counter', unit: 'pages' },
   { id: 'tahajjud', name: 'Tahajjud Protocol', category: 'Spiritual', type: 'toggle' },
+  { id: 'quran_study', name: 'Quran Tilawat & Tafsir', category: 'Spiritual', type: 'counter', unit: 'ruku' },
+  { id: 'rk_pages', name: 'Ruhani Khazain', category: 'Scholarly', type: 'counter', unit: 'pages' },
+  { id: 'member_visits', name: 'Member Visits & Rabita', category: 'Pastoral', type: 'counter', unit: 'families' },
 ];
 
 export default function HabitsPage() {
@@ -986,6 +988,7 @@ export default function HabitsPage() {
                   >
                     <option value="Spiritual">Spiritual</option>
                     <option value="Scholarly">Scholarly</option>
+                    <option value="Pastoral">Pastoral / Tarbiyyat</option>
                     <option value="Health">Health</option>
                     <option value="Admin">Admin</option>
                   </select>
