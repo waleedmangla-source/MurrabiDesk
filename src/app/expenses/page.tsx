@@ -3106,60 +3106,8 @@ ${formData.comments || 'None'}
 
         {activeTab === 'create' && (
           <div className="flex flex-col gap-6 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 w-full px-6 md:px-12 pt-6 md:pt-8 max-w-7xl mx-auto">
-            {/* Top Tabs Strip */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/5 no-scrollbar">
-              <button
-                type="button"
-                onClick={() => selectExpenseTab('new')}
-                className={clsx(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all border",
-                  activeReportTabId === 'new'
-                    ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)]/40 text-[var(--text-main)] font-bold shadow-sm"
-                    : "bg-white/5 border-white/5 text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-white/10"
-                )}
-              >
-                <Plus size={14} className="text-[var(--accent-main)]" />
-                <span>New Waqfeen Expense</span>
-              </button>
-
-              {openExpenseTabs.map(tab => {
-                const isActive = activeReportTabId === tab.id;
-                return (
-                  <div
-                    key={tab.id}
-                    onClick={() => selectExpenseTab(tab.id)}
-                    className={clsx(
-                      "group flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer border",
-                      isActive
-                        ? "bg-[var(--accent-main)]/20 border-[var(--accent-main)]/50 text-[var(--text-main)] font-bold shadow-sm ring-1 ring-[var(--accent-main)]/30"
-                        : "bg-white/5 border-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/10"
-                    )}
-                  >
-                    <span className={clsx(
-                      "w-2 h-2 rounded-full shrink-0",
-                      tab.category === 'Drafts' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" :
-                      tab.category === 'Refunded' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]"
-                    )} />
-                    <span>{tab.category === 'Drafts' ? 'Draft' : tab.category}: {tab.date}</span>
-                    <span className="text-[11px] text-[var(--accent-main)] opacity-90">${parseFloat(tab.total || 0).toFixed(2)}</span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        closeExpenseTab(tab.id);
-                      }}
-                      className="ml-1 p-0.5 rounded-md opacity-40 group-hover:opacity-100 hover:bg-white/15 text-[var(--text-dim)] hover:text-white transition-all"
-                      title="Close tab"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-      {/* Top Action Bar Section */}
-      <div className="flex items-center justify-between mb-4">
+            {/* Top Action Bar Section */}
+            <div className="flex items-center justify-between mb-4">
         <div className="hidden lg:flex items-center gap-6 px-6 py-3 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Total Claim</span>
