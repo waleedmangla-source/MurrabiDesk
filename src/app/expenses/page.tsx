@@ -2099,12 +2099,6 @@ ${formData.comments || 'None'}
           <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
             Waqfeen<br />Expenses
           </h1>
-          {isReadOnly && (
-            <span className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 rounded-full animate-pulse">
-              <Lock size={10} className="text-[var(--accent-main)]" />
-              <span className="text-[8px] font-black text-[var(--accent-main)] tracking-[0.15em]">LOCKED</span>
-            </span>
-          )}
         </div>
         
         <nav className="flex-1 py-4 space-y-1 no-drag overflow-y-auto custom-scrollbar">
