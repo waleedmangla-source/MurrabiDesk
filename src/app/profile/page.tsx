@@ -248,22 +248,6 @@ export default function ProfilePage() {
 
                 <div className="space-y-2">
                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-v4-ink-muted flex items-center gap-2">
-                       Alias / Protocol Name
-                   </label>
-                   <div className="relative group/field">
-                       <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/field:text-accent-main transition-colors" size={14} />
-                       <input 
-                           type="text"
-                           value={profile?.alias || ""}
-                           onChange={(e) => setProfile(prev => prev ? { ...prev, alias: e.target.value } : null)}
-                           className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-5 text-xs font-bold text-v4-ink focus:border-accent-glow focus:ring-0 transition-all"
-                           placeholder="Enter alias..."
-                       />
-                   </div>
-                </div>
-
-                <div className="space-y-2">
-                   <label className="text-[9px] font-black uppercase tracking-[0.2em] text-v4-ink-muted flex items-center gap-2">
                        Chronological Birthday
                    </label>
                    <div className="relative group/field">
