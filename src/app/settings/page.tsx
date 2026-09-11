@@ -181,7 +181,7 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1">
-            <FieldLabel>Mission Title / Role</FieldLabel>
+            <FieldLabel>Posting</FieldLabel>
             <FieldInput value={settings.missionTitle} onChange={v => setSettings(s => ({ ...s, missionTitle: v }))} placeholder="Administrative Murabbi" />
           </div>
           <div className="space-y-1">
