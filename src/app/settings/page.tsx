@@ -212,10 +212,7 @@ function ProfileTab({ settings, setSettings }: { settings: SettingsState; setSet
             <FieldLabel>Graduation Year (Jamia)</FieldLabel>
             <FieldInput value={settings.graduationYear} onChange={v => setSettings(s => ({ ...s, graduationYear: v }))} placeholder="2018" />
           </div>
-          <div className="space-y-1">
-            <FieldLabel>Protocol Alias</FieldLabel>
-            <FieldInput value={settings.alias} onChange={v => setSettings(s => ({ ...s, alias: v }))} placeholder="Alias..." />
-          </div>
+
           <div className="space-y-1">
             <FieldLabel>Birthday</FieldLabel>
             <div className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 px-5 text-xs font-bold text-[var(--foreground)] flex items-center justify-between">
