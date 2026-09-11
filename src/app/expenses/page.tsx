@@ -2119,13 +2119,19 @@ ${formData.comments || 'None'}
                setActiveTab('create');
              }}
              className={clsx(
-               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide",
+               "w-full flex items-center justify-between px-6 py-3 transition-all text-left border-l-2 text-xs font-semibold tracking-wide group",
                (activeTab === 'create' && activeReportTabId === 'new')
                  ? "text-[var(--text-main)] border-[var(--accent-main)] bg-black/20 font-bold"
                  : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--text-main)] border-transparent"
              )}
            >
-             <span>New Waqfeen Expense</span>
+             <span>New Expense Form</span>
+             <Plus size={14} className={clsx(
+               "transition-colors",
+               (activeTab === 'create' && activeReportTabId === 'new')
+                 ? "text-[var(--accent-main)]"
+                 : "text-[var(--text-dim)] group-hover:text-[var(--text-main)]"
+             )} />
            </button>
 
            <button 
