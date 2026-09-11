@@ -3130,17 +3130,25 @@ ${formData.comments || 'None'}
             disabled={isSaving || isReadOnly}
             className={clsx(
               "px-6 py-4 glass rounded-[18px] border transition-all flex items-center gap-3 group relative overflow-hidden",
-              isReadOnly ? "bg-white/5 border-white/10 opacity-60 cursor-not-allowed" : "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)]"
+              isReadOnly 
+                ? "bg-zinc-800/80 border-zinc-700/60 text-zinc-400 opacity-80 cursor-not-allowed shadow-none" 
+                : "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/20 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)]"
             )}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {!isReadOnly && (
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
             {isSaving ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-main)]/20 border-t-[var(--accent-main)]" />
             ) : (
-              isReadOnly ? <Lock size={16} className="text-amber-400" /> : <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
+              isReadOnly ? (
+                <Clock size={16} className="text-zinc-400" />
+              ) : (
+                <Save size={18} className="group-hover:scale-110 transition-transform relative z-10" />
+              )
             )}
-            <span className={clsx("text-[10px] font-black uppercase tracking-[0.3em] relative z-10", isReadOnly && "text-amber-400/90")}>
-              {isReadOnly ? "Locked • Pending" : (isJustSaved ? "Draft saved" : "Save as draft")}
+            <span className={clsx("text-[10px] font-black uppercase tracking-[0.3em] relative z-10", isReadOnly ? "text-zinc-400" : "")}>
+              {isReadOnly ? (currentOpenReport?.category === 'Refunded' ? "Refunded" : "Pending") : (isJustSaved ? "Draft saved" : "Save as draft")}
             </span>
           </button>
         </div>
