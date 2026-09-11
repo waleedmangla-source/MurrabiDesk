@@ -41,7 +41,11 @@ import {
   Bookmark,
   Lock,
   Cloud,
-  Search
+  Search,
+  TrendingUp,
+  PieChart,
+  Receipt,
+  ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { generateWaqfeenPDF } from '@/lib/expense-pdf-service';
@@ -643,22 +647,6 @@ export default function ExpensesPage() {
     });
   };
 
-  // Category item filter helper
-  const getCategoryItems = (category: Category) => {
-    return expensesHistory.filter(f => {
-      if (category === 'Drafts') {
-        return f.status === 'draft' || (!f.isSheet && f.status !== 'sent' && f.status !== 'refunded' && !f.refunded);
-      }
-      if (category === 'Pending') {
-        return !f.refunded && f.status !== 'refunded' && (f.status === 'sent' || f.status === 'pending' || (f.isSheet && f.status !== 'draft'));
-      }
-      if (category === 'Refunded') {
-        return f.status === 'refunded' || !!f.refunded;
-      }
-      return true;
-    });
-  };
-
   // Presets State
   interface ExpensePreset {
     id: string;
@@ -861,6 +849,198 @@ export default function ExpensesPage() {
   useEffect(() => {
     fetchExpenses();
   }, []);
+
+  // Category item filter helper
+  const getCategoryItems = (category: Category) => {
+    return expensesHistory.filter(f => {
+      if (category === 'Drafts') {
+        return f.status === 'draft' || (!f.isSheet && f.status !== 'sent' && f.status !== 'refunded' && !f.refunded);
+      }
+      if (category === 'Pending') {
+        return !f.refunded && f.status !== 'refunded' && (f.status === 'sent' || f.status === 'pending' || (f.isSheet && f.status !== 'draft'));
+      }
+      if (category === 'Refunded') {
+        return f.status === 'refunded' || !!f.refunded;
+      }
+      return true;
+    });
+  };
+
+  // Overview Analytics Aggregator
+  const overviewStats = useMemo(() => {
+    let totalClaimed = 0;
+    let pendingTotal = 0;
+    let pendingCount = 0;
+    let refundedTotal = 0;
+    let refundedCount = 0;
+    let draftTotal = 0;
+    let draftCount = 0;
+    let hstTotal = 0;
+
+    const monthlyMap: Record<string, { total: number; refunded: number; pending: number; draft: number }> = {};
+    months.forEach(m => {
+      monthlyMap[m] = { total: 0, refunded: 0, pending: 0, draft: 0 };
+    });
+
+    const categorySpendMap: Record<string, number> = {
+      "Vehicle & Transport": 0,
+      "Communication": 0,
+      "Travel & Lodging": 0,
+      "Diyafat & Hospitality": 0,
+      "Computers & IT": 0,
+      "Office & Supplies": 0,
+      "Medical & Other": 0
+    };
+
+    expensesHistory.forEach(exp => {
+      const amt = parseFloat(exp.total) || 0;
+      totalClaimed += amt;
+
+      const isRef = exp.status === 'refunded' || !!exp.refunded;
+      const isDrf = exp.status === 'draft' || (!exp.isSheet && exp.status !== 'sent' && !isRef);
+
+      if (isRef) {
+        refundedTotal += amt;
+        refundedCount += 1;
+      } else if (isDrf) {
+        draftTotal += amt;
+        draftCount += 1;
+      } else {
+        pendingTotal += amt;
+        pendingCount += 1;
+      }
+
+      // Monthly aggregation
+      const m = exp.month && monthlyMap[exp.month] ? exp.month : 'Other';
+      if (monthlyMap[m]) {
+        monthlyMap[m].total += amt;
+        if (isRef) monthlyMap[m].refunded += amt;
+        else if (isDrf) monthlyMap[m].draft += amt;
+        else monthlyMap[m].pending += amt;
+      }
+
+      // Parse itemized breakdown for HST & Category spending
+      let parsedData: any = null;
+      if (exp.data) {
+        try {
+          parsedData = typeof exp.data === 'string' ? JSON.parse(exp.data) : exp.data;
+        } catch (e) {
+          // ignore error
+        }
+      }
+
+      let hasItemBreakdown = false;
+      if (parsedData?.itemData && parsedData?.activeIndices && parsedData.activeIndices.length > 0) {
+        parsedData.activeIndices.forEach((idx: number) => {
+          const it = parsedData.itemData[idx];
+          if (!it) return;
+          hasItemBreakdown = true;
+          const itemAmt = parseFloat(it.total) || 0;
+          const itemHst = parseFloat(it.hst) || 0;
+          hstTotal += itemHst;
+
+          if (idx >= 0 && idx <= 5) categorySpendMap["Vehicle & Transport"] += itemAmt;
+          else if (idx >= 6 && idx <= 8) categorySpendMap["Communication"] += itemAmt;
+          else if (idx >= 9 && idx <= 11) categorySpendMap["Travel & Lodging"] += itemAmt;
+          else if (idx >= 12 && idx <= 15) categorySpendMap["Diyafat & Hospitality"] += itemAmt;
+          else if (idx >= 16 && idx <= 18) categorySpendMap["Computers & IT"] += itemAmt;
+          else if (idx >= 25 && idx <= 26) categorySpendMap["Office & Supplies"] += itemAmt;
+          else categorySpendMap["Medical & Other"] += itemAmt;
+        });
+      }
+
+      // If no itemized lines available, classify by purpose keywords
+      if (!hasItemBreakdown && amt > 0) {
+        const p = (exp.purpose || '').toLowerCase();
+        if (p.includes('fuel') || p.includes('vehicle') || p.includes('gas') || p.includes('car')) {
+          categorySpendMap["Vehicle & Transport"] += amt;
+        } else if (p.includes('phone') || p.includes('mobile') || p.includes('internet') || p.includes('rogers') || p.includes('bell')) {
+          categorySpendMap["Communication"] += amt;
+        } else if (p.includes('travel') || p.includes('hotel') || p.includes('toll') || p.includes('transit')) {
+          categorySpendMap["Travel & Lodging"] += amt;
+        } else if (p.includes('food') || p.includes('diyafat') || p.includes('refresh') || p.includes('lunch')) {
+          categorySpendMap["Diyafat & Hospitality"] += amt;
+        } else if (p.includes('computer') || p.includes('laptop') || p.includes('software') || p.includes('hardware')) {
+          categorySpendMap["Computers & IT"] += amt;
+        } else if (p.includes('book') || p.includes('print') || p.includes('staples') || p.includes('postage')) {
+          categorySpendMap["Office & Supplies"] += amt;
+        } else {
+          categorySpendMap["Medical & Other"] += amt;
+        }
+      }
+    });
+
+    const reconciliationRate = totalClaimed > 0 ? Math.round((refundedTotal / totalClaimed) * 100) : 0;
+    const maxMonthlyTotal = Math.max(...Object.values(monthlyMap).map(v => v.total), 1);
+
+    const sortedCategories = Object.entries(categorySpendMap)
+      .map(([name, amount]) => ({
+        name,
+        amount,
+        pct: totalClaimed > 0 ? Math.round((amount / totalClaimed) * 100) : 0
+      }))
+      .filter(c => c.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+
+    return {
+      totalClaimed,
+      pendingTotal,
+      pendingCount,
+      refundedTotal,
+      refundedCount,
+      draftTotal,
+      draftCount,
+      hstTotal,
+      reconciliationRate,
+      monthlyMap,
+      maxMonthlyTotal,
+      sortedCategories
+    };
+  }, [expensesHistory, months]);
+
+  // Export Expenses CSV Function
+  const exportExpensesCSV = () => {
+    if (!expensesHistory || expensesHistory.length === 0) {
+      alert("No expense records available to export.");
+      return;
+    }
+    const headers = ["Date", "Month", "Recipient", "Member Code", "Purpose", "Total Amount ($)", "Status", "HST Claimed ($)", "Drive Folder"];
+    const rows = expensesHistory.map(e => {
+      let parsed: any = null;
+      let hstTotal = 0;
+      if (e.data) {
+        try {
+          parsed = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+          if (parsed?.itemData) {
+            Object.values(parsed.itemData).forEach((it: any) => {
+              if (it?.hst) hstTotal += parseFloat(it.hst) || 0;
+            });
+          }
+        } catch (err) {}
+      }
+      const statusText = (e.status === 'refunded' || e.refunded) ? 'Refunded' : (e.status === 'draft' ? 'Draft' : 'Pending');
+      return [
+        `"${e.date || ''}"`,
+        `"${e.month || ''}"`,
+        `"${(e.fullName || '').replace(/"/g, '""')}"`,
+        `"${e.memberCode || ''}"`,
+        `"${(e.purpose || '').replace(/"/g, '""')}"`,
+        `"${parseFloat(e.total || 0).toFixed(2)}"`,
+        `"${statusText}"`,
+        `"${hstTotal.toFixed(2)}"`,
+        `"${e.folderLink || ''}"`
+      ];
+    });
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Waqfeen_Expenses_Summary_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const saveExpenseToHistory = async () => {
     try {
@@ -2296,15 +2476,392 @@ ${formData.comments || 'None'}
           })}
         </div>
         {activeTab === 'overview' && (
-          <div className="p-12 flex flex-col items-center justify-center h-full text-center animate-in fade-in zoom-in-95 duration-500">
-             <div className="w-20 h-20 rounded-full bg-[var(--accent-soft)] flex items-center justify-center mb-6 border border-[var(--accent-soft)] relative group">
-               <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <Briefcase size={32} className="text-[var(--accent-main)]" />
-             </div>
-             <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">Overview <span className="text-[var(--accent-main)]">Dashboard</span></h1>
-             <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-dim)] mt-4 max-w-[300px] leading-relaxed">
-               Comprehensive financial metrics and visualizations will flow here in Protocol 5.0.
-             </p>
+          <div className="p-6 md:p-10 pt-8 md:pt-10 animate-in fade-in slide-in-from-bottom-6 duration-500 max-w-7xl mx-auto w-full flex flex-col gap-8">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/5">
+              <div>
+                <h1 className="text-3xl font-black italic tracking-tighter text-[var(--text-main)] uppercase">
+                  Financial <span className="text-[var(--accent-main)]">Overview</span>
+                </h1>
+                <p className="text-[var(--text-dim)] font-medium text-xs mt-1">
+                  Executive claims summary, reimbursement velocity, and tax rebate tracking.
+                </p>
+              </div>
+
+              {/* Header Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={exportExpensesCSV}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[var(--text-main)] border border-white/5 hover:border-white/15 transition-all shadow-sm active:scale-95"
+                  title="Export all claims to CSV"
+                >
+                  <Download size={13} className="text-[var(--accent-main)]" />
+                  <span>Export CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={fetchExpenses}
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--text-main)] border border-white/5 transition-all"
+                  title="Refresh & Sync Data"
+                >
+                  <RefreshCw size={14} className={clsx(syncStatus === 'syncing' && "animate-spin text-[var(--accent-main)]")} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    startNewReport();
+                    setActiveTab('create');
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-main)] hover:bg-[var(--accent-main)]/90 text-white text-xs font-bold transition-all shadow-lg active:scale-95"
+                >
+                  <Plus size={13} />
+                  <span>New Claim</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 1. Metric Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1: Total Claims */}
+              <div className="glass bg-black/20 border border-white/5 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-white/15 transition-all">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full blur-xl group-hover:bg-white/[0.04] transition-all -mr-6 -mt-6" />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-dim)]">Total Claims</span>
+                  <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-[var(--text-main)]">
+                    <DollarSign size={15} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono tracking-tight text-[var(--text-main)]">
+                    ${overviewStats.totalClaimed.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-dim)] font-medium mt-1">
+                    {expensesHistory.length} total reports filed
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Pending Reimbursement */}
+              <div 
+                onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
+                className="glass bg-black/20 border border-white/5 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-sky-500/30 transition-all cursor-pointer"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-xl group-hover:bg-sky-500/10 transition-all -mr-6 -mt-6" />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-400">Pending Refund</span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                    <Clock size={15} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono tracking-tight text-sky-400">
+                    ${overviewStats.pendingTotal.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-dim)] font-medium mt-1">
+                    {overviewStats.pendingCount} claim{overviewStats.pendingCount === 1 ? '' : 's'} awaiting HQ payout
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Refunded & Settled */}
+              <div 
+                onClick={() => { setActiveTab('history'); setActiveCategory('Refunded'); }}
+                className="glass bg-black/20 border border-white/5 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-emerald-500/30 transition-all cursor-pointer"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all -mr-6 -mt-6" />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Reimbursed</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <CheckCircle size={15} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono tracking-tight text-emerald-400">
+                    ${overviewStats.refundedTotal.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-dim)] font-medium mt-1 flex items-center gap-1.5">
+                    <span className="font-bold text-emerald-400">{overviewStats.reconciliationRate}%</span>
+                    <span>settlement rate ({overviewStats.refundedCount} claims)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Accumulated HST / Tax Rebate */}
+              <div className="glass bg-black/20 border border-white/5 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-[var(--accent-main)]/30 transition-all">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--accent-main)]/5 rounded-full blur-xl group-hover:bg-[var(--accent-main)]/10 transition-all -mr-6 -mt-6" />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[var(--accent-main)]">HST Recoverable</span>
+                  <div className="w-8 h-8 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center">
+                    <Receipt size={15} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono tracking-tight text-[var(--accent-main)]">
+                    ${overviewStats.hstTotal.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-dim)] font-medium mt-1">
+                    Charity tax rebate eligible
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Middle Row: 12-Month Trend & Lifecycle Pipeline */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Monthly Trend Chart (2 cols) */}
+              <div className="lg:col-span-2 glass bg-black/20 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-main)] flex items-center gap-2">
+                      <TrendingUp size={15} className="text-[var(--accent-main)]" />
+                      <span>Monthly Spending Trend</span>
+                    </h3>
+                    <p className="text-[10px] text-[var(--text-dim)] mt-0.5">Expenditure pattern across all 12 calendar months</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px] text-[var(--text-dim)] font-medium">
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Refunded</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-sky-500" /> Pending</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Draft</span>
+                  </div>
+                </div>
+
+                {/* 12 Month Bars */}
+                <div className="h-44 flex items-end justify-between gap-1 sm:gap-2 pt-6 pb-2 px-1 border-b border-white/5">
+                  {months.map(m => {
+                    const data = overviewStats.monthlyMap[m];
+                    const heightPct = overviewStats.maxMonthlyTotal > 0
+                      ? Math.min(100, Math.max(6, Math.round((data.total / overviewStats.maxMonthlyTotal) * 100)))
+                      : 6;
+                    const hasSpend = data.total > 0;
+
+                    return (
+                      <div key={m} className="flex-1 flex flex-col items-center h-full justify-end group/bar relative">
+                        {/* Hover Tooltip */}
+                        <div className="absolute bottom-full mb-2 opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none z-20 bg-black/90 border border-white/10 rounded-xl p-2 text-center shadow-xl min-w-[90px]">
+                          <span className="text-[9px] font-bold text-[var(--text-dim)] block uppercase">{m}</span>
+                          <span className="text-xs font-black font-mono text-[var(--accent-main)] block">${data.total.toFixed(2)}</span>
+                          {data.refunded > 0 && <span className="text-[9px] text-emerald-400 block font-medium">Ref: ${data.refunded.toFixed(0)}</span>}
+                          {data.pending > 0 && <span className="text-[9px] text-sky-400 block font-medium">Pnd: ${data.pending.toFixed(0)}</span>}
+                          {data.draft > 0 && <span className="text-[9px] text-amber-400 block font-medium">Drf: ${data.draft.toFixed(0)}</span>}
+                        </div>
+
+                        {/* Bar Segment */}
+                        <div 
+                          className={clsx(
+                            "w-full max-w-[28px] rounded-t-md transition-all duration-300 flex flex-col justify-end overflow-hidden",
+                            hasSpend ? "bg-white/10 group-hover/bar:bg-white/20" : "bg-white/[0.02]"
+                          )}
+                          style={{ height: `${hasSpend ? heightPct : 6}%` }}
+                        >
+                          {data.draft > 0 && (
+                            <div 
+                              className="w-full bg-amber-500/80" 
+                              style={{ height: `${(data.draft / data.total) * 100}%` }} 
+                            />
+                          )}
+                          {data.pending > 0 && (
+                            <div 
+                              className="w-full bg-sky-500/80" 
+                              style={{ height: `${(data.pending / data.total) * 100}%` }} 
+                            />
+                          )}
+                          {data.refunded > 0 && (
+                            <div 
+                              className="w-full bg-emerald-500/80" 
+                              style={{ height: `${(data.refunded / data.total) * 100}%` }} 
+                            />
+                          )}
+                        </div>
+                        <span className="text-[9px] font-bold text-[var(--text-dim)] mt-2 uppercase truncate max-w-full">
+                          {m.slice(0, 3)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status Pipeline & Action Alerts (1 col) */}
+              <div className="glass bg-black/20 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-main)] mb-1 flex items-center gap-2">
+                    <PieChart size={15} className="text-[var(--accent-main)]" />
+                    <span>Claims Pipeline</span>
+                  </h3>
+                  <p className="text-[10px] text-[var(--text-dim)] mb-5">Lifecycle stage distribution</p>
+
+                  <div className="space-y-3">
+                    {/* Drafts */}
+                    <div 
+                      onClick={() => { setActiveTab('history'); setActiveCategory('Drafts'); }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-amber-500/30 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                        <div>
+                          <span className="text-xs font-bold text-[var(--text-main)] block group-hover:text-amber-400 transition-colors">Draft Reports</span>
+                          <span className="text-[10px] text-[var(--text-dim)]">{overviewStats.draftCount} unsubmitted</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-[var(--text-main)]">${overviewStats.draftTotal.toFixed(2)}</span>
+                    </div>
+
+                    {/* Pending */}
+                    <div 
+                      onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-sky-500/30 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+                        <div>
+                          <span className="text-xs font-bold text-[var(--text-main)] block group-hover:text-sky-400 transition-colors">Awaiting Approval</span>
+                          <span className="text-[10px] text-[var(--text-dim)]">{overviewStats.pendingCount} with finance</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-[var(--text-main)]">${overviewStats.pendingTotal.toFixed(2)}</span>
+                    </div>
+
+                    {/* Refunded */}
+                    <div 
+                      onClick={() => { setActiveTab('history'); setActiveCategory('Refunded'); }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-emerald-500/30 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        <div>
+                          <span className="text-xs font-bold text-[var(--text-main)] block group-hover:text-emerald-400 transition-colors">Settled / Reimbursed</span>
+                          <span className="text-[10px] text-[var(--text-dim)]">{overviewStats.refundedCount} completed</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-[var(--text-main)]">${overviewStats.refundedTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reminder Alert Badge */}
+                {overviewStats.draftCount > 0 && (
+                  <div className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5">
+                    <AlertCircle size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                    <div className="text-[10px] text-amber-200/90 leading-relaxed">
+                      You have <strong>{overviewStats.draftCount} draft report{overviewStats.draftCount > 1 ? 's' : ''}</strong> pending completion. Remember to submit before month-end accounting close.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Bottom Row: Category Spend & Recent Claims Feed */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+              {/* Category Breakdown */}
+              <div className="glass bg-black/20 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-main)] mb-1 flex items-center gap-2">
+                    <Receipt size={15} className="text-[var(--accent-main)]" />
+                    <span>Spend by Category</span>
+                  </h3>
+                  <p className="text-[10px] text-[var(--text-dim)] mb-5">Aggregated according to Jama'at Waqfeen account codes</p>
+
+                  <div className="space-y-3.5">
+                    {overviewStats.sortedCategories.length === 0 ? (
+                      <p className="text-xs text-[var(--text-dim)] italic py-6 text-center">No categorized expenditures recorded yet.</p>
+                    ) : (
+                      overviewStats.sortedCategories.map(cat => (
+                        <div key={cat.name} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-[var(--text-main)]">{cat.name}</span>
+                            <div className="flex items-center gap-2 font-mono">
+                              <span className="text-[10px] text-[var(--text-dim)]">{cat.pct}%</span>
+                              <span className="font-bold text-[var(--accent-main)]">${cat.amount.toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-[var(--accent-main)] rounded-full transition-all duration-500"
+                              style={{ width: `${cat.pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity Mini-Feed */}
+              <div className="glass bg-black/20 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-main)] flex items-center gap-2">
+                        <History size={15} className="text-[var(--accent-main)]" />
+                        <span>Recent Claims</span>
+                      </h3>
+                      <p className="text-[10px] text-[var(--text-dim)] mt-0.5">Latest reports recorded across all folders</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setActiveTab('history'); setActiveCategory('Pending'); }}
+                      className="text-[10px] font-bold text-[var(--accent-main)] hover:underline flex items-center gap-1"
+                    >
+                      <span>View All</span>
+                      <ArrowRight size={10} />
+                    </button>
+                  </div>
+
+                  <div className="divide-y divide-white/5">
+                    {expensesHistory.slice(0, 5).map(item => {
+                      const isRef = item.status === 'refunded' || !!item.refunded;
+                      const isDrf = item.status === 'draft' || (!item.isSheet && item.status !== 'sent' && !isRef);
+                      const catName = isRef ? 'Refunded' : (isDrf ? 'Drafts' : 'Pending');
+
+                      return (
+                        <div 
+                          key={item.id} 
+                          onClick={() => openExpenseInTab(item, catName)}
+                          className="py-3 flex items-center justify-between hover:bg-white/[0.02] px-2 rounded-xl transition-all cursor-pointer group"
+                        >
+                          <div className="flex flex-col min-w-0 pr-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-[var(--text-main)] tracking-tight group-hover:text-[var(--accent-main)] transition-colors truncate">
+                                {item.purpose || 'Expense Submission'}
+                              </span>
+                              {isRef && (
+                                <span className="px-1.5 py-0.2 text-[8px] font-black rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  REFUNDED
+                                </span>
+                              )}
+                              {isDrf && (
+                                <span className="px-1.5 py-0.2 text-[8px] font-black rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                  DRAFT
+                                </span>
+                              )}
+                              {!isRef && !isDrf && (
+                                <span className="px-1.5 py-0.2 text-[8px] font-black rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                  PENDING
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-[var(--text-dim)] mt-0.5">
+                              {item.date} &bull; {item.month}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="font-mono font-bold text-xs text-[var(--text-main)]">
+                              ${parseFloat(item.total || 0).toFixed(2)}
+                            </span>
+                            <div className="p-1 rounded-lg bg-white/5 group-hover:bg-[var(--accent-main)] group-hover:text-white transition-colors text-[var(--text-dim)]">
+                              <Edit3 size={11} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
