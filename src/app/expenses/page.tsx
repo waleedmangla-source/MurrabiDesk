@@ -193,339 +193,6 @@ const SECS = [
   { idx: 29, label: "Insurance/Maintenance", ref: "6010-03100" }
 ];
 
-const MOCK_EXPENSES = [
-  // --- Drafts ---
-  {
-    id: 'mock_draft_1',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'May',
-    date: '2026-05-18',
-    purpose: 'Vehicle Fuel & Mission Travel',
-    total: 112.50,
-    status: 'draft',
-    isDriveDraft: true,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-05-18',
-        cheque_num: '1042',
-        expense_month: 'May',
-        posting: 'branch',
-        posting_location: 'Toronto West',
-        purpose: 'Vehicle Fuel & Mission Travel',
-        comments: 'Travel for regional visits and mission activities in the western sector.'
-      },
-      itemData: {
-        0: { ref: '1', hst: '12.95', total: '112.50' }
-      },
-      activeIndices: [0],
-      receipts: [
-        { id: 'rcpt_mock_1', name: 'Shell_Gas_Station_May18.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_draft_2',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'June',
-    date: '2026-06-02',
-    purpose: 'Curriculum Books & Printing Material',
-    total: 64.20,
-    status: 'draft',
-    isDriveDraft: true,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-06-02',
-        cheque_num: '',
-        expense_month: 'June',
-        posting: 'branch',
-        posting_location: 'Brampton North',
-        purpose: 'Curriculum Books & Printing Material',
-        comments: 'Printing of syllabus handouts and binding for weekly classes.'
-      },
-      itemData: {
-        5: { ref: '2', hst: '7.38', total: '64.20' }
-      },
-      activeIndices: [5],
-      receipts: [
-        { id: 'rcpt_mock_2', name: 'Staples_Printing_Receipt.jpg', type: 'image/jpeg' }
-      ]
-    })
-  },
-  {
-    id: 'mock_draft_3',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'April',
-    date: '2026-04-20',
-    purpose: 'Jamia IT Cables & Hardware Adapter',
-    total: 230.00,
-    status: 'draft',
-    isDriveDraft: true,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-04-20',
-        cheque_num: '1038',
-        expense_month: 'April',
-        posting: 'hq',
-        posting_location: 'Jamia Ahmadiyya',
-        purpose: 'Jamia IT Cables & Hardware Adapter',
-        comments: 'Ethernet cables, HDMI splitters, and multi-port USB hubs for computer lab.'
-      },
-      itemData: {
-        5: { ref: '3', hst: '26.46', total: '230.00' }
-      },
-      activeIndices: [5],
-      receipts: [
-        { id: 'rcpt_mock_3', name: 'BestBuy_Invoice_7821.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-
-  // --- Pending ---
-  {
-    id: 'mock_pending_1',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'May',
-    date: '2026-05-12',
-    purpose: 'Stationery & Office Supplies',
-    total: 72.88,
-    status: 'sent',
-    refunded: 0,
-    isSheet: true,
-    rowIndex: 2,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-05-12',
-        cheque_num: '1040',
-        expense_month: 'May',
-        posting: 'branch',
-        posting_location: 'Toronto Central',
-        purpose: 'Stationery & Office Supplies',
-        comments: 'Folders, pens, notebooks, and dry-erase markers for committee meetings.'
-      },
-      itemData: {
-        5: { ref: '1', hst: '8.39', total: '72.88' }
-      },
-      activeIndices: [5],
-      receipts: [
-        { id: 'rcpt_p1', name: 'Walmart_Supplies_May12.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_pending_2',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'May',
-    date: '2026-05-04',
-    purpose: 'Regional Inspection Travel Fuel',
-    total: 185.40,
-    status: 'sent',
-    refunded: 0,
-    isSheet: true,
-    rowIndex: 3,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-05-04',
-        cheque_num: '1039',
-        expense_month: 'May',
-        posting: 'hq',
-        posting_location: 'Ontario Region',
-        purpose: 'Regional Inspection Travel Fuel',
-        comments: 'Quarterly visit to regional chapters and Halqa centers across southern Ontario.'
-      },
-      itemData: {
-        0: { ref: '1', hst: '21.33', total: '185.40' }
-      },
-      activeIndices: [0],
-      receipts: [
-        { id: 'rcpt_p2', name: 'PetroCanada_Fuel_May04.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_pending_3',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'April',
-    date: '2026-04-28',
-    purpose: 'Vehicle Oil Change & Maintenance',
-    total: 142.10,
-    status: 'sent',
-    refunded: 0,
-    isSheet: true,
-    rowIndex: 4,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-04-28',
-        cheque_num: '1036',
-        expense_month: 'April',
-        posting: 'branch',
-        posting_location: 'Toronto West',
-        purpose: 'Vehicle Oil Change & Maintenance',
-        comments: 'Synthetic oil replacement, filter change, and tire rotation at 60,000 km.'
-      },
-      itemData: {
-        1: { ref: '1', hst: '16.35', total: '142.10' }
-      },
-      activeIndices: [1],
-      receipts: [
-        { id: 'rcpt_p3', name: 'MrLube_Invoice_April28.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_pending_4',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'April',
-    date: '2026-04-15',
-    purpose: 'Mobile & Internet Reimbursement',
-    total: 175.00,
-    status: 'sent',
-    refunded: 0,
-    isSheet: true,
-    rowIndex: 5,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-04-15',
-        cheque_num: '1035',
-        expense_month: 'April',
-        posting: 'branch',
-        posting_location: 'Toronto West',
-        purpose: 'Mobile & Internet Reimbursement',
-        comments: 'Monthly communication allowance covering official mobile line and high-speed internet.'
-      },
-      itemData: {
-        7: { ref: '1', hst: '10.00', total: '85.00' },
-        8: { ref: '2', hst: '10.50', total: '90.00' }
-      },
-      activeIndices: [7, 8],
-      receipts: [
-        { id: 'rcpt_p4', name: 'Rogers_Bill_April2026.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-
-  // --- Refunded ---
-  {
-    id: 'mock_refunded_1',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'March',
-    date: '2026-03-22',
-    purpose: 'Book Binding & Postal Delivery',
-    total: 48.50,
-    status: 'refunded',
-    refunded: 1,
-    isSheet: true,
-    rowIndex: 6,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-03-22',
-        cheque_num: '1031',
-        expense_month: 'March',
-        posting: 'branch',
-        posting_location: 'Toronto West',
-        purpose: 'Book Binding & Postal Delivery',
-        comments: 'Registered parcel postage for curriculum books dispatched to regional center.'
-      },
-      itemData: {
-        5: { ref: '1', hst: '5.58', total: '48.50' }
-      },
-      activeIndices: [5],
-      receipts: [
-        { id: 'rcpt_r1', name: 'CanadaPost_Tracking_March22.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_refunded_2',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'February',
-    date: '2026-02-18',
-    purpose: 'Vehicle Fuel & Highway 407 Toll',
-    total: 95.00,
-    status: 'refunded',
-    refunded: 1,
-    isSheet: true,
-    rowIndex: 7,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-02-18',
-        cheque_num: '1028',
-        expense_month: 'February',
-        posting: 'branch',
-        posting_location: 'Toronto West',
-        purpose: 'Vehicle Fuel & Highway 407 Toll',
-        comments: 'Urgent transit across the GTA via ETR 407 and fuel top-up.'
-      },
-      itemData: {
-        0: { ref: '1', hst: '8.50', total: '65.00' },
-        11: { ref: '2', hst: '3.45', total: '30.00' }
-      },
-      activeIndices: [0, 11],
-      receipts: [
-        { id: 'rcpt_r2', name: 'Esso_Gas_Feb18.pdf', type: 'application/pdf' }
-      ]
-    })
-  },
-  {
-    id: 'mock_refunded_3',
-    fullName: 'Waleed Ahmad Mangla',
-    memberCode: '31572',
-    month: 'January',
-    date: '2026-01-14',
-    purpose: 'Jamia Library Reference Collection',
-    total: 320.00,
-    status: 'refunded',
-    refunded: 1,
-    isSheet: true,
-    rowIndex: 8,
-    data: JSON.stringify({
-      formData: {
-        fullName: 'Waleed Ahmad Mangla',
-        memberCode: '31572',
-        date: '2026-01-14',
-        cheque_num: '1020',
-        expense_month: 'January',
-        posting: 'hq',
-        posting_location: 'Jamia Ahmadiyya',
-        purpose: 'Jamia Library Reference Collection',
-        comments: 'Arabic lexicons and classical theological references procured for student research.'
-      },
-      itemData: {
-        5: { ref: '1', hst: '15.20', total: '320.00' }
-      },
-      activeIndices: [5],
-      receipts: [
-        { id: 'rcpt_r3', name: 'Books_Acquisition_Jan14.pdf', type: 'application/pdf' }
-      ]
-    })
-  }
-];
 
 export default function ExpensesPage() {
   const months = [
@@ -719,27 +386,19 @@ export default function ExpensesPage() {
     try {
       setSyncStatus('syncing');
       
-      const deletedMockIds: string[] = typeof window !== 'undefined'
-        ? JSON.parse(localStorage.getItem('waqfeen_deleted_mock_ids') || '[]')
-        : [];
-      const availableMocks = MOCK_EXPENSES.filter(m => !deletedMockIds.includes(m.id));
-
-      // 1. Load from LocalStorage first for instant results
+      // 1. Load from LocalStorage first for instant results (purging any previously cached mock items)
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('waqfeen_deleted_mock_ids');
         const localHistory = localStorage.getItem('waqfeen_expenses_history');
         if (localHistory) {
           try {
             const parsed = JSON.parse(localHistory);
-            const existingIds = new Set(parsed.map((p: any) => p.id));
-            const missingMocks = availableMocks.filter(m => !existingIds.has(m.id));
-            const merged = [...missingMocks, ...parsed];
-            setExpensesHistory(merged);
+            const realOnly = Array.isArray(parsed) ? parsed.filter((p: any) => !p.id?.startsWith('mock_')) : [];
+            setExpensesHistory(realOnly);
+            localStorage.setItem('waqfeen_expenses_history', JSON.stringify(realOnly));
           } catch (e) {
-            setExpensesHistory(availableMocks);
+            setExpensesHistory([]);
           }
-        } else {
-          setExpensesHistory(availableMocks);
-          localStorage.setItem('waqfeen_expenses_history', JSON.stringify(availableMocks));
         }
       }
 
@@ -824,13 +483,7 @@ export default function ExpensesPage() {
         }
       });
 
-      // Include available mock expenses for testing
-      const existingIds = new Set(combined.map((c: any) => c.id));
-      availableMocks.forEach(m => {
-        if (!existingIds.has(m.id)) {
-          combined.push(m);
-        }
-      });
+
 
       // Sort by date descending
       const sorted = combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -1381,16 +1034,7 @@ export default function ExpensesPage() {
     const target = targetExp || currentOpenReport?.report || (isCurrentDraft ? { id: currentReportId, isDriveDraft: true, fileId: currentReportId } : null);
 
     try {
-      // 0. If it's a mock expense, record as deleted so it's not re-seeded
-      if (target?.id?.startsWith('mock_')) {
-        if (typeof window !== 'undefined') {
-          const deletedMocks = JSON.parse(localStorage.getItem('waqfeen_deleted_mock_ids') || '[]');
-          if (!deletedMocks.includes(target.id)) {
-            deletedMocks.push(target.id);
-            localStorage.setItem('waqfeen_deleted_mock_ids', JSON.stringify(deletedMocks));
-          }
-        }
-      }
+
 
       const googleSync = await GoogleSyncService.fromLocalStorage();
 
@@ -1484,24 +1128,7 @@ export default function ExpensesPage() {
 
   const toggleRefund = async (exp: any) => {
     try {
-      // --- If mock expense, update in-memory and localStorage immediately ---
-      if (exp.id?.startsWith('mock_')) {
-        setExpensesHistory(prev => {
-          const updated = prev.map(item => {
-            if (item.id === exp.id) {
-              const newStatus = (item.status === 'refunded' || item.refunded) ? 'sent' : 'refunded';
-              const newRefunded = newStatus === 'refunded' ? 1 : 0;
-              return { ...item, status: newStatus, refunded: newRefunded };
-            }
-            return item;
-          });
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('waqfeen_expenses_history', JSON.stringify(updated));
-          }
-          return updated;
-        });
-        return;
-      }
+
 
       const isRefunded = exp.status === 'refunded' || exp.refunded;
       const newStatus = !isRefunded;
