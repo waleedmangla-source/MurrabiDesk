@@ -855,447 +855,548 @@ export default function HabitsPage() {
               VIEW 1: THE FILLABLE MONTHLY MISSIONARY REPORT
              ══════════════════════════════════════════════════════════════════════ */}
           {activeView === 'monthly' && (
-            <div className="max-w-4xl mx-auto space-y-8 pb-24 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-6 pb-20 animate-in fade-in slide-in-from-bottom-6 duration-500 w-full max-w-6xl mx-auto">
               
-              {/* Report Document Sheet Header */}
-              <div className="glass-card rounded-2xl p-8 lg:p-10 border border-white/10 shadow-2xl relative space-y-8 bg-gradient-to-b from-white/[0.03] to-transparent">
-                
-                {/* Islamic Inscription & Title */}
-                <div className="text-center space-y-2 pb-6 border-b border-white/5">
-                  <p className="text-xl font-serif italic text-white/80 tracking-wide select-none">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                  </p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
-                    In the name of Allah the Gracious the Merciful
-                  </p>
-                  <h1 className="text-3xl lg:text-5xl font-black italic uppercase tracking-tighter text-white pt-2">
-                    Monthly Missionary Report
-                  </h1>
-                </div>
-
-                {/* Table 1: Header Metadata (Name, Office, Month) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] flex items-center gap-1.5">
-                      <User size={12} className="text-[var(--accent-main)]" /> Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Waleed Ahmad Mangla"
-                      value={reportData.name}
-                      onChange={(e) => updateReportField('name', e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:border-[var(--accent-main)] outline-none transition-all"
-                    />
+              {/* Top Action Bar Section (Expense Tab Telemetry Style) */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="hidden lg:flex items-center gap-6 px-6 py-3.5 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Completion</span>
+                    <span className="text-lg font-black italic text-[var(--accent-main)] tracking-tighter">{completedQuestionsCount} / 17</span>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] flex items-center gap-1.5">
-                      <Building size={12} className="text-[var(--accent-main)]" /> Office / Posting
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Regional Missionary"
-                      value={reportData.office}
-                      onChange={(e) => updateReportField('office', e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:border-[var(--accent-main)] outline-none transition-all"
-                    />
+                  <div className="w-px h-10 bg-white/10" />
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Period</span>
+                    <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">{reportData.month}</span>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)] flex items-center gap-1.5">
-                      <Calendar size={12} className="text-[var(--accent-main)]" /> Reporting Month
-                    </label>
-                    <input
-                      type="text"
-                      value={reportData.month}
-                      onChange={(e) => updateReportField('month', e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:border-[var(--accent-main)] outline-none transition-all"
-                    />
+                  <div className="w-px h-10 bg-white/10" />
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">Missionary</span>
+                    <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest truncate max-w-[160px]">{reportData.name || 'Not Set'}</span>
                   </div>
                 </div>
 
-                {/* ── SECTION I: OFFICE ACTIVITIES (Table 2) ── */}
-                <div className="space-y-4 pt-4 border-t border-white/5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[var(--accent-main)]" />
-                    <h3 className="text-sm font-black italic uppercase tracking-[0.2em] text-white">
-                      Office Activities
-                    </h3>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAutoFillFromDaily}
+                    className={clsx(
+                      "px-4 py-3.5 glass rounded-[18px] border transition-all flex items-center gap-2 text-xs font-bold active:scale-95 shadow-sm",
+                      autoFillSuccess 
+                        ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" 
+                        : "border-white/10 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/30"
+                    )}
+                    title="Aggregate daily habits logged this month into the monthly report"
+                  >
+                    <Sparkles size={14} className={clsx(autoFillSuccess ? "text-emerald-400" : "text-amber-400")} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Auto-Fill</span>
+                  </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Q1 */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">1.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          How many days attended?
-                        </label>
-                      </div>
-                      <input
-                        type="number"
-                        min="0"
-                        max="31"
-                        placeholder="e.g. 24"
-                        value={reportData.q1}
-                        onChange={(e) => updateReportField('q1', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                      />
-                    </div>
+                  <button
+                    type="button"
+                    onClick={() => saveReport()}
+                    disabled={isSavingReport}
+                    className="px-5 py-3.5 glass rounded-[18px] border border-[var(--accent-main)]/20 bg-[var(--accent-main)]/10 hover:bg-[var(--accent-main)]/20 text-[var(--accent-main)] text-xs font-bold transition-all flex items-center gap-2.5 active:scale-95 shadow-sm"
+                  >
+                    {isSavingReport ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-main)]/20 border-t-[var(--accent-main)]" />
+                    ) : (
+                      <Save size={15} />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{reportSaveSuccess ? 'Saved' : 'Save Draft'}</span>
+                  </button>
 
-                    {/* Q2 */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">2.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          Average number of hours worked?
-                        </label>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        max="24"
-                        placeholder="e.g. 8"
-                        value={reportData.q2}
-                        onChange={(e) => updateReportField('q2', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                      />
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleExportDocx}
+                    disabled={isExportingDocx}
+                    className="px-5 py-3.5 btn-ruby rounded-[18px] text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isExportingDocx ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Download .docx</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={openEmailModal}
+                    className="p-3.5 glass rounded-[18px] border border-white/10 hover:border-[var(--accent-main)]/40 hover:bg-white/10 text-[var(--text-main)] transition-all active:scale-95 shadow-sm"
+                    title="Send via Email"
+                  >
+                    <Send size={15} className="text-[var(--accent-main)]" />
+                  </button>
                 </div>
+              </div>
 
-                {/* ── SECTION II: PERSONAL ACTIVITIES (Table 3) ── */}
-                <div className="space-y-5 pt-4 border-t border-white/5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[var(--accent-main)]" />
-                    <h3 className="text-sm font-black italic uppercase tracking-[0.2em] text-white">
-                      Personal Activities
-                    </h3>
+              {/* Form V4 Administrative Container */}
+              <div className="w-full space-y-6 form-v4 no-drag">
+                <form id="monthly-missionary-form" onSubmit={(e) => e.preventDefault()} className="space-y-6">
+
+                  {/* Header Banner (Style of Expense Policy Card) */}
+                  <div className="glass bg-white/5 rounded-2xl p-6 border border-white/5 space-y-2 shadow-xl relative overflow-hidden text-center">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--accent-main)] to-transparent opacity-60" />
+                    <p className="text-xl md:text-2xl font-serif italic text-[var(--text-main)]/90 tracking-wide select-none">
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--text-dim)]">
+                      In the name of Allah the Gracious the Merciful
+                    </p>
+                    <h1 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-[var(--text-main)] pt-1">
+                      Monthly Missionary Report
+                    </h1>
+                    <p className="text-[10px] font-mono text-[var(--text-dim)] tracking-wider">
+                      OFFICIAL OPENXML ARCHIVE TEMPLATE • AHMADIYYA MUSLIM JAMA'AT
+                    </p>
                   </div>
 
-                  <div className="space-y-4">
-                    {/* Q3 */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-2 max-w-xl">
-                        <span className="text-xs font-black text-[var(--accent-main)] mt-0.5">3.</span>
-                        <div>
-                          <p className="text-xs font-bold text-white/90">
-                            During the month how many ‘Salat’ were offered in the congregation in total?
-                          </p>
-                          <span className="text-[9px] text-white/40 font-medium">Auto-computable from daily mosque attendance</span>
-                        </div>
-                      </div>
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={reportData.q3}
-                        onChange={(e) => updateReportField('q3', e.target.value)}
-                        className="w-28 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white text-center focus:border-[var(--accent-main)] outline-none shrink-0"
-                      />
+                  {/* Card 1: General Info & Station Metadata */}
+                  <div className="card" id="general-info-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      GENERAL INFORMATION & STATION METADATA
                     </div>
-
-                    {/* Q4 */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-2 max-w-xl">
-                        <span className="text-xs font-black text-[var(--accent-main)] mt-0.5">4.</span>
-                        <div>
-                          <p className="text-xs font-bold text-white/90">
-                            How many days Tahajjud was offered?
-                          </p>
-                          <span className="text-[9px] text-white/40 font-medium">Voluntary night prayers offered</span>
-                        </div>
-                      </div>
-                      <input
-                        type="number"
-                        min="0"
-                        max="31"
-                        placeholder="0"
-                        value={reportData.q4}
-                        onChange={(e) => updateReportField('q4', e.target.value)}
-                        className="w-28 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white text-center focus:border-[var(--accent-main)] outline-none shrink-0"
-                      />
-                    </div>
-
-                    {/* Q5 */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-2 max-w-xl">
-                        <span className="text-xs font-black text-[var(--accent-main)] mt-0.5">5.</span>
-                        <div>
-                          <p className="text-xs font-bold text-white/90">
-                            How many days recitation was done?
-                          </p>
-                          <span className="text-[9px] text-white/40 font-medium">Recitation of the Holy Qur'an with translation</span>
-                        </div>
-                      </div>
-                      <input
-                        type="number"
-                        min="0"
-                        max="31"
-                        placeholder="0"
-                        value={reportData.q5}
-                        onChange={(e) => updateReportField('q5', e.target.value)}
-                        className="w-28 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white text-center focus:border-[var(--accent-main)] outline-none shrink-0"
-                      />
-                    </div>
-
-                    {/* Q6 & Q7 Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Q6 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">6.</span>
-                          <label className="text-xs font-bold text-white/90 leading-snug">
-                            How many pages were read from the commentary of the Promised Messiah (as)?
+                    <div className="card-body">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>Missionary Name</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Full Name</span>
                           </label>
+                          <input
+                            type="text"
+                            value={reportData.name}
+                            onChange={(e) => updateReportField('name', e.target.value)}
+                            placeholder="e.g. Waleed Ahmad Mangla"
+                          />
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Pages read..."
-                          value={reportData.q6}
-                          onChange={(e) => updateReportField('q6', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                        />
-                      </div>
 
-                      {/* Q7 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">7.</span>
-                          <label className="text-xs font-bold text-white/90 leading-snug">
-                            How many pages were read from Tafsir-e-Kabir?
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>Office / Station</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Posting Location</span>
                           </label>
+                          <input
+                            type="text"
+                            value={reportData.office}
+                            onChange={(e) => updateReportField('office', e.target.value)}
+                            placeholder="e.g. Regional Missionary"
+                          />
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Pages read..."
-                          value={reportData.q7}
-                          onChange={(e) => updateReportField('q7', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                        />
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>Reporting Month</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Period</span>
+                          </label>
+                          <select
+                            value={selectedYearMonth}
+                            onChange={(e) => setSelectedYearMonth(e.target.value)}
+                            className="appearance-none cursor-pointer"
+                          >
+                            {monthOptions.map(m => (
+                              <option key={m.yearMonth} value={m.yearMonth} className="bg-slate-900 text-white">
+                                {m.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Q8: Books of Promised Messiah */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">8.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          Which books of The Promised Messiah (as) were read?
-                        </label>
-                      </div>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Kashti-e-Nuh, Braheen-e-Ahmadiyya, The Philosophy of the Teachings of Islam..."
-                        value={reportData.q8}
-                        onChange={(e) => updateReportField('q8', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none"
-                      />
+                  {/* Card 2: Section I: Office Activities */}
+                  <div className="card" id="office-activities-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      SECTION I: OFFICE ACTIVITIES
                     </div>
+                    <div className="card-body">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>1. Days Attended Office</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">0–31 Days</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={reportData.q1}
+                            onChange={(e) => updateReportField('q1', e.target.value)}
+                            placeholder="e.g. 24"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Total number of days present in the office/mission house this month.
+                          </p>
+                        </div>
 
-                    {/* Q9: Jama'at literature */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">9.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          What was studied from Jama'at literature?
-                        </label>
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>2. Average Hours Worked Daily</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Hours/Day</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            max="24"
+                            value={reportData.q2}
+                            onChange={(e) => updateReportField('q2', e.target.value)}
+                            placeholder="e.g. 8.0"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Average daily working duration dedicated to missionary responsibilities.
+                          </p>
+                        </div>
                       </div>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Al Hakam weekly, Review of Religions, Friday Sermon notes..."
-                        value={reportData.q9}
-                        onChange={(e) => updateReportField('q9', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none"
-                      />
                     </div>
+                  </div>
 
-                    {/* Q10: Non-Jama'at literature */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">10.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          What was studied from other literature?
-                        </label>
+                  {/* Card 3: Section II: Devotional & Spiritual Obligations */}
+                  <div className="card" id="spiritual-activities-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      SECTION II: DEVOTIONAL & SPIRITUAL INTEGRITY
+                    </div>
+                    <div className="card-body">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>3. Congregational Salat</span>
+                            <span className="text-[9px] text-emerald-400 font-mono font-bold">Total Count</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={reportData.q3}
+                            onChange={(e) => updateReportField('q3', e.target.value)}
+                            placeholder="0"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            During the month how many ‘Salat’ were offered in congregation in total?
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>4. Tahajjud Prayers</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">0–31 Days</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={reportData.q4}
+                            onChange={(e) => updateReportField('q4', e.target.value)}
+                            placeholder="0"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            How many days Tahajjud (voluntary night vigil) was offered?
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>5. Holy Qur'an Recitation</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">0–31 Days</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={reportData.q5}
+                            onChange={(e) => updateReportField('q5', e.target.value)}
+                            placeholder="0"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            How many days Tilawat (with translation/study) was completed?
+                          </p>
+                        </div>
                       </div>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Comparative religion, Christian theology, Islamic history..."
-                        value={reportData.q10}
-                        onChange={(e) => updateReportField('q10', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none"
-                      />
                     </div>
+                  </div>
 
-                    {/* Q11: Current affairs */}
-                    <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs font-black text-[var(--accent-main)]">11.</span>
-                        <label className="text-xs font-bold text-white/90">
-                          What was studied regarding current affairs?
-                        </label>
+                  {/* Card 4: Section II: Scholarly Studies & Sacred Literature */}
+                  <div className="card" id="scholarly-studies-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      SECTION II: SCHOLARLY STUDIES & SACRED LITERATURE
+                    </div>
+                    <div className="card-body space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>6. Commentary of Promised Messiah (as)</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Pages</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={reportData.q6}
+                            onChange={(e) => updateReportField('q6', e.target.value)}
+                            placeholder="Pages read..."
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Pages read from the commentary and writings of the Promised Messiah (as).
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>7. Tafsir-e-Kabir</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Pages</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={reportData.q7}
+                            onChange={(e) => updateReportField('q7', e.target.value)}
+                            placeholder="Pages read..."
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Pages read from the grand commentary Tafsir-e-Kabir by Hazrat Musleh-e-Maud (ra).
+                          </p>
+                        </div>
                       </div>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Geopolitics, Middle Eastern developments, local policy..."
-                        value={reportData.q11}
-                        onChange={(e) => updateReportField('q11', e.target.value)}
-                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none"
-                      />
-                    </div>
 
-                    {/* Q12, Q13, Q14 Numeric Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Q12 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">12.</span>
-                          <label className="text-xs font-bold text-white/90 leading-snug">
+                      <div className="mt-8 pt-6 border-t border-dashed border-v4-rule grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex justify-between items-center">
+                            <label className="lbl">8. Books of The Promised Messiah (as) Read</label>
+                            <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q8 || '').length} chars</span>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={reportData.q8}
+                            onChange={(e) => updateReportField('q8', e.target.value)}
+                            placeholder="e.g. Kashti-e-Nuh, Braheen-e-Ahmadiyya, The Philosophy of the Teachings of Islam..."
+                            className="resize-none"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Specific titles from Ruhani Khazain read or studied during the month.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex justify-between items-center">
+                            <label className="lbl">9. Jama'at Literature Studied</label>
+                            <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q9 || '').length} chars</span>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={reportData.q9}
+                            onChange={(e) => updateReportField('q9', e.target.value)}
+                            placeholder="e.g. Al Hakam weekly, Review of Religions, Friday Sermons of Huzoor (aa)..."
+                            className="resize-none"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Periodicals, publications, and official literature reviewed.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex justify-between items-center">
+                            <label className="lbl">10. Other Literature Studied</label>
+                            <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q10 || '').length} chars</span>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={reportData.q10}
+                            onChange={(e) => updateReportField('q10', e.target.value)}
+                            placeholder="e.g. Comparative religion, Biblical scholarship, history, philosophy..."
+                            className="resize-none"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            External religious, theological, or academic books studied.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex justify-between items-center">
+                            <label className="lbl">11. Current Affairs Studied</label>
+                            <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q11 || '').length} chars</span>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={reportData.q11}
+                            onChange={(e) => updateReportField('q11', e.target.value)}
+                            placeholder="e.g. Middle Eastern geopolitics, religious freedom legislation, global media..."
+                            className="resize-none"
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            Contemporary socio-political developments and news analysis.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 5: Section II: Tabligh, Health & Correspondence */}
+                  <div className="card" id="tabligh-health-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      SECTION II: TABLIGH, HEALTH & PASTORAL CORRESPONDENCE
+                    </div>
+                    <div className="card-body">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>12. Tabligh Activities</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Hours</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={reportData.q12}
+                            onChange={(e) => updateReportField('q12', e.target.value)}
+                            placeholder="Hours..."
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
                             How many hours were spent in Tabligh activities?
-                          </label>
+                          </p>
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Hours..."
-                          value={reportData.q12}
-                          onChange={(e) => updateReportField('q12', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                        />
-                      </div>
 
-                      {/* Q13 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">13.</span>
-                          <label className="text-xs font-bold text-white/90 leading-snug">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>13. Physical Exercise</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">0–31 Days</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={reportData.q13}
+                            onChange={(e) => updateReportField('q13', e.target.value)}
+                            placeholder="Days..."
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
                             How many days did you exercise?
-                          </label>
+                          </p>
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          max="31"
-                          placeholder="Days..."
-                          value={reportData.q13}
-                          onChange={(e) => updateReportField('q13', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                        />
-                      </div>
 
-                      {/* Q14 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">14.</span>
-                          <label className="text-xs font-bold text-white/90 leading-snug">
-                            How many letters were written to Syedna Hazrat Khalifatul Masih (aa)?
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="lbl flex items-center justify-between">
+                            <span>14. Letters to Huzoor (aa)</span>
+                            <span className="text-[9px] text-v4-ink-muted normal-case tracking-normal">Count</span>
                           </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={reportData.q14}
+                            onChange={(e) => updateReportField('q14', e.target.value)}
+                            placeholder="Letters..."
+                          />
+                          <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                            How many letters were written to Syedna Hazrat Khalifatul Masih (aa)?
+                          </p>
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Letters..."
-                          value={reportData.q14}
-                          onChange={(e) => updateReportField('q14', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm font-black text-white focus:border-[var(--accent-main)] outline-none"
-                        />
                       </div>
                     </div>
+                  </div>
 
-                    {/* Detailed Reflections & Observations (Q15, Q16, Q17) */}
-                    <div className="space-y-4 pt-2">
-                      {/* Q15 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">15.</span>
-                          <label className="text-xs font-bold text-white/90">
-                            Any details regarding office work or studies you would like to mention.
-                          </label>
+                  {/* Card 6: Section II: Detailed Field Observations & Qualitative Reporting */}
+                  <div className="card" id="qualitative-remarks-card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      SECTION II: FIELD OBSERVATIONS & QUALITATIVE REPORTING
+                    </div>
+                    <div className="card-body space-y-6">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label className="lbl">15. Office Work or Studies to Mention</label>
+                          <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q15 || '').length} chars</span>
                         </div>
                         <textarea
                           rows={3}
-                          placeholder="Enter administrative details, special tasks accomplished, or studies completed..."
                           value={reportData.q15}
                           onChange={(e) => updateReportField('q15', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none leading-relaxed"
+                          placeholder="Any details regarding office work or studies you would like to mention..."
+                          className="resize-none"
                         />
+                        <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                          Specific administrative tasks, institutional initiatives, or study curricula completed.
+                        </p>
                       </div>
 
-                      {/* Q16 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">16.</span>
-                          <label className="text-xs font-bold text-white/90">
-                            Any details regarding Tabligh activities you like to mention?
-                          </label>
+                      <div className="space-y-2 pt-6 border-t border-dashed border-v4-rule">
+                        <div className="flex justify-between items-center">
+                          <label className="lbl">16. Tabligh Activities Details</label>
+                          <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q16 || '').length} chars</span>
                         </div>
                         <textarea
                           rows={3}
-                          placeholder="Enter outreach events, bookstalls, contacts nurtured, interfaith meetings..."
                           value={reportData.q16}
                           onChange={(e) => updateReportField('q16', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none leading-relaxed"
+                          placeholder="Any details regarding Tabligh activities you like to mention..."
+                          className="resize-none"
                         />
+                        <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                          Details on bookstalls, public lectures, interfaith symposiums, or seekers of truth (da'een).
+                        </p>
                       </div>
 
-                      {/* Q17 */}
-                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-black text-[var(--accent-main)]">17.</span>
-                          <label className="text-xs font-bold text-white/90">
-                            Any details regarding personal studies you like to mention?
-                          </label>
+                      <div className="space-y-2 pt-6 border-t border-dashed border-v4-rule">
+                        <div className="flex justify-between items-center">
+                          <label className="lbl">17. Personal Studies Details</label>
+                          <span className="text-[9px] font-mono text-v4-ink-muted uppercase">{(reportData.q17 || '').length} chars</span>
                         </div>
                         <textarea
                           rows={3}
-                          placeholder="Enter personal research, language acquisition, notes on Malfuzat or Hadith..."
                           value={reportData.q17}
                           onChange={(e) => updateReportField('q17', e.target.value)}
-                          className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--accent-main)] outline-none resize-none leading-relaxed"
+                          placeholder="Any details regarding personal studies you like to mention..."
+                          className="resize-none"
                         />
+                        <p className="text-[9px] text-v4-ink-muted/60 italic leading-tight">
+                          Notes on personal research, language acquisition (Arabic/Urdu/Hebrew), or thematic study.
+                        </p>
                       </div>
                     </div>
-
-                  </div>
-                </div>
-
-                {/* Bottom Floating Action Strip */}
-                <div className="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-white/50">
-                    <span>Last Saved: {reportSaveSuccess ? 'Just now' : 'Synced to local record'}</span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleAutoFillFromDaily}
-                      className="px-4 py-2 rounded-xl glass border border-white/10 hover:border-white/20 text-xs font-bold text-white flex items-center gap-2 transition-all active:scale-95"
-                    >
-                      <Sparkles size={13} className="text-amber-400" />
-                      <span>Auto-Fill from Daily</span>
-                    </button>
+                  {/* Card 7: Actions & Dispatch Bar */}
+                  <div className="card">
+                    <div className="card-hdr">
+                      <div className="dot"></div>
+                      RECORD ACTIONS & DISPATCH
+                    </div>
+                    <div className="card-body flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-2 text-xs font-bold text-v4-ink-muted">
+                        <span>Status: {reportSaveSuccess ? 'Draft Saved' : 'Synced to local record'}</span>
+                      </div>
 
-                    <button
-                      onClick={handleExportDocx}
-                      disabled={isExportingDocx}
-                      className="px-5 py-2.5 btn-ruby rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all active:scale-95"
-                    >
-                      {isExportingDocx ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-                      <span>Export Document (.docx)</span>
-                    </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleAutoFillFromDaily}
+                          className="btn-v4 !bg-white/5 hover:!bg-white/10 !text-[var(--text-main)] border border-white/10"
+                        >
+                          <Sparkles size={14} className="text-amber-400" />
+                          <span>Auto-Fill from Daily</span>
+                        </button>
 
-                    <button
-                      onClick={openEmailModal}
-                      className="px-4 py-2.5 rounded-xl glass border border-white/10 hover:border-white/20 text-xs font-bold text-white flex items-center gap-2 transition-all active:scale-95"
-                    >
-                      <Send size={13} className="text-[var(--accent-main)]" />
-                      <span>Send via Email</span>
-                    </button>
+                        <button
+                          type="button"
+                          onClick={handleExportDocx}
+                          disabled={isExportingDocx}
+                          className="btn-ruby px-5 py-2.5 rounded-[14px] text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                        >
+                          {isExportingDocx ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                          <span>Export Document (.docx)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={openEmailModal}
+                          className="btn-v4 !bg-[var(--accent-main)]/10 hover:!bg-[var(--accent-main)]/20 !text-[var(--accent-main)] border border-[var(--accent-main)]/30"
+                        >
+                          <Send size={14} />
+                          <span>Send via Email</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
+                </form>
               </div>
             </div>
           )}
