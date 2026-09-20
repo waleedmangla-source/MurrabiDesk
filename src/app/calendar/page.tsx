@@ -23,6 +23,8 @@ interface CalendarEvent {
   allDay?: boolean;
   description?: string;
   calendar: string; // Added category
+  url?: string;
+  category?: string;
 }
 
 interface NewEventDraft {
@@ -61,7 +63,8 @@ const FULL_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const CALENDARS = [
   { name: "Personal", color: "var(--accent-main)" },
-  { name: "Work", color: "#3b82f6" }
+  { name: "Work", color: "#3b82f6" },
+  { name: "Jama'at", color: "#10b981" },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -382,8 +385,15 @@ function EventModal({ event, onClose }: { event: CalendarEvent; onClose: () => v
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-6">
-          <div className={clsx("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", colorClass)}>
-            Event
+          <div className="flex items-center gap-2">
+            <div className={clsx("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", colorClass)}>
+              {event.calendar || "Event"}
+            </div>
+            {event.category && (
+              <div className="px-2.5 py-0.5 rounded-full text-[9px] font-bold text-[var(--text-dim)] bg-white/5 border border-white/5">
+                {event.category}
+              </div>
+            )}
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 text-[var(--text-dim)] transition-colors">
             <X size={16} />
@@ -410,6 +420,19 @@ function EventModal({ event, onClose }: { event: CalendarEvent; onClose: () => v
           {event.description && (
             <div className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/5 text-xs text-[var(--text-muted)] font-medium leading-relaxed">
               {event.description}
+            </div>
+          )}
+          {event.url && (
+            <div className="pt-2">
+              <a
+                href={event.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[var(--accent-main)] transition-colors border border-white/5"
+              >
+                <ExternalLink size={12} />
+                <span>View on ahmadiyya.ca</span>
+              </a>
             </div>
           )}
         </div>
@@ -723,7 +746,7 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedCalendars, setSelectedCalendars] = useState<string[]>(["Personal", "Work"]);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>(["Personal", "Work", "Jama'at"]);
   const [draft, setDraft] = useState<NewEventDraft>({
     title: "", date: localDateStr(today), startTime: "09:00", endTime: "10:00", location: "", color: "accent"
   });
@@ -732,22 +755,43 @@ export default function CalendarPage() {
   const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
+      // Concurrently fetch Jama'at national events
+      const fetchJamaatEvents = async (): Promise<CalendarEvent[]> => {
+        try {
+          const res = await fetch("/api/calendar/jamaat");
+          if (res.ok) {
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+          }
+        } catch (err) {
+          console.error("Failed to load Jama'at events:", err);
+        }
+        return [];
+      };
+
       const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
       if (isGuest) {
         // Demo events for guest mode
         const now = new Date();
         const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
-        setEvents([
+        const guestEvents: CalendarEvent[] = [
           { id: "1", title: "Team Standup", start: new Date(y,m,d,9,0).toISOString(), end: new Date(y,m,d,9,30).toISOString(), color: "blue", calendar: "Work" },
           { id: "2", title: "Design Review", start: new Date(y,m,d,11,0).toISOString(), end: new Date(y,m,d,12,0).toISOString(), color: "lavender", calendar: "Work" },
           { id: "3", title: "Lunch Break", start: new Date(y,m,d,13,0).toISOString(), end: new Date(y,m,d,14,0).toISOString(), color: "mint", calendar: "Personal" },
           { id: "4", title: "Friday Khutbah", start: new Date(y,m,d+2,13,0).toISOString(), end: new Date(y,m,d+2,14,0).toISOString(), color: "accent", calendar: "Personal" },
           { id: "5", title: "Product Sprint", start: new Date(y,m,d+1,10,0).toISOString(), end: new Date(y,m,d+1,12,0).toISOString(), color: "peach", calendar: "Work" },
           { id: "6", title: "Flight: SFO → LHR", start: new Date(y,m,d,18,30).toISOString(), end: new Date(y,m,d+1,7,45).toISOString(), color: "accent", calendar: "Personal", location: "SFO" },
-        ]);
+        ];
+        const jamaatEvents = await fetchJamaatEvents();
+        setEvents([...guestEvents, ...jamaatEvents]);
         return;
       }
-      const service = await GoogleSyncService.fromLocalStorage();
+
+      const [jamaatEvents, service] = await Promise.all([
+        fetchJamaatEvents(),
+        GoogleSyncService.fromLocalStorage(),
+      ]);
+
       const raw = await service?.getCalendarEvents(false) || [];
       const mapped: CalendarEvent[] = raw.map((e: any, i: number) => ({
         id: e.id || String(i),
@@ -760,7 +804,8 @@ export default function CalendarPage() {
         color: ["accent","blue","mint","lavender","peach","rose"][i % 6],
         calendar: i % 2 === 0 ? "Work" : "Personal"
       }));
-      setEvents(mapped);
+
+      setEvents([...mapped, ...jamaatEvents]);
     } catch {
       setEvents([]);
     } finally {
@@ -802,9 +847,14 @@ export default function CalendarPage() {
   });
 
   const upcomingEvents = useMemo(() => {
+    const now = Date.now();
+    const thirtyDaysFromNow = now + 30 * 24 * 60 * 60 * 1000;
     return activeEvents
-      .filter(e => new Date(e.start).getTime() > Date.now())
-      .sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      .filter(e => {
+        const time = new Date(e.start).getTime();
+        return time > now && time <= thirtyDaysFromNow;
+      })
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, 10);
   }, [activeEvents]);
 
