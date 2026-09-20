@@ -931,22 +931,6 @@ export default function HabitsPage() {
               <div className="w-full space-y-6 form-v4 no-drag">
                 <form id="monthly-missionary-form" onSubmit={(e) => e.preventDefault()} className="space-y-6">
 
-                  {/* Header Banner (Style of Expense Policy Card) */}
-                  <div className="glass bg-white/5 rounded-2xl p-6 border border-white/5 space-y-2 shadow-xl relative overflow-hidden text-center">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--accent-main)] to-transparent opacity-60" />
-                    <p className="text-xl md:text-2xl font-serif italic text-[var(--text-main)]/90 tracking-wide select-none">
-                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                    </p>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--text-dim)]">
-                      In the name of Allah the Gracious the Merciful
-                    </p>
-                    <h1 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-[var(--text-main)] pt-1">
-                      Monthly Missionary Report
-                    </h1>
-                    <p className="text-[10px] font-mono text-[var(--text-dim)] tracking-wider">
-                      OFFICIAL OPENXML ARCHIVE TEMPLATE • AHMADIYYA MUSLIM JAMA'AT
-                    </p>
-                  </div>
 
                   {/* Card 1: General Info & Station Metadata */}
                   <div className="card" id="general-info-card">
