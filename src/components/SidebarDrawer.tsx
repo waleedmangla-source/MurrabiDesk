@@ -23,6 +23,7 @@ import {
   ShieldAlert,
   ChevronRight,
   BookOpen,
+  Search,
 } from "lucide-react";
 
 import AIBlobIcon from "@/components/AIBlobIcon";
@@ -39,6 +40,7 @@ const navLinks = [
   { icon: ScrollText, label: "Letters", href: "/letters" },
   { icon: Users, label: "Tajnid", href: "/tajnid" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
+  { icon: Search, label: "Research", href: "/beta-tools?tab=research" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
 ];
 
