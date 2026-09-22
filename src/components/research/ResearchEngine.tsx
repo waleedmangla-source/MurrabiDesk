@@ -237,27 +237,26 @@ export default function ResearchEngine() {
         {/* Ambient atmospheric glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-glow)] rounded-full blur-[130px] pointer-events-none -z-10 opacity-70" />
 
-        {/* Murabbi Desk Emblem & Logo Branding */}
+        {/* Murabbi Desk Text Logo */}
         <div className="flex flex-col items-center mb-8 animate-in fade-in zoom-in-95 duration-500">
-          <div className="relative group cursor-pointer active:scale-95 transition-transform mb-3" onClick={resetToHome}>
-            <div className="absolute -inset-3 bg-[var(--accent-glow)] rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+          <div
+            className="relative flex flex-col items-center cursor-pointer active:scale-95 transition-transform"
+            onClick={resetToHome}
+          >
+            <div className="absolute -inset-6 bg-[var(--accent-glow)] rounded-full blur-2xl opacity-40 pointer-events-none" />
             <img
-              src="/logo.png"
+              src="/text-logo.png"
               alt="Murabbi Desk"
-              className="w-20 h-20 md:w-24 md:h-24 object-contain relative z-10 drop-shadow-2xl"
+              className="h-[80px] md:h-[110px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply select-none drop-shadow-2xl relative z-10"
             />
+            <div className="flex items-center gap-2 mt-2 relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] px-3 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30">
+                Research Protocol
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter text-[var(--foreground)]">
-              Murabbi Research
-            </h1>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30">
-              Beta Protocol
-            </span>
-          </div>
-
-          <p className="text-xs md:text-sm font-semibold text-[var(--text-muted)] tracking-wide mt-2 text-center max-w-lg">
+          <p className="text-xs md:text-sm font-semibold text-[var(--text-muted)] tracking-wide mt-3 text-center max-w-lg">
             Unified Theological Intelligence & Multi-Source Ahmadiyya Corpus Search
           </p>
         </div>
@@ -405,28 +404,17 @@ export default function ResearchEngine() {
       {/* ── TOP HEADER (Murabbi Desk Logo + Search Pill Bar) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-3 pb-0 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center gap-4">
-          {/* Logo on the left with official emblem */}
+          {/* Navbar text logo on the left */}
           <div
             onClick={resetToHome}
-            className="flex items-center gap-2.5 cursor-pointer shrink-0 select-none group"
-            title="Murabbi Research Home"
+            className="flex items-center cursor-pointer shrink-0 select-none group py-0.5"
+            title="Murabbi Desk"
           >
-            <div className="relative">
-              <div className="absolute -inset-1 bg-[var(--accent-glow)] rounded-full blur-md opacity-40 group-hover:opacity-100 transition-opacity" />
-              <img
-                src="/logo.png"
-                alt="Murabbi Desk"
-                className="w-8 h-8 object-contain drop-shadow-md group-hover:scale-105 transition-transform relative z-10"
-              />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xl font-black italic tracking-tighter text-[var(--foreground)]">
-                Murabbi
-              </span>
-              <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30">
-                Research
-              </span>
-            </div>
+            <img
+              src="/text-logo.png"
+              alt="Murabbi Desk"
+              className="h-9 w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95 group-hover:opacity-90"
+            />
           </div>
 
           {/* Search Pill Bar in Top Header */}
