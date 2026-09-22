@@ -489,8 +489,16 @@ export default function ResearchEngine() {
       <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1">
         {/* Search Statistics */}
         {results && !loading && (
-          <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-6 max-w-5xl mx-auto text-center md:text-left">
-            Found {counts.all} theological records in {searchTime} seconds for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
+          <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-6 max-w-5xl mx-auto text-center md:text-left flex flex-wrap items-center justify-between gap-2">
+            <span>
+              Found {counts.all} records in {searchTime}s for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
+            </span>
+            {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
+              <span className="text-emerald-400 font-bold lowercase tracking-normal flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                {results.totalAlHakamHits} matching articles in Al Hakam official archive
+              </span>
+            )}
           </div>
         )}
 
@@ -523,77 +531,73 @@ export default function ResearchEngine() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/40 flex items-center justify-center text-[var(--accent-main)] shadow-sm shrink-0">
-                        <ShieldCheck size={20} />
+                        <Layers size={18} />
                       </div>
                       <div>
-                        <div className="text-sm font-black italic tracking-tight text-[var(--foreground)] flex items-center gap-2">
-                          Consensus Triangulation Matrix
-                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            Deterministic DSGT
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base md:text-lg font-black tracking-tight text-[var(--foreground)]">
+                            Consensus Triangulation Matrix
+                          </h2>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-[var(--accent-main)] text-white shadow-sm">
+                            DSGT Engine
                           </span>
                         </div>
-                        <div className="text-[11px] font-bold text-[var(--text-muted)]">
-                          Kleinberg HITS Graph • Cross-Corpus Corroboration Engine
-                        </div>
+                        <p className="text-xs text-[var(--text-muted)] font-medium">
+                          Cross-corpus mathematical convergence across canonical sources
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-xs font-black text-[var(--accent-main)]">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>{results.consensusMatrix.confidenceScore}% Corroborated</span>
+                    {/* Consensus Verdict Badge */}
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <div className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
+                        <ShieldCheck size={14} className="text-emerald-400" />
+                        <span className="text-xs font-black text-emerald-400 tracking-wide">
+                          {results.consensusMatrix.consensusLevel}
+                        </span>
                       </div>
-                      <button
-                        onClick={() => {
-                          const matrixTxt = `[CONSENSUS TRIANGULATION: ${results.consensusMatrix?.topicTitle}]\nConsensus Level: ${results.consensusMatrix?.consensusLevel} (${results.consensusMatrix?.confidenceScore}%)\nCorroborated Layers: ${results.consensusMatrix?.corroboratedLayersCount}/4\n\nThesis:\n${results.consensusMatrix?.theologicalThesis}\n\nEvidence Provenance:\n${results.consensusMatrix?.provenanceChain.join('\n')}`;
-                          copyToClipboard(matrixTxt, 'dsgt-matrix');
-                        }}
-                        className="text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] p-1.5 rounded-lg hover:bg-white/5 transition-colors font-bold"
-                        title="Copy Matrix"
-                      >
-                        {copiedId === 'dsgt-matrix' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      </button>
                     </div>
                   </div>
 
-                  {/* Consensus Level & Confidence Meter */}
-                  <div className="space-y-2">
+                  {/* Confidence Score Bar */}
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-[var(--foreground)]">
-                        Theological Verdict: <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.consensusLevel}</span>
+                      <span className="text-[var(--text-muted)] uppercase tracking-wider text-[10px]">
+                        Corroboration Confidence
                       </span>
-                      <span className="text-[var(--text-muted)] text-[11px]">
-                        {results.consensusMatrix.corroboratedLayersCount} of 4 Literature Pillars Corroborated
+                      <span className="text-emerald-400 font-mono text-sm font-black">
+                        {results.consensusMatrix.confidenceScore}%
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden border border-white/5 p-0.5">
+                    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden relative">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[var(--accent-main)] to-[var(--accent-main)] transition-all duration-700"
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent-main)] transition-all duration-700"
                         style={{ width: `${results.consensusMatrix.confidenceScore}%` }}
                       />
                     </div>
                   </div>
 
-                  {/* The 4 Corroboration Pillars Grid */}
+                  {/* 4 Pillars Status Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {results.consensusMatrix.layers.map((layer, idx) => {
+                    {results.consensusMatrix.layers.map((layer) => {
                       const isCorroborated = layer.corroborated;
                       return (
                         <div
-                          key={idx}
+                          key={layer.name}
                           className={clsx(
-                            "p-3.5 rounded-[14px] border transition-all text-xs space-y-1.5",
+                            "p-3 rounded-[14px] border transition-all space-y-1.5",
                             isCorroborated
-                              ? "bg-white/5 border-white/15 text-[var(--foreground)]"
-                              : "bg-white/2 border-white/5 text-[var(--text-muted)] opacity-60"
+                              ? "bg-emerald-500/5 border-emerald-500/20"
+                              : "bg-white/[0.02] border-white/5 opacity-60"
                           )}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-bold flex items-center gap-1.5">
-                              <span className={clsx(
-                                "w-2 h-2 rounded-full",
-                                isCorroborated ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-neutral-600"
-                              )} />
+                            <span className="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                              {isCorroborated ? (
+                                <Check size={13} className="text-emerald-400 shrink-0" />
+                              ) : (
+                                <X size={13} className="text-[var(--text-muted)] shrink-0" />
+                              )}
                               {layer.name}
                             </span>
                             <span className={clsx(
@@ -749,114 +753,121 @@ export default function ResearchEngine() {
                       )}
                     </div>
 
-                    {/* Clickable Title */}
-                    <h3
-                      onClick={() => router.push(item.readerUrl)}
-                      className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] hover:text-[var(--accent-main)] cursor-pointer leading-snug transition-colors"
-                    >
-                      {item.bookTitle} — Volume {item.volume}, Page {item.pageNum} <span className="font-nastaleeq text-base text-[var(--text-muted)] not-italic font-normal">({item.bookUrduTitle})</span>
+                    <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                      <a href={item.readerUrl} className="hover:text-[var(--accent-main)] transition-colors">
+                        Volume {item.volume}, Page {item.pageNum} — {item.bookTitle}
+                      </a>
                     </h3>
 
-                    {/* Urdu Snippet in Nastaleeq */}
-                    <div className="p-4 rounded-[14px] glass bg-black/25 dark:bg-black/35 border border-white/5 text-right font-nastaleeq text-lg md:text-xl leading-loose text-[var(--foreground)] select-text">
+                    {/* Urdu Snippet Excerpt */}
+                    <div
+                      dir="rtl"
+                      className="p-4 rounded-[14px] glass bg-white/[0.02] border border-white/5 text-base md:text-lg leading-loose font-urdu text-[var(--foreground)] text-right"
+                    >
                       <span>{item.snippetBefore}</span>
-                      <strong className="font-bold text-[var(--accent-main)] bg-[var(--accent-soft)] px-1.5 py-0.5 rounded-md mx-1 border border-[var(--accent-main)]/20">
+                      <mark className="bg-[var(--accent-main)] text-white px-1.5 py-0.5 rounded mx-1 font-bold">
                         {item.matchedSlice}
-                      </strong>
+                      </mark>
                       <span>{item.snippetAfter}</span>
                     </div>
 
-                    {/* Action Sitelinks */}
-                    <div className="flex items-center gap-3 pt-1 text-xs">
-                      <button
-                        onClick={() => router.push(item.readerUrl)}
-                        className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5 hover:border-[var(--accent-main)]/40 transition-colors"
-                      >
-                        <BookOpen size={13} className="text-[var(--accent-main)]" />
-                        Open in Reader
-                        <ArrowRight size={11} className="opacity-60" />
-                      </button>
+                    {/* Bottom Metadata & Actions */}
+                    <div className="flex items-center justify-between pt-1 text-xs">
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={item.readerUrl}
+                          className="px-3 py-1.5 rounded-[10px] bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                        >
+                          <BookOpen size={13} />
+                          Open in Reader
+                          <ArrowRight size={11} />
+                        </Link>
+                        <span className="text-xs text-[var(--text-muted)] font-semibold hidden sm:inline">
+                          constituent work: {item.bookUrduTitle}
+                        </span>
+                      </div>
 
                       <button
-                        onClick={() => copyToClipboard(citation, itemKey)}
-                        className="px-3 py-1.5 rounded-[10px] glass border border-white/10 hover:bg-white/5 text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] flex items-center gap-1.5 transition-colors"
+                        onClick={() => copyToClipboard(`${citation}\n"${item.snippetBefore} [${item.matchedSlice}] ${item.snippetAfter}"`, itemKey)}
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                        title="Copy Citation"
                       >
-                        {copiedId === itemKey ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                        <span>{copiedId === itemKey ? "Copied" : "Copy Citation"}</span>
+                        {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
                       </button>
                     </div>
                   </div>
                 );
               })}
 
-              {/* ── 3. HOLY QUR'AN RESULTS ──────────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'quran') && results.quranVerses.map((verse, idx) => {
-                const verseKey = `quran-${verse.surahNumber}-${verse.verseNumber}-${idx}`;
-                const quranCitation = `[Holy Qur'an, Surah ${verse.surahNameEnglish} (${verse.surahNumber}:${verse.verseNumber})] "${verse.englishTranslation}"`;
+              {/* ── 3. HOLY QUR'AN THEMATIC RESULTS ─────────────────────────── */}
+              {(activeFilter === 'all' || activeFilter === 'quran') && results.quranVerses.map((v) => {
+                const verseKey = `quran-${v.surahNumber}-${v.verseNumber}`;
+                const quranCitation = `[Holy Qur'an, Surah ${v.surahNameEnglish} (${v.surahNumber}:${v.verseNumber})]\n"${v.arabicText}"\nTranslation: "${v.englishTranslation}"`;
                 return (
-                  <div key={verseKey} className="space-y-2.5 group">
-                    {/* Breadcrumb */}
+                  <div key={verseKey} className="space-y-3 group p-5 rounded-[16px] glass border border-white/10 hover:border-emerald-500/30 transition-all">
+                    {/* Header */}
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px] shrink-0">
                           HQ
                         </div>
                         <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                          <span className="text-[var(--foreground)]">Holy Qur'an</span>
+                          <span className="text-emerald-400 font-bold">Holy Qur'an</span>
                           <span>›</span>
-                          <span>Surah {verse.surahNameEnglish}</span>
-                          <span>›</span>
-                          <span>Ayah {verse.verseNumber}</span>
+                          <span className="text-[var(--foreground)]">Surah {v.surahNameEnglish}</span>
+                          <span>•</span>
+                          <span>Verse {v.verseNumber}</span>
                         </div>
                       </div>
 
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
                         <ShieldCheck size={11} />
-                        Canonical Scriptural Authority (1.00)
+                        Canonical Root Authority
                       </span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                      <a href={verse.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
-                        Surah {verse.surahNameEnglish} ({verse.surahNameArabic}) — Chapter {verse.surahNumber}, Verse {verse.verseNumber}
-                      </a>
-                    </h3>
-
-                    {/* Arabic Verse Box */}
-                    <div className="p-4 md:p-5 rounded-[14px] glass bg-black/30 border border-white/5 text-right font-quran text-2xl md:text-3xl leading-loose text-emerald-400 dark:text-emerald-300">
-                      {verse.arabicText}
+                    {/* Arabic Text */}
+                    <div
+                      dir="rtl"
+                      className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
+                    >
+                      {v.arabicText}
                     </div>
 
-                    {/* English and Urdu Snippets */}
-                    <p className="text-sm text-[var(--foreground)]/90 leading-relaxed font-medium">
-                      <span className="font-bold text-[var(--accent-main)] mr-1.5">Translation:</span>
-                      "{verse.englishTranslation}"
+                    {/* English Translation */}
+                    <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-emerald-500/40 pl-3">
+                      "{v.englishTranslation}"
                     </p>
 
-                    <div className="text-right font-nastaleeq text-base text-[var(--text-muted)] leading-loose">
-                      {verse.urduTranslation}
-                    </div>
+                    {/* Commentary note */}
+                    {v.commentaryNote && (
+                      <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-white/[0.02] p-3 rounded-[10px] border border-white/5 font-medium">
+                        <span className="text-emerald-400 font-bold mr-1">Tafsir Context:</span>
+                        {v.commentaryNote}
+                      </div>
+                    )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 pt-1 text-xs">
+                    {/* Bottom Actions */}
+                    <div className="flex items-center justify-between pt-1 text-xs">
                       <a
-                        href={verse.url}
+                        href={v.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5 hover:border-[var(--accent-main)]/40 transition-colors"
+                        className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors"
                       >
-                        <Globe size={13} className="text-emerald-400" />
+                        <Globe size={13} />
                         Al Islam Qur'an
                         <ExternalLink size={11} className="opacity-60" />
                       </a>
 
                       <button
                         onClick={() => copyToClipboard(quranCitation, verseKey)}
-                        className="px-3 py-1.5 rounded-[10px] glass border border-white/10 hover:bg-white/5 text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] flex items-center gap-1.5 transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                        title="Copy Citation"
                       >
-                        {copiedId === verseKey ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                        <span>{copiedId === verseKey ? "Copied" : "Copy Verse"}</span>
+                        {copiedId === verseKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        <span className="text-[11px] uppercase tracking-wider">{copiedId === verseKey ? "Copied" : "Cite"}</span>
                       </button>
                     </div>
                   </div>
@@ -908,48 +919,106 @@ export default function ResearchEngine() {
               ))}
 
               {/* ── 5. PERIODICALS & PAPERS ─────────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'periodicals') && results.publications.map((pub) => (
-                <div key={pub.id} className="space-y-2 group">
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                    <div className="w-6 h-6 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-[10px] shrink-0">
-                      RoR
+              {(activeFilter === 'all' || activeFilter === 'periodicals') && (
+                <div className="space-y-6">
+                  {/* Live Al Hakam Archive Callout Banner */}
+                  {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
+                    <div className="p-4 rounded-[16px] glass bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-xs shrink-0">
+                          AH
+                        </div>
+                        <div>
+                          <span className="font-black text-emerald-400 text-sm">
+                            Al Hakam Archive: {results.totalAlHakamHits} results found
+                          </span>
+                          <p className="text-[var(--text-muted)] text-[11px] font-medium">
+                            Displaying top verified articles directly from the live alhakam.org search database
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={`https://www.alhakam.org/search?q=${encodeURIComponent(submittedQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto shrink-0 border border-emerald-500/30"
+                      >
+                        <span>Browse all {results.totalAlHakamHits} on alhakam.org</span>
+                        <ExternalLink size={12} />
+                      </a>
                     </div>
-                    <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                      <span className="text-[var(--foreground)]">{pub.source}</span>
-                      <span>›</span>
-                      <span>Research Paper</span>
-                    </div>
-                  </div>
+                  )}
 
-                  <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                    <a href={pub.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
-                      {pub.title}
-                    </a>
-                  </h3>
+                  {results.publications.map((pub) => {
+                    const isAlHakam = pub.source === 'Al Hakam';
+                    const isRoR = pub.source === 'Review of Religions';
 
-                  <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
-                    {pub.summary}
-                  </p>
+                    return (
+                      <div key={pub.id} className="space-y-2 group">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className={clsx(
+                              "w-6 h-6 rounded-md flex items-center justify-center font-black text-[10px] shrink-0",
+                              isAlHakam ? "bg-emerald-500/20 text-emerald-400" : isRoR ? "bg-purple-500/20 text-purple-400" : "bg-amber-500/20 text-amber-400"
+                            )}>
+                              {isAlHakam ? 'AH' : isRoR ? 'RoR' : 'AF'}
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)]">{pub.source}</span>
+                              <span>›</span>
+                              <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : 'Monthly Magazine')}</span>
+                            </div>
+                          </div>
 
-                  <div className="flex items-center gap-3 pt-1 text-xs">
-                    <a
-                      href={pub.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5 hover:border-[var(--accent-main)]/40 transition-colors"
-                    >
-                      <Newspaper size={13} className="text-purple-400" />
-                      Read Paper
-                      <ExternalLink size={11} className="opacity-60" />
-                    </a>
-                    {pub.author && (
-                      <span className="text-xs text-[var(--text-muted)] font-semibold">
-                        By {pub.author}
-                      </span>
-                    )}
-                  </div>
+                          {isAlHakam && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Live Online Archive
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                          <a href={pub.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
+                            {pub.title}
+                          </a>
+                        </h3>
+
+                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                          {pub.summary}
+                        </p>
+
+                        <div className="flex items-center gap-3 pt-1 text-xs">
+                          <a
+                            href={pub.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={clsx(
+                              "px-3 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 transition-colors border",
+                              isAlHakam
+                                ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                                : "bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40"
+                            )}
+                          >
+                            <Newspaper size={13} className={isAlHakam ? "text-emerald-400" : "text-purple-400"} />
+                            {isAlHakam ? "Read on Al Hakam" : isRoR ? "Read on Review of Religions" : "Read Publication"}
+                            <ExternalLink size={11} className="opacity-60" />
+                          </a>
+                          {pub.date && (
+                            <span className="text-xs text-[var(--text-muted)] font-semibold">
+                              {pub.date}
+                            </span>
+                          )}
+                          {pub.author && (
+                            <span className="text-xs text-[var(--text-muted)] font-semibold">
+                              By {pub.author}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
 
               {/* End of results padding */}
               <div className="pb-12" />

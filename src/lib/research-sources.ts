@@ -74,6 +74,7 @@ export interface MultiSourceSearchResult {
   publications: PublicationResult[];
   dossier?: ResearchDossier;
   totalResults: number;
+  totalAlHakamHits?: number;
   consensusMatrix?: TheologicalConsensusMatrix;
   hitsRankings?: HitsRankings;
 }

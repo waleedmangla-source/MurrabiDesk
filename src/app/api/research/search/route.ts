@@ -22,6 +22,12 @@ import { expandQueryVector } from '@/lib/dsgt/query-expansion';
 import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
 import { computeHitsRankings } from '@/lib/dsgt/hits-engine';
 import { computeConsensusTriangulation } from '@/lib/dsgt/triangulation-engine';
+import {
+  fetchLiveAlHakam,
+  fetchLiveReviewOfReligions,
+  fetchLiveAlIslam
+} from '@/lib/external-sources';
+import { PublicationResult, AlIslamArticleResult } from '@/lib/research-sources';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -295,28 +301,82 @@ export async function POST(req: NextRequest) {
       return results;
     })();
 
-    const alislamPromise: Promise<any[]> = (async () => {
+    const alislamPromise: Promise<AlIslamArticleResult[]> = (async () => {
       if (!requestedSources.includes('alislam')) return [];
-      const results = searchAlIslamResources(rawQuery);
-      if (results.length === 0 && dsgtContext.winningSense) {
+      const localResults = searchAlIslamResources(rawQuery);
+      if (localResults.length === 0 && dsgtContext.winningSense) {
         const extra = searchAlIslamResources(dsgtContext.winningSense.primaryConcept);
         for (const item of extra) {
-          if (!results.some(r => r.id === item.id)) results.push(item);
+          if (!localResults.some(r => r.id === item.id)) localResults.push(item);
         }
       }
-      return results;
+
+      // Query live Al Islam search in parallel with fallback
+      try {
+        const liveArticles = await fetchLiveAlIslam(rawQuery);
+        const merged: AlIslamArticleResult[] = [...localResults];
+        const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
+
+        for (const art of liveArticles) {
+          const normUrl = art.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(art);
+          }
+        }
+        return merged;
+      } catch (e) {
+        console.warn('[Research API] Live Al Islam fallback to local:', e);
+        return localResults;
+      }
     })();
 
-    const periodicalsPromise: Promise<any[]> = (async () => {
+    let totalAlHakamHits = 0;
+    const periodicalsPromise: Promise<PublicationResult[]> = (async () => {
       if (!requestedSources.includes('periodicals')) return [];
-      const results = searchPeriodicals(rawQuery);
-      if (results.length === 0 && dsgtContext.winningSense) {
+      const localResults = searchPeriodicals(rawQuery);
+      if (localResults.length === 0 && dsgtContext.winningSense) {
         const extra = searchPeriodicals(dsgtContext.winningSense.primaryConcept);
         for (const item of extra) {
-          if (!results.some(r => r.id === item.id)) results.push(item);
+          if (!localResults.some(r => r.id === item.id)) localResults.push(item);
         }
       }
-      return results;
+
+      // Query live Al Hakam Official API and Review of Religions in parallel
+      try {
+        const [alHakamData, liveRoR] = await Promise.all([
+          fetchLiveAlHakam(rawQuery),
+          fetchLiveReviewOfReligions(rawQuery)
+        ]);
+
+        totalAlHakamHits = alHakamData.totalHits;
+
+        const merged: PublicationResult[] = [...localResults];
+        const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
+
+        // Incorporate live Al Hakam articles
+        for (const pub of alHakamData.results) {
+          const normUrl = pub.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(pub);
+          }
+        }
+
+        // Incorporate live Review of Religions articles
+        for (const pub of liveRoR) {
+          const normUrl = pub.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(pub);
+          }
+        }
+
+        return merged;
+      } catch (e) {
+        console.warn('[Research API] Live periodicals fallback to local:', e);
+        return localResults;
+      }
     })();
 
     const [rkResults, quranResults, alislamResults, periodicalsResults] = await Promise.all([
@@ -368,7 +428,8 @@ export async function POST(req: NextRequest) {
       dossier: dossierResult,
       consensusMatrix,
       hitsRankings,
-      totalResults
+      totalResults,
+      totalAlHakamHits
     };
 
     return NextResponse.json({
