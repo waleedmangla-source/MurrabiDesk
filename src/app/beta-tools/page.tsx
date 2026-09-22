@@ -36,11 +36,10 @@ import {
   BookOpen
 } from "lucide-react";
 import { clsx } from "clsx";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from 'qrcode.react';
-import ResearchEngine from "@/components/research/ResearchEngine";
 
-type BetaTab = 'overview' | 'research' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
+type BetaTab = 'overview' | 'ai-chat' | 'yt-dlp' | 'scraper' | 'ocr';
 
 const Sparkles = ({ size, className }: { size: number, className: string }) => (
   <svg 
@@ -112,12 +111,14 @@ export default function BetaToolsPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab') as BetaTab;
-      if (tabParam && ['overview', 'research', 'ai-chat', 'yt-dlp', 'scraper', 'ocr'].includes(tabParam)) {
-        setActiveTab(tabParam);
+      const tabParam = params.get('tab');
+      if (tabParam === 'research') {
+        router.push('/research');
+      } else if (tabParam && ['overview', 'ai-chat', 'yt-dlp', 'scraper', 'ocr'].includes(tabParam)) {
+        setActiveTab(tabParam as BetaTab);
       }
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -447,7 +448,6 @@ export default function BetaToolsPage() {
 
   const tabs = [
     { id: 'overview', label: 'Lab Overview', icon: LayoutDashboard, color: 'text-blue-500', desc: 'System Diagnostic' },
-    { id: 'research', label: 'Research Engine', icon: BookOpen, color: 'text-emerald-500', desc: 'Ahmadiyya Sources' },
     { id: 'ai-chat', label: 'Neural Engine', icon: Sparkles, color: 'text-purple-500', desc: 'MurabbiAI Beta' },
     { id: 'yt-dlp', label: 'Media Extraction', icon: Youtube, color: 'text-red-600', desc: 'yt-dlp Engine' },
     { id: 'scraper', label: 'Web Crawler', icon: Globe, color: 'text-emerald-600', desc: 'Scrapy Module' },
@@ -560,12 +560,6 @@ export default function BetaToolsPage() {
               </div>
               <TerminalIcon size={200} className="absolute -bottom-12 -right-12 opacity-[0.02] transform rotate-12" />
             </div>
-          </div>
-        )}
-
-        {activeTab === 'research' && (
-          <div className="h-full animate-in fade-in duration-300">
-            <ResearchEngine />
           </div>
         )}
 

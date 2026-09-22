@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ResearchPage() {
   return (
-    <div className="min-h-screen p-6 md:p-10 custom-scrollbar overflow-y-auto">
+    <div className="min-h-screen w-full custom-scrollbar overflow-y-auto">
       <ResearchEngine />
     </div>
   );

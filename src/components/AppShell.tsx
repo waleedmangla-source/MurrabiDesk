@@ -60,7 +60,7 @@ const navLinks = [
   { icon: ScrollText, label: "Letters", href: "/letters" },
   { icon: Users, label: "Tajnid", href: "/tajnid" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
-  { icon: Search, label: "Research", href: "/beta-tools?tab=research" },
+  { icon: Search, label: "Research", href: "/research" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
 ];
 

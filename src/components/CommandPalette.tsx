@@ -17,7 +17,7 @@ export default function CommandPalette() {
   const router = useRouter();
   const commands = [
     { id: 'dash', label: 'Go to Dashboard', icon: Home, action: () => router.push('/') },
-    { id: 'research', label: 'Theological Research Engine (Beta)', icon: BookOpen, action: () => router.push('/beta-tools?tab=research') },
+    { id: 'research', label: 'Theological Research Engine (Beta)', icon: BookOpen, action: () => router.push('/research') },
     { id: 'ai', label: 'Ask AI Assistant', icon: Sparkles, action: () => router.push('/chat') },
     { id: 'email', label: 'Compose New Email', icon: Mail, action: () => router.push('/emails') },
     { id: 'expense', label: 'Log New Expense', icon: Receipt, action: () => router.push('/expenses') },
