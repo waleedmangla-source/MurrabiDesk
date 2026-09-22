@@ -60,6 +60,11 @@ export interface ResearchDossier {
   counterArguments?: Array<{ objection: string; rebuttal: string }>;
 }
 
+import type { TheologicalConsensusMatrix, TriangulationLayerStatus } from './dsgt/triangulation-engine';
+import type { HitsRankings } from './dsgt/hits-engine';
+
+export type { TheologicalConsensusMatrix, TriangulationLayerStatus, HitsRankings };
+
 export interface MultiSourceSearchResult {
   query: string;
   normalizedTerms: string[];
@@ -69,6 +74,8 @@ export interface MultiSourceSearchResult {
   publications: PublicationResult[];
   dossier?: ResearchDossier;
   totalResults: number;
+  consensusMatrix?: TheologicalConsensusMatrix;
+  hitsRankings?: HitsRankings;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

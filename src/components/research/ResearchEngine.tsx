@@ -33,7 +33,8 @@ import {
   QuranVerseResult,
   AlIslamArticleResult,
   PublicationResult,
-  ResearchDossier
+  ResearchDossier,
+  TheologicalConsensusMatrix
 } from '@/lib/research-sources';
 
 type ActiveSourceFilter = 'all' | 'ruhani-khazain' | 'quran' | 'alislam' | 'periodicals' | 'dossier';
@@ -94,6 +95,9 @@ export default function ResearchEngine() {
 
   // Accordion state for People Also Ask
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  // Provenance Trail state for DSGT
+  const [showProvenance, setShowProvenance] = useState(false);
 
   // Copy Feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -599,6 +603,137 @@ export default function ResearchEngine() {
           <div className="flex flex-col lg:flex-row justify-center gap-10 max-w-5xl mx-auto">
             {/* Left Column: Results Stream */}
             <div className="flex-1 max-w-2xl space-y-8">
+              {/* ── 0. DSGT CONSENSUS TRIANGULATION MATRIX (Mathematical Corroboration) ── */}
+              {(activeFilter === 'all' || activeFilter === 'dossier') && results.consensusMatrix && (
+                <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/35 bg-gradient-to-br from-[var(--accent-soft)]/50 via-white/5 to-transparent relative overflow-hidden shadow-xl space-y-5">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/40 flex items-center justify-center text-[var(--accent-main)] shadow-sm shrink-0">
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black italic tracking-tight text-[var(--foreground)] flex items-center gap-2">
+                          Consensus Triangulation Matrix
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            Deterministic DSGT
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-bold text-[var(--text-muted)]">
+                          Kleinberg HITS Graph • Cross-Corpus Corroboration Engine
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-xs font-black text-[var(--accent-main)]">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>{results.consensusMatrix.confidenceScore}% Corroborated</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const matrixTxt = `[CONSENSUS TRIANGULATION: ${results.consensusMatrix?.topicTitle}]\nConsensus Level: ${results.consensusMatrix?.consensusLevel} (${results.consensusMatrix?.confidenceScore}%)\nCorroborated Layers: ${results.consensusMatrix?.corroboratedLayersCount}/4\n\nThesis:\n${results.consensusMatrix?.theologicalThesis}\n\nEvidence Provenance:\n${results.consensusMatrix?.provenanceChain.join('\n')}`;
+                          copyToClipboard(matrixTxt, 'dsgt-matrix');
+                        }}
+                        className="text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] p-1.5 rounded-lg hover:bg-white/5 transition-colors font-bold"
+                        title="Copy Matrix"
+                      >
+                        {copiedId === 'dsgt-matrix' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Consensus Level & Confidence Meter */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-[var(--foreground)]">
+                        Theological Verdict: <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.consensusLevel}</span>
+                      </span>
+                      <span className="text-[var(--text-muted)] text-[11px]">
+                        {results.consensusMatrix.corroboratedLayersCount} of 4 Literature Pillars Corroborated
+                      </span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden border border-white/5 p-0.5">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[var(--accent-main)] to-[var(--accent-main)] transition-all duration-700"
+                        style={{ width: `${results.consensusMatrix.confidenceScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* The 4 Corroboration Pillars Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {results.consensusMatrix.layers.map((layer, idx) => {
+                      const isCorroborated = layer.corroborated;
+                      return (
+                        <div
+                          key={idx}
+                          className={clsx(
+                            "p-3.5 rounded-[14px] border transition-all text-xs space-y-1.5",
+                            isCorroborated
+                              ? "bg-white/5 border-white/15 text-[var(--foreground)]"
+                              : "bg-white/2 border-white/5 text-[var(--text-muted)] opacity-60"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold flex items-center gap-1.5">
+                              <span className={clsx(
+                                "w-2 h-2 rounded-full",
+                                isCorroborated ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-neutral-600"
+                              )} />
+                              {layer.name}
+                            </span>
+                            <span className={clsx(
+                              "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider",
+                              isCorroborated ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-[var(--text-muted)]"
+                            )}>
+                              {isCorroborated ? `${layer.matchCount} Matches` : "Uncorroborated"}
+                            </span>
+                          </div>
+
+                          {layer.primaryReference && (
+                            <div className="text-[11px] font-semibold text-[var(--accent-main)] truncate">
+                              {layer.primaryReference}
+                            </div>
+                          )}
+
+                          {layer.excerptSnippet && (
+                            <div className="text-[11px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">
+                              "{layer.excerptSnippet}"
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Algorithmic Provenance Audit Trail (Collapsible) */}
+                  <div className="pt-2 border-t border-white/10">
+                    <button
+                      onClick={() => setShowProvenance(!showProvenance)}
+                      className="w-full flex items-center justify-between text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] py-1 transition-colors"
+                    >
+                      <span className="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
+                        <Layers size={13} />
+                        Deterministic Algorithmic Provenance Trail
+                      </span>
+                      {showProvenance ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+
+                    {showProvenance && (
+                      <div className="mt-3 p-3.5 rounded-[12px] bg-black/40 border border-white/5 font-mono text-[11px] text-[var(--text-muted)] space-y-2">
+                        {results.consensusMatrix.provenanceChain.map((step, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <span className="text-[var(--accent-main)] font-bold shrink-0">[{idx + 1}]</span>
+                            <span className="leading-relaxed">{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* ── 1. SCHOLARLY OVERVIEW (Deterministic Theological Synthesis) */}
               {(activeFilter === 'all' || activeFilter === 'dossier') && results.dossier && (
                 <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)] via-white/5 to-transparent relative overflow-hidden shadow-xl">
@@ -679,17 +814,26 @@ export default function ResearchEngine() {
                 return (
                   <div key={itemKey} className="space-y-2 group">
                     {/* Breadcrumb Header */}
-                    <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                      <div className="w-6 h-6 rounded-md bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center font-black text-[10px] shrink-0">
-                        RK
+                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center font-black text-[10px] shrink-0">
+                          RK
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                          <span className="text-[var(--foreground)]">Ruhani Khazain</span>
+                          <span>›</span>
+                          <span>Vol {item.volume}</span>
+                          <span>›</span>
+                          <span className="truncate">{item.bookTitle}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                        <span className="text-[var(--foreground)]">Ruhani Khazain</span>
-                        <span>›</span>
-                        <span>Vol {item.volume}</span>
-                        <span>›</span>
-                        <span className="truncate">{item.bookTitle}</span>
-                      </div>
+
+                      {results.hitsRankings && results.hitsRankings.authorities.some(a => a.nodeId.includes(`rk:vol${item.volume}`)) && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/20 flex items-center gap-1 shrink-0">
+                          <ShieldCheck size={11} />
+                          HITS Root Authority
+                        </span>
+                      )}
                     </div>
 
                     {/* Clickable Title */}
@@ -739,17 +883,24 @@ export default function ResearchEngine() {
                 return (
                   <div key={verseKey} className="space-y-2.5 group">
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                      <div className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px] shrink-0">
-                        HQ
+                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px] shrink-0">
+                          HQ
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                          <span className="text-[var(--foreground)]">Holy Qur'an</span>
+                          <span>›</span>
+                          <span>Surah {verse.surahNameEnglish}</span>
+                          <span>›</span>
+                          <span>Ayah {verse.verseNumber}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                        <span className="text-[var(--foreground)]">Holy Qur'an</span>
-                        <span>›</span>
-                        <span>Surah {verse.surahNameEnglish}</span>
-                        <span>›</span>
-                        <span>Ayah {verse.verseNumber}</span>
-                      </div>
+
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
+                        <ShieldCheck size={11} />
+                        Canonical Scriptural Authority (1.00)
+                      </span>
                     </div>
 
                     {/* Title */}
@@ -941,55 +1092,83 @@ export default function ResearchEngine() {
             </div>
 
             {/* Right Column: Knowledge Panel (Desktop) */}
-            {results.dossier && (
+            {(results.dossier || results.consensusMatrix) && (
               <div className="hidden lg:block w-80 shrink-0 space-y-4">
-                <div className="glass-card p-6 rounded-[18px] border border-white/10 shadow-xl space-y-4 sticky top-24">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                    <BookOpen size={14} />
-                    Knowledge Panel
-                  </div>
-
-                  <h3 className="text-lg font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                    {results.dossier.title.replace('Theological Dossier: ', '')}
-                  </h3>
-
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed font-medium">
-                    {results.dossier.theologicalThesis.slice(0, 180)}...
-                  </p>
-
-                  <div className="pt-3 border-t border-white/5 space-y-2 text-xs">
-                    <div className="font-bold text-[var(--foreground)] uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
-                      Primary Corpus
+                {/* DSGT Quick Stats Card */}
+                {results.consensusMatrix && (
+                  <div className="glass-card p-5 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)]/40 to-transparent shadow-xl space-y-3">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                      <span className="flex items-center gap-1.5">
+                        <ShieldCheck size={13} />
+                        Consensus Engine
+                      </span>
+                      <span className="text-emerald-400 font-bold">{results.consensusMatrix.confidenceScore}%</span>
                     </div>
-                    <div className="text-[var(--text-muted)] font-medium">
-                      Ruhani Khazain (Volumes 1–23) • Holy Qur'an
+
+                    <div className="text-sm font-black italic tracking-tight text-[var(--foreground)]">
+                      {results.consensusMatrix.consensusLevel}
+                    </div>
+
+                    <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+                      Deterministic verification across {results.consensusMatrix.corroboratedLayersCount} of 4 canonical literature layers.
+                    </p>
+
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-[var(--text-muted)]">
+                      <span>Corroborated Sources:</span>
+                      <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.totalCorroboratedSources} citations</span>
                     </div>
                   </div>
+                )}
 
-                  {results.dossier.hadithTraditions && results.dossier.hadithTraditions.length > 0 && (
-                    <div className="pt-2 border-t border-white/5 space-y-1 text-xs">
+                {results.dossier && (
+                  <div className="glass-card p-6 rounded-[18px] border border-white/10 shadow-xl space-y-4 sticky top-24">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                      <BookOpen size={14} />
+                      Knowledge Panel
+                    </div>
+
+                    <h3 className="text-lg font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                      {results.dossier.title.replace('Theological Dossier: ', '')}
+                    </h3>
+
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed font-medium">
+                      {results.dossier.theologicalThesis.slice(0, 180)}...
+                    </p>
+
+                    <div className="pt-3 border-t border-white/5 space-y-2 text-xs">
                       <div className="font-bold text-[var(--foreground)] uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
-                        Prophetic Tradition
+                        Primary Corpus
                       </div>
-                      <div className="text-[var(--text-muted)] italic font-medium leading-relaxed">
-                        "{results.dossier.hadithTraditions[0].text}"
+                      <div className="text-[var(--text-muted)] font-medium">
+                        Ruhani Khazain (Volumes 1–23) • Holy Qur'an
                       </div>
                     </div>
-                  )}
 
-                  <div className="pt-3">
-                    <button
-                      onClick={() => {
-                        const copyAll = `[THEOLOGICAL DOSSIER: ${results.dossier?.topic}]\n\n${results.dossier?.theologicalThesis}\n\nEvidence:\n${results.dossier?.keyArguments.join('\n')}`;
-                        copyToClipboard(copyAll, 'kp-copy');
-                      }}
-                      className="w-full py-2.5 px-3 rounded-[12px] bg-[var(--accent-soft)] hover:bg-[var(--accent-main)] hover:text-white text-[var(--accent-main)] font-black text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      {copiedId === 'kp-copy' ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedId === 'kp-copy' ? "Copied" : "Copy Complete Briefing"}</span>
-                    </button>
+                    {results.dossier.hadithTraditions && results.dossier.hadithTraditions.length > 0 && (
+                      <div className="pt-2 border-t border-white/5 space-y-1 text-xs">
+                        <div className="font-bold text-[var(--foreground)] uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
+                          Prophetic Tradition
+                        </div>
+                        <div className="text-[var(--text-muted)] italic font-medium leading-relaxed">
+                          "{results.dossier.hadithTraditions[0].text}"
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          const copyAll = `[THEOLOGICAL DOSSIER: ${results.dossier?.topic}]\n\n${results.dossier?.theologicalThesis}\n\nEvidence:\n${results.dossier?.keyArguments.join('\n')}`;
+                          copyToClipboard(copyAll, 'kp-copy');
+                        }}
+                        className="w-full py-2.5 px-3 rounded-[12px] bg-[var(--accent-soft)] hover:bg-[var(--accent-main)] hover:text-white text-[var(--accent-main)] font-black text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        {copiedId === 'kp-copy' ? <Check size={14} /> : <Copy size={14} />}
+                        <span>{copiedId === 'kp-copy' ? "Copied" : "Copy Complete Briefing"}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>

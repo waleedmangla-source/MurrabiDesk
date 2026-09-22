@@ -17,6 +17,11 @@ import {
   RuhaniKhazainSearchResult,
   ResearchDossier
 } from '@/lib/research-sources';
+import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
+import { expandQueryVector } from '@/lib/dsgt/query-expansion';
+import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
+import { computeHitsRankings } from '@/lib/dsgt/hits-engine';
+import { computeConsensusTriangulation } from '@/lib/dsgt/triangulation-engine';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -81,6 +86,16 @@ export async function POST(req: NextRequest) {
       ? body.sources 
       : ['ruhani-khazain', 'quran', 'alislam', 'periodicals', 'dossier'];
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 1: Theological Lesk Context Disambiguation
+    // ─────────────────────────────────────────────────────────────────────────
+    const dsgtContext = disambiguateTheologicalContext(rawQuery);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 2: Rocchio Algebraic Query Expansion & Cross-Lingual Vector Bridging
+    // ─────────────────────────────────────────────────────────────────────────
+    const dsgtExpanded = expandQueryVector(dsgtContext);
+
     // 1. Resolve search terms for Ruhani Khazain
     const hasLatin = /[a-zA-Z]/.test(rawQuery);
     const searchTerms: string[] = [];
@@ -112,17 +127,90 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Add Rocchio-expanded Urdu Khazain terms
+    if (dsgtExpanded.urduKhazainTerms && dsgtExpanded.urduKhazainTerms.length > 0) {
+      for (const term of dsgtExpanded.urduKhazainTerms) {
+        if (!searchTerms.includes(term)) {
+          searchTerms.push(term);
+        }
+      }
+    }
+
     const normalizedTerms = Array.from(new Set(searchTerms.map(t => normalizeKhazainText(t)).filter(Boolean)));
 
-    // 2. Parallel Multi-Source Execution
+    // Prioritize target volumes identified by the DSGT expansion
+    const volumeOrder: number[] = [];
+    if (dsgtExpanded.targetVolumes && dsgtExpanded.targetVolumes.length > 0) {
+      for (const v of dsgtExpanded.targetVolumes) {
+        if (v >= 1 && v <= 23 && !volumeOrder.includes(v)) {
+          volumeOrder.push(v);
+        }
+      }
+    }
+    for (let v = 1; v <= 23; v++) {
+      if (!volumeOrder.includes(v)) {
+        volumeOrder.push(v);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3 & 4: Cross-Corpus Citation Graph, Snowballing & Kleinberg HITS
+    // ─────────────────────────────────────────────────────────────────────────
+    const graph = getCitationGraph();
+    const seedIds: string[] = [];
+
+    // Match scripture refs
+    const graphNodeKeys = Array.from(graph.nodes.keys());
+    for (const ref of dsgtContext.extractedScriptureRefs) {
+      const cleanRef = ref.replace(/\s+/g, '');
+      for (const nodeId of graphNodeKeys) {
+        if (nodeId.includes(cleanRef)) seedIds.push(nodeId);
+      }
+    }
+
+    // Match priority volumes
+    for (const vol of dsgtExpanded.targetVolumes) {
+      for (const nodeId of graphNodeKeys) {
+        if (nodeId.startsWith(`rk:vol${vol}:`)) seedIds.push(nodeId);
+      }
+    }
+
+    // Match sense keywords
+    const winningSenseTerms = [
+      dsgtContext.winningSense?.primaryConcept || '',
+      ...(dsgtContext.winningSense?.urduTerms || []),
+      ...(dsgtContext.winningSense?.arabicTerms || [])
+    ].map(s => s.toLowerCase());
+
+    const graphNodeEntries = Array.from(graph.nodes.entries());
+    for (const [nodeId, node] of graphNodeEntries) {
+      const nodeText = `${node.title} ${node.referenceLabel}`.toLowerCase();
+      if (
+        dsgtContext.extractedKeywords.some(t => t.length > 3 && nodeText.includes(t.toLowerCase())) ||
+        winningSenseTerms.some(st => st.length > 3 && nodeText.includes(st))
+      ) {
+        seedIds.push(nodeId);
+      }
+    }
+
+    if (seedIds.length === 0) {
+      seedIds.push(...graphNodeKeys.slice(0, 10));
+    }
+
+    const traversedNodeIds = snowballTraverse(seedIds, 2);
+    const hitsRankings = computeHitsRankings(Array.from(traversedNodeIds));
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Multi-Source Parallel Execution
+    // ─────────────────────────────────────────────────────────────────────────
     const ruhaniKhazainPromise: Promise<RuhaniKhazainSearchResult[]> = (async () => {
       if (!requestedSources.includes('ruhani-khazain')) return [];
       const matches: RuhaniKhazainSearchResult[] = [];
       const primaryTerm = normalizedTerms[0] || normalizeKhazainText(rawQuery);
       if (!primaryTerm) return [];
 
-      // Search all 23 volumes of Ruhani Khazain
-      for (let volNum = 1; volNum <= 23; volNum++) {
+      // Search priority volumes first, then remaining
+      for (const volNum of volumeOrder) {
         const volData = getCachedVolume(volNum);
         if (!volData) continue;
 
@@ -174,7 +262,18 @@ export async function POST(req: NextRequest) {
 
     const quranPromise: Promise<any[]> = (async () => {
       if (!requestedSources.includes('quran')) return [];
-      return searchQuranVerses(rawQuery);
+      const results = searchQuranVerses(rawQuery);
+      if (results.length === 0 && dsgtExpanded.arabicQuranTerms.length > 0) {
+        for (const arabicTerm of dsgtExpanded.arabicQuranTerms) {
+          const extra = searchQuranVerses(arabicTerm);
+          for (const item of extra) {
+            if (!results.some(r => r.surahNumber === item.surahNumber && r.verseNumber === item.verseNumber)) {
+              results.push(item);
+            }
+          }
+        }
+      }
+      return results;
     })();
 
     const alislamPromise: Promise<any[]> = (async () => {
@@ -194,7 +293,19 @@ export async function POST(req: NextRequest) {
       periodicalsPromise
     ]);
 
-    // Deterministic Smart Scholarly Response (Zero AI / LLM latency or quota dependencies)
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 5: Consensus Triangulation Matrix & Evidence Verifier
+    // ─────────────────────────────────────────────────────────────────────────
+    const consensusMatrix = computeConsensusTriangulation(
+      dsgtContext,
+      quranResults,
+      rkResults,
+      alislamResults,
+      periodicalsResults,
+      hitsRankings
+    );
+
+    // Scholarly Dossier
     let dossierResult: ResearchDossier | undefined = undefined;
     if (requestedSources.includes('dossier')) {
       const preSynthesized = findTheologicalDossier(rawQuery);
@@ -222,6 +333,8 @@ export async function POST(req: NextRequest) {
       alislamArticles: alislamResults,
       publications: periodicalsResults,
       dossier: dossierResult,
+      consensusMatrix,
+      hitsRankings,
       totalResults
     };
 
