@@ -17,7 +17,6 @@ import {
   ArrowRight,
   Filter,
   Layers,
-  HelpCircle,
   ShieldCheck,
   Volume2,
   BookmarkCheck,
@@ -38,36 +37,6 @@ import {
 } from '@/lib/research-sources';
 
 type ActiveSourceFilter = 'all' | 'ruhani-khazain' | 'quran' | 'alislam' | 'periodicals' | 'dossier';
-
-const TOPIC_PRESETS = [
-  { label: "Death of Jesus", urdu: "وفات مسیح", query: "Death of Jesus" },
-  { label: "Seal of Prophets", urdu: "خاتم النبیین", query: "Khatam-e-Nabuwwat" },
-  { label: "Philosophy of Prayer", urdu: "فلسفہ دعا", query: "Philosophy of Prayer" },
-  { label: "Jihad of the Pen", urdu: "جہاد بالقلم", query: "Jihad of the Pen" },
-  { label: "Tomb in Kashmir", urdu: "مزار عیسیٰ", query: "Tomb of Jesus Kashmir" },
-  { label: "Eclipse Prophecy", urdu: "کسوف و خسوف", query: "Eclipse" },
-  { label: "Existence of God", urdu: "وجود باری تعالیٰ", query: "Existence of God" },
-  { label: "Zarurat-ul-Imam", urdu: "ضرورت الامام", query: "Zarurat-ul-Imam" }
-];
-
-const PEOPLE_ALSO_ASK = [
-  {
-    question: "What is the Ahmadiyya theological perspective on the crucifixion of Jesus (as)?",
-    answer: "Ahmadi Muslims believe Jesus (as) was placed upon the cross but was taken down alive in a swoon, fulfilling the 'Sign of Jonah' (entering the tomb alive and leaving alive). He was treated with Marham-e-Isa (Ointment of Jesus) and migrated east to search for the Lost Tribes of Israel, living to the age of 120 and dying a natural death in Srinagar, Kashmir where his tomb (Roza Bal) remains."
-  },
-  {
-    question: "Which Quranic verse explicitly refutes the physical killing and crucifixion of Jesus?",
-    answer: "Surah Al-Nisa (4:158): 'Wa Ma Qatallohu Wa Ma Salaboohu Wa Lakin Shubbiha Lahum' — 'And they slew him not, nor did they crucify him, but he was made to appear to them like one crucified.' In Arabic jurisprudence, crucifixion specifically denotes dying upon the wood; Jesus survived."
-  },
-  {
-    question: "What does 'Khatam-an-Nabiyyin' signify according to the Promised Messiah (as)?",
-    answer: "Hazrat Mirza Ghulam Ahmad (as) explained that 'Khatam' signifies the Seal, the Signet-Ring, and the Ultimate Perfection. The Holy Prophet Muhammad (sa) brought the final law and spiritual apex. Any subordinate non-law-bearing prophethood is attained solely through complete obedience and spiritual reflection (Zill) of the Holy Prophet (sa)."
-  },
-  {
-    question: "What was the divine sign of the Solar and Lunar Eclipses?",
-    answer: "In accordance with the grand prophecy of Imam Darqutni, in Ramadan 1311 Hijri (1894 CE in the East and 1895 CE in the West), the moon eclipsed on the 13th of Ramadan (first possible night) and the sun eclipsed on the 28th of Ramadan (middle possible day), miraculously confirming the Promised Messiah and Mahdi (as)."
-  }
-];
 
 export default function ResearchEngine() {
   const router = useRouter();
@@ -92,9 +61,6 @@ export default function ResearchEngine() {
   const [voiceLang, setVoiceLang] = useState<'en-US' | 'ur-PK'>('en-US');
   const recognitionRef = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Accordion state for People Also Ask
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   // Provenance Trail state for DSGT
   const [showProvenance, setShowProvenance] = useState(false);
@@ -210,12 +176,6 @@ export default function ResearchEngine() {
     performSearch();
   };
 
-  const handleFeelingInspired = () => {
-    const randomTopic = TOPIC_PRESETS[Math.floor(Math.random() * TOPIC_PRESETS.length)];
-    setQuery(randomTopic.query);
-    performSearch(randomTopic.query);
-  };
-
   const resetToHome = () => {
     setResults(null);
     setSubmittedQuery("");
@@ -247,7 +207,7 @@ export default function ResearchEngine() {
   // ═══════════════════════════════════════════════════════════════════════════
   if (!hasSearched) {
     return (
-      <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 -mt-6 select-none relative">
+      <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 select-none relative w-full">
         {/* Top Header Bar for Landing View */}
         <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
           {isUserLoggedIn ? (
@@ -296,8 +256,8 @@ export default function ResearchEngine() {
           </p>
         </div>
 
-        {/* Murabbi Form V4 / Google-Style Search Pill Box */}
-        <div className="w-full max-w-2xl relative">
+        {/* Murabbi Form V4 / Google-Style Search Pill Box (Dead-Centered) */}
+        <div className="w-full max-w-2xl mx-auto flex flex-col items-center relative">
           <form onSubmit={handleFormSubmit} className="relative">
             <div
               className={clsx(
@@ -369,62 +329,15 @@ export default function ResearchEngine() {
             </div>
           )}
 
-          {/* Murabbi Desk Action Buttons */}
-          <div className="flex items-center justify-center gap-3 mt-6">
+          {/* Murabbi Desk Action Button (Centered) */}
+          <div className="flex items-center justify-center mt-6">
             <button
               onClick={() => performSearch()}
               disabled={!query.trim()}
-              className="px-6 py-3 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+              className="px-8 py-3 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
             >
               Murabbi Search
             </button>
-            <button
-              onClick={handleFeelingInspired}
-              className="px-6 py-3 rounded-[14px] glass border border-white/10 hover:bg-white/5 text-xs font-bold uppercase tracking-wider text-[var(--foreground)] transition-all active:scale-95"
-            >
-              I'm Feeling Inspired
-            </button>
-          </div>
-
-          {/* Language & Scope Offering */}
-          <div className="text-center mt-6 text-xs text-[var(--text-muted)] font-medium">
-            Search Ahmadiyya resources in:{" "}
-            <button
-              onClick={() => { setQuery("وفات مسیح"); performSearch("وفات مسیح"); }}
-              className="text-[var(--accent-main)] hover:underline mx-1 font-nastaleeq"
-            >
-              اردو
-            </button>
-            •
-            <button
-              onClick={() => { setQuery("ختم النبیین"); performSearch("ختم النبیین"); }}
-              className="text-[var(--accent-main)] hover:underline mx-1 font-quran"
-            >
-              العربية
-            </button>
-            •
-            <span className="mx-1 text-[var(--foreground)] font-bold">English</span>
-          </div>
-
-          {/* Trending Discovery Chips */}
-          <div className="mt-10 pt-6 border-t border-white/5">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)] opacity-70 mb-3 text-center">
-              Trending Theological Topics
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {TOPIC_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setQuery(preset.query);
-                    performSearch(preset.query);
-                  }}
-                  className="px-3.5 py-1.5 rounded-[12px] glass border border-white/10 text-xs font-semibold text-[var(--foreground)] hover:border-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all"
-                >
-                  {preset.label} <span className="opacity-40 font-nastaleeq text-[10px] ml-1">{preset.urdu}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -438,9 +351,9 @@ export default function ResearchEngine() {
     <div className="w-full flex flex-col min-h-screen">
       {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar + Auth CTA) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-3 pb-0 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[208px_1fr_208px] items-center gap-4">
           {/* Left Wing: Navbar text logo */}
-          <div className="w-full md:w-52 shrink-0 flex items-center justify-start">
+          <div className="w-full flex items-center justify-center md:justify-start">
             <div
               onClick={resetToHome}
               className="flex items-center cursor-pointer shrink-0 select-none group py-0.5"
@@ -455,7 +368,7 @@ export default function ResearchEngine() {
           </div>
 
           {/* Center Wing: Centered Search Pill Bar */}
-          <div className="w-full max-w-2xl mx-auto flex-1 flex justify-center">
+          <div className="w-full max-w-2xl mx-auto flex justify-center">
             <form onSubmit={handleFormSubmit} className="relative w-full">
               <div
                 className={clsx(
@@ -510,7 +423,7 @@ export default function ResearchEngine() {
           </div>
 
           {/* Right Wing: Auth / Dashboard CTA (Balanced with left wing) */}
-          <div className="w-full md:w-52 shrink-0 flex items-center justify-end gap-2">
+          <div className="w-full flex items-center justify-center md:justify-end gap-2">
             {isUserLoggedIn ? (
               <Link
                 href="/"
@@ -1038,57 +951,8 @@ export default function ResearchEngine() {
                 </div>
               ))}
 
-              {/* ── PEOPLE ALSO ASK (Google Layout + Glass Cards) ───────────── */}
-              <div className="pt-6 border-t border-white/10">
-                <h4 className="text-base font-black italic tracking-tight text-[var(--foreground)] mb-3 flex items-center gap-2">
-                  <HelpCircle size={18} className="text-[var(--accent-main)]" />
-                  People Also Ask
-                </h4>
-
-                <div className="rounded-[14px] glass border border-white/10 divide-y divide-white/5 overflow-hidden">
-                  {PEOPLE_ALSO_ASK.map((item, i) => {
-                    const isExpanded = expandedFaq === i;
-                    return (
-                      <div key={i}>
-                        <button
-                          onClick={() => setExpandedFaq(isExpanded ? null : i)}
-                          className="w-full text-left p-4 flex items-center justify-between text-sm font-bold text-[var(--foreground)] hover:bg-white/5 transition-colors"
-                        >
-                          <span>{item.question}</span>
-                          {isExpanded ? <ChevronUp size={16} className="text-[var(--accent-main)] shrink-0" /> : <ChevronDown size={16} className="text-[var(--text-muted)] shrink-0" />}
-                        </button>
-                        {isExpanded && (
-                          <div className="px-4 pb-4 pt-1 text-xs md:text-sm text-[var(--text-muted)] leading-relaxed bg-black/20">
-                            {item.answer}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── RELATED SEARCHES ─────────────────────────────────────────── */}
-              <div className="pt-6 pb-12 border-t border-white/10">
-                <h4 className="text-sm font-black uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                  Related Searches
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {TOPIC_PRESETS.slice(0, 6).map((preset, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setQuery(preset.query);
-                        performSearch(preset.query);
-                      }}
-                      className="p-3.5 rounded-[12px] glass bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-3 text-left transition-colors"
-                    >
-                      <Search size={15} className="text-[var(--accent-main)] shrink-0" />
-                      <span className="text-sm font-bold text-[var(--foreground)]">{preset.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* End of results padding */}
+              <div className="pb-12" />
             </div>
 
             {/* Right Column: Knowledge Panel (Desktop) */}
