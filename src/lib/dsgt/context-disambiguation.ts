@@ -11,7 +11,7 @@ export interface OntologicalSense {
   gloss: string; // Theological definition & explanatory context
   scripturalAnchors: string[]; // Key Qur'an / Hadith references
   coreVolumes: number[]; // Ruhani Khazain volumes focused on this sense
-  domain: 'Eschatology' | 'Prophethood' | 'SpiritualPhilosophy' | 'Jihad & Peace' | 'Exegesis' | 'LivingGod';
+  domain: 'Eschatology' | 'Prophethood' | 'SpiritualPhilosophy' | 'Jihad & Peace' | 'Exegesis' | 'LivingGod' | 'SocialConduct' | 'Worship & Fiqh';
 }
 
 export interface DisambiguatedContext {
@@ -95,6 +95,46 @@ export const THEOLOGICAL_ONTOLOGY: OntologicalSense[] = [
     scripturalAnchors: ["Surah Ha-Mim Al-Sajdah 41:31", "Surah Al-Shura 42:52", "Sahih Bukhari Kitab-ut-Ta'bir"],
     coreVolumes: [1, 22, 3, 21],
     domain: "LivingGod"
+  },
+  {
+    id: "nikah-wa-azdwaj",
+    primaryConcept: "Islamic Matrimony & Marriage System (نکاح و ازدواج)",
+    urduTerms: ["نکاح", "ازدواج", "شادی", "زوجہ", "عقد", "حق مہر", "ولیمہ", "خاندان", "طلاق", "زوجین", "شوہر", "بیوی"],
+    arabicTerms: ["النكاح من سنتي", "لتسكنوا اليها", "هن لباس لكم", "عاشروهن بالمعروف", "ميثاقا غليظا"],
+    gloss: "The sacred covenant of marriage (Nikah) in Islam is established as a spiritual, moral, and social bedrock. The Holy Quran defines spouses as garments for each other (2:188) and signs of divine love and mercy (30:22). Islam honors mutual respect, equitable rights, and moral chastity while condemning celibacy and asceticism.",
+    scripturalAnchors: ["Surah Al-Rum 30:22", "Surah Al-Baqarah 2:188", "Surah Al-Nisa 4:20", "Surah Al-Nur 24:33", "Bukhari Kitab-un-Nikah"],
+    coreVolumes: [10, 23, 5, 2],
+    domain: "SocialConduct"
+  },
+  {
+    id: "sawm-wa-ramadan",
+    primaryConcept: "Fasting, Ramadan & Spiritual Discipline (صوم و رمضان)",
+    urduTerms: ["روزہ", "صوم", "رمضان المبارک", "تراویح", "اعتکاف", "طہارت", "افطار", "سحری", "تقویٰ"],
+    arabicTerms: ["كتب عليكم الصيام", "شهر رمضان الذي انزل فيه القران", "الصوم جنة", "لعلكم تتقون"],
+    gloss: "The spiritual institution of Sawm (Fasting) during Ramadan designed for the cultivation of Taqwa (God-consciousness), empathy for the impoverished, and self-purification. The Promised Messiah (as) highlighted that fasting starves physical desires to nourish the spiritual faculties.",
+    scripturalAnchors: ["Surah Al-Baqarah 2:184-186", "Bukhari Kitab-us-Sawm"],
+    coreVolumes: [1, 10, 15, 20],
+    domain: "Worship & Fiqh"
+  },
+  {
+    id: "zakat-wa-infaq",
+    primaryConcept: "Zakat, Financial Sacrifice & Charity (زکوٰۃ و انفاق فی سبیل اللہ)",
+    urduTerms: ["زکوٰۃ", "صدقہ", "انفاق فی سبیل اللہ", "مالی قربانی", "چندہ", "تحریک جدید", "وقف جدید", "خیرات"],
+    arabicTerms: ["اقيموا الصلاة وآتوا الزكاة", "تطهرهم وتزكيهم بها", "الانفاق فی سبیل اللہ", "الذين ينفقون اموالهم"],
+    gloss: "The socio-economic pillar of Zakat and voluntary financial sacrifice (Infaq) in Ahmadiyya theology, serving to purify wealth, eliminate inequality, support the vulnerable, and propagate Islam globally through systems like Tahrik-e-Jadid and Waqf-e-Jadid.",
+    scripturalAnchors: ["Surah Al-Tawbah 9:60", "Surah Al-Baqarah 2:262", "Bukhari Kitab-uz-Zakat"],
+    coreVolumes: [6, 17, 20, 23],
+    domain: "Worship & Fiqh"
+  },
+  {
+    id: "huquq-un-niswan",
+    primaryConcept: "Rights of Women, Modesty & Family Dignity (حقوق نسواں و پردہ)",
+    urduTerms: ["عورتوں کے حقوق", "مستورات", "پردہ", "حجاب", "حیا", "عصمت", "طہارت نسواں", "عورت"],
+    arabicTerms: ["ولهن مثل الذي عليهن بالمعروف", "يدنين عليهن من جلابيبهن", "غض البصر", "احصنت فرجها"],
+    gloss: "The complete emancipation, dignity, and spiritual equality conferred upon women in Islam. Islam granted independent legal, economic, and matrimonial rights to women centuries before modern civilizations. Purdah and modesty serve as protective armor fostering intellectual and moral elevation.",
+    scripturalAnchors: ["Surah Al-Baqarah 2:229", "Surah Al-Nur 24:31-32", "Surah Al-Ahzab 33:60", "Bukhari Bab Husn-e-Mu'amalat"],
+    coreVolumes: [10, 23, 7, 18],
+    domain: "SocialConduct"
   }
 ];
 

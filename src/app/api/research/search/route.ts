@@ -136,7 +136,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const normalizedTerms = Array.from(new Set(searchTerms.map(t => normalizeKhazainText(t)).filter(Boolean)));
+    const normalizedTerms = Array.from(new Set(searchTerms.map(t => normalizeKhazainText(t)).filter(Boolean)))
+      .sort((a, b) => {
+        const aIsUrdu = /[\u0600-\u06FF]/.test(a);
+        const bIsUrdu = /[\u0600-\u06FF]/.test(b);
+        if (aIsUrdu && !bIsUrdu) return -1;
+        if (!aIsUrdu && bIsUrdu) return 1;
+        return 0;
+      });
 
     // Prioritize target volumes identified by the DSGT expansion
     const volumeOrder: number[] = [];
@@ -206,7 +213,9 @@ export async function POST(req: NextRequest) {
     const ruhaniKhazainPromise: Promise<RuhaniKhazainSearchResult[]> = (async () => {
       if (!requestedSources.includes('ruhani-khazain')) return [];
       const matches: RuhaniKhazainSearchResult[] = [];
-      const primaryTerm = normalizedTerms[0] || normalizeKhazainText(rawQuery);
+      const urduTerms = normalizedTerms.filter(t => /[\u0600-\u06FF]/.test(t));
+      const activeSearchTerms = urduTerms.length > 0 ? urduTerms : normalizedTerms;
+      const primaryTerm = activeSearchTerms[0] || normalizeKhazainText(rawQuery);
       if (!primaryTerm) return [];
 
       // Search priority volumes first, then remaining
@@ -218,11 +227,11 @@ export async function POST(req: NextRequest) {
           let pos = page.norm.indexOf(primaryTerm);
           let matchedTerm = primaryTerm;
 
-          if (pos === -1 && normalizedTerms.length > 1) {
-            for (let i = 1; i < normalizedTerms.length; i++) {
-              pos = page.norm.indexOf(normalizedTerms[i]);
+          if (pos === -1 && activeSearchTerms.length > 1) {
+            for (let i = 1; i < activeSearchTerms.length; i++) {
+              pos = page.norm.indexOf(activeSearchTerms[i]);
               if (pos !== -1) {
-                matchedTerm = normalizedTerms[i];
+                matchedTerm = activeSearchTerms[i];
                 break;
               }
             }
@@ -273,17 +282,41 @@ export async function POST(req: NextRequest) {
           }
         }
       }
+      if (results.length === 0 && dsgtContext.winningSense) {
+        for (const anchor of dsgtContext.winningSense.scripturalAnchors) {
+          const extra = searchQuranVerses(anchor);
+          for (const item of extra) {
+            if (!results.some(r => r.surahNumber === item.surahNumber && r.verseNumber === item.verseNumber)) {
+              results.push(item);
+            }
+          }
+        }
+      }
       return results;
     })();
 
     const alislamPromise: Promise<any[]> = (async () => {
       if (!requestedSources.includes('alislam')) return [];
-      return searchAlIslamResources(rawQuery);
+      const results = searchAlIslamResources(rawQuery);
+      if (results.length === 0 && dsgtContext.winningSense) {
+        const extra = searchAlIslamResources(dsgtContext.winningSense.primaryConcept);
+        for (const item of extra) {
+          if (!results.some(r => r.id === item.id)) results.push(item);
+        }
+      }
+      return results;
     })();
 
     const periodicalsPromise: Promise<any[]> = (async () => {
       if (!requestedSources.includes('periodicals')) return [];
-      return searchPeriodicals(rawQuery);
+      const results = searchPeriodicals(rawQuery);
+      if (results.length === 0 && dsgtContext.winningSense) {
+        const extra = searchPeriodicals(dsgtContext.winningSense.primaryConcept);
+        for (const item of extra) {
+          if (!results.some(r => r.id === item.id)) results.push(item);
+        }
+      }
+      return results;
     })();
 
     const [rkResults, quranResults, alislamResults, periodicalsResults] = await Promise.all([

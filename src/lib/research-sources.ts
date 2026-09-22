@@ -201,6 +201,138 @@ export const THEMATIC_QURAN_VERSES: QuranVerseResult[] = [
     commentaryNote: "Prophecy of the latter-day globalized world, internet, global communication networks, and the universal mission of the Promised Messiah (as).",
     topics: ["latter days", "signs", "prophecy", "globalization", "علامات قیامت", "پیشگوئیاں"],
     url: "https://www.alislam.org/quran/81:7"
+  },
+  {
+    surahNumber: 30,
+    verseNumber: 22,
+    surahNameArabic: "الروم",
+    surahNameEnglish: "Al-Rum",
+    arabicText: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ",
+    englishTranslation: "And one of His Signs is this: that He has created for you wives from among yourselves that you may find peace of mind in them, and He has put love and tenderness between you. In that surely are Signs for a people who reflect.",
+    urduTranslation: "اور اس کے نشانات میں سے یہ ہے کہ اس نے تمہارے لیے تمہاری ہی جنس سے جوڑے بنائے تاکہ تم ان سے سکون حاصل کرو اور اس نے تمہارے درمیان محبت اور رحمت پیدا کر دی۔ یقیناً اس میں غور و فکر کرنے والوں کے لیے بہت سے نشانات ہیں",
+    commentaryNote: "The Quranic definition of matrimonial purpose: psychological tranquility (Sukun), mutual love (Mawaddah), and reciprocal mercy (Rahmah). Marriage is a divine sign reflecting God's benevolence.",
+    topics: ["marriage", "nikah", "wedding", "spouse", "wife", "husband", "family", "love", "peace", "نکاح", "ازدواج", "شادی", "زوجہ", "محبت"],
+    url: "https://www.alislam.org/quran/30:22"
+  },
+  {
+    surahNumber: 2,
+    verseNumber: 188,
+    surahNameArabic: "البقرة",
+    surahNameEnglish: "Al-Baqarah",
+    arabicText: "أُحِلَّ لَكُمْ لَيْلَةَ الصِّيَامِ الرَّفَثُ إِلَىٰ نِسَائِكُمْ هُنَّ لِبَاسٌ لَّكُمْ وَأَنتُمْ لِبَاسٌ لَّهُنَّ",
+    englishTranslation: "They are a garment for you, and you are a garment for them.",
+    urduTranslation: "وہ تمہارے لیے لباس ہیں اور تم ان کے لیے لباس ہو",
+    commentaryNote: "The profound metaphor of garments (Libas): Spouses protect each other's honor, provide mutual warmth and beauty, conceal human frailties, and serve as close companions.",
+    topics: ["marriage", "spouse", "husband", "wife", "libas", "nikah", "family", "نکاح", "لباس", "زوجین", "شوہر", "بیوی"],
+    url: "https://www.alislam.org/quran/2:188"
+  },
+  {
+    surahNumber: 4,
+    verseNumber: 20,
+    surahNameArabic: "النساء",
+    surahNameEnglish: "Al-Nisa",
+    arabicText: "وَعَاشِرُوهُنَّ بِالْمَعْرُوفِ فَإِن كَرِهْتُمُوهُنَّ فَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَيَجْعَلَ اللَّهُ فِيهِ خَيْرًا كَثِيرًا",
+    englishTranslation: "And consort with them in kindness; and if you dislike them, it may be that you dislike a thing wherein Allah has placed much good.",
+    urduTranslation: "اور ان کے ساتھ اچھے طریقے سے زندگی بسر کرو، اور اگر تم انہیں ناپسند کرو تو عین ممکن ہے کہ تم ایک چیز کو ناپسند کرو اور اللہ اس میں بہت سی بھلائی رکھ دے",
+    commentaryNote: "The fundamental commandment of 'Mu'asharat bil-Ma'ruf' (benevolent companionship): Men are commanded to treat their wives with gentleness, patience, and honor regardless of personal moods.",
+    topics: ["marriage", "wife", "husband", "kindness", "family", "rights of women", "nikah", "حسن سلوک", "عورتوں کے حقوق", "نکاح"],
+    url: "https://www.alislam.org/quran/4:20"
+  },
+  {
+    surahNumber: 24,
+    verseNumber: 33,
+    surahNameArabic: "النور",
+    surahNameEnglish: "Al-Nur",
+    arabicText: "وَأَنكِحُوا الْأَيَامَىٰ مِنكُمْ وَالصَّالِحِينَ مِنْ عِبَادِكُمْ وَإِمَائِكُمْ إِن يَكُونُوا فُقَرَاءَ يُغْنِهِمُ اللَّهُ مِن فَضْلِهِ وَاللَّهُ وَاسِعٌ عَلِيمٌ",
+    englishTranslation: "And marry those among you who are single, and the righteous of your male and female servants. If they be poor, Allah will grant them means out of His grace; and Allah is Bountiful, All-Knowing.",
+    urduTranslation: "اور تم میں سے جو مجرد ہوں ان کے نکاح کر دیا کرو اور اپنے غلاموں اور لونڈیوں میں سے جو نیک ہوں ان کے بھی۔ اگر وہ نادار ہوں گے تو اللہ اپنے فضل سے انہیں غنی کر دے گا اور اللہ بڑی وسعت والا اور دائمی علم رکھنے والا ہے",
+    commentaryNote: "Islam encourages universal matrimony, condemning involuntary bachelorhood and celibacy. Financial hardship should not hinder marriage, as Allah guarantees blessings and provision to the righteous.",
+    topics: ["marriage", "nikah", "celibacy", "chastity", "provision", "نکاح", "شادی", "طہارت"],
+    url: "https://www.alislam.org/quran/24:33"
+  },
+  {
+    surahNumber: 4,
+    verseNumber: 5,
+    surahNameArabic: "النساء",
+    surahNameEnglish: "Al-Nisa",
+    arabicText: "وَآتُوا النِّسَاءَ صَدُقَاتِهِنَّ نِحْلَةً فَإِن طِبْنَ لَكُمْ عَن شَيْءٍ مِّنْهُ نَفْسًا فَكُلُوهُ هَنِيئًا مَّرِيئًا",
+    englishTranslation: "And give women their dowries (Mehr) as a free gift; but if they of their own pleasure remit any part thereof to you, take it and consume it with good pleasure.",
+    urduTranslation: "اور عورتوں کو ان کے مہر خوش دلی سے دیا کرو، پھر اگر وہ اپنی خوشی سے اس میں سے کچھ تمہیں چھوڑ دیں تو اسے مزے سے کھاؤ",
+    commentaryNote: "The obligation of Mehr (dower): An unconditional financial settlement owned solely by the bride, underscoring female financial autonomy and dignity in Islam.",
+    topics: ["mehr", "dowry", "marriage", "women", "rights of women", "nikah", "مہر", "حق مہر", "نکاح"],
+    url: "https://www.alislam.org/quran/4:5"
+  },
+  {
+    surahNumber: 17,
+    verseNumber: 24,
+    surahNameArabic: "الإسراء",
+    surahNameEnglish: "Al-Isra",
+    arabicText: "وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا إِمَّا يَبْلُغَنَّ عِندَكَ الْكِبَرَ أَحَدُهُمَا أَوْ كِلَاهُمَا فَلَا تَقُل لَّهُمَا أُفٍّ وَلَا تَنْهَرْهُمَا وَقُل لَّهُمَا قَوْلًا كَرِيمًا",
+    englishTranslation: "Thy Lord has commanded, 'Worship none but Him, and show kindness to parents. If one or both of them attain old age with thee, say not 'Fie' unto them nor chide them, but speak to them noble words.'",
+    urduTranslation: "اور تیرے رب نے یہ حکم دیا ہے کہ تم اس کے سوا کسی کی عبادت نہ کرو اور والدین کے ساتھ حسن سلوک کرو۔ اگر ان میں سے کوئی ایک یا دونوں تیرے سامنے بڑھاپے کو پہنچ جائیں تو انہیں اف تک نہ کہو اور نہ انہیں جھڑکو اور ان سے ادب و احترام سے بات کرو",
+    commentaryNote: "The golden Islamic standard of filial piety, placing benevolent care of parents immediately below the worship of Allah.",
+    topics: ["parents", "family", "mother", "father", "kindness", "ethics", "والدین", "ماں باپ", "حسن سلوک", "خاندان"],
+    url: "https://www.alislam.org/quran/17:24"
+  },
+  {
+    surahNumber: 24,
+    verseNumber: 31,
+    surahNameArabic: "النور",
+    surahNameEnglish: "Al-Nur",
+    arabicText: "قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ذَٰلِكَ أَزْكَىٰ لَهُمْ إِنَّ اللَّهَ خَبِيرٌ بِمَا يَصْنَعُونَ",
+    englishTranslation: "Say to the believing men that they restrain their eyes and guard their private parts. That is purer for them. Surely, Allah is well aware of what they do.",
+    urduTranslation: "مومن مردوں سے کہہ دے کہ وہ اپنی نگاہیں نیچی رکھیں اور اپنی شرمگاہوں کی حفاظت کریں۔ یہ ان کے لیے زیادہ پاکیزہ ہے۔ یقیناً اللہ اس سے خوب باخبر ہے جو وہ کرتے ہیں",
+    commentaryNote: "The injunction of modesty (Ghad-ul-Basar): Restraining glances is mandated for men prior to women, establishing mutual responsibility in maintaining social purity.",
+    topics: ["modesty", "purdah", "hijab", "chastity", "eyes", "حیا", "پردہ", "طہارت", "غض بصر"],
+    url: "https://www.alislam.org/quran/24:31"
+  },
+  {
+    surahNumber: 2,
+    verseNumber: 184,
+    surahNameArabic: "البقرة",
+    surahNameEnglish: "Al-Baqarah",
+    arabicText: "يَا أَيُّهَا الَّذِينَ آمَنُوا كُتِبَ عَلَيْكُمُ الصِّيَامُ كَمَا كُتِبَ عَلَى الَّذِينَ مِن قَبْلِكُمْ لَعَلَّكُمْ تَتَّقُونَ",
+    englishTranslation: "O ye who believe! Fasting is prescribed for you, as it was prescribed for those before you, that you may become righteous and attain Taqwa.",
+    urduTranslation: "اے وہ لوگو جو ایمان لائے ہو! تم پر روزے اسی طرح فرض کیے گئے ہیں جس طرح تم سے پہلوں پر فرض کیے گئے تھے تاکہ تم تقویٰ اختیار کرو",
+    commentaryNote: "Fasting is a universal spiritual discipline instituted across religions to restrain base desires and attain the ultimate station of Taqwa.",
+    topics: ["fasting", "roza", "ramadan", "taqwa", "sawm", "روزہ", "صوم", "تقویٰ", "رمضان"],
+    url: "https://www.alislam.org/quran/2:184"
+  },
+  {
+    surahNumber: 9,
+    verseNumber: 60,
+    surahNameArabic: "التوبة",
+    surahNameEnglish: "Al-Tawbah",
+    arabicText: "إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ",
+    englishTranslation: "The alms are only for the poor and the needy, and for those employed in connection therewith, and for those whose hearts are to be reconciled, and for the freeing of slaves, and for those in debt, and for the cause of Allah, and for the wayfarer.",
+    urduTranslation: "صدقات تو محض فقراء اور مساکین کے لیے ہیں اور ان کے وصول کرنے والے کارکنوں کے لیے اور ان کے لیے جن کی تالیف قلب مقصود ہو اور گردنیں چھڑانے میں اور قرض داروں کے لیے اور اللہ کی راہ میں اور مسافر کے لیے",
+    commentaryNote: "The eight constitutional categories of Zakat distribution establishing social welfare, debt alleviation, and human liberation.",
+    topics: ["zakat", "charity", "alms", "sadaqah", "poverty", "social welfare", "زکوٰۃ", "صدقہ", "انفاق"],
+    url: "https://www.alislam.org/quran/9:60"
+  },
+  {
+    surahNumber: 29,
+    verseNumber: 46,
+    surahNameArabic: "العنكبوت",
+    surahNameEnglish: "Al-Ankabut",
+    arabicText: "اتْلُ مَا أُوحِيَ إِلَيْكَ مِنَ الْكِتَابِ وَأَقِمِ الصَّلَاةَ إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ وَلَذِكْرُ اللَّهِ أَكْبَرُ",
+    englishTranslation: "Recite that which has been revealed to thee of the Book, and observe Prayer. Surely, Prayer restrains one from indecency and that which is uncongenial; and the remembrance of Allah is the greatest virtue.",
+    urduTranslation: "کتاب میں سے جو تیری طرف وحی کی گئی ہے اس کی تلاوت کر اور نماز قائم کر۔ یقیناً نماز بے حیائی اور ناپسندیدہ باتوں سے روکتی ہے اور یقیناً اللہ کا ذکر سب سے بڑا ہے",
+    commentaryNote: "The transformative moral power of Salat: Regular congregation and conscious remembrance shield the believer from moral and spiritual decay.",
+    topics: ["prayer", "namaz", "salat", "worship", "remembrance", "نماز", "صلوٰۃ", "ذکر الٰہی"],
+    url: "https://www.alislam.org/quran/29:46"
+  },
+  {
+    surahNumber: 4,
+    verseNumber: 136,
+    surahNameArabic: "النساء",
+    surahNameEnglish: "Al-Nisa",
+    arabicText: "يَا أَيُّهَا الَّذِينَ آمَنُوا كُونُوا قَوَّامِينَ بِالْقِسْطِ شُهَدَاءَ لِلَّهِ وَلَوْ عَلَىٰ أَنفُسِكُمْ أَوِ الْوَالِدَيْنِ وَالْأَقْرَبِينَ",
+    englishTranslation: "O ye who believe! Be strict in observing justice, and be witnesses for Allah, even though it be against yourselves or against parents and kindred.",
+    urduTranslation: "اے لوگو جو ایمان لائے ہو! انصاف پر مضبوطی سے قائم رہتے ہوئے اللہ کی خاطر گواہ بن جاؤ خواہ خود اپنے خلاف ہو یا والدین اور قریبی رشتہ داروں کے خلاف ہو",
+    commentaryNote: "The uncompromising Quranic charter of absolute justice (Adl): Integrity supersedes all familial and self-serving bias.",
+    topics: ["justice", "honesty", "truth", "witness", "morality", "عدل", "انصاف", "سچائی"],
+    url: "https://www.alislam.org/quran/4:136"
   }
 ];
 
@@ -293,6 +425,55 @@ export const ALISLAM_RESOURCES: AlIslamArticleResult[] = [
     summary: "Monumental magnum opus proving the living truth and divine perfection of the Holy Quran and Islam through hundreds of rational arguments and living signs.",
     url: "https://www.alislam.org/book/barahin-e-ahmadiyya/",
     topics: ["barahin", "arguments of islam", "quranic perfection", "revelation", "براہین احمدیہ"]
+  },
+  {
+    id: "alislam-marriage-system-topic",
+    title: "Islamic Marriage System & Guidelines (Nikah)",
+    category: "Topic Portal",
+    summary: "Exhaustive compilation on Islamic matrimony, spousal rights and obligations, dowry (Mehr), marital harmony, and the philosophical purpose of family life.",
+    url: "https://www.alislam.org/topics/marriage/",
+    topics: ["marriage", "nikah", "wedding", "spouse", "family", "dowry", "mehr", "walima", "husband", "wife", "نکاح", "شادی", "ازدواج"]
+  },
+  {
+    id: "alislam-sacred-union-marriage",
+    title: "The Sacred Union: Philosophy of Marriage in Islam",
+    author: "Hazrat Mirza Tahir Ahmad (rh)",
+    category: "Book",
+    summary: "Deep theological discourse explaining the moral necessity of marriage, the spiritual protection afforded by spousal companionship, and rebuttals of ascetic celibacy.",
+    url: "https://www.alislam.org/articles/islamic-marriage-system/",
+    topics: ["marriage", "family", "chastity", "husband", "wife", "rights of women", "nikah", "طہارت", "عصمت"]
+  },
+  {
+    id: "alislam-garments-for-each-other",
+    title: "Garments for Each Other: Mutual Spousal Rights in Islam",
+    category: "Article",
+    summary: "Exegesis of Surah Al-Baqarah 2:188 detailing reciprocal affection, emotional sanctuary, forgiveness, and practical dispute resolution in married life.",
+    url: "https://www.alislam.org/articles/garments-for-each-other/",
+    topics: ["marriage", "spouse", "family", "husband", "wife", "divorce", "ازدواج", "زوجین", "نکاح"]
+  },
+  {
+    id: "alislam-women-status-portal",
+    title: "Status and Rights of Women in Islam & Purdah",
+    category: "Topic Portal",
+    summary: "Comprehensive exploration of female inheritance, financial independence, spiritual equality, and the philosophy of modesty (Hijab and Purdah).",
+    url: "https://www.alislam.org/topics/women/",
+    topics: ["women", "rights of women", "hijab", "purdah", "modesty", "chastity", "inheritance", "عورتوں کے حقوق", "پردہ", "حیا"]
+  },
+  {
+    id: "alislam-ramadan-fasting-portal",
+    title: "The Philosophy of Islamic Fasting & Ramadan (Sawm)",
+    category: "Article",
+    summary: "The inner spiritual reality of fasting, health dimensions, attainment of Taqwa, and spiritual communion during the sacred month of Ramadan.",
+    url: "https://www.alislam.org/articles/ramadan-fasting-philosophy/",
+    topics: ["fasting", "ramadan", "roza", "taqwa", "sawm", "روزہ", "رمضان", "تقویٰ"]
+  },
+  {
+    id: "alislam-zakat-socio-economic",
+    title: "Zakat: The Socio-Economic System of Islam",
+    category: "Article",
+    summary: "Economic principles of wealth redistribution, elimination of poverty, and the distinction between mandatory Zakat and voluntary financial sacrifice (Chanda/Infaq).",
+    url: "https://www.alislam.org/articles/zakat-socio-economic-system/",
+    topics: ["zakat", "charity", "sadaqah", "infaq", "economics", "financial sacrifice", "زکوٰۃ", "صدقہ", "انفاق"]
   }
 ];
 
@@ -359,6 +540,46 @@ export const PERIODICAL_ARCHIVES: PublicationResult[] = [
     url: "https://www.alfazl.com/",
     date: "روحانی مضامین",
     topics: ["tazkiya", "prayer", "spiritual purification", "تزکیہ نفس", "دعا"]
+  },
+  {
+    id: "ror-marriage-psychology",
+    source: "Review of Religions",
+    title: "The Psychological and Spiritual Dynamics of Islamic Marriage",
+    author: "Review of Religions Research Desk",
+    summary: "Analyzing the spiritual bond between husband and wife, conflict resolution through Islamic principles, and the Quranic ideal of mutual tranquility (Sukun).",
+    url: "https://www.reviewofreligions.org/marriage-in-islam/",
+    date: "Theological & Social Review",
+    topics: ["marriage", "nikah", "psychology", "family", "chastity", "husband", "wife", "نکاح", "شادی", "خاندان"]
+  },
+  {
+    id: "alhakam-fiqh-matrimony",
+    source: "Al Hakam",
+    title: "The Fiqh of Matrimony: Guidance of Hazrat Khalifatul Masih (aa)",
+    author: "Al Hakam Editorial",
+    summary: "Practical jurisprudential questions on Nikah announcements, simple Walima, the rights of the bride, dowry (Mehr), and resolving marital disputes in accordance with the Sunnah.",
+    url: "https://www.alhakam.org/fiqh-matrimony-marriage/",
+    date: "Jurisprudence Series",
+    topics: ["marriage", "fiqh", "nikah", "walima", "dowry", "mehr", "guidance", "حق مہر", "نکاح"]
+  },
+  {
+    id: "ror-ramadan-health-spirituality",
+    source: "Review of Religions",
+    title: "Fasting in Islam: Spiritual Purification and Biological Renewal",
+    author: "Medical & Spiritual Research Team",
+    summary: "How intermittent fasting during Ramadan triggers cellular autophagy, mental clarity, and profound proximity to Allah Almighty.",
+    url: "https://www.reviewofreligions.org/health-benefits-ramadan/",
+    date: "Science & Faith",
+    topics: ["fasting", "ramadan", "health", "science", "roza", "taqwa", "روزہ", "رمضان"]
+  },
+  {
+    id: "alhakam-women-status-rebuttal",
+    source: "Al Hakam",
+    title: "Women in Islam: Rebutting Western Misconceptions of Subjugation",
+    author: "Al Hakam Research Desk",
+    summary: "A historical and scriptural overview of women's rights in Islam, examining property ownership, divorce rights (Khula), educational advancement, and the true meaning of Hijab.",
+    url: "https://www.alhakam.org/status-of-women-islam/",
+    date: "Apologetics & History",
+    topics: ["women", "rights of women", "purdah", "hijab", "equality", "khula", "حقوق نسواں", "عورت"]
   }
 ];
 
@@ -582,6 +803,101 @@ export const THEOLOGICAL_DOSSIERS: Record<string, ResearchDossier> = {
         rebuttal: "No. The mother of Moses (as) and Maryam (as) received divine inspiration without being lawgivers. Divine converse to righteous Muslims is purely subordinate to the Holy Quran and testifies to the truth of the Prophet (sa)."
       }
     ]
+  },
+
+  "marriage": {
+    topic: "marriage",
+    title: "Theological Dossier: Islamic Matrimony & Marriage Philosophy (نکاح و فلسفہ ازدواج)",
+    theologicalThesis: "In Ahmadiyya theology, marriage (Nikah) is a sacred spiritual covenant and moral fortress designed for mutual tranquility (Sukun), the preservation of chastity, reciprocal emotional fulfillment, and the righteous upbringing of future generations. Islam categorically rejects monastic celibacy and emphasizes that marital companionship is essential for elevating human morality into spiritual virtue.",
+    keyArguments: [
+      "The Holy Quran defines spouses as 'garments for each other' (Hunna libasun lakum wa antum libasun lahunna, 2:188), signifying mutual protection, comfort, dignity, and concealment of frailties.",
+      "Marriage is designated as a divine Sign (Ayat) grounded in reciprocal affection (Mawaddah) and mercy (Rahmah) (Surah Al-Rum 30:22).",
+      "The Holy Prophet Muhammad (sa) declared: 'Marriage is part of my Sunnah; whoever turns away from my Sunnah is not of me', explicitly forbidding artificial celibacy and ascetic withdrawal.",
+      "Islam guarantees absolute financial autonomy to the wife, obligating the groom to provide an unconditional Mehr (dower) directly to the bride as her sole property (4:5)."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Al-Rum (30:22)", explanation: "'He has created for you mates from among yourselves that you may find peace of mind in them, and He has put love and tenderness between you.'" },
+      { ref: "Surah Al-Baqarah (2:188)", explanation: "'They are a garment for you, and you are a garment for them.'" },
+      { ref: "Surah Al-Nisa (4:20)", explanation: "'And consort with them in kindness (Mu'asharat bil-Ma'ruf).'" },
+      { ref: "Surah Al-Nur (24:33)", explanation: "'And marry those among you who are single... If they be poor, Allah will grant them means out of His grace.'" }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Islami Usul Ki Philosophy (Philosophy of the Teachings of Islam)", volume: 10, description: "Profound philosophical exposition on human passions, the sanctity of chastity (Ihsan), and how marriage transforms animalistic drives into refined moral virtues." },
+      { book: "Chashma-e-Ma'rifat", volume: 23, description: "Rebuttal of unnatural ascetic celibacy and Niyoga, demonstrating that Quranic marriage preserves genealogical purity and human sanctity." },
+      { book: "Arya Dharam", volume: 10, description: "Defense of Islamic marital jurisprudence, mutual spousal rights, and divorce ethics against contemporary criticisms." }
+    ],
+    hadithTraditions: [
+      { source: "Sunan Ibn Majah, Kitab-un-Nikah", text: "The Holy Prophet (sa) said: 'Al-Nikahu min Sunnati fa man raghiba 'an Sunnati falaysa minni' (Marriage is part of my Sunnah; whoever does not follow my Sunnah is not of me)." },
+      { source: "Sahih Bukhari, Kitab-un-Nikah", text: "The Prophet (sa) said: 'O gathering of young men, whoever among you has the means, let him marry, for it restrains the gaze and protects chastity.'" },
+      { source: "Jami' at-Tirmidhi", text: "The Prophet (sa) stated: 'Khayrukum khayrukum li-ahlihi' (The best among you is the one who is best to his family, and I am the best to my family)." }
+    ],
+    counterArguments: [
+      {
+        objection: "Does Islam permit forced marriage or matrimonial compulsion?",
+        rebuttal: "Absolutely forbidden. Islamic jurisprudence strictly mandates explicit and free consent (Ijab-o-Qubul) from both bride and groom. The Holy Prophet (sa) explicitly invalidated marriages contracted without the bride's voluntary consent (Sahih Bukhari Bab La Yunkahu al-Bikr)."
+      },
+      {
+        objection: "Why does Islam allow divorce if marriage is a holy covenant?",
+        rebuttal: "While the Prophet (sa) described divorce as the most detested of lawful things in the sight of Allah, Islam pragmatically recognizes that forcing incompatible spouses into permanent legal bondage produces misery and abuse. When reconciliation fails, graceful dissolution (Talaq / Khula) is permitted."
+      }
+    ]
+  },
+
+  "fasting": {
+    topic: "fasting",
+    title: "Theological Dossier: Fasting & The Sacred Month of Ramadan (صوم و رمضان)",
+    theologicalThesis: "Fasting (Sawm) in Islam is a profound spiritual discipline aimed at cultivating Taqwa (God-consciousness), subduing lower animalistic instincts, awakening compassionate empathy for the hungry, and achieving intimate proximity to Allah through intensive prayer and Quranic reflection.",
+    keyArguments: [
+      "The Quran states fasting was prescribed for earlier religious communities to emphasize its universal necessity for moral purification (2:184).",
+      "Fasting starves the physical appetites so that the spiritual faculties may feast upon divine remembrance and moral renewal.",
+      "Ramadan is the month of the descent of the Holy Quran, celebrated with intense congregational devotion, Tahajjud, and spiritual seclusion (Itikaf)."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Al-Baqarah (2:184)", explanation: "'Fasting is prescribed for you, as it was prescribed for those before you, that you may attain Taqwa.'" },
+      { ref: "Surah Al-Baqarah (2:186)", explanation: "'The month of Ramadan is that in which the Qur'an was revealed as a guidance for mankind.'" }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Islami Usul Ki Philosophy", volume: 10, description: "Explaining how physical restraint in food and drink directly influences the spiritual soul." },
+      { book: "Barahin-e-Ahmadiyya Part 5", volume: 21, description: "The inner reality of hunger for the sake of Allah and the heavenly rewards bestowed upon the fasting believer." }
+    ],
+    hadithTraditions: [
+      { source: "Sahih Bukhari", text: "The Holy Prophet (sa) said: 'As-Sawmu Junnah' (Fasting is a protective shield against sin)." },
+      { source: "Sahih Bukhari", text: "Allah Almighty says: 'Every deed of the son of Adam is for himself, except fasting; it is for Me and I Myself will reward it.'" }
+    ],
+    counterArguments: [
+      {
+        objection: "Does fasting harm physical health or overburden the sick?",
+        rebuttal: "Islam explicitly exempts the sick, travelers, pregnant or nursing mothers, and the elderly (2:185), commanding them to feed the poor (Fidya) or make up missed days when healthy."
+      }
+    ]
+  },
+
+  "status of women": {
+    topic: "status of women",
+    title: "Theological Dossier: Rights & Dignity of Women in Islam (حقوق نسواں)",
+    theologicalThesis: "Islam revolutionized the status of women by conferring full spiritual equality, legal personhood, property rights, educational entitlement, and matrimonial autonomy fourteen centuries before modern legal reforms. Purdah and modesty serve not as tools of subjugation, but as protective moral armor safeguarding personal dignity.",
+    keyArguments: [
+      "Women possess complete spiritual equality: the Quran repeatedly addresses believing men and believing women alike (33:36).",
+      "Islam granted women unilateral property ownership and inheritance rights (4:8, 4:12) that cannot be infringed upon by husband or father.",
+      "Modesty (Hijab and Purdah) is preceded in the Quran by the commandment for men to lower their gazes (24:31)."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Al-Baqarah (2:229)", explanation: "'And women have rights similar to those against them in a just manner.'" },
+      { ref: "Surah Al-Nisa (4:8)", explanation: "'For men is a share of what the parents and near relatives leave, and for women a share.'" }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Islami Usul Ki Philosophy", volume: 10, description: "The social philosophy of modesty and protection of female rights and dignity." },
+      { book: "Chashma-e-Ma'rifat", volume: 23, description: "Comparing Islamic egalitarian rights of women with ancient religious traditions." }
+    ],
+    hadithTraditions: [
+      { source: "Sunan an-Nasa'i", text: "The Holy Prophet (sa) said: 'Al-Jannatu tahta aqdam-il-ummahat' (Paradise lies beneath the feet of mothers)." }
+    ],
+    counterArguments: [
+      {
+        objection: "Is Purdah oppressive to women?",
+        rebuttal: "Purdah is a moral safeguard that shifts social evaluation from physical appearance to intellectual, moral, and spiritual character, liberating women from societal objectification."
+      }
+    ]
   }
 };
 
@@ -664,6 +980,15 @@ export function findTheologicalDossier(query: string): ResearchDossier | null {
       return dossier;
     }
     // Check against key keywords
+    if (key === "marriage" && (clean.includes("marriage") || clean.includes("nikah") || clean.includes("wedding") || clean.includes("spouse") || clean.includes("wife") || clean.includes("husband") || clean.includes("divorce") || clean.includes("mehr") || clean.includes("walima") || clean.includes("نکاح") || clean.includes("ازدواج") || clean.includes("شادی"))) {
+      return dossier;
+    }
+    if (key === "fasting" && (clean.includes("fasting") || clean.includes("fast") || clean.includes("roza") || clean.includes("ramadan") || clean.includes("ramzan") || clean.includes("sawm") || clean.includes("روزہ") || clean.includes("صوم") || clean.includes("رمضان"))) {
+      return dossier;
+    }
+    if (key === "status of women" && (clean.includes("women") || clean.includes("woman") || clean.includes("purdah") || clean.includes("hijab") || clean.includes("modesty") || clean.includes("پردہ") || clean.includes("حجاب") || clean.includes("عورت"))) {
+      return dossier;
+    }
     if (key === "death of jesus" && (clean.includes("jesus") || clean.includes("isa") || clean.includes("cross") || clean.includes("وفات") || clean.includes("مسیح") || clean.includes("صلیب") || clean.includes("kashmir") || clean.includes("roza bal"))) {
       return dossier;
     }
