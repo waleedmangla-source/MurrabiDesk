@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Search,
   Mic,
-  Sparkles,
   BookOpen,
   Globe,
   Newspaper,
@@ -20,10 +19,14 @@ import {
   Layers,
   HelpCircle,
   ShieldCheck,
-  Volume2
+  Volume2,
+  BookmarkCheck,
+  LogIn,
+  Home
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   MultiSourceSearchResult,
   RuhaniKhazainSearchResult,
@@ -74,6 +77,13 @@ export default function ResearchEngine() {
   const [results, setResults] = useState<MultiSourceSearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchTime, setSearchTime] = useState<string>("0.12");
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const isAuth = !!localStorage.getItem("google_refresh_token_encrypted");
+    const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
+    setIsUserLoggedIn(isAuth || isGuest);
+  }, []);
 
   // Voice Search States
   const [isListening, setIsListening] = useState(false);
@@ -234,6 +244,27 @@ export default function ResearchEngine() {
   if (!hasSearched) {
     return (
       <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 -mt-6 select-none relative">
+        {/* Top Header Bar for Landing View */}
+        <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
+          {isUserLoggedIn ? (
+            <Link
+              href="/"
+              className="px-4 py-2 rounded-full text-xs font-bold glass bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
+            >
+              <Home size={14} className="text-emerald-400" />
+              <span>Dashboard</span>
+            </Link>
+          ) : (
+            <Link
+              href="/onboarding"
+              className="px-4 py-2 rounded-full text-xs font-bold bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white transition-all shadow-md shadow-[var(--accent-glow)] flex items-center gap-1.5 active:scale-95"
+            >
+              <LogIn size={14} />
+              <span>Sign In</span>
+            </Link>
+          )}
+        </div>
+
         {/* Ambient atmospheric glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-glow)] rounded-full blur-[130px] pointer-events-none -z-10 opacity-70" />
 
@@ -401,25 +432,27 @@ export default function ResearchEngine() {
   // ═══════════════════════════════════════════════════════════════════════════
   return (
     <div className="w-full flex flex-col min-h-screen">
-      {/* ── TOP HEADER (Murabbi Desk Logo + Search Pill Bar) ───────────── */}
+      {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar + Auth CTA) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-3 pb-0 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center gap-4">
-          {/* Navbar text logo on the left */}
-          <div
-            onClick={resetToHome}
-            className="flex items-center cursor-pointer shrink-0 select-none group py-0.5"
-            title="Murabbi Desk"
-          >
-            <img
-              src="/text-logo.png"
-              alt="Murabbi Desk"
-              className="h-9 w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95 group-hover:opacity-90"
-            />
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left Wing: Navbar text logo */}
+          <div className="w-full md:w-52 shrink-0 flex items-center justify-start">
+            <div
+              onClick={resetToHome}
+              className="flex items-center cursor-pointer shrink-0 select-none group py-0.5"
+              title="Murabbi Desk"
+            >
+              <img
+                src="/text-logo.png"
+                alt="Murabbi Desk"
+                className="h-8 md:h-9 w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95 group-hover:opacity-90"
+              />
+            </div>
           </div>
 
-          {/* Search Pill Bar in Top Header */}
-          <div className="flex-1 max-w-2xl relative">
-            <form onSubmit={handleFormSubmit} className="relative">
+          {/* Center Wing: Centered Search Pill Bar */}
+          <div className="w-full max-w-2xl mx-auto flex-1 flex justify-center">
+            <form onSubmit={handleFormSubmit} className="relative w-full">
               <div
                 className={clsx(
                   "relative flex items-center w-full rounded-[14px] md:rounded-full transition-all",
@@ -471,17 +504,38 @@ export default function ResearchEngine() {
               </div>
             </form>
           </div>
+
+          {/* Right Wing: Auth / Dashboard CTA (Balanced with left wing) */}
+          <div className="w-full md:w-52 shrink-0 flex items-center justify-end gap-2">
+            {isUserLoggedIn ? (
+              <Link
+                href="/"
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold glass border border-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5 active:scale-95"
+              >
+                <Home size={13} className="text-emerald-400" />
+                <span>Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                href="/onboarding"
+                className="px-4 py-1.5 rounded-full text-xs font-bold bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white transition-all shadow-md shadow-[var(--accent-glow)] flex items-center gap-1.5 active:scale-95"
+              >
+                <LogIn size={13} />
+                <span>Sign In</span>
+              </Link>
+            )}
+          </div>
         </div>
 
-        {/* ── GOOGLE SEARCH TABS (Themed to Murabbi Desk) ─────────────── */}
-        <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-x-auto custom-scrollbar mt-3 md:ml-36 select-none text-xs md:text-sm">
+        {/* ── GOOGLE SEARCH TABS (Centered) ─────────────── */}
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 md:gap-6 overflow-x-auto custom-scrollbar mt-3 select-none text-xs md:text-sm">
           {[
             { id: 'all', label: 'All Sources', count: counts.all, icon: Search },
             { id: 'ruhani-khazain', label: 'Ruhani Khazain', count: counts.rk, icon: Scroll },
             { id: 'quran', label: 'Holy Qur\'an', count: counts.quran, icon: BookOpen },
             { id: 'alislam', label: 'Al Islam', count: counts.alislam, icon: Globe },
             { id: 'periodicals', label: 'Periodicals', count: counts.periodicals, icon: Newspaper },
-            { id: 'dossier', label: 'AI Overview', count: counts.dossier, icon: Sparkles }
+            { id: 'dossier', label: 'Scholarly Overview', count: counts.dossier, icon: BookmarkCheck }
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeFilter === tab.id;
@@ -514,18 +568,18 @@ export default function ResearchEngine() {
         </div>
       </div>
 
-      {/* ── RESULTS BODY ──────────────────────────────────────────────── */}
+      {/* ── RESULTS BODY (Centered) ──────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1">
         {/* Search Statistics */}
         {results && !loading && (
-          <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-6 md:ml-36">
+          <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-6 max-w-5xl mx-auto text-center md:text-left">
             Found {counts.all} theological records in {searchTime} seconds for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
           </div>
         )}
 
         {/* Loading Spinner */}
         {loading && (
-          <div className="py-20 text-center space-y-4 md:ml-36 max-w-2xl">
+          <div className="py-20 text-center space-y-4 max-w-2xl mx-auto">
             <Loader2 size={36} className="animate-spin text-[var(--accent-main)] mx-auto" />
             <p className="text-sm font-bold text-[var(--text-muted)] tracking-wide">
               Scanning Ruhani Khazain 1–23, Qur'an, Al Islam, and Periodicals...
@@ -535,28 +589,28 @@ export default function ResearchEngine() {
 
         {/* Error message */}
         {error && (
-          <div className="md:ml-36 max-w-2xl p-4 rounded-[14px] bg-red-500/10 border border-red-500/20 text-red-500 text-sm mb-6 font-bold">
+          <div className="max-w-2xl mx-auto p-4 rounded-[14px] bg-red-500/10 border border-red-500/20 text-red-500 text-sm mb-6 font-bold">
             {error}
           </div>
         )}
 
-        {/* Results Container */}
+        {/* Results Container (Centered) */}
         {results && !loading && (
-          <div className="flex flex-col lg:flex-row gap-10 md:ml-36">
-            {/* Left Column: Google Results Stream */}
+          <div className="flex flex-col lg:flex-row justify-center gap-10 max-w-5xl mx-auto">
+            {/* Left Column: Results Stream */}
             <div className="flex-1 max-w-2xl space-y-8">
-              {/* ── 1. MURABBIAI OVERVIEW (Google SGE Layout + Murabbi Aesthetic) */}
+              {/* ── 1. SCHOLARLY OVERVIEW (Deterministic Theological Synthesis) */}
               {(activeFilter === 'all' || activeFilter === 'dossier') && results.dossier && (
                 <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)] via-white/5 to-transparent relative overflow-hidden shadow-xl">
-                  {/* AI Overview Header */}
+                  {/* Scholarly Overview Header */}
                   <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 flex items-center justify-center text-[var(--accent-main)] shadow-sm">
-                        <Sparkles size={16} />
+                        <BookmarkCheck size={16} />
                       </div>
                       <div>
                         <div className="text-sm font-black italic tracking-tight text-[var(--foreground)] flex items-center gap-2">
-                          MurabbiAI Overview
+                          Scholarly Overview
                           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
                             • Theological Synthesis
                           </span>
@@ -567,13 +621,13 @@ export default function ResearchEngine() {
                     <button
                       onClick={() => {
                         const copyTxt = `${results.dossier?.title}\n\n${results.dossier?.theologicalThesis}\n\nKey Points:\n${results.dossier?.keyArguments.map(a => `- ${a}`).join('\n')}`;
-                        copyToClipboard(copyTxt, 'ai-overview');
+                        copyToClipboard(copyTxt, 'scholarly-overview');
                       }}
                       className="text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-white/5 transition-colors font-bold"
                       title="Copy Overview"
                     >
-                      {copiedId === 'ai-overview' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      <span className="text-[11px] uppercase tracking-wider">{copiedId === 'ai-overview' ? "Copied" : "Copy Briefing"}</span>
+                      {copiedId === 'scholarly-overview' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      <span className="text-[11px] uppercase tracking-wider">{copiedId === 'scholarly-overview' ? "Copied" : "Copy Briefing"}</span>
                     </button>
                   </div>
 

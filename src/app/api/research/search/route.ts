@@ -12,6 +12,7 @@ import {
   searchAlIslamResources,
   searchPeriodicals,
   findTheologicalDossier,
+  synthesizeSmartTheologicalResponse,
   MultiSourceSearchResult,
   RuhaniKhazainSearchResult,
   ResearchDossier
@@ -65,89 +66,6 @@ function getCachedVolume(volNum: number): CachedVolume | null {
     console.error(`[Research API] Failed to load volume ${volNum}:`, err);
     return null;
   }
-}
-
-function getApiKey(): string | null {
-  let apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    try {
-      const envPath = path.resolve(process.cwd(), '.env.local');
-      if (fs.existsSync(envPath)) {
-        const envFile = fs.readFileSync(envPath, 'utf8');
-        const match = envFile.match(/^GOOGLE_AI_API_KEY=(.*)$/m);
-        if (match) apiKey = match[1].trim();
-      }
-    } catch {}
-  }
-  return apiKey || null;
-}
-
-// Generate dynamic scholarly dossier via Gemini for unique queries
-async function generateDynamicDossierWithGemini(query: string, apiKey: string): Promise<ResearchDossier | null> {
-  const prompt = `You are MurabbiAI, a world-class Islamic and Ahmadiyya theological scholar.
-Generate a structured, authoritative research briefing/dossier on the following Islamic/Ahmadiyya topic:
-"${query}"
-
-Output ONLY a single valid JSON object (no markdown code blocks, no backticks) with this EXACT structure:
-{
-  "topic": "${query}",
-  "title": "Theological Dossier: ${query}",
-  "theologicalThesis": "2-3 sentences explaining the core Ahmadiyya perspective, theological premise, and spiritual verity.",
-  "keyArguments": [
-    "Key scholarly argument 1",
-    "Key scholarly argument 2",
-    "Key scholarly argument 3"
-  ],
-  "quranicEvidence": [
-    { "ref": "Surah:Verse (e.g. Surah Al-Nisa 4:158)", "explanation": "Brief explanation of how this verse proves the thesis." }
-  ],
-  "ruhaniKhazainCitations": [
-    { "book": "Exact Book Name (e.g. Barahin-e-Ahmadiyya)", "volume": 1, "description": "Core citation or argument by the Promised Messiah (as)." }
-  ],
-  "hadithTraditions": [
-    { "source": "Hadith Collection (e.g. Sahih Bukhari)", "text": "Relevant Prophetic tradition and contextual meaning." }
-  ],
-  "counterArguments": [
-    { "objection": "Common misconception or objection by critics", "rebuttal": "Scholarly rebuttal grounded in theology and logic." }
-  ]
-}`;
-
-  const models = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
-  for (const model of models) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
-
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2048,
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      clearTimeout(timeoutId);
-      if (!res.ok) continue;
-
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (rawText) {
-        const parsed = JSON.parse(rawText);
-        if (parsed && parsed.theologicalThesis) {
-          return parsed as ResearchDossier;
-        }
-      }
-    } catch {
-      // Continue to next model
-    }
-  }
-  return null;
 }
 
 export async function POST(req: NextRequest) {
@@ -269,29 +187,30 @@ export async function POST(req: NextRequest) {
       return searchPeriodicals(rawQuery);
     })();
 
-    const dossierPromise: Promise<ResearchDossier | undefined> = (async () => {
-      if (!requestedSources.includes('dossier')) return undefined;
-      // First check pre-synthesized scholarly dossiers
-      const preSynthesized = findTheologicalDossier(rawQuery);
-      if (preSynthesized) return preSynthesized;
-
-      // If no pre-synthesized dossier, attempt dynamic generation via Gemini
-      const apiKey = getApiKey();
-      if (apiKey) {
-        const dynamicDossier = await generateDynamicDossierWithGemini(rawQuery, apiKey);
-        if (dynamicDossier) return dynamicDossier;
-      }
-
-      return undefined;
-    })();
-
-    const [rkResults, quranResults, alislamResults, periodicalsResults, dossierResult] = await Promise.all([
+    const [rkResults, quranResults, alislamResults, periodicalsResults] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
       alislamPromise,
-      periodicalsPromise,
-      dossierPromise
+      periodicalsPromise
     ]);
+
+    // Deterministic Smart Scholarly Response (Zero AI / LLM latency or quota dependencies)
+    let dossierResult: ResearchDossier | undefined = undefined;
+    if (requestedSources.includes('dossier')) {
+      const preSynthesized = findTheologicalDossier(rawQuery);
+      if (preSynthesized) {
+        dossierResult = preSynthesized;
+      } else {
+        const synthesized = synthesizeSmartTheologicalResponse(
+          rawQuery,
+          rkResults,
+          quranResults,
+          alislamResults,
+          periodicalsResults
+        );
+        if (synthesized) dossierResult = synthesized;
+      }
+    }
 
     const totalResults = rkResults.length + quranResults.length + alislamResults.length + periodicalsResults.length + (dossierResult ? 1 : 0);
 

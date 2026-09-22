@@ -54,10 +54,10 @@ export interface ResearchDossier {
   title: string;
   theologicalThesis: string;
   keyArguments: string[];
-  quranicEvidence: Array<{ ref: string; explanation: string }>;
-  ruhaniKhazainCitations: Array<{ book: string; volume: number; description: string }>;
-  hadithTraditions: Array<{ source: string; text: string }>;
-  counterArguments: Array<{ objection: string; rebuttal: string }>;
+  quranicEvidence?: Array<{ ref: string; explanation: string }>;
+  ruhaniKhazainCitations?: Array<{ book: string; volume: number; description: string }>;
+  hadithTraditions?: Array<{ source: string; text: string }>;
+  counterArguments?: Array<{ objection: string; rebuttal: string }>;
 }
 
 export interface MultiSourceSearchResult {
@@ -492,6 +492,89 @@ export const THEOLOGICAL_DOSSIERS: Record<string, ResearchDossier> = {
         rebuttal: "Never. He revitalized the true Quranic Jihad. Offensive war was never permitted in Islam. The condition for defensive military Jihad was physical persecution blocking freedom of worship; since that condition was absent under peaceful legal systems, the appropriate and superior weapon is the pen."
       }
     ]
+  },
+
+  "celestial signs & eclipses": {
+    topic: "celestial signs & eclipses",
+    title: "Theological Dossier: Solar & Lunar Eclipses as Signs of the Mahdi (علامت کسوف و خسوف)",
+    theologicalThesis: "The Holy Prophet Muhammad (sa) foretold a grand celestial sign for the truth of the Mahdi: lunar and solar eclipses occurring in the holy month of Ramadan on specific appointed dates (the moon on the 1st of the eclipse nights, i.e., 13th Ramadan, and the sun on the middle day, i.e., 28th Ramadan). This unprecedented prophecy was fulfilled with celestial precision in 1894 in the Eastern Hemisphere and in 1895 in the Western Hemisphere after the Promised Messiah (as) had proclaimed his divine claim.",
+    keyArguments: [
+      "The prophecy recorded in Sunan Darqutni states: 'For our Mahdi there are two signs which have never appeared since the creation of the heavens and earth... the moon will be eclipsed on the first night and the sun on the middle day of its eclipse days in Ramadan.'",
+      "According to celestial laws, lunar eclipses can only occur on the 13th, 14th, or 15th of the lunar month, and solar eclipses on the 27th, 28th, or 29th. The prophecy specified the 13th for the moon and 28th for the sun.",
+      "The sign was not merely an astronomical occurrence; it was specifically tied to an individual who had already laid claim to being the Mahdi before its manifestation."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Al-Qiyamah (75:9-10)", explanation: "'And the moon is eclipsed, and the sun and the moon are brought together.'" }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Nur-ul-Haq (Part 2)", volume: 8, description: "Detailed scientific, astronomical, and scriptural analysis of the Ramadan 1894 eclipses." },
+      { book: "Haqiqat-ul-Wahi", volume: 22, description: "Enumeration of the eclipse as one of the great heavenly testimonies." },
+      { book: "Chashma-e-Ma'rifat", volume: 23, description: "Refutation of critics denying the authenticity of the Darqutni tradition." }
+    ],
+    hadithTraditions: [
+      { source: "Sunan Darqutni, Kitab-ul-Eidain", text: "Hazrat Imam Muhammad Baqir (rh) related from the Holy Prophet (sa): 'Inna Li Mahdiyyina Ayathaini...'" }
+    ],
+    counterArguments: [
+      {
+        objection: "Haven't solar and lunar eclipses occurred together in Ramadan before?",
+        rebuttal: "Eclipses have occurred in Ramadan historically, but never has an eclipse occurred on those specific designated nights in conjunction with a claimant to the office of the Mahdi who invited the world to witness it as his divine proof."
+      }
+    ]
+  },
+
+  "khilafat": {
+    topic: "khilafat",
+    title: "Theological Dossier: Khilafat upon the Precept of Prophethood (خلافت علی منہاج النبوۃ)",
+    theologicalThesis: "Khilafat is a divine covenant and system of spiritual succession established by Allah Almighty to consolidate, preserve, and globalize the teachings of a Prophet after his departure. Established upon the demise of the Promised Messiah (as) in 1908, the Ahmadiyya Khilafat represents the promised Second Manifestation of Divine Power (Qudrat-e-Thaniyya), uniting a worldwide community under one spiritual leader.",
+    keyArguments: [
+      "The Holy Qur'an (Surah Al-Nur 24:56) guarantees that God Himself appoints and establishes Khilafat for the believers who do good deeds ('Ayat-ul-Istikhlaf').",
+      "The Holy Prophet (sa) prophesied that after periods of tyranny and monarchies, 'There will be Khilafat upon the precept of prophethood (Khilafatan 'ala Minhaj-in-Nubuwwah).' (Musnad Ahmad)",
+      "Hazrat Promised Messiah (as) authored the historic treatise 'Al-Wasiyyat' (The Will) foretelling that God would manifest His Second Power to keep the community united and safeguarded forever."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Al-Nur (24:56)", explanation: "'Allah has promised to those among you who believe and do good works that He will surely make them Successors in the earth.'" }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Al-Wasiyyat (The Will)", volume: 20, description: "The foundational charter establishing the permanent institution of Khilafat and the Sadr Anjuman Ahmadiyya." },
+      { book: "Shahadat-ul-Quran", volume: 6, description: "Explaining the eternal need for divine spiritual guides and caliphs to preserve Islam." }
+    ],
+    hadithTraditions: [
+      { source: "Musnad Ahmad ibn Hanbal", text: "The Holy Prophet (sa) stated: 'Then there will emerge Khilafat on the precept of prophethood, and then he remained silent.'" }
+    ],
+    counterArguments: [
+      {
+        objection: "Is Khilafat chosen by people or appointed by God?",
+        rebuttal: "While the electors cast votes in the Electoral College, the Quran declares 'He will make them Successors.' Believers are guided by the Holy Spirit to select the individual already chosen in divine decree, ensuring divine hand over human agency."
+      }
+    ]
+  },
+
+  "divine communion & revelation": {
+    topic: "divine communion & revelation",
+    title: "Theological Dossier: Living Revelation & Divine Communion (وحی و الہام)",
+    theologicalThesis: "Ahmadiyya theology resolutely affirms that God Almighty speaks to His righteous servants today just as He spoke in the past. Islam is not a fossilized or dead religion based on historical tales; its crowning glory is that sincere obedience to the Holy Prophet Muhammad (sa) elevates human consciousness to experience the living voice of God (Mukalama-o-Mukhawtaba Ilahiyya) and witness true visions.",
+    keyArguments: [
+      "If divine revelation ceased entirely, religion would reduce to hearsay, and certainty of God's existence would gradually extinguish in the face of scientific skepticism.",
+      "The Quran guarantees that the angels descend upon believers, stating: 'Fear not, nor grieve; but rejoice in the Garden that you were promised' (Surah Ha-Mim Al-Sajdah 41:31).",
+      "The Promised Messiah (as) presented hundreds of verified fulfilled prophecies as living empirical evidence that the God of Islam speaks."
+    ],
+    quranicEvidence: [
+      { ref: "Surah Ha-Mim Al-Sajdah (41:31)", explanation: "'As for those who say: Our Lord is Allah, and then remain steadfast, the angels descend on them.'" },
+      { ref: "Surah Al-Shura (42:52)", explanation: "The three modes of divine communication with humans: revelation, from behind a veil, or through a sent messenger." }
+    ],
+    ruhaniKhazainCitations: [
+      { book: "Barahin-e-Ahmadiyya Parts 1-4", volume: 1, description: "Monumental defense proving the necessity of living divine revelation against Arya Samaj and atheist critics." },
+      { book: "Haqiqat-ul-Wahi", volume: 22, description: "Philosophical categorization of dreams, visions, and the four categories of divine converse." }
+    ],
+    hadithTraditions: [
+      { source: "Sahih Bukhari", text: "The Holy Prophet (sa) stated: 'Nothing remains of Prophethood except Mubashshirat (true glad tidings/visions).'" }
+    ],
+    counterArguments: [
+      {
+        objection: "Does claiming divine converse imply bringing a new sharia?",
+        rebuttal: "No. The mother of Moses (as) and Maryam (as) received divine inspiration without being lawgivers. Divine converse to righteous Muslims is purely subordinate to the Holy Quran and testifies to the truth of the Prophet (sa)."
+      }
+    ]
   }
 };
 
@@ -574,18 +657,102 @@ export function findTheologicalDossier(query: string): ResearchDossier | null {
       return dossier;
     }
     // Check against key keywords
-    if (key === "death of jesus" && (clean.includes("jesus") || clean.includes("isa") || clean.includes("cross") || clean.includes("وفات") || clean.includes("مسیح") || clean.includes("صلیب"))) {
+    if (key === "death of jesus" && (clean.includes("jesus") || clean.includes("isa") || clean.includes("cross") || clean.includes("وفات") || clean.includes("مسیح") || clean.includes("صلیب") || clean.includes("kashmir") || clean.includes("roza bal"))) {
       return dossier;
     }
-    if (key === "khatam-e-nabuwwat" && (clean.includes("khatam") || clean.includes("prophet") || clean.includes("seal") || clean.includes("ختم") || clean.includes("نبوت"))) {
+    if (key === "khatam-e-nabuwwat" && (clean.includes("khatam") || clean.includes("prophet") || clean.includes("seal") || clean.includes("ختم") || clean.includes("نبوت") || clean.includes("ummati") || clean.includes("buruzi"))) {
       return dossier;
     }
-    if (key === "philosophy of prayer" && (clean.includes("prayer") || clean.includes("dua") || clean.includes("دعا") || clean.includes("استجابت"))) {
+    if (key === "philosophy of prayer" && (clean.includes("prayer") || clean.includes("dua") || clean.includes("دعا") || clean.includes("استجابت") || clean.includes("supplication"))) {
       return dossier;
     }
-    if (key === "jihad of the pen" && (clean.includes("jihad") || clean.includes("war") || clean.includes("peace") || clean.includes("جہاد"))) {
+    if (key === "jihad of the pen" && (clean.includes("jihad") || clean.includes("war") || clean.includes("peace") || clean.includes("جہاد") || clean.includes("qalam"))) {
+      return dossier;
+    }
+    if (key === "celestial signs & eclipses" && (clean.includes("eclipse") || clean.includes("darqutni") || clean.includes("moon") || clean.includes("sun") || clean.includes("ramadan") || clean.includes("کسوف") || clean.includes("خسوف") || clean.includes("علامت"))) {
+      return dossier;
+    }
+    if (key === "khilafat" && (clean.includes("khilafat") || clean.includes("caliph") || clean.includes("wasiyyat") || clean.includes("خلافت") || clean.includes("خلیفہ") || clean.includes("istikhlaf"))) {
+      return dossier;
+    }
+    if (key === "divine communion & revelation" && (clean.includes("revelation") || clean.includes("wahi") || clean.includes("communion") || clean.includes("mukalama") || clean.includes("الہام") || clean.includes("وحی"))) {
       return dossier;
     }
   }
   return null;
+}
+
+/**
+ * Deterministic, instant Smart Scholarly Synthesizer (Zero AI, Pure Corpus Grounded)
+ */
+export function synthesizeSmartTheologicalResponse(
+  query: string,
+  rkMatches: RuhaniKhazainSearchResult[],
+  quranMatches: QuranVerseResult[],
+  alislamMatches: AlIslamArticleResult[],
+  periodicalMatches: PublicationResult[]
+): ResearchDossier | null {
+  if (quranMatches.length === 0 && rkMatches.length === 0 && alislamMatches.length === 0 && periodicalMatches.length === 0) {
+    return null;
+  }
+
+  const primaryQuran = quranMatches[0];
+  const primaryRk = rkMatches[0];
+  const primaryAlislam = alislamMatches[0];
+  const primaryPeriodical = periodicalMatches[0];
+
+  const title = `Scholarly Briefing: ${query.charAt(0).toUpperCase() + query.slice(1)}`;
+  
+  let theologicalThesis = "";
+  if (primaryQuran?.commentaryNote) {
+    theologicalThesis = primaryQuran.commentaryNote;
+  } else if (primaryAlislam?.summary) {
+    theologicalThesis = primaryAlislam.summary;
+  } else if (primaryPeriodical?.summary) {
+    theologicalThesis = primaryPeriodical.summary;
+  } else if (primaryRk) {
+    const rkSnippet = `${primaryRk.snippetBefore} ${primaryRk.matchedSlice} ${primaryRk.snippetAfter}`.trim();
+    theologicalThesis = `Scholarly exposition in Ruhani Khazain (Vol. ${primaryRk.volume}, ${primaryRk.bookTitle}): "${rkSnippet.slice(0, 200)}..."`;
+  } else {
+    theologicalThesis = `Authoritative thematic citations and theological evidence identified across the Ahmadiyya corpus for "${query}".`;
+  }
+
+  const keyArguments: string[] = [];
+  if (primaryQuran) {
+    keyArguments.push(`Quranic Foundation: Established through Surah ${primaryQuran.surahNameEnglish} (${primaryQuran.surahNumber}:${primaryQuran.verseNumber}).`);
+  }
+  if (primaryRk) {
+    keyArguments.push(`Promised Messiah's (as) Treatise: Addressed in "${primaryRk.bookTitle}" (Ruhani Khazain Vol. ${primaryRk.volume}).`);
+  }
+  if (primaryAlislam) {
+    keyArguments.push(`Doctrinal Study: "${primaryAlislam.title}" (${primaryAlislam.category}).`);
+  }
+  if (primaryPeriodical) {
+    keyArguments.push(`Historical Exposition: Published in ${primaryPeriodical.source}${primaryPeriodical.date ? ` (${primaryPeriodical.date})` : ''}.`);
+  }
+
+  const quranicEvidence = quranMatches.slice(0, 3).map(q => ({
+    ref: `Surah ${q.surahNameEnglish} (${q.surahNumber}:${q.verseNumber})`,
+    explanation: q.commentaryNote || q.englishTranslation
+  }));
+
+  const ruhaniKhazainCitations = rkMatches.slice(0, 3).map(r => {
+    const textSnippet = `${r.snippetBefore} [${r.matchedSlice}] ${r.snippetAfter}`.trim();
+    return {
+      book: r.bookTitle,
+      volume: r.volume,
+      description: textSnippet ? `${textSnippet.slice(0, 160)}...` : `Comprehensive theological discourse in Volume ${r.volume}, page ${r.pageNum}.`
+    };
+  });
+
+  return {
+    topic: query,
+    title,
+    theologicalThesis,
+    keyArguments,
+    quranicEvidence: quranicEvidence.length > 0 ? quranicEvidence : undefined,
+    ruhaniKhazainCitations: ruhaniKhazainCitations.length > 0 ? ruhaniKhazainCitations : undefined,
+    hadithTraditions: [],
+    counterArguments: []
+  };
 }

@@ -86,6 +86,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [showDevNotes, setShowDevNotes] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accentColor, setAccentColor] = useState("flup");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -206,10 +207,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // ── Auth guard ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mounted) return;
-    const isAuth = localStorage.getItem("google_refresh_token_encrypted");
+    const isAuth = !!localStorage.getItem("google_refresh_token_encrypted");
     const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
     const authenticated = isAuth || isGuest;
-    if (!authenticated && pathname !== "/onboarding") {
+    setIsAuthenticated(authenticated);
+
+    const isPublicPage = pathname === "/onboarding" || pathname === "/research" || pathname.startsWith("/research");
+    if (!authenticated && !isPublicPage) {
       router.push("/onboarding");
     } else if (authenticated && pathname === "/onboarding") {
       router.push("/");
@@ -224,6 +228,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (!mounted) {
     return (
       <div className="flex h-dvh w-full bg-[#f8fafc]">
+        {children}
+      </div>
+    );
+  }
+
+  // ── Standalone / Public Page (No sidebar on login or unauthenticated research) ──
+  const isPublicStandalone = pathname === "/onboarding" || (!isAuthenticated && (pathname === "/research" || pathname.startsWith("/research")));
+  if (isPublicStandalone) {
+    return (
+      <div className="min-h-screen w-full bg-transparent">
         {children}
       </div>
     );
