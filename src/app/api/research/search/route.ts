@@ -88,6 +88,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
     }
 
+    // Fast-path: On-demand page retrieval for Al Hakam Archive
+    if (typeof body.alhakamPage === 'number') {
+      const pageNum = Math.max(0, Math.floor(body.alhakamPage));
+      const alHakamData = await fetchLiveAlHakam(rawQuery, pageNum);
+      return NextResponse.json({
+        success: true,
+        data: {
+          query: rawQuery,
+          publications: alHakamData.results,
+          totalAlHakamHits: alHakamData.totalHits,
+          totalPages: alHakamData.totalPages,
+          currentPage: pageNum + 1
+        }
+      });
+    }
+
     const requestedSources: string[] = Array.isArray(body.sources) && body.sources.length > 0 
       ? body.sources 
       : ['ruhani-khazain', 'quran', 'alislam', 'periodicals', 'dossier'];
@@ -266,10 +282,10 @@ export async function POST(req: NextRequest) {
               readerUrl: `/reader?volume=${volNum}&page=${page.page_num}`
             });
 
-            if (matches.length >= 30) break; // Keep top 30 Ruhani Khazain hits for fast response
+            if (matches.length >= 1000) break; // Generous ceiling for safety
           }
         }
-        if (matches.length >= 30) break;
+        if (matches.length >= 1000) break;
       }
 
       return matches;
@@ -345,7 +361,7 @@ export async function POST(req: NextRequest) {
       // Query live Al Hakam Official API and Review of Religions in parallel
       try {
         const [alHakamData, liveRoR] = await Promise.all([
-          fetchLiveAlHakam(rawQuery),
+          fetchLiveAlHakam(rawQuery, 0),
           fetchLiveReviewOfReligions(rawQuery)
         ]);
 
@@ -416,7 +432,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const totalResults = rkResults.length + quranResults.length + alislamResults.length + periodicalsResults.length + (dossierResult ? 1 : 0);
+    const totalResults = rkResults.length + quranResults.length + alislamResults.length + Math.max(periodicalsResults.length, totalAlHakamHits) + (dossierResult ? 1 : 0);
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,

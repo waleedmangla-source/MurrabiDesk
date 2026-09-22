@@ -14,6 +14,8 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
   Filter,
   Layers,
@@ -38,6 +40,21 @@ import {
 
 type ActiveSourceFilter = 'all' | 'ruhani-khazain' | 'quran' | 'alislam' | 'periodicals' | 'dossier';
 
+const ITEMS_PER_PAGE = 10;
+
+function getPaginationRange(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
 export default function ResearchEngine() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -48,6 +65,11 @@ export default function ResearchEngine() {
   const [error, setError] = useState<string | null>(null);
   const [searchTime, setSearchTime] = useState<string>("0.12");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+  // Pagination & Periodicals Cache
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [periodicalsCache, setPeriodicalsCache] = useState<Record<number, PublicationResult[]>>({});
+  const [loadingPeriodicalPage, setLoadingPeriodicalPage] = useState<boolean>(false);
 
   useEffect(() => {
     const isAuth = !!localStorage.getItem("google_refresh_token_encrypted");
@@ -147,6 +169,7 @@ export default function ResearchEngine() {
     setLoading(true);
     setError(null);
     setSubmittedQuery(targetQuery);
+    setCurrentPage(1);
     const startTime = performance.now();
 
     try {
@@ -164,6 +187,11 @@ export default function ResearchEngine() {
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
       setSearchTime(elapsed);
       setResults(data.data);
+      if (data.data?.publications) {
+        setPeriodicalsCache({
+          1: data.data.publications
+        });
+      }
     } catch (err: any) {
       setError(err.message || "Failed to complete multi-source query.");
     } finally {
@@ -180,6 +208,8 @@ export default function ResearchEngine() {
     setResults(null);
     setSubmittedQuery("");
     setQuery("");
+    setCurrentPage(1);
+    setPeriodicalsCache({});
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -188,17 +218,121 @@ export default function ResearchEngine() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleTabChange = (newTab: ActiveSourceFilter) => {
+    setActiveFilter(newTab);
+    setCurrentPage(1);
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
   // Filter count badges
   const counts = useMemo(() => {
+    const periodicalsCount = results ? Math.max(results.publications.length, results.totalAlHakamHits || 0) : 0;
+    const rkCount = results ? results.ruhaniKhazain.length : 0;
+    const quranCount = results ? results.quranVerses.length : 0;
+    const alislamCount = results ? results.alislamArticles.length : 0;
+    const dossierCount = results?.dossier ? 1 : 0;
+    const allCount = rkCount + quranCount + alislamCount + periodicalsCount + dossierCount;
+
     return {
-      all: results ? results.totalResults : 0,
-      rk: results ? results.ruhaniKhazain.length : 0,
-      quran: results ? results.quranVerses.length : 0,
-      alislam: results ? results.alislamArticles.length : 0,
-      periodicals: results ? results.publications.length : 0,
-      dossier: results?.dossier ? 1 : 0
+      all: allCount,
+      rk: rkCount,
+      quran: quranCount,
+      alislam: alislamCount,
+      periodicals: periodicalsCount,
+      dossier: dossierCount
     };
   }, [results]);
+
+  // Compute total pages based on the currently active filter
+  const totalPages = useMemo(() => {
+    if (!results) return 1;
+    switch (activeFilter) {
+      case 'ruhani-khazain':
+        return Math.max(1, Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE));
+      case 'periodicals':
+        return Math.max(1, Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE));
+      case 'alislam':
+        return Math.max(1, Math.ceil(results.alislamArticles.length / ITEMS_PER_PAGE));
+      case 'quran':
+        return Math.max(1, Math.ceil(results.quranVerses.length / ITEMS_PER_PAGE));
+      case 'all': {
+        const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
+        const perPages = Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE);
+        return Math.max(1, Math.max(rkPages, perPages));
+      }
+      default:
+        return 1;
+    }
+  }, [results, activeFilter]);
+
+  // Paginated slices for each corpus
+  const displayedRuhaniKhazain = useMemo(() => {
+    if (!results) return [];
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return results.ruhaniKhazain.slice(start, start + ITEMS_PER_PAGE);
+  }, [results, currentPage]);
+
+  const displayedQuran = useMemo(() => {
+    if (!results) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.quranVerses : [];
+    }
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return results.quranVerses.slice(start, start + ITEMS_PER_PAGE);
+  }, [results, currentPage, activeFilter]);
+
+  const displayedAlIslam = useMemo(() => {
+    if (!results) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.alislamArticles.slice(0, ITEMS_PER_PAGE) : [];
+    }
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return results.alislamArticles.slice(start, start + ITEMS_PER_PAGE);
+  }, [results, currentPage, activeFilter]);
+
+  const displayedPublications = useMemo(() => {
+    if (!results) return [];
+    if (periodicalsCache[currentPage]) {
+      return periodicalsCache[currentPage];
+    }
+    if (currentPage === 1) {
+      return results.publications;
+    }
+    return [];
+  }, [results, currentPage, periodicalsCache]);
+
+  const handlePageChange = async (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+
+    // Fetch on-demand page for Al Hakam Archive if not cached
+    if ((activeFilter === 'periodicals' || activeFilter === 'all') && !periodicalsCache[newPage]) {
+      setLoadingPeriodicalPage(true);
+      try {
+        const res = await fetch('/api/research/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: submittedQuery,
+            alhakamPage: newPage - 1
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.data?.publications) {
+          setPeriodicalsCache(prev => ({
+            ...prev,
+            [newPage]: data.data.publications
+          }));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch periodical page:', err);
+      } finally {
+        setLoadingPeriodicalPage(false);
+      }
+    }
+
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
 
   const hasSearched = !!results || loading;
 
@@ -459,7 +593,7 @@ export default function ResearchEngine() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveFilter(tab.id as ActiveSourceFilter)}
+                onClick={() => handleTabChange(tab.id as ActiveSourceFilter)}
                 className={clsx(
                   "pb-2.5 flex items-center gap-1.5 border-b-2 transition-all shrink-0 font-bold",
                   active
@@ -725,7 +859,7 @@ export default function ResearchEngine() {
               )}
 
               {/* ── 2. RUHANI KHAZAIN RESULTS ───────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'ruhani-khazain') && results.ruhaniKhazain.map((item, idx) => {
+              {(activeFilter === 'all' || activeFilter === 'ruhani-khazain') && displayedRuhaniKhazain.map((item, idx) => {
                 const itemKey = `rk-${item.volume}-${item.pageNum}-${idx}`;
                 const citation = `[Ruhani Khazain, Vol. ${item.volume}, "${item.bookTitle}", p. ${item.pageNum}]`;
                 return (
@@ -800,8 +934,24 @@ export default function ResearchEngine() {
                 );
               })}
 
+              {/* Ruhani Khazain Tab Jump Banner for 'all' tab */}
+              {activeFilter === 'all' && results.ruhaniKhazain.length > ITEMS_PER_PAGE && (
+                <div className="p-3.5 rounded-xl glass bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <span className="text-[var(--text-muted)] font-medium">
+                    Showing page {currentPage} ({displayedRuhaniKhazain.length} of {results.ruhaniKhazain.length} matches across 23 volumes)
+                  </span>
+                  <button
+                    onClick={() => handleTabChange('ruhani-khazain')}
+                    className="text-[var(--accent-main)] hover:text-white font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
+                  >
+                    <span>Browse all {results.ruhaniKhazain.length} in Ruhani Khazain tab</span>
+                    <ArrowRight size={12} />
+                  </button>
+                </div>
+              )}
+
               {/* ── 3. HOLY QUR'AN THEMATIC RESULTS ─────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'quran') && results.quranVerses.map((v) => {
+              {(activeFilter === 'all' || activeFilter === 'quran') && displayedQuran.map((v) => {
                 const verseKey = `quran-${v.surahNumber}-${v.verseNumber}`;
                 const quranCitation = `[Holy Qur'an, Surah ${v.surahNameEnglish} (${v.surahNumber}:${v.verseNumber})]\n"${v.arabicText}"\nTranslation: "${v.englishTranslation}"`;
                 return (
@@ -875,7 +1025,7 @@ export default function ResearchEngine() {
               })}
 
               {/* ── 4. AL ISLAM OFFICIAL ARTICLES ───────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'alislam') && results.alislamArticles.map((art) => (
+              {(activeFilter === 'all' || activeFilter === 'alislam') && displayedAlIslam.map((art) => (
                 <div key={art.id} className="space-y-2 group">
                   <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                     <div className="w-6 h-6 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-[10px] shrink-0">
@@ -949,74 +1099,188 @@ export default function ResearchEngine() {
                     </div>
                   )}
 
-                  {results.publications.map((pub) => {
-                    const isAlHakam = pub.source === 'Al Hakam';
-                    const isRoR = pub.source === 'Review of Religions';
+                  {loadingPeriodicalPage ? (
+                    <div className="py-16 text-center space-y-3 glass rounded-2xl border border-emerald-500/20 p-8 my-4">
+                      <Loader2 size={32} className="animate-spin text-emerald-400 mx-auto" />
+                      <p className="text-sm font-bold text-emerald-400">
+                        Loading Al Hakam Archive Page {currentPage} of {totalPages}...
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        Retrieving verified historical articles from alhakam.org
+                      </p>
+                    </div>
+                  ) : (
+                    displayedPublications.map((pub) => {
+                      const isAlHakam = pub.source === 'Al Hakam';
+                      const isRoR = pub.source === 'Review of Religions';
 
-                    return (
-                      <div key={pub.id} className="space-y-2 group">
-                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                          <div className="flex items-center gap-2">
-                            <div className={clsx(
-                              "w-6 h-6 rounded-md flex items-center justify-center font-black text-[10px] shrink-0",
-                              isAlHakam ? "bg-emerald-500/20 text-emerald-400" : isRoR ? "bg-purple-500/20 text-purple-400" : "bg-amber-500/20 text-amber-400"
-                            )}>
-                              {isAlHakam ? 'AH' : isRoR ? 'RoR' : 'AF'}
+                      return (
+                        <div key={pub.id} className="space-y-2 group">
+                          <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                            <div className="flex items-center gap-2">
+                              <div className={clsx(
+                                "w-6 h-6 rounded-md flex items-center justify-center font-black text-[10px] shrink-0",
+                                isAlHakam ? "bg-emerald-500/20 text-emerald-400" : isRoR ? "bg-purple-500/20 text-purple-400" : "bg-amber-500/20 text-amber-400"
+                              )}>
+                                {isAlHakam ? 'AH' : isRoR ? 'RoR' : 'AF'}
+                              </div>
+                              <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                                <span className="text-[var(--foreground)]">{pub.source}</span>
+                                <span>›</span>
+                                <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : 'Monthly Magazine')}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                              <span className="text-[var(--foreground)]">{pub.source}</span>
-                              <span>›</span>
-                              <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : 'Monthly Magazine')}</span>
-                            </div>
+
+                            {isAlHakam && (
+                              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                Live Online Archive
+                              </span>
+                            )}
                           </div>
 
-                          {isAlHakam && (
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              Live Online Archive
-                            </span>
-                          )}
-                        </div>
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <a href={pub.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
+                              {pub.title}
+                            </a>
+                          </h3>
 
-                        <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                          <a href={pub.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
-                            {pub.title}
-                          </a>
-                        </h3>
+                          <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                            {pub.summary}
+                          </p>
 
-                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
-                          {pub.summary}
-                        </p>
-
-                        <div className="flex items-center gap-3 pt-1 text-xs">
-                          <a
-                            href={pub.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={clsx(
-                              "px-3 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 transition-colors border",
-                              isAlHakam
-                                ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                                : "bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40"
+                          <div className="flex items-center gap-3 pt-1 text-xs">
+                            <a
+                              href={pub.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={clsx(
+                                "px-3 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 transition-colors border",
+                                isAlHakam
+                                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                                  : "bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40"
+                              )}
+                            >
+                              <Newspaper size={13} className={isAlHakam ? "text-emerald-400" : "text-purple-400"} />
+                              {isAlHakam ? "Read on Al Hakam" : isRoR ? "Read on Review of Religions" : "Read Publication"}
+                              <ExternalLink size={11} className="opacity-60" />
+                            </a>
+                            {pub.date && (
+                              <span className="text-xs text-[var(--text-muted)] font-semibold">
+                                {pub.date}
+                              </span>
                             )}
-                          >
-                            <Newspaper size={13} className={isAlHakam ? "text-emerald-400" : "text-purple-400"} />
-                            {isAlHakam ? "Read on Al Hakam" : isRoR ? "Read on Review of Religions" : "Read Publication"}
-                            <ExternalLink size={11} className="opacity-60" />
-                          </a>
-                          {pub.date && (
-                            <span className="text-xs text-[var(--text-muted)] font-semibold">
-                              {pub.date}
-                            </span>
-                          )}
-                          {pub.author && (
-                            <span className="text-xs text-[var(--text-muted)] font-semibold">
-                              By {pub.author}
-                            </span>
-                          )}
+                            {pub.author && (
+                              <span className="text-xs text-[var(--text-muted)] font-semibold">
+                                By {pub.author}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
+
+                  {/* Periodicals Tab Jump Banner for 'all' tab */}
+                  {activeFilter === 'all' && (results.totalAlHakamHits || results.publications.length) > ITEMS_PER_PAGE && (
+                    <div className="p-3.5 rounded-xl glass bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <span className="text-[var(--text-muted)] font-medium">
+                        Showing page {currentPage} of Al Hakam Archive ({results.totalAlHakamHits || results.publications.length} total articles available)
+                      </span>
+                      <button
+                        onClick={() => handleTabChange('periodicals')}
+                        className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
+                      >
+                        <span>Browse all {results.totalAlHakamHits || results.publications.length} in Periodicals tab</span>
+                        <ArrowRight size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── 6. GOOGLE-STYLE CANONICAL PAGINATION CONTROLS ─────────── */}
+              {totalPages > 1 && (
+                <div className="pt-8 pb-4 flex flex-col items-center gap-3 border-t border-white/10 select-none">
+                  {/* Page indicator info */}
+                  <div className="text-xs text-[var(--text-muted)] font-semibold flex items-center gap-2">
+                    <span>
+                      Page <span className="text-[var(--foreground)] font-bold">{currentPage}</span> of{' '}
+                      <span className="text-[var(--foreground)] font-bold">{totalPages}</span>
+                    </span>
+                    {activeFilter === 'ruhani-khazain' && (
+                      <span className="text-[var(--accent-main)] font-bold">
+                        • {results.ruhaniKhazain.length} matches across Ruhani Khazain
+                      </span>
+                    )}
+                    {activeFilter === 'periodicals' && (
+                      <span className="text-emerald-400 font-bold">
+                        • {results.totalAlHakamHits || results.publications.length} archive articles
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  <div className="flex items-center gap-1.5 md:gap-2 flex-wrap justify-center">
+                    {/* Previous Button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={clsx(
+                        "px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 border",
+                        currentPage === 1
+                          ? "opacity-30 cursor-not-allowed border-transparent text-[var(--text-muted)]"
+                          : "glass bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40 active:scale-95"
+                      )}
+                    >
+                      <ChevronLeft size={14} />
+                      <span>Previous</span>
+                    </button>
+
+                    {/* Page Numbers */}
+                    {getPaginationRange(currentPage, totalPages).map((p, idx) => {
+                      if (p === '...') {
+                        return (
+                          <span key={`dots-${idx}`} className="w-8 h-8 flex items-center justify-center text-[var(--text-muted)] font-black text-xs">
+                            ...
+                          </span>
+                        );
+                      }
+                      const num = p as number;
+                      const isActive = num === currentPage;
+                      return (
+                        <button
+                          key={`page-${num}`}
+                          type="button"
+                          onClick={() => handlePageChange(num)}
+                          className={clsx(
+                            "w-9 h-9 md:w-10 md:h-10 rounded-xl text-xs md:text-sm font-black transition-all flex items-center justify-center",
+                            isActive
+                              ? "bg-[var(--accent-main)] text-white shadow-lg shadow-[var(--accent-glow)] ring-2 ring-[var(--accent-main)]/50 scale-105"
+                              : "glass bg-white/5 hover:bg-white/10 border border-white/10 text-[var(--text-muted)] hover:text-[var(--foreground)] hover:border-[var(--accent-main)]/30 active:scale-95"
+                          )}
+                        >
+                          {num}
+                        </button>
+                      );
+                    })}
+
+                    {/* Next Button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={clsx(
+                        "px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 border",
+                        currentPage === totalPages
+                          ? "opacity-30 cursor-not-allowed border-transparent text-[var(--text-muted)]"
+                          : "glass bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40 active:scale-95"
+                      )}
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
                 </div>
               )}
 

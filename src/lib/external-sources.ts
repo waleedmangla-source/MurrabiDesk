@@ -9,28 +9,25 @@ const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/
 /**
  * Fetches real-time search results directly from the official Al Hakam Search API (alhakam.org/api/search)
  */
-export async function fetchLiveAlHakam(query: string): Promise<{ results: PublicationResult[]; totalHits: number }> {
+export async function fetchLiveAlHakam(
+  query: string,
+  page: number = 0
+): Promise<{ results: PublicationResult[]; totalHits: number; totalPages: number }> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
-    // Fetch page 0 and page 1 in parallel for comprehensive coverage (up to 20 articles)
     const encoded = encodeURIComponent(query);
-    const [res0, res1] = await Promise.all([
-      fetch(`https://www.alhakam.org/api/search?q=${encoded}&page=0`, {
-        headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
-        signal: controller.signal
-      }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`https://www.alhakam.org/api/search?q=${encoded}&page=1`, {
-        headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
-        signal: controller.signal
-      }).then(r => r.ok ? r.json() : null).catch(() => null)
-    ]);
+    const res = await fetch(`https://www.alhakam.org/api/search?q=${encoded}&page=${page}`, {
+      headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
+      signal: controller.signal
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
 
     clearTimeout(timeoutId);
 
-    const totalHits = res0?.totalHits ?? res1?.totalHits ?? 0;
-    const rawItems = [...(res0?.results || []), ...(res1?.results || [])];
+    const totalHits = res?.totalHits ?? 0;
+    const totalPages = res?.totalPages ?? (totalHits > 0 ? Math.ceil(totalHits / 10) : 0);
+    const rawItems = res?.results || [];
     const seenUrls = new Set<string>();
     const publications: PublicationResult[] = [];
 
@@ -56,7 +53,7 @@ export async function fetchLiveAlHakam(query: string): Promise<{ results: Public
         .trim();
 
       publications.push({
-        id: `alhakam-${item.postId || item.objectID || publications.length + 1}`,
+        id: `alhakam-${item.postId || item.objectID || (page * 10 + publications.length + 1)}`,
         source: 'Al Hakam',
         title: item.title,
         summary: cleanSnippet || `Al Hakam publication exploring "${item.title}".`,
@@ -66,10 +63,10 @@ export async function fetchLiveAlHakam(query: string): Promise<{ results: Public
       });
     }
 
-    return { results: publications, totalHits };
+    return { results: publications, totalHits, totalPages };
   } catch (err) {
     console.warn('[External Sources] Failed to fetch live Al Hakam:', err);
-    return { results: [], totalHits: 0 };
+    return { results: [], totalHits: 0, totalPages: 0 };
   }
 }
 
