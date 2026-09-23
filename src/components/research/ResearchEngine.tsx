@@ -530,14 +530,14 @@ export default function ResearchEngine() {
             className="relative flex flex-col items-center cursor-pointer active:scale-95 transition-transform"
             onClick={resetToHome}
           >
-            <div className="absolute -inset-6 bg-[var(--accent-glow)] rounded-full blur-2xl opacity-40 pointer-events-none" />
+            <div className="absolute -inset-10 bg-[var(--accent-glow)] rounded-full blur-3xl opacity-50 pointer-events-none" />
             <img
               src="/text-logo.png"
               alt="Murabbi Desk"
-              className="h-[80px] md:h-[110px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply select-none drop-shadow-2xl relative z-10"
+              className="h-[130px] md:h-[180px] lg:h-[210px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply select-none drop-shadow-2xl relative z-10"
             />
-            <div className="flex items-center gap-2 mt-2 relative z-10">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] px-3 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30">
+            <div className="flex items-center gap-2 mt-4 relative z-10">
+              <span className="text-[11px] font-black uppercase tracking-[0.25em] px-4 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 shadow-sm">
                 Research Protocol
               </span>
             </div>
@@ -548,9 +548,9 @@ export default function ResearchEngine() {
           </p>
         </div>
 
-        {/* Murabbi Form V4 / Google-Style Search Pill Box (Dead-Centered) */}
-        <div className="w-full max-w-2xl mx-auto flex flex-col items-center relative">
-          <form onSubmit={handleFormSubmit} className="relative">
+        {/* Murabbi Form V4 / Google-Style Search Pill Box (Wide Centered) */}
+        <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center relative px-2 sm:px-6">
+          <form onSubmit={handleFormSubmit} className="w-full relative">
             <div
               className={clsx(
                 "relative flex items-center w-full rounded-2xl md:rounded-full transition-all duration-300",
@@ -558,8 +558,8 @@ export default function ResearchEngine() {
                 "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
               )}
             >
-              <div className="pl-5 pr-3 text-[var(--text-muted)]">
-                <Search size={20} />
+              <div className="pl-6 pr-3 text-[var(--text-muted)]">
+                <Search size={22} />
               </div>
 
               <input
@@ -568,7 +568,7 @@ export default function ResearchEngine() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search topics, books, verses, or press mic to speak..."
-                className="w-full py-4 bg-transparent text-base md:text-lg font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
+                className="w-full py-4 md:py-4.5 bg-transparent text-base md:text-lg font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
               />
 
               {/* Clear button */}
@@ -583,7 +583,7 @@ export default function ResearchEngine() {
               )}
 
               {/* Voice Search Microphone */}
-              <div className="pr-4 flex items-center">
+              <div className="pr-5 flex items-center">
                 <button
                   type="button"
                   onClick={toggleVoiceSearch}
@@ -595,7 +595,7 @@ export default function ResearchEngine() {
                       : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
                   )}
                 >
-                  <Mic size={20} />
+                  <Mic size={22} />
                   {isListening && (
                     <span className="absolute -inset-1 rounded-full bg-red-500/30 animate-ping -z-10" />
                   )}
@@ -606,7 +606,7 @@ export default function ResearchEngine() {
 
           {/* Voice active prompt */}
           {isListening && (
-            <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between text-xs animate-in fade-in">
+            <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between text-xs animate-in fade-in w-full">
               <div className="flex items-center gap-2.5 text-red-500 font-bold">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
                 <span>Listening for theological query... Speak now</span>
@@ -626,7 +626,7 @@ export default function ResearchEngine() {
             <button
               onClick={() => performSearch()}
               disabled={!query.trim()}
-              className="px-8 py-3 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+              className="px-9 py-3.5 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
             >
               Murabbi Search
             </button>
