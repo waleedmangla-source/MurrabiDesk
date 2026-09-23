@@ -932,113 +932,145 @@ export default function ResearchEngine() {
               })}
 
               {/* ── 3. CANONICAL AHADITH RESULTS ────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'ahadith') && displayedAhadith.map((h, idx) => {
-                const hadithKey = `hadith-${h.id || idx}`;
-                const citationText = `[Hadith: ${h.book}${h.chapter ? `, ${h.chapter}` : ''}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.narrator ? ` — Narrated by ${h.narrator}` : ''}]\n"${h.arabicText ? `${h.arabicText}\n` : ''}${h.englishTranslation}"`;
-                return (
-                  <div key={hadithKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
-                    {/* Header */}
-                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-[10px] shrink-0">
-                          HD
+              {(activeFilter === 'all' || activeFilter === 'ahadith') && (
+                <div className="space-y-6">
+                  {displayedAhadith.map((h, idx) => {
+                    const hadithKey = `hadith-${h.id || idx}`;
+                    const citationText = `[Sunnah.com: ${h.book}${h.chapter ? `, ${h.chapter}` : ''}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.narrator ? ` — Narrated by ${h.narrator}` : ''}]\n"${h.arabicText ? `${h.arabicText}\n` : ''}${h.englishTranslation}"\nSource: ${h.url || 'https://sunnah.com'}`;
+                    return (
+                      <div key={hadithKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        {/* Header */}
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                              <img
+                                src="https://www.google.com/s2/favicons?domain=sunnah.com&sz=128"
+                                alt="Sunnah.com"
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)] font-bold">sunnah.com</span>
+                              <span>›</span>
+                              <span className="text-amber-400 font-bold">{h.book}</span>
+                              {h.chapter && (
+                                <>
+                                  <span>•</span>
+                                  <span className="truncate">{h.chapter}</span>
+                                </>
+                              )}
+                              {h.hadithNumber && (
+                                <>
+                                  <span>•</span>
+                                  <span>No. {h.hadithNumber}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {h.grade && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                {h.grade}
+                              </span>
+                            )}
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                              <ShieldCheck size={11} />
+                              Prophetic Tradition
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                          <span className="text-amber-400 font-bold">Ahadith</span>
-                          <span>›</span>
-                          <span className="text-[var(--foreground)]">{h.book}</span>
-                          {h.chapter && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate">{h.chapter}</span>
-                            </>
+
+                        {/* Narrator if available */}
+                        {h.narrator && (
+                          <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
+                            Narrated by <span className="text-[var(--foreground)]">{h.narrator}</span>
+                          </div>
+                        )}
+
+                        {/* Arabic Text if available */}
+                        {h.arabicText && (
+                          <div
+                            dir="rtl"
+                            className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
+                          >
+                            {h.arabicText}
+                          </div>
+                        )}
+
+                        {/* English Translation */}
+                        <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-amber-500/40 pl-3">
+                          "{h.englishTranslation}"
+                        </p>
+
+                        {/* Urdu Translation if available */}
+                        {h.urduTranslation && (
+                          <div
+                            dir="rtl"
+                            className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right"
+                          >
+                            {h.urduTranslation}
+                          </div>
+                        )}
+
+                        {/* Context Note if available */}
+                        {h.contextNote && (
+                          <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-white/[0.02] p-3 rounded-[10px] border border-white/5 font-medium">
+                            <span className="text-amber-400 font-bold mr-1">Contextual Exegesis:</span>
+                            {h.contextNote}
+                          </div>
+                        )}
+
+                        {/* Bottom Actions */}
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          {h.url ? (
+                            <a
+                              href={h.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Globe size={13} />
+                              View on Sunnah.com
+                              <ExternalLink size={11} className="opacity-60" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-[var(--text-muted)] font-semibold">
+                              {h.book}
+                            </span>
                           )}
-                          {h.hadithNumber && (
-                            <>
-                              <span>•</span>
-                              <span>No. {h.hadithNumber}</span>
-                            </>
-                          )}
+
+                          <button
+                            onClick={() => copyToClipboard(citationText, hadithKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === hadithKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === hadithKey ? "Copied" : "Cite"}</span>
+                          </button>
                         </div>
                       </div>
+                    );
+                  })}
 
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">
-                        <ShieldCheck size={11} />
-                        Prophetic Tradition
+                  {/* Hadith Tab Jump Banner for 'all' tab */}
+                  {activeFilter === 'all' && (results?.ahadith?.length || 0) > 4 && (
+                    <div className="p-3.5 rounded-xl glass bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <span className="text-[var(--text-muted)] font-medium">
+                        Showing top traditions from Sunnah.com ({results.ahadith.length} total Ahadith available)
                       </span>
-                    </div>
-
-                    {/* Narrator if available */}
-                    {h.narrator && (
-                      <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
-                        Narrated by <span className="text-[var(--foreground)]">{h.narrator}</span>
-                      </div>
-                    )}
-
-                    {/* Arabic Text if available */}
-                    {h.arabicText && (
-                      <div
-                        dir="rtl"
-                        className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
-                      >
-                        {h.arabicText}
-                      </div>
-                    )}
-
-                    {/* English Translation */}
-                    <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-amber-500/40 pl-3">
-                      "{h.englishTranslation}"
-                    </p>
-
-                    {/* Urdu Translation if available */}
-                    {h.urduTranslation && (
-                      <div
-                        dir="rtl"
-                        className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right"
-                      >
-                        {h.urduTranslation}
-                      </div>
-                    )}
-
-                    {/* Context Note if available */}
-                    {h.contextNote && (
-                      <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-white/[0.02] p-3 rounded-[10px] border border-white/5 font-medium">
-                        <span className="text-amber-400 font-bold mr-1">Contextual Exegesis:</span>
-                        {h.contextNote}
-                      </div>
-                    )}
-
-                    {/* Bottom Actions */}
-                    <div className="flex items-center justify-between pt-1 text-xs">
-                      {h.url ? (
-                        <a
-                          href={h.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors"
-                        >
-                          <Globe size={13} />
-                          Explore Tradition
-                          <ExternalLink size={11} className="opacity-60" />
-                        </a>
-                      ) : (
-                        <span className="text-xs text-[var(--text-muted)] font-semibold">
-                          {h.book}
-                        </span>
-                      )}
-
                       <button
-                        onClick={() => copyToClipboard(citationText, hadithKey)}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                        title="Copy Citation"
+                        onClick={() => handleTabChange('ahadith')}
+                        className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
                       >
-                        {copiedId === hadithKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                        <span className="text-[11px] uppercase tracking-wider">{copiedId === hadithKey ? "Copied" : "Cite"}</span>
+                        <span>Browse all {results.ahadith.length} in Ahadith tab</span>
+                        <ArrowRight size={12} />
                       </button>
                     </div>
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+              )}
 
               {/* ── 4. ARTICLES: AL ISLAM & PERIODICALS ──────────────────────── */}
               {(activeFilter === 'all' || activeFilter === 'articles') && displayedAlIslam.map((art) => (
@@ -1650,7 +1682,7 @@ export default function ResearchEngine() {
                     )}
                     {activeFilter === 'ahadith' && (
                       <span className="text-amber-400 font-bold">
-                        • {results.ahadith?.length || 0} prophetic traditions
+                        • {results.ahadith?.length || 0} prophetic traditions from Sunnah.com
                       </span>
                     )}
                     {activeFilter === 'articles' && (

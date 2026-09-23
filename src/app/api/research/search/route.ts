@@ -10,6 +10,7 @@ import {
 import {
   searchQuranVerses,
   searchHadithTraditions,
+  searchSunnahHadith,
   searchAlIslamResources,
   searchPeriodicals,
   MultiSourceSearchResult,
@@ -370,14 +371,21 @@ export async function POST(req: NextRequest) {
 
     const hadithPromise: Promise<HadithResult[]> = (async () => {
       if (!requestedSources.includes('ahadith')) return [];
-      const results = searchHadithTraditions(rawQuery);
-      if (results.length === 0 && dsgtContext.winningSense) {
-        const extra = searchHadithTraditions(dsgtContext.winningSense.primaryConcept);
-        for (const item of extra) {
-          if (!results.some(r => r.id === item.id)) results.push(item);
+      try {
+        const results = await searchSunnahHadith(rawQuery);
+        if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = await searchSunnahHadith(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+              results.push(item);
+            }
+          }
         }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Sunnah.com search fallback error:', e);
+        return searchHadithTraditions(rawQuery);
       }
-      return results;
     })();
 
     let totalAlHakamHits = 0;

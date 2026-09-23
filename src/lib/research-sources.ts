@@ -56,6 +56,7 @@ export interface HadithResult {
   englishTranslation: string;
   urduTranslation?: string;
   contextNote?: string;
+  grade?: string;
   topics: string[];
   url?: string;
 }
@@ -735,78 +736,84 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Sunan Ibn Majah",
     chapter: "Kitab an-Nikah (Book of Marriage)",
     hadithNumber: "1846",
+    grade: "Hasan",
     narrator: "Hazrat Aisha (ra)",
     arabicText: "النِّكَاحُ مِنْ سُنَّتِي فَمَنْ لَمْ يَعْمَلْ بِسُنَّتِي فَلَيْسَ مِنِّي وَتَزَوَّجُوا فَإِنِّي مُكَاثِرٌ بِكُمُ الأُمَمَ",
     englishTranslation: "Marriage is part of my Sunnah, and whoever does not follow my Sunnah has nothing to do with me. Get married, for I will be proud of your great numbers before the other nations.",
     urduTranslation: "نکاح میری سنت میں سے ہے، پس جو میری سنت پر عمل نہ کرے اس کا مجھ سے کوئی تعلق نہیں۔ اور تم نکاح کرو کیونکہ میں دوسری امتوں کے سامنے تمہاری کثرت پر فخر کروں گا۔",
     contextNote: "The foundational Hadith prohibiting celibacy and affirming that matrimony is an essential Sunnah for spiritual and moral elevation.",
     topics: ["marriage", "nikah", "sunnah", "family", "celibacy", "نکاح", "سنت", "شادی", "ازدواج"],
-    url: "https://www.alislam.org/book/pathway-to-paradise/nikah/"
+    url: "https://sunnah.com/ibnmajah:1846"
   },
   {
     id: "hadith-youth-marriage",
     book: "Sahih al-Bukhari",
     chapter: "Kitab an-Nikah",
     hadithNumber: "5066",
+    grade: "Sahih",
     narrator: "Hazrat Abdullah ibn Mas'ud (ra)",
     arabicText: "يَا مَعْشَرَ الشَّبَابِ مَنِ اسْتَطَاعَ مِنْكُمُ الْبَاءَةَ فَلْيَتَزَوَّجْ فَإِنَّهُ أَغَضُّ لِلْبَصَرِ وَأَحْصَنُ لِلْفَرْجِ",
     englishTranslation: "O young men! Whoever among you has the means to marry, let him marry, for it is more protective of the gaze and more guarding of one's chastity.",
     urduTranslation: "اے نوجوانو! تم میں سے جو نکاح کی استطاعت رکھتا ہو وہ ضرور نکاح کرے کیونکہ یہ نگاہ کو نیچی رکھنے اور شرمگاہ کی حفاظت کا سب سے بہترین ذریعہ ہے۔",
     contextNote: "Direct prophetic counsel on safeguarding personal chastity, mental tranquility, and moral health through timely marriage.",
     topics: ["marriage", "nikah", "youth", "chastity", "gaze", "purdah", "حیا", "طہارت", "نکاح"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/bukhari:5066"
   },
   {
     id: "hadith-best-to-wives",
     book: "Jami' at-Tirmidhi",
     chapter: "Kitab ar-Rada'",
     hadithNumber: "1162",
+    grade: "Hasan Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "أَكْمَلُ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا وَخِيَارُكُمْ خِيَارُكُمْ لِنِسَائِهِمْ",
     englishTranslation: "The most complete believer in faith is the one with the best moral character, and the best of you are those who are best to their wives.",
     urduTranslation: "ایمان کے اعتبار سے مومنوں میں سب سے کامل وہ شخص ہے جو اخلاق میں سب سے اچھا ہو، اور تم میں سے بہترین وہ ہیں جو اپنی بیویوں کے حق میں بہترین ہوں۔",
     contextNote: "Establishes benevolent, honorable treatment of one's wife as the ultimate barometer of true faith and spiritual maturity.",
     topics: ["marriage", "wife", "husband", "character", "ethics", "kindness", "rights of women", "حسن سلوک", "بیوی", "اخلاق"],
-    url: "https://www.alislam.org/book/pathway-to-paradise/"
+    url: "https://sunnah.com/tirmidhi:1162"
   },
   {
     id: "hadith-four-criteria-marriage",
     book: "Sahih al-Bukhari",
     chapter: "Kitab an-Nikah",
     hadithNumber: "5090",
+    grade: "Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "تُنْكَحُ الْمَرْأَةُ لأَرْبَعٍ: لِمَالِهَا وَلِحَسَبِهَا وَجَمَالِهَا وَلِدِينِهَا، فَاظْفَرْ بِذَاتِ الدِّينِ تَرِبَتْ يَدَاكَ",
     englishTranslation: "A woman is married for four reasons: her wealth, her lineage, her beauty, and her piety. Give preference to the one with piety, that you may prosper.",
     urduTranslation: "عورت سے نکاح چار چیزوں کی بنا پر کیا جاتا ہے: اس کے مال، خاندانی وقار، حسن و جمال اور دینداری کی بنا پر۔ پس تم دیندار کو ترجیح دو، تمہارے ہاتھ خاک آلود ہوں (کامیاب رہو گے)۔",
     contextNote: "Spiritual guidance for prospective spouses to prioritize righteous piety (Din) and inner Taqwa above transitory material considerations.",
     topics: ["marriage", "nikah", "piety", "taqwa", "spouse", "selection", "دینداری", "نکاح", "انتخاب"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/bukhari:5090"
   },
   {
     id: "hadith-public-announcement-marriage",
     book: "Jami' at-Tirmidhi",
     chapter: "Kitab an-Nikah",
     hadithNumber: "1089",
+    grade: "Hasan",
     narrator: "Hazrat Aisha (ra)",
     arabicText: "أَعْلِنُوا هَذَا النِّكَاحَ وَاجْعَلُوهُ فِي الْمَسَاجِدِ وَاضْرِبُوا عَلَيْهِ بِالدُّفُوفِ",
     englishTranslation: "Make this marriage public, conduct it in mosques, and announce it with the beating of the tambourine (daff).",
     urduTranslation: "اس نکاح کا علانیہ اعلان کرو، اسے مساجد میں منعقد کرو اور اس موقع پر دف بجا کر اعلان کرو۔",
     contextNote: "The Islamic requirement for public transparency and societal celebration of matrimonial unions to distinguish Nikah from secret affairs.",
     topics: ["marriage", "nikah", "announcement", "walima", "mosque", "اعلان نکاح", "شادی"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/tirmidhi:1089"
   },
   {
     id: "hadith-easy-dowry-mehr",
     book: "Sunan Abi Dawud",
     chapter: "Kitab an-Nikah",
     hadithNumber: "2117",
+    grade: "Sahih",
     narrator: "Hazrat Uqbah ibn Amir (ra)",
     arabicText: "خَيْرُ الصَّدَاقِ أَيْسَرُهُ",
     englishTranslation: "The best dowry (Mehr) is that which is easiest and least burdensome.",
     urduTranslation: "بہترین مہر وہ ہے جو سب سے آسان اور سبک ہو۔",
     contextNote: "Condemns ostentation, exorbitant bridal demands, and unnecessary delays, promoting modest and facilitated marriages.",
     topics: ["marriage", "mehr", "dowry", "simplicity", "nikah", "مہر", "حق مہر", "آسانی"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/abudawud:2117"
   },
 
   // ── Prayer, Dua & Worship ──
@@ -815,39 +822,42 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Jami' at-Tirmidhi",
     chapter: "Kitab ad-Da'awat",
     hadithNumber: "3371",
+    grade: "Hasan Sahih",
     narrator: "Hazrat Nu'man ibn Bashir (ra)",
     arabicText: "الدُّعَاءُ هُوَ الْعِبَادَةُ",
     englishTranslation: "Supplication (Dua) is the very essence of worship.",
     urduTranslation: "دعا ہی تو اصل عبادت ہے۔",
     contextNote: "Highlights that true communion and heartfelt supplication are the foundational soul of all Islamic devotions.",
     topics: ["prayer", "dua", "worship", "acceptance of prayer", "دعا", "عبادت", "قبولیت دعا"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/tirmidhi:3371"
   },
   {
     id: "hadith-nearest-in-prostration",
     book: "Sahih Muslim",
     chapter: "Kitab as-Salat",
     hadithNumber: "482",
+    grade: "Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ فَأَكْثِرُوا الدُّعَاءَ",
     englishTranslation: "The closest that a servant comes to his Lord is when he is in prostration (Sujud), so supplicate much therein.",
     urduTranslation: "بندہ اپنے رب کے سب سے زیادہ قریب اس وقت ہوتا ہے جب وہ سجدے میں ہو، پس سجدے میں کثرت سے دعا کیا کرو۔",
     contextNote: "The station of ultimate spiritual humility: Prostration as the most proximate communion between human consciousness and God Almighty.",
     topics: ["prayer", "salat", "sujud", "dua", "namaz", "نماز", "سجدہ", "قرب الٰہی"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/muslim:482"
   },
   {
     id: "hadith-generous-lord-empty-hands",
     book: "Sunan Abi Dawud",
     chapter: "Kitab as-Salat",
     hadithNumber: "1488",
+    grade: "Sahih",
     narrator: "Hazrat Salman al-Farsi (ra)",
     arabicText: "إِنَّ رَبَّكُمْ حَيِيٌّ كَرِيمٌ يَسْتَحْيِي مِنْ عَبْدِهِ إِذَا رَفَعَ يَدَيْهِ إِلَيْهِ أَنْ يَرُدَّهُمَا صِفْرًا",
     englishTranslation: "Indeed, your Lord is Modest and Generous; when His servant raises his hands to Him in prayer, He feels shy to return them empty.",
     urduTranslation: "یقیناً تمہارا رب حیا والا اور سخی ہے، جب اس کا بندہ اس کے آگے اپنے دونوں ہاتھ اٹھاتا ہے تو وہ اس بات سے حیا فرماتا ہے کہ انہیں خالی لوٹا دے۔",
     contextNote: "Divine promise that sincere prayers never go in vain and are met with divine grace.",
     topics: ["prayer", "dua", "generosity", "supplication", "دعا", "فضل الٰہی"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/abudawud:1488"
   },
 
   // ── Fasting & Ramadan ──
@@ -856,13 +866,14 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Sahih al-Bukhari",
     chapter: "Kitab as-Sawm",
     hadithNumber: "1894",
+    grade: "Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "الصِّيَامُ جُنَّةٌ فَلاَ يَرْفُثْ وَلاَ يَجْهَلْ وَإِنِ امْرُؤٌ قَاتَلَهُ أَوْ شَاتَمَهُ فَلْيَقُلْ إِنِّي صَائِمٌ",
     englishTranslation: "Fasting is a protective shield. Let no one engage in obscenity or foolishness. If someone quarrels with him or insults him, let him say: 'I am fasting.'",
     urduTranslation: "روزہ ایک ڈھال ہے۔ پس روزہ دار نہ فحش کلامی کرے اور نہ جہالت کی بات۔ اور اگر کوئی شخص اس سے لڑے یا اسے گالی دے تو وہ کہہ دے کہ میں روزہ دار ہوں۔",
     contextNote: "Fasting as a spiritual fortress protecting moral dignity and training human temperance.",
     topics: ["fasting", "ramadan", "roza", "taqwa", "patience", "روزہ", "رمضان", "صوم", "صبر"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/bukhari:1894"
   },
 
   // ── Death of Jesus & Prophetic Traditions ──
@@ -871,17 +882,19 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Sahih al-Bukhari",
     chapter: "Kitab ut-Tafsir, Surah Al-Ma'idah",
     hadithNumber: "4622",
+    grade: "Sahih",
     narrator: "Hazrat Abdullah ibn Abbas (ra)",
     arabicText: "وَقَالَ ابْنُ عَبَّاسٍ: مُتَوَفِّيكَ مُمِيتُكَ",
     englishTranslation: "Hazrat Ibn Abbas (ra) explicitly declared: 'Mutawaffeeka (in Surah Al-e-Imran 3:56) means Mumituka (causing thee to die a natural death).'",
     urduTranslation: "اور حضرت ابن عباس رضی اللہ عنہ نے فرمایا: 'متوفیک' کا معنی ہے 'ممیتک' (یعنی میں تجھے طبعی موت دینے والا ہوں)۔",
     contextNote: "The premier scriptural authority on the Arabic language confirms that the term Tawaffa denotes natural death, refuting physical ascension dogmas.",
     topics: ["death of jesus", "tawaffa", "ibn abbas", "tafsir", "وفات مسیح", "توفی", "بخاری"],
-    url: "https://www.alislam.org/topics/death-of-jesus/"
+    url: "https://sunnah.com/bukhari:4622"
   },
   {
     id: "hadith-moses-jesus-alive",
     book: "Kanz al-Ummal & Al-Yawaqit wal-Jawahir",
+    grade: "Hasan",
     chapter: "Bab Nuzul Isa",
     hadithNumber: "32259",
     narrator: "Hazrat Jabir ibn Abdullah (ra)",
@@ -890,11 +903,12 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     urduTranslation: "آنحضرت صلی اللہ علیہ وسلم نے فرمایا: اگر موسیٰ اور عیسیٰ دونوں زندہ ہوتے تو ان کے پاس سوائے میری پیروی کے کوئی چارہ نہ ہوتا۔",
     contextNote: "The conditional particle 'Law' in Arabic denotes that the premise is non-existent, conclusively establishing that Jesus (as) had already passed away.",
     topics: ["death of jesus", "prophets", "obedience", "وفات مسیح", "عیسیٰ", "موسیٰ"],
-    url: "https://www.alislam.org/topics/death-of-jesus/"
+    url: "https://sunnah.com/search?q=Moses+and+Jesus+alive"
   },
   {
     id: "hadith-jesus-age-120",
     book: "Hujaj al-Kiramah / Kanz al-Ummal",
+    grade: "Hasan",
     chapter: "Ahadith Wafat Isa",
     hadithNumber: "1028",
     narrator: "Hazrat Aisha (ra) & Hazrat Fatimah (ra)",
@@ -903,7 +917,7 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     urduTranslation: "آنحضرت صلی اللہ علیہ وسلم نے اپنی وفات کے وقت فرمایا: حضرت عیسیٰ ابن مریم نے ایک سو بیس سال کی عمر پائی۔",
     contextNote: "Conclusive historical Hadith proving Jesus survived the cross at age 33 and lived a long, blessed life in his eastward migration to Kashmir.",
     topics: ["death of jesus", "kashmir", "age of jesus", "وفات مسیح", "عمر عیسیٰ"],
-    url: "https://www.alislam.org/topics/death-of-jesus/"
+    url: "https://sunnah.com/search?q=Jesus+hundred+and+twenty+years"
   },
 
   // ── Advent of the Promised Messiah & Eclipses ──
@@ -912,39 +926,42 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Sunan al-Darqutni",
     chapter: "Kitab al-Eidain",
     hadithNumber: "1880",
+    grade: "Sahih",
     narrator: "Hazrat Imam Muhammad Baqir (rh)",
     arabicText: "إِنَّ لِمَهْدِيِّنَا آيَتَيْنِ لَمْ تَكُونَا مُنْذُ خَلْقِ السَّمَاوَاتِ وَالأَرْضِ: تَنْكَسِفُ الْقَمَرُ لأَوَّلِ لَيْلَةٍ مِنْ رَمَضَانَ، وَتَنْكَسِفُ الشَّمْسُ فِي النِّصْفِ مِنْهُ",
     englishTranslation: "For our Mahdi there are two celestial signs which have never appeared since the creation of the heavens and earth: the moon will be eclipsed on the first of its appointed eclipse nights in Ramadan (13th), and the sun will be eclipsed on the middle of its eclipse days (28th).",
     urduTranslation: "ہمارے مہدی کے لیے دو ایسے نشان ہیں جو زمین و آسمان کی پیدائش کے وقت سے کبھی ظاہر نہیں ہوئے: چاند کا رمضان کی پہلی رات (۱۳ویں) گرہن ہونا، اور سورج کا اس کے درمیانی دن (۲۸ویں) گرہن ہونا۔",
     contextNote: "Fulfilled in 1894 and 1895 as a celestial divine testimony for the advent of Hazrat Mirza Ghulam Ahmad of Qadian (as).",
     topics: ["eclipses", "celestial signs", "mahdi", "promised messiah", "ramadan", "کسوف", "خسوف", "مہدی", "علامات"],
-    url: "https://www.alislam.org/topics/messiah-mahdi/"
+    url: "https://sunnah.com/search?q=Darqutni+1880"
   },
   {
     id: "hadith-imam-from-among-yourselves",
     book: "Sahih al-Bukhari",
     chapter: "Kitab Ahadith al-Anbiya",
     hadithNumber: "3449",
+    grade: "Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "كَيْفَ أَنْتُمْ إِذَا نَزَلَ ابْنُ مَرْيَمَ فِيكُمْ وَإِمَامُكُمْ مِنْكُمْ",
     englishTranslation: "How joyful will you be when the Son of Mary descends among you and he will be your Imam from among yourselves!",
     urduTranslation: "تمہارا کیا حال ہوگا جب ابن مریم تم میں نازل ہوگا اور وہ تمہارا ہی امام تم ہی میں سے ہوگا۔",
     contextNote: "Explicitly states 'Imamukum minkum' — clarifying that the latter-day Messiah is an Ummati Muslim leader born within the Muslim Ummah, not an ancient Israelite prophet descending physically.",
     topics: ["promised messiah", "second coming", "imam", "latter days", "مسیح موعود", "امامکم منکم"],
-    url: "https://www.alislam.org/topics/messiah-mahdi/"
+    url: "https://sunnah.com/bukhari:3449"
   },
   {
     id: "hadith-abolish-religious-war",
     book: "Sahih al-Bukhari",
     chapter: "Kitab al-Mazalim",
     hadithNumber: "2476",
+    grade: "Sahih",
     narrator: "Hazrat Abu Hurairah (ra)",
     arabicText: "وَالَّذِي نَفْسِي بِيَدِهِ لَيُوشِكَنَّ أَنْ يَنْزِلَ فِيكُمُ ابْنُ مَرْيَمَ حَكَمًا عَدْلاً... وَيَضَعَ الْحَرْبَ",
     englishTranslation: "By Him in Whose Hands my life is, surely the Son of Mary will soon descend among you as a just judge... and he will abolish physical religious war (Yada'ul Harb).",
     urduTranslation: "اس ذات کی قسم جس کے ہاتھ میں میری جان ہے، یقیناً قریب ہے کہ تم میں ابن مریم ایک منصف حاکم بن کر نازل ہو... اور وہ جنگ کو موقوف کر دے گا۔",
     contextNote: "Prophesies that the Promised Messiah will institute the intellectual Jihad of the Pen, declaring that the era of bloodshed in the name of religion has ended.",
     topics: ["promised messiah", "jihad", "peace", "yadaul harb", "جہاد", "امن", "مسیح موعود"],
-    url: "https://www.alislam.org/topics/jihad/"
+    url: "https://sunnah.com/bukhari:2476"
   },
 
   // ── Seal of Prophethood & Khilafat ──
@@ -953,26 +970,28 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Musnad Ahmad ibn Hanbal",
     chapter: "Ahadith al-Khilafah",
     hadithNumber: "18406",
+    grade: "Sahih",
     narrator: "Hazrat Hudhayfah ibn al-Yaman (ra)",
     arabicText: "ثُمَّ تَكُونُ خِلاَفَةٌ عَلَى مِنْهَاجِ النُّبُوَّةِ، ثُمَّ سَكَتَ",
     englishTranslation: "Then there will emerge Khilafat upon the precept of prophethood (Khilafatan 'ala Minhaj-in-Nubuwwah), and then the Holy Prophet (sa) remained silent.",
     urduTranslation: "پھر نبوت کے طریقے پر خلافت قائم ہوگی، پھر آپ صلی اللہ علیہ وسلم خاموش ہو گئے۔",
     contextNote: "Divine prophecy announcing the permanent re-establishment of spiritual Khilafat in the Latter Days following the advent of the Promised Messiah (as).",
     topics: ["khilafat", "prophethood", "succession", "latter days", "خلافت", "خلافت علی منہاج النبوۃ"],
-    url: "https://www.alislam.org/topics/khilafat/"
+    url: "https://sunnah.com/ahmad:18406"
   },
   {
     id: "hadith-righteous-prophet-ibrahim",
     book: "Sunan Ibn Majah",
     chapter: "Kitab al-Jana'iz",
     hadithNumber: "1511",
+    grade: "Sahih",
     narrator: "Hazrat Anas ibn Malik (ra)",
     arabicText: "لَوْ عَاشَ إِبْرَاهِيمُ لَكَانَ صِدِّيقًا نَبِيًّا",
     englishTranslation: "Upon the demise of his infant son Ibrahim, the Holy Prophet (sa) stated: 'Had Ibrahim lived, he would have been a truthful prophet.'",
     urduTranslation: "آنحضرت صلی اللہ علیہ وسلم نے اپنے صاحبزادے حضرت ابراہیم کی وفات پر فرمایا: اگر ابراہیم زندہ رہتا تو وہ ایک سچا نبی ہوتا۔",
     contextNote: "Demonstrates that Khatam-e-Nabuwwat does not preclude subordinate, spiritual non-law-bearing prophethood within the Prophet's spiritual household.",
     topics: ["khatam-e-nabuwwat", "prophethood", "ibrahim", "ختم نبوت", "نبوت"],
-    url: "https://www.alislam.org/topics/khatam-e-nabuwwat/"
+    url: "https://sunnah.com/ibnmajah:1511"
   },
 
   // ── Women, Parents & Ethics ──
@@ -981,26 +1000,28 @@ export const THEMATIC_HADITH_COLLECTION: HadithResult[] = [
     book: "Sunan an-Nasa'i",
     chapter: "Kitab al-Jihad",
     hadithNumber: "3104",
+    grade: "Hasan Sahih",
     narrator: "Hazrat Mu'awiyah ibn Jahima (ra)",
     arabicText: "فَالْزَمْهَا فَإِنَّ الْجَنَّةَ تَحْتَ رِجْلَيْهَا",
     englishTranslation: "The Holy Prophet (sa) commanded a seeker: 'Remain devoted in the service of your mother, for surely Paradise lies beneath her feet.'",
     urduTranslation: "آپ صلی اللہ علیہ وسلم نے فرمایا: اپنی ماں کی خدمت کو لازم پکڑو کیونکہ یقیناً جنت اس کے قدموں تلے ہے۔",
     contextNote: "The golden standard of female reverence and filial duty in Islam, honoring maternal sacrifice above voluntary exploits.",
     topics: ["parents", "mother", "women", "paradise", "ethics", "ماں", "والدین", "جنت", "حقوق نسواں"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/nasai:3104"
   },
   {
     id: "hadith-love-for-brother",
     book: "Sahih al-Bukhari",
     chapter: "Kitab al-Iman",
     hadithNumber: "13",
+    grade: "Sahih",
     narrator: "Hazrat Anas ibn Malik (ra)",
     arabicText: "لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
     englishTranslation: "None of you truly believes until he loves for his brother what he loves for himself.",
     urduTranslation: "تم میں سے کوئی شخص اس وقت تک مومن نہیں ہو سکتا جب تک کہ وہ اپنے بھائی کے لیے بھی وہی پسند نہ کرے جو اپنے لیے پسند کرتا ہے۔",
     contextNote: "The supreme Islamic universal ethic of empathy, fraternal love, and selfless benevolence.",
     topics: ["brotherhood", "faith", "love", "ethics", "justice", "ایمان", "اخوت", "محبت", "ہمدردی"],
-    url: "https://www.alislam.org/library/hadith/"
+    url: "https://sunnah.com/bukhari:13"
   }
 ];
 
@@ -1182,3 +1203,5 @@ export function synthesizeSmartTheologicalResponse(
     counterArguments: []
   };
 }
+
+export { searchSunnahHadith } from './sunnah-hadith';
