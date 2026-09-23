@@ -11,9 +11,8 @@ import {
   Loader2,
   ChevronLeft,
   BookOpen,
-  Share2,
   RefreshCw,
-  Type
+  ArrowLeft
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -39,13 +38,19 @@ interface ExtractedArticle {
 }
 
 export default function ArticleReaderModal({
-  url,
+  url: initialUrl,
   initialTitle,
-  source,
+  source: initialSource,
   author: initialAuthor,
   summary: initialSummary,
   onClose
 }: ArticleReaderModalProps) {
+  // Navigation history inside the reader modal
+  const [history, setHistory] = useState<string[]>([initialUrl]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  const activeUrl = history[historyIndex] || initialUrl;
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [article, setArticle] = useState<ExtractedArticle | null>(null);
@@ -53,22 +58,37 @@ export default function ArticleReaderModal({
   const [copied, setCopied] = useState(false);
 
   // Determine domain for favicon
-  const domain = source === 'Al Hakam'
-    ? 'alhakam.org'
-    : source === 'Review of Religions'
-    ? 'reviewofreligions.org'
-    : source === 'Al Islam'
-    ? 'alislam.org'
-    : 'alfazl.com';
+  const currentDomain = (() => {
+    try {
+      return new URL(activeUrl).hostname.replace(/^www\./, '');
+    } catch {
+      return initialSource === 'Al Hakam'
+        ? 'alhakam.org'
+        : initialSource === 'Review of Religions'
+        ? 'reviewofreligions.org'
+        : initialSource === 'Al Islam'
+        ? 'alislam.org'
+        : 'alfazl.com';
+    }
+  })();
 
-  const fetchArticleContent = async () => {
+  const currentSource = (() => {
+    if (article?.source) return article.source;
+    if (activeUrl.includes('alhakam.org')) return 'Al Hakam';
+    if (activeUrl.includes('reviewofreligions.org')) return 'Review of Religions';
+    if (activeUrl.includes('alislam.org')) return 'Al Islam';
+    if (activeUrl.includes('alfazl.com')) return 'Al Fazl';
+    return initialSource;
+  })();
+
+  const fetchArticleContent = async (targetUrl: string) => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/research/article-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, source })
+        body: JSON.stringify({ url: targetUrl, source: currentSource })
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -84,8 +104,8 @@ export default function ArticleReaderModal({
   };
 
   useEffect(() => {
-    fetchArticleContent();
-  }, [url]);
+    fetchArticleContent(activeUrl);
+  }, [activeUrl]);
 
   // Handle ESC key to close and disable body scroll
   useEffect(() => {
@@ -104,8 +124,37 @@ export default function ArticleReaderModal({
     };
   }, [onClose]);
 
+  const navigateTo = (newUrl: string) => {
+    if (newUrl === activeUrl) return;
+    const nextHistory = history.slice(0, historyIndex + 1);
+    nextHistory.push(newUrl);
+    setHistory(nextHistory);
+    setHistoryIndex(nextHistory.length - 1);
+  };
+
+  const handleBack = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+    } else {
+      onClose();
+    }
+  };
+
+  // Intercept links inside extracted HTML so articles stay inside Murabbi Desk!
+  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = (e.target as HTMLElement).closest('a');
+    if (!target) return;
+    const href = target.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+    if (href.startsWith('http://') || href.startsWith('https://')) {
+      e.preventDefault();
+      navigateTo(href);
+    }
+  };
+
   const copyCitation = () => {
-    const art = article || { title: initialTitle, author: initialAuthor, source, date: undefined, url };
+    const art = article || { title: initialTitle, author: initialAuthor, source: currentSource, date: undefined, url: activeUrl };
     const citation = `[${art.author ? `${art.author}, ` : ''}"${art.title}", ${art.source}${art.date ? ` (${art.date})` : ''}]\n${art.url}`;
     navigator.clipboard.writeText(citation);
     setCopied(true);
@@ -130,12 +179,12 @@ export default function ArticleReaderModal({
           {/* Left Wing: Back & Source Identity */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
-              onClick={onClose}
-              className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors flex items-center gap-1 text-xs font-bold shrink-0"
-              title="Return to search results (Esc)"
+              onClick={handleBack}
+              className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors flex items-center gap-1 text-xs font-bold shrink-0 active:scale-95"
+              title={historyIndex > 0 ? "Previous article in Murabbi Desk" : "Return to search results (Esc)"}
             >
               <ChevronLeft size={16} />
-              <span className="hidden sm:inline">Back</span>
+              <span className="hidden sm:inline">{historyIndex > 0 ? "Previous" : "Back"}</span>
             </button>
 
             <div className="h-4 w-px bg-white/10 shrink-0" />
@@ -143,14 +192,14 @@ export default function ArticleReaderModal({
             <div className="flex items-center gap-2 truncate">
               <div className="w-5 h-5 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
                 <img
-                  src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
-                  alt={source}
+                  src={`https://www.google.com/s2/favicons?domain=${currentDomain}&sz=128`}
+                  alt={currentSource}
                   className="w-3.5 h-3.5 object-contain rounded-sm"
                   loading="lazy"
                 />
               </div>
               <span className="font-bold text-xs text-[var(--foreground)] truncate">
-                {source}
+                {currentSource}
               </span>
               {article?.readingTimeMinutes && (
                 <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)] font-medium">
@@ -208,7 +257,7 @@ export default function ArticleReaderModal({
 
             {/* External link button */}
             <a
-              href={url}
+              href={activeUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[var(--text-muted)] hover:text-white transition-colors"
@@ -235,12 +284,17 @@ export default function ArticleReaderModal({
             <div className="space-y-3 pb-4 border-b border-white/10">
               <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--text-muted)]">
                 <span className="px-2.5 py-1 rounded-md bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 font-black uppercase text-[10px] tracking-wider">
-                  {source}
+                  {currentSource}
                 </span>
                 {article?.readingTimeMinutes && (
                   <span className="flex items-center gap-1 font-semibold text-[11px]">
                     <Clock size={12} className="text-[var(--accent-main)]" />
                     {article.readingTimeMinutes} min read ({article.wordCount} words)
+                  </span>
+                )}
+                {history.length > 1 && (
+                  <span className="px-2 py-0.5 rounded-full bg-white/5 text-[var(--text-muted)] text-[10px] font-mono">
+                    Article {historyIndex + 1} of {history.length}
                   </span>
                 )}
               </div>
@@ -283,7 +337,7 @@ export default function ArticleReaderModal({
               <div className="py-20 flex flex-col items-center justify-center space-y-4">
                 <Loader2 size={36} className="animate-spin text-[var(--accent-main)]" />
                 <p className="text-sm font-bold text-[var(--text-muted)] tracking-wide">
-                  Extracting article text from {source}...
+                  Extracting article text from {currentSource}...
                 </p>
                 {initialSummary && (
                   <div className="p-4 rounded-xl glass bg-white/5 border border-white/10 text-sm text-[var(--text-muted)] italic max-w-lg text-center mt-4">
@@ -301,28 +355,29 @@ export default function ArticleReaderModal({
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <button
-                    onClick={fetchArticleContent}
+                    onClick={() => fetchArticleContent(activeUrl)}
                     className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all flex items-center gap-1.5"
                   >
                     <RefreshCw size={13} />
                     Try Again
                   </button>
                   <a
-                    href={url}
+                    href={activeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 rounded-xl bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white text-xs font-bold transition-all flex items-center gap-1.5"
                   >
                     <ExternalLink size={13} />
-                    Open on {source}
+                    Open on {currentSource}
                   </a>
                 </div>
               </div>
             )}
 
-            {/* Full Article Content */}
+            {/* Full Article Content with In-App Navigation Interception */}
             {!loading && !error && article && (
               <div
+                onClick={handleContentClick}
                 className={clsx(
                   "article-reader-body select-text transition-all",
                   fontSize === 'sm' && "text-sm leading-relaxed",
@@ -347,7 +402,7 @@ export default function ArticleReaderModal({
                 <div className="p-4 rounded-xl glass bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div>
                     <span className="font-bold text-[var(--foreground)] block">
-                      Published by {source}
+                      Published by {currentSource}
                     </span>
                     <span className="text-[var(--text-muted)] text-[11px]">
                       Read and formatted in Murabbi Desk Research Reader
@@ -363,7 +418,7 @@ export default function ArticleReaderModal({
                       <span>{copied ? "Copied" : "Copy Citation"}</span>
                     </button>
                     <a
-                      href={url}
+                      href={activeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1.5 rounded-lg glass bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 font-bold text-xs flex items-center gap-1 transition-all"

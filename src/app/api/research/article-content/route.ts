@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const $ = cheerio.load(html);
 
     // ── 1. TITLE EXTRACTION ──────────────────────────────────────────────────
-    let title = $('h1.entry-title, h1.article-title, h1.herald-entry-title, h1.post-title, h1').first().text().trim();
+    let title = $('h1.entry-title, h1.article-title, h1.herald-entry-title, h1.post-title, h1.font-serif, h1').first().text().trim();
     if (!title) {
       title = $('meta[property="og:title"]').attr('content') || $('title').text().trim();
     }
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     // ── 4. HERO / FEATURED IMAGE EXTRACTION ──────────────────────────────────
     let heroImage = $('meta[property="og:image"]').attr('content') ||
                     $('.herald-post-thumbnail img, .post-thumbnail img, .featured-image img, .entry-featured-image img').first().attr('src') ||
-                    $('div.entry-content img').first().attr('src') ||
+                    $('div.entry-content img, div.article-content img').first().attr('src') ||
                     undefined;
 
     // Filter out tiny tracking pixels or icons
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 5. CORE CONTENT CONTAINER IDENTIFICATION ─────────────────────────────
-    let $content = $('div.entry-content, .herald-entry-content, div.hentry, article .content, .post-content, article').first();
+    let $content = $('div.article-content, .article-content, div.entry-content, .herald-entry-content, div.hentry, article .content, .post-content, main article, article, div.site-content article, .single-post').first();
 
     if ($content.length === 0) {
       // Fallback: look for largest paragraph container
