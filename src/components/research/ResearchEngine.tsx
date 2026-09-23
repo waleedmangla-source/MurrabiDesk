@@ -1074,12 +1074,6 @@ export default function ResearchEngine() {
                                 <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : 'Monthly Magazine')}</span>
                               </div>
                             </div>
-
-                            {isAlHakam && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                Live Online Archive
-                              </span>
-                            )}
                           </div>
 
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
