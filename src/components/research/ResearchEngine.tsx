@@ -43,6 +43,7 @@ import {
   VideoResult,
   MediaItemResult
 } from '@/lib/research-sources';
+import ArticleReaderModal from './ArticleReaderModal';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'articles' | 'media';
 
@@ -71,6 +72,13 @@ export default function ResearchEngine() {
   const [error, setError] = useState<string | null>(null);
   const [searchTime, setSearchTime] = useState<string>("0.12");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [activeReadingArticle, setActiveReadingArticle] = useState<{
+    url: string;
+    title: string;
+    source: string;
+    author?: string;
+    summary?: string;
+  } | null>(null);
 
   // Pagination & Articles Cache
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -1053,26 +1061,49 @@ export default function ResearchEngine() {
                   </div>
 
                   <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                    <a
-                      href={art.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                    <button
+                      type="button"
+                      onClick={() => setActiveReadingArticle({
+                        url: art.url,
+                        title: art.title,
+                        source: 'Al Islam',
+                        author: art.author,
+                        summary: art.summary
+                      })}
+                      className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
                     >
                       <span>{art.title}</span>
-                      <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
-                    </a>
+                      <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                    </button>
                   </h3>
 
                   <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
                     {art.summary}
                   </p>
 
-                  {art.author && (
-                    <div className="text-xs text-[var(--text-muted)] font-semibold pt-0.5">
-                      By {art.author}
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setActiveReadingArticle({
+                          url: art.url,
+                          title: art.title,
+                          source: 'Al Islam',
+                          author: art.author,
+                          summary: art.summary
+                        })}
+                        className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                      >
+                        <BookOpen size={13} className="text-[var(--accent-main)]" />
+                        <span>Read in Murabbi Desk</span>
+                      </button>
+                      {art.author && (
+                        <span className="text-xs text-[var(--text-muted)] font-semibold hidden sm:inline">
+                          By {art.author}
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               ))}
 
@@ -1211,26 +1242,49 @@ export default function ResearchEngine() {
                           </div>
 
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                            <a
-                              href={pub.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: pub.url,
+                                title: pub.title,
+                                source: pub.source,
+                                author: pub.author,
+                                summary: pub.summary
+                              })}
+                              className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
                             >
                               <span>{pub.title}</span>
-                              <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
-                            </a>
+                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                            </button>
                           </h3>
 
                           <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
                             {pub.summary}
                           </p>
 
-                          {pub.author && (
-                            <div className="text-xs text-[var(--text-muted)] font-semibold pt-0.5">
-                              By {pub.author}
+                          <div className="flex items-center justify-between pt-1 text-xs">
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() => setActiveReadingArticle({
+                                  url: pub.url,
+                                  title: pub.title,
+                                  source: pub.source,
+                                  author: pub.author,
+                                  summary: pub.summary
+                                })}
+                                className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                              >
+                                <BookOpen size={13} className="text-[var(--accent-main)]" />
+                                <span>Read in Murabbi Desk</span>
+                              </button>
+                              {pub.author && (
+                                <span className="text-xs text-[var(--text-muted)] font-semibold hidden sm:inline">
+                                  By {pub.author}
+                                </span>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
                       );
                     })
@@ -1663,6 +1717,18 @@ export default function ResearchEngine() {
           </div>
         )}
       </div>
+
+      {/* ── IN-DESK ARTICLE READER MODAL ── */}
+      {activeReadingArticle && (
+        <ArticleReaderModal
+          url={activeReadingArticle.url}
+          initialTitle={activeReadingArticle.title}
+          source={activeReadingArticle.source}
+          author={activeReadingArticle.author}
+          summary={activeReadingArticle.summary}
+          onClose={() => setActiveReadingArticle(null)}
+        />
+      )}
     </div>
   );
 }
