@@ -1,5 +1,14 @@
 // Ahmadiyya Multi-Source Theological Knowledge Base & Search Index
 import { normalizeKhazainText, THEOLOGICAL_TOPIC_MAP } from './khazain-data';
+import {
+  QURAN_CORPUS,
+  searchQuranVerses,
+  expandQuranQuery,
+  normalizeArabicForSearch,
+  normalizeUrduForSearch
+} from './quran-corpus';
+
+export { searchQuranVerses, expandQuranQuery, normalizeArabicForSearch, normalizeUrduForSearch };
 
 export interface QuranVerseResult {
   surahNumber: number;
@@ -12,6 +21,7 @@ export interface QuranVerseResult {
   commentaryNote?: string;
   topics: string[];
   url: string;
+  relevanceScore?: number;
 }
 
 export interface AlIslamArticleResult {
@@ -97,260 +107,7 @@ export interface MultiSourceSearchResult {
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. HOLY QUR'AN THEMATIC INDEX (Sher Ali translation & Ahmadiyya Commentary)
 // ─────────────────────────────────────────────────────────────────────────────
-export const THEMATIC_QURAN_VERSES: QuranVerseResult[] = [
-  {
-    surahNumber: 4,
-    verseNumber: 158,
-    surahNameArabic: "النساء",
-    surahNameEnglish: "Al-Nisa",
-    arabicText: "وَقَوْلِهِمْ إِنَّا قَتَلْنَا الْمَسِيحَ عِيسَى ابْنَ مَرْيَمَ رَسُولَ اللَّهِ وَمَا قَتَلُوهُ وَمَا صَلَبُوهُ وَلَكِن شُبِّهَ لَهُمْ",
-    englishTranslation: "And their saying, 'We did kill the Messiah, Jesus, son of Mary, the Messenger of Allah;' whereas they slew him not, nor did they crucify him, but he was made to appear to them like one crucified.",
-    urduTranslation: "اور ان کے اس قول کی وجہ سے کہ ہم نے اللہ کے رسول مسیح عیسیٰ ابن مریم کو قتل کر دیا، حالانکہ انہوں نے نہ اسے قتل کیا اور نہ اسے سولی پر چڑھایا بلکہ ان کے لیے معاملہ مشتبہ کر دیا گیا",
-    commentaryNote: "Crucial proof that Jesus (as) survived the ordeal of the cross ('Ma Salabu'). Crucifixion signifies dying upon the cross. Jesus was saved alive in fulfillment of the Sign of Jonah.",
-    topics: ["death of jesus", "crucifixion", "cross", "jesus", "isa", "salb", "وفات مسیح", "صلیب", "عیسیٰ"],
-    url: "https://www.alislam.org/quran/4:158"
-  },
-  {
-    surahNumber: 3,
-    verseNumber: 56,
-    surahNameArabic: "آل عمران",
-    surahNameEnglish: "Al-e-Imran",
-    arabicText: "إِذْ قَالَ اللَّهُ يَا عِيسَىٰ إِنِّي مُتَوَفِّيكَ وَرَافِعُكَ إِلَيَّ وَمُطَهِّرُكَ مِنَ الَّذِينَ كَفَرُوا",
-    englishTranslation: "When Allah said, 'O Jesus, I will cause thee to die a natural death, and will exalt thee to Myself, and will clear thee from the charges of those who disbelieve.'",
-    urduTranslation: "جب اللہ نے کہا اے عیسیٰ! میں تجھے طبعی موت دوں گا اور اپنی طرف تیرا رفع درجات کروں گا اور کافروں کے الزامات سے تجھے پاک کروں گا",
-    commentaryNote: "The term 'Tawaffa' when God is the subject and a conscious being is the object always denotes taking the soul or causing natural death, followed by spiritual exaltation (Rafa).",
-    topics: ["death of jesus", "tawaffa", "ascension", "rafa", "وفات مسیح", "توفی", "رفع عیسیٰ"],
-    url: "https://www.alislam.org/quran/3:56"
-  },
-  {
-    surahNumber: 5,
-    verseNumber: 118,
-    surahNameArabic: "المائدة",
-    surahNameEnglish: "Al-Ma'idah",
-    arabicText: "فَلَمَّا تَوَفَّيْتَنِي كُنتَ أَنتَ الرَّقِيبَ عَلَيْهِمْ وَأَنتَ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
-    englishTranslation: "'Since Thou didst cause me to die, Thou hast been the Watcher over them; and Thou art Witness over all things.'",
-    urduTranslation: "پھر جب تو نے مجھے وفات دے دی تو تو ہی ان کا نگہبان تھا اور تو ہر چیز پر گواہ ہے",
-    commentaryNote: "Jesus (as) testifies on Judgment Day that corruption occurred only after his death ('Tawaffaytani'), proving he has already passed away and has not witnessed Christian doctrine in bodily form.",
-    topics: ["death of jesus", "tawaffa", "christianity", "shirk", "وفات مسیح", "توفیتنی"],
-    url: "https://www.alislam.org/quran/5:118"
-  },
-  {
-    surahNumber: 33,
-    verseNumber: 41,
-    surahNameArabic: "الأحزاب",
-    surahNameEnglish: "Al-Ahzab",
-    arabicText: "مَّا كَانَ مُحَمَّدٌ أَبَا أَحَدٍ مِّن رِّجَالِكُمْ وَلَكِن رَّسُولَ اللَّهِ وَخَاتَمَ النَّبِيِّينَ وَكَانَ اللَّهُ بِكُلِّ شَيْءٍ عَلِيمًا",
-    englishTranslation: "Muhammad is not the father of any of your men, but he is the Messenger of Allah and the Seal of the Prophets; and Allah has full knowledge of all things.",
-    urduTranslation: "محمد (صلی اللہ علیہ وسلم) تمہارے مَردوں میں سے کسی کے باپ نہیں مگر وہ اللہ کے رسول ہیں اور تمام نبیوں کی مہر ہیں",
-    commentaryNote: "Khatam-an-Nabiyyin designates the Holy Prophet Muhammad (sa) as the zenith and spiritual seal whose spiritual emulation alone grants blessings and through whose obedience subordinate non-law-bearing prophethood is sustained.",
-    topics: ["seal of prophets", "khatam", "khatam-e-nabuwwat", "prophethood", "finality", "ختم نبوت", "خاتم النبیین", "نبوت"],
-    url: "https://www.alislam.org/quran/33:41"
-  },
-  {
-    surahNumber: 4,
-    verseNumber: 70,
-    surahNameArabic: "النساء",
-    surahNameEnglish: "Al-Nisa",
-    arabicText: "وَمَن يُطِعِ اللَّهَ وَالرَّسُولَ فَأُولَٰئِكَ مَعَ الَّذِينَ أَنْعَمَ اللَّهُ عَلَيْهِم مِّنَ النَّبِيِّينَ وَالصِّدِّيقِينَ وَالشُّهَدَاءِ وَالصَّالِحِينَ",
-    englishTranslation: "And whoso obeys Allah and this Messenger of His shall be among those on whom Allah has bestowed His blessings, namely, the Prophets, the Truthful, the Martyrs, and the Righteous.",
-    urduTranslation: "اور جو اللہ اور اس رسول کی اطاعت کرے تو وہ ان لوگوں کے ساتھ ہوں گے جن پر اللہ نے انعام کیا یعنی انبیاء، صدیقین، شہداء اور صالحین",
-    commentaryNote: "Explicit Quranic guarantee that obedience to the Holy Prophet (sa) opens the spiritual ranks of Siddiq, Shahid, Salih, and subordinate Prophet.",
-    topics: ["prophethood", "obedience", "continuation of blessings", "ummati nabi", "نبوت", "اطاعت رسول"],
-    url: "https://www.alislam.org/quran/4:70"
-  },
-  {
-    surahNumber: 62,
-    verseNumber: 3,
-    surahNameArabic: "الجمعة",
-    surahNameEnglish: "Al-Jumu'ah",
-    arabicText: "هُوَ الَّذِي بَعَثَ فِي الْأُمِّيِّينَ رَسُولًا مِّنْهُمْ يَتْلُو عَلَيْهِمْ آيَاتِهِ وَيُزَكِّيهِمْ وَيُعَلِّمُهُمُ الْكِتَابَ وَالْحِكْمَةَ",
-    englishTranslation: "He it is Who has raised among the Unlettered people a Messenger from among themselves, who recites unto them His Signs, and purifies them, and teaches them the Book and wisdom.",
-    urduTranslation: "وہی ہے جس نے اُمّیوں میں انہی میں سے ایک رسول بھیجا جو ان پر اس کی آیات تلاوت کرتا ہے اور انہیں پاک کرتا ہے",
-    commentaryNote: "Coupled with verse 4 ('Wa Akhareena Minhum Lamma Yalhaqoo Bihim') prophesying the Latter-Day advent of the Promised Messiah (as) in spiritual reflection (Buruz) of the Holy Prophet (sa).",
-    topics: ["second coming", "promised messiah", "latter days", "mahdi", "مسیح موعود", "ظہور ثانی", "بروز"],
-    url: "https://www.alislam.org/quran/62:3"
-  },
-  {
-    surahNumber: 2,
-    verseNumber: 187,
-    surahNameArabic: "البقرة",
-    surahNameEnglish: "Al-Baqarah",
-    arabicText: "وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ فَلْيَسْتَجِيبُوا لِي وَلْيُؤْمِنُوا بِي لَعَلَّهُمْ يَرْشُدُونَ",
-    englishTranslation: "And when My servants ask thee about Me, say: 'I am near. I answer the prayer of the supplicant when he prays to Me. So they should hearken to Me and believe in Me, that they may follow the right way.'",
-    urduTranslation: "اور جب میرے بندے تجھ سے میرے متعلق سوال کریں تو یقیناً میں قریب ہوں۔ میں دعا کرنے والے کی دعا قبول کرتا ہوں جب وہ مجھ سے دعا کرے",
-    commentaryNote: "The foundational Islamic principle that Allah is a Living God who listens and responds to fervent prayer ('Istijabat-e-Dua').",
-    topics: ["prayer", "dua", "acceptance of prayer", "existence of god", "دعا", "قبولیت دعا", "وجود باری تعالیٰ"],
-    url: "https://www.alislam.org/quran/2:187"
-  },
-  {
-    surahNumber: 22,
-    verseNumber: 40,
-    surahNameArabic: "الحج",
-    surahNameEnglish: "Al-Hajj",
-    arabicText: "أُذِنَ لِلَّذِينَ يُقَاتَلُونَ بِأَنَّهُمْ ظُلِمُوا وَإِنَّ اللَّهَ عَلَىٰ نَصْرِهِمْ لَقَدِيرٌ",
-    englishTranslation: "Permission to fight is given to those against whom war is made, because they have been wronged, and Allah indeed has power to help them.",
-    urduTranslation: "ان لوگوں کو جن کے خلاف جنگ چھیڑی جا رہی ہے لڑنے کی اجازت دی گئی ہے کیونکہ ان پر ظلم کیا گیا، اور یقیناً اللہ ان کی مدد پر قادر ہے",
-    commentaryNote: "The Charter of Religious Freedom in Islam: Defensive warfare was permitted solely when innocent believers and houses of worship (cloisters, churches, synagogues, mosques) were endangered.",
-    topics: ["jihad", "war", "peace", "religious freedom", "defense", "جہاد", "امن", "دفاع"],
-    url: "https://www.alislam.org/quran/22:40"
-  },
-  {
-    surahNumber: 23,
-    verseNumber: 51,
-    surahNameArabic: "المؤمنون",
-    surahNameEnglish: "Al-Mu'minun",
-    arabicText: "وَجَعَلْنَا ابْنَ مَرْيَمَ وَأُمَّهُ آيَةً وَآوَيْنَاهُمَا إِلَىٰ رَبْوَةٍ ذَاتِ قَرَارٍ وَمَعِينٍ",
-    englishTranslation: "And We made the son of Mary and his mother a Sign, and gave them refuge on an elevated land, a place of quiet and springs of running water.",
-    urduTranslation: "اور ہم نے ابن مریم اور اس کی ماں کو ایک نشان بنایا اور ہم نے ان دونوں کو ایک اونچی، پرسکون اور بہتے چشموں والی سرسبز جگہ پر پناہ دی",
-    commentaryNote: "Prophesies Jesus (as) and Mary's migration following the cross to a fertile highland plateau with clear streams, historically fulfilled in Kashmir (the valley of Srinagar).",
-    topics: ["jesus in india", "kashmir", "tomb", "migration", "death of jesus", "مزار عیسیٰ", "کشمیر", "ہجرت عیسیٰ"],
-    url: "https://www.alislam.org/quran/23:51"
-  },
-  {
-    surahNumber: 81,
-    verseNumber: 7,
-    surahNameArabic: "التکویر",
-    surahNameEnglish: "At-Takwir",
-    arabicText: "وَإِذَا النُّفُوسُ زُوِّجَتْ",
-    englishTranslation: "And when people are brought together (united through modern communication and transport).",
-    urduTranslation: "اور جب نفوس باہم ملائے جائیں گے",
-    commentaryNote: "Prophecy of the latter-day globalized world, internet, global communication networks, and the universal mission of the Promised Messiah (as).",
-    topics: ["latter days", "signs", "prophecy", "globalization", "علامات قیامت", "پیشگوئیاں"],
-    url: "https://www.alislam.org/quran/81:7"
-  },
-  {
-    surahNumber: 30,
-    verseNumber: 22,
-    surahNameArabic: "الروم",
-    surahNameEnglish: "Al-Rum",
-    arabicText: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ",
-    englishTranslation: "And one of His Signs is this: that He has created for you wives from among yourselves that you may find peace of mind in them, and He has put love and tenderness between you. In that surely are Signs for a people who reflect.",
-    urduTranslation: "اور اس کے نشانات میں سے یہ ہے کہ اس نے تمہارے لیے تمہاری ہی جنس سے جوڑے بنائے تاکہ تم ان سے سکون حاصل کرو اور اس نے تمہارے درمیان محبت اور رحمت پیدا کر دی۔ یقیناً اس میں غور و فکر کرنے والوں کے لیے بہت سے نشانات ہیں",
-    commentaryNote: "The Quranic definition of matrimonial purpose: psychological tranquility (Sukun), mutual love (Mawaddah), and reciprocal mercy (Rahmah). Marriage is a divine sign reflecting God's benevolence.",
-    topics: ["marriage", "nikah", "wedding", "spouse", "wife", "husband", "family", "love", "peace", "نکاح", "ازدواج", "شادی", "زوجہ", "محبت"],
-    url: "https://www.alislam.org/quran/30:22"
-  },
-  {
-    surahNumber: 2,
-    verseNumber: 188,
-    surahNameArabic: "البقرة",
-    surahNameEnglish: "Al-Baqarah",
-    arabicText: "أُحِلَّ لَكُمْ لَيْلَةَ الصِّيَامِ الرَّفَثُ إِلَىٰ نِسَائِكُمْ هُنَّ لِبَاسٌ لَّكُمْ وَأَنتُمْ لِبَاسٌ لَّهُنَّ",
-    englishTranslation: "They are a garment for you, and you are a garment for them.",
-    urduTranslation: "وہ تمہارے لیے لباس ہیں اور تم ان کے لیے لباس ہو",
-    commentaryNote: "The profound metaphor of garments (Libas): Spouses protect each other's honor, provide mutual warmth and beauty, conceal human frailties, and serve as close companions.",
-    topics: ["marriage", "spouse", "husband", "wife", "libas", "nikah", "family", "نکاح", "لباس", "زوجین", "شوہر", "بیوی"],
-    url: "https://www.alislam.org/quran/2:188"
-  },
-  {
-    surahNumber: 4,
-    verseNumber: 20,
-    surahNameArabic: "النساء",
-    surahNameEnglish: "Al-Nisa",
-    arabicText: "وَعَاشِرُوهُنَّ بِالْمَعْرُوفِ فَإِن كَرِهْتُمُوهُنَّ فَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَيَجْعَلَ اللَّهُ فِيهِ خَيْرًا كَثِيرًا",
-    englishTranslation: "And consort with them in kindness; and if you dislike them, it may be that you dislike a thing wherein Allah has placed much good.",
-    urduTranslation: "اور ان کے ساتھ اچھے طریقے سے زندگی بسر کرو، اور اگر تم انہیں ناپسند کرو تو عین ممکن ہے کہ تم ایک چیز کو ناپسند کرو اور اللہ اس میں بہت سی بھلائی رکھ دے",
-    commentaryNote: "The fundamental commandment of 'Mu'asharat bil-Ma'ruf' (benevolent companionship): Men are commanded to treat their wives with gentleness, patience, and honor regardless of personal moods.",
-    topics: ["marriage", "wife", "husband", "kindness", "family", "rights of women", "nikah", "حسن سلوک", "عورتوں کے حقوق", "نکاح"],
-    url: "https://www.alislam.org/quran/4:20"
-  },
-  {
-    surahNumber: 24,
-    verseNumber: 33,
-    surahNameArabic: "النور",
-    surahNameEnglish: "Al-Nur",
-    arabicText: "وَأَنكِحُوا الْأَيَامَىٰ مِنكُمْ وَالصَّالِحِينَ مِنْ عِبَادِكُمْ وَإِمَائِكُمْ إِن يَكُونُوا فُقَرَاءَ يُغْنِهِمُ اللَّهُ مِن فَضْلِهِ وَاللَّهُ وَاسِعٌ عَلِيمٌ",
-    englishTranslation: "And marry those among you who are single, and the righteous of your male and female servants. If they be poor, Allah will grant them means out of His grace; and Allah is Bountiful, All-Knowing.",
-    urduTranslation: "اور تم میں سے جو مجرد ہوں ان کے نکاح کر دیا کرو اور اپنے غلاموں اور لونڈیوں میں سے جو نیک ہوں ان کے بھی۔ اگر وہ نادار ہوں گے تو اللہ اپنے فضل سے انہیں غنی کر دے گا اور اللہ بڑی وسعت والا اور دائمی علم رکھنے والا ہے",
-    commentaryNote: "Islam encourages universal matrimony, condemning involuntary bachelorhood and celibacy. Financial hardship should not hinder marriage, as Allah guarantees blessings and provision to the righteous.",
-    topics: ["marriage", "nikah", "celibacy", "chastity", "provision", "نکاح", "شادی", "طہارت"],
-    url: "https://www.alislam.org/quran/24:33"
-  },
-  {
-    surahNumber: 4,
-    verseNumber: 5,
-    surahNameArabic: "النساء",
-    surahNameEnglish: "Al-Nisa",
-    arabicText: "وَآتُوا النِّسَاءَ صَدُقَاتِهِنَّ نِحْلَةً فَإِن طِبْنَ لَكُمْ عَن شَيْءٍ مِّنْهُ نَفْسًا فَكُلُوهُ هَنِيئًا مَّرِيئًا",
-    englishTranslation: "And give women their dowries (Mehr) as a free gift; but if they of their own pleasure remit any part thereof to you, take it and consume it with good pleasure.",
-    urduTranslation: "اور عورتوں کو ان کے مہر خوش دلی سے دیا کرو، پھر اگر وہ اپنی خوشی سے اس میں سے کچھ تمہیں چھوڑ دیں تو اسے مزے سے کھاؤ",
-    commentaryNote: "The obligation of Mehr (dower): An unconditional financial settlement owned solely by the bride, underscoring female financial autonomy and dignity in Islam.",
-    topics: ["mehr", "dowry", "marriage", "women", "rights of women", "nikah", "مہر", "حق مہر", "نکاح"],
-    url: "https://www.alislam.org/quran/4:5"
-  },
-  {
-    surahNumber: 17,
-    verseNumber: 24,
-    surahNameArabic: "الإسراء",
-    surahNameEnglish: "Al-Isra",
-    arabicText: "وَقَضَىٰ رَبُّكَ أَلَّا تَعْبُدُوا إِلَّا إِيَّاهُ وَبِالْوَالِدَيْنِ إِحْسَانًا إِمَّا يَبْلُغَنَّ عِندَكَ الْكِبَرَ أَحَدُهُمَا أَوْ كِلَاهُمَا فَلَا تَقُل لَّهُمَا أُفٍّ وَلَا تَنْهَرْهُمَا وَقُل لَّهُمَا قَوْلًا كَرِيمًا",
-    englishTranslation: "Thy Lord has commanded, 'Worship none but Him, and show kindness to parents. If one or both of them attain old age with thee, say not 'Fie' unto them nor chide them, but speak to them noble words.'",
-    urduTranslation: "اور تیرے رب نے یہ حکم دیا ہے کہ تم اس کے سوا کسی کی عبادت نہ کرو اور والدین کے ساتھ حسن سلوک کرو۔ اگر ان میں سے کوئی ایک یا دونوں تیرے سامنے بڑھاپے کو پہنچ جائیں تو انہیں اف تک نہ کہو اور نہ انہیں جھڑکو اور ان سے ادب و احترام سے بات کرو",
-    commentaryNote: "The golden Islamic standard of filial piety, placing benevolent care of parents immediately below the worship of Allah.",
-    topics: ["parents", "family", "mother", "father", "kindness", "ethics", "والدین", "ماں باپ", "حسن سلوک", "خاندان"],
-    url: "https://www.alislam.org/quran/17:24"
-  },
-  {
-    surahNumber: 24,
-    verseNumber: 31,
-    surahNameArabic: "النور",
-    surahNameEnglish: "Al-Nur",
-    arabicText: "قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ذَٰلِكَ أَزْكَىٰ لَهُمْ إِنَّ اللَّهَ خَبِيرٌ بِمَا يَصْنَعُونَ",
-    englishTranslation: "Say to the believing men that they restrain their eyes and guard their private parts. That is purer for them. Surely, Allah is well aware of what they do.",
-    urduTranslation: "مومن مردوں سے کہہ دے کہ وہ اپنی نگاہیں نیچی رکھیں اور اپنی شرمگاہوں کی حفاظت کریں۔ یہ ان کے لیے زیادہ پاکیزہ ہے۔ یقیناً اللہ اس سے خوب باخبر ہے جو وہ کرتے ہیں",
-    commentaryNote: "The injunction of modesty (Ghad-ul-Basar): Restraining glances is mandated for men prior to women, establishing mutual responsibility in maintaining social purity.",
-    topics: ["modesty", "purdah", "hijab", "chastity", "eyes", "حیا", "پردہ", "طہارت", "غض بصر"],
-    url: "https://www.alislam.org/quran/24:31"
-  },
-  {
-    surahNumber: 2,
-    verseNumber: 184,
-    surahNameArabic: "البقرة",
-    surahNameEnglish: "Al-Baqarah",
-    arabicText: "يَا أَيُّهَا الَّذِينَ آمَنُوا كُتِبَ عَلَيْكُمُ الصِّيَامُ كَمَا كُتِبَ عَلَى الَّذِينَ مِن قَبْلِكُمْ لَعَلَّكُمْ تَتَّقُونَ",
-    englishTranslation: "O ye who believe! Fasting is prescribed for you, as it was prescribed for those before you, that you may become righteous and attain Taqwa.",
-    urduTranslation: "اے وہ لوگو جو ایمان لائے ہو! تم پر روزے اسی طرح فرض کیے گئے ہیں جس طرح تم سے پہلوں پر فرض کیے گئے تھے تاکہ تم تقویٰ اختیار کرو",
-    commentaryNote: "Fasting is a universal spiritual discipline instituted across religions to restrain base desires and attain the ultimate station of Taqwa.",
-    topics: ["fasting", "roza", "ramadan", "taqwa", "sawm", "روزہ", "صوم", "تقویٰ", "رمضان"],
-    url: "https://www.alislam.org/quran/2:184"
-  },
-  {
-    surahNumber: 9,
-    verseNumber: 60,
-    surahNameArabic: "التوبة",
-    surahNameEnglish: "Al-Tawbah",
-    arabicText: "إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ",
-    englishTranslation: "The alms are only for the poor and the needy, and for those employed in connection therewith, and for those whose hearts are to be reconciled, and for the freeing of slaves, and for those in debt, and for the cause of Allah, and for the wayfarer.",
-    urduTranslation: "صدقات تو محض فقراء اور مساکین کے لیے ہیں اور ان کے وصول کرنے والے کارکنوں کے لیے اور ان کے لیے جن کی تالیف قلب مقصود ہو اور گردنیں چھڑانے میں اور قرض داروں کے لیے اور اللہ کی راہ میں اور مسافر کے لیے",
-    commentaryNote: "The eight constitutional categories of Zakat distribution establishing social welfare, debt alleviation, and human liberation.",
-    topics: ["zakat", "charity", "alms", "sadaqah", "poverty", "social welfare", "زکوٰۃ", "صدقہ", "انفاق"],
-    url: "https://www.alislam.org/quran/9:60"
-  },
-  {
-    surahNumber: 29,
-    verseNumber: 46,
-    surahNameArabic: "العنكبوت",
-    surahNameEnglish: "Al-Ankabut",
-    arabicText: "اتْلُ مَا أُوحِيَ إِلَيْكَ مِنَ الْكِتَابِ وَأَقِمِ الصَّلَاةَ إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ وَلَذِكْرُ اللَّهِ أَكْبَرُ",
-    englishTranslation: "Recite that which has been revealed to thee of the Book, and observe Prayer. Surely, Prayer restrains one from indecency and that which is uncongenial; and the remembrance of Allah is the greatest virtue.",
-    urduTranslation: "کتاب میں سے جو تیری طرف وحی کی گئی ہے اس کی تلاوت کر اور نماز قائم کر۔ یقیناً نماز بے حیائی اور ناپسندیدہ باتوں سے روکتی ہے اور یقیناً اللہ کا ذکر سب سے بڑا ہے",
-    commentaryNote: "The transformative moral power of Salat: Regular congregation and conscious remembrance shield the believer from moral and spiritual decay.",
-    topics: ["prayer", "namaz", "salat", "worship", "remembrance", "نماز", "صلوٰۃ", "ذکر الٰہی"],
-    url: "https://www.alislam.org/quran/29:46"
-  },
-  {
-    surahNumber: 4,
-    verseNumber: 136,
-    surahNameArabic: "النساء",
-    surahNameEnglish: "Al-Nisa",
-    arabicText: "يَا أَيُّهَا الَّذِينَ آمَنُوا كُونُوا قَوَّامِينَ بِالْقِسْطِ شُهَدَاءَ لِلَّهِ وَلَوْ عَلَىٰ أَنفُسِكُمْ أَوِ الْوَالِدَيْنِ وَالْأَقْرَبِينَ",
-    englishTranslation: "O ye who believe! Be strict in observing justice, and be witnesses for Allah, even though it be against yourselves or against parents and kindred.",
-    urduTranslation: "اے لوگو جو ایمان لائے ہو! انصاف پر مضبوطی سے قائم رہتے ہوئے اللہ کی خاطر گواہ بن جاؤ خواہ خود اپنے خلاف ہو یا والدین اور قریبی رشتہ داروں کے خلاف ہو",
-    commentaryNote: "The uncompromising Quranic charter of absolute justice (Adl): Integrity supersedes all familial and self-serving bias.",
-    topics: ["justice", "honesty", "truth", "witness", "morality", "عدل", "انصاف", "سچائی"],
-    url: "https://www.alislam.org/quran/4:136"
-  }
-];
+export const THEMATIC_QURAN_VERSES: QuranVerseResult[] = QURAN_CORPUS;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. AL ISLAM TOPICS, BOOKS & ARTICLES (alislam.org)
@@ -927,36 +684,6 @@ export function normalizeTopicQuery(query: string): string {
     .trim();
 }
 
-/**
- * Searches Holy Qur'an thematic verses
- */
-export function searchQuranVerses(query: string): QuranVerseResult[] {
-  const normQuery = normalizeTopicQuery(query);
-  const words = normQuery.split(/\s+/).filter(w => w.length >= 2);
-  if (words.length === 0) return [];
-
-  // Check alias mappings
-  let expandedTerms: string[] = [normQuery, ...words];
-  for (const [topicKey, urduList] of Object.entries(THEOLOGICAL_TOPIC_MAP)) {
-    if (normQuery.includes(topicKey) || topicKey.includes(normQuery)) {
-      expandedTerms.push(topicKey, ...urduList);
-    }
-  }
-
-  return THEMATIC_QURAN_VERSES.filter(v => {
-    return expandedTerms.some(term => {
-      const termLower = term.toLowerCase();
-      return (
-        v.topics.some(t => t.toLowerCase().includes(termLower) || termLower.includes(t.toLowerCase())) ||
-        v.englishTranslation.toLowerCase().includes(termLower) ||
-        v.urduTranslation.includes(term) ||
-        v.arabicText.includes(term) ||
-        (v.commentaryNote && v.commentaryNote.toLowerCase().includes(termLower)) ||
-        `${v.surahNumber}:${v.verseNumber}` === termLower
-      );
-    });
-  });
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1b. CANONICAL AHADITH THEMATIC COLLECTION (Authentic Traditions)
