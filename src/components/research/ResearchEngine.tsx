@@ -976,8 +976,14 @@ export default function ResearchEngine() {
                   </div>
 
                   <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                    <a href={art.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
-                      {art.title}
+                    <a
+                      href={art.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                    >
+                      <span>{art.title}</span>
+                      <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
                     </a>
                   </h3>
 
@@ -985,23 +991,11 @@ export default function ResearchEngine() {
                     {art.summary}
                   </p>
 
-                  <div className="flex items-center gap-3 pt-1 text-xs">
-                    <a
-                      href={art.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5 hover:border-[var(--accent-main)]/40 transition-colors"
-                    >
-                      <Globe size={13} className="text-blue-400" />
-                      Read on Al Islam
-                      <ExternalLink size={11} className="opacity-60" />
-                    </a>
-                    {art.author && (
-                      <span className="text-xs text-[var(--text-muted)] font-semibold">
-                        By {art.author}
-                      </span>
-                    )}
-                  </div>
+                  {art.author && (
+                    <div className="text-xs text-[var(--text-muted)] font-semibold pt-0.5">
+                      By {art.author}
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -1077,8 +1071,14 @@ export default function ResearchEngine() {
                           </div>
 
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                            <a href={pub.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-main)] transition-colors">
-                              {pub.title}
+                            <a
+                              href={pub.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{pub.title}</span>
+                              <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
                             </a>
                           </h3>
 
@@ -1086,33 +1086,11 @@ export default function ResearchEngine() {
                             {pub.summary}
                           </p>
 
-                          <div className="flex items-center gap-3 pt-1 text-xs">
-                            <a
-                              href={pub.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={clsx(
-                                "px-3 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 transition-colors border",
-                                isAlHakam
-                                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                                  : "bg-white/5 hover:bg-white/10 border-white/10 text-[var(--foreground)] hover:border-[var(--accent-main)]/40"
-                              )}
-                            >
-                              <Newspaper size={13} className={isAlHakam ? "text-emerald-400" : "text-purple-400"} />
-                              {isAlHakam ? "Read on Al Hakam" : isRoR ? "Read on Review of Religions" : "Read Publication"}
-                              <ExternalLink size={11} className="opacity-60" />
-                            </a>
-                            {pub.date && (
-                              <span className="text-xs text-[var(--text-muted)] font-semibold">
-                                {pub.date}
-                              </span>
-                            )}
-                            {pub.author && (
-                              <span className="text-xs text-[var(--text-muted)] font-semibold">
-                                By {pub.author}
-                              </span>
-                            )}
-                          </div>
+                          {pub.author && (
+                            <div className="text-xs text-[var(--text-muted)] font-semibold pt-0.5">
+                              By {pub.author}
+                            </div>
+                          )}
                         </div>
                       );
                     })
