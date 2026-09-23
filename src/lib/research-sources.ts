@@ -126,12 +126,14 @@ export interface MultiSourceSearchResult {
   ruhaniKhazain: RuhaniKhazainSearchResult[];
   quranVerses: QuranVerseResult[];
   ahadith: HadithResult[];
+  books?: BookItem[];
   alislamArticles: AlIslamArticleResult[];
   publications: PublicationResult[];
   audios?: AudioResult[];
   videos?: VideoResult[];
   media?: MediaItemResult[];
   totalMediaHits?: number;
+  totalBookHits?: number;
   dossier?: ResearchDossier;
   totalResults: number;
   totalAlHakamHits?: number;
@@ -1205,3 +1207,5 @@ export function synthesizeSmartTheologicalResponse(
 }
 
 export { searchSunnahHadith } from './sunnah-hadith';
+export type { BookItem } from './books-catalog';
+export { AHMADIYYA_BOOKS_CATALOG, searchAhmadiyyaBooks } from './books-catalog';

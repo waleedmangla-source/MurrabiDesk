@@ -19,7 +19,9 @@ import {
   ResearchDossier,
   AudioResult,
   VideoResult,
-  MediaItemResult
+  MediaItemResult,
+  BookItem,
+  searchAhmadiyyaBooks
 } from '@/lib/research-sources';
 import { searchAskIslamAudios } from '@/lib/askislam-data';
 import { searchMediaVideos } from '@/lib/video-search';
@@ -508,15 +510,54 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults, askIslamResults, videoResults] = await Promise.all([
+    const booksPromise: Promise<BookItem[]> = (async () => {
+      try {
+        const localBooks = searchAhmadiyyaBooks(rawQuery);
+        if (localBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+          }
+        }
+        return localBooks;
+      } catch (e) {
+        console.warn('[Research API] Books search failed:', e);
+        return [];
+      }
+    })();
+
+    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults, askIslamResults, videoResults, booksResults] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
       hadithPromise,
       alislamPromise,
       periodicalsPromise,
       askIslamPromise,
-      videosPromise
+      videosPromise,
+      booksPromise
     ]);
+
+    // Merge any live Al Islam results identified as books
+    const mergedBooks: BookItem[] = [...booksResults];
+    const seenBookUrls = new Set(booksResults.map(b => b.url.toLowerCase()));
+
+    for (const art of alislamResults) {
+      if (art.category === 'Book' || art.url.includes('/book/')) {
+        const normUrl = art.url.toLowerCase();
+        if (!seenBookUrls.has(normUrl)) {
+          seenBookUrls.add(normUrl);
+          mergedBooks.push({
+            id: art.id,
+            title: art.title,
+            author: art.author || 'Hazrat Mirza Ghulam Ahmad (as) / Khulafa',
+            category: 'Contemporary',
+            summary: art.summary,
+            url: art.url,
+            topics: art.topics
+          });
+        }
+      }
+    }
 
     const media: MediaItemResult[] = [
       ...askIslamResults.map(a => ({ mediaType: 'audio' as const, ...a })),
@@ -536,7 +577,7 @@ export async function POST(req: NextRequest) {
     );
 
     const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlIslamHits || 0);
-    const totalResults = rkResults.length + quranResults.length + hadithResults.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) + media.length;
+    const totalResults = rkResults.length + quranResults.length + hadithResults.length + mergedBooks.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) + media.length;
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
@@ -544,6 +585,8 @@ export async function POST(req: NextRequest) {
       ruhaniKhazain: rkResults,
       quranVerses: quranResults,
       ahadith: hadithResults,
+      books: mergedBooks,
+      totalBookHits: mergedBooks.length,
       alislamArticles: alislamResults,
       publications: periodicalsResults,
       audios: askIslamResults,
