@@ -44,6 +44,7 @@ import {
   MediaItemResult
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
+import QuranCommentaryModal from './QuranCommentaryModal';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'articles' | 'audios' | 'videos';
 
@@ -78,6 +79,16 @@ export default function ResearchEngine() {
     source: string;
     author?: string;
     summary?: string;
+  } | null>(null);
+
+  const [activeCommentaryVerse, setActiveCommentaryVerse] = useState<{
+    surah: number;
+    verse: number;
+    surahNameEnglish?: string;
+    surahNameArabic?: string;
+    arabicText?: string;
+    englishText?: string;
+    urduText?: string;
   } | null>(null);
 
   // Pagination & Articles Cache
@@ -906,17 +917,36 @@ export default function ResearchEngine() {
                     )}
 
                     {/* Bottom Actions */}
-                    <div className="flex items-center justify-between pt-1 text-xs">
-                      <a
-                        href={v.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors"
-                      >
-                        <Globe size={13} />
-                        Al Islam Qur'an
-                        <ExternalLink size={11} className="opacity-60" />
-                      </a>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveCommentaryVerse({
+                            surah: v.surahNumber,
+                            verse: v.verseNumber,
+                            surahNameEnglish: v.surahNameEnglish,
+                            surahNameArabic: v.surahNameArabic,
+                            arabicText: v.arabicText,
+                            englishText: v.englishTranslation,
+                            urduText: v.urduTranslation
+                          })}
+                          className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <BookOpen size={13} />
+                          <span>Read 5-Vol. Commentary</span>
+                        </button>
+
+                        <a
+                          href={v.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Globe size={13} />
+                          Al Islam Qur'an
+                          <ExternalLink size={11} className="opacity-60" />
+                        </a>
+                      </div>
 
                       <button
                         onClick={() => copyToClipboard(quranCitation, verseKey)}
@@ -1783,6 +1813,20 @@ export default function ResearchEngine() {
           author={activeReadingArticle.author}
           summary={activeReadingArticle.summary}
           onClose={() => setActiveReadingArticle(null)}
+        />
+      )}
+
+      {/* ── IN-DESK QUR'AN COMMENTARY MODAL (5-VOLUME / SHORT COMMENTARY) ── */}
+      {activeCommentaryVerse && (
+        <QuranCommentaryModal
+          surah={activeCommentaryVerse.surah}
+          verse={activeCommentaryVerse.verse}
+          surahNameEnglish={activeCommentaryVerse.surahNameEnglish}
+          surahNameArabic={activeCommentaryVerse.surahNameArabic}
+          initialArabicText={activeCommentaryVerse.arabicText}
+          initialEnglishText={activeCommentaryVerse.englishText}
+          initialUrduText={activeCommentaryVerse.urduText}
+          onClose={() => setActiveCommentaryVerse(null)}
         />
       )}
     </div>
