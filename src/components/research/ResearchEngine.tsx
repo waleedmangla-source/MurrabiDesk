@@ -18,7 +18,6 @@ import {
   ChevronRight,
   ArrowRight,
   Filter,
-  Layers,
   ShieldCheck,
   Volume2,
   BookmarkCheck,
@@ -83,9 +82,6 @@ export default function ResearchEngine() {
   const [voiceLang, setVoiceLang] = useState<'en-US' | 'ur-PK'>('en-US');
   const recognitionRef = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Provenance Trail state for DSGT
-  const [showProvenance, setShowProvenance] = useState(false);
 
   // Copy Feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -669,132 +665,25 @@ export default function ResearchEngine() {
 
         {/* Results Container (Centered) */}
         {results && !loading && (
-          <div className="flex flex-col lg:flex-row justify-center gap-10 max-w-5xl mx-auto">
-            {/* Left Column: Results Stream */}
-            <div className="flex-1 max-w-2xl space-y-8">
-              {/* ── 0. DSGT CONSENSUS TRIANGULATION MATRIX (Mathematical Corroboration) ── */}
+          <div className="flex justify-center max-w-3xl mx-auto w-full">
+            {/* Results Stream */}
+            <div className="w-full space-y-8">
+              {/* ── Confidence Score Bar ── */}
               {activeFilter === 'all' && results.consensusMatrix && (
-                <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/35 bg-gradient-to-br from-[var(--accent-soft)]/50 via-white/5 to-transparent relative overflow-hidden shadow-xl space-y-5">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/40 flex items-center justify-center text-[var(--accent-main)] shadow-sm shrink-0">
-                        <Layers size={18} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base md:text-lg font-black tracking-tight text-[var(--foreground)]">
-                            Consensus Triangulation Matrix
-                          </h2>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-[var(--accent-main)] text-white shadow-sm">
-                            DSGT Engine
-                          </span>
-                        </div>
-                        <p className="text-xs text-[var(--text-muted)] font-medium">
-                          Cross-corpus mathematical convergence across canonical sources
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Consensus Verdict Badge */}
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
-                      <div className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
-                        <ShieldCheck size={14} className="text-emerald-400" />
-                        <span className="text-xs font-black text-emerald-400 tracking-wide">
-                          {results.consensusMatrix.consensusLevel}
-                        </span>
-                      </div>
-                    </div>
+                <div className="p-4 rounded-[14px] glass bg-white/[0.02] border border-white/10 space-y-1.5 shadow-sm">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-[var(--text-muted)] uppercase tracking-wider text-[10px] font-black">
+                      Confidence
+                    </span>
+                    <span className="text-emerald-400 font-mono text-sm font-black">
+                      {results.consensusMatrix.confidenceScore}%
+                    </span>
                   </div>
-
-                  {/* Confidence Score Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-[var(--text-muted)] uppercase tracking-wider text-[10px]">
-                        Corroboration Confidence
-                      </span>
-                      <span className="text-emerald-400 font-mono text-sm font-black">
-                        {results.consensusMatrix.confidenceScore}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden relative">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent-main)] transition-all duration-700"
-                        style={{ width: `${results.consensusMatrix.confidenceScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 4 Pillars Status Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {results.consensusMatrix.layers.map((layer) => {
-                      const isCorroborated = layer.corroborated;
-                      return (
-                        <div
-                          key={layer.name}
-                          className={clsx(
-                            "p-3 rounded-[14px] border transition-all space-y-1.5",
-                            isCorroborated
-                              ? "bg-emerald-500/5 border-emerald-500/20"
-                              : "bg-white/[0.02] border-white/5 opacity-60"
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
-                              {isCorroborated ? (
-                                <Check size={13} className="text-emerald-400 shrink-0" />
-                              ) : (
-                                <X size={13} className="text-[var(--text-muted)] shrink-0" />
-                              )}
-                              {layer.name}
-                            </span>
-                            <span className={clsx(
-                              "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider",
-                              isCorroborated ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-[var(--text-muted)]"
-                            )}>
-                              {isCorroborated ? `${layer.matchCount} Matches` : "Uncorroborated"}
-                            </span>
-                          </div>
-
-                          {layer.primaryReference && (
-                            <div className="text-[11px] font-semibold text-[var(--accent-main)] truncate">
-                              {layer.primaryReference}
-                            </div>
-                          )}
-
-                          {layer.excerptSnippet && (
-                            <div className="text-[11px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">
-                              "{layer.excerptSnippet}"
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Algorithmic Provenance Audit Trail (Collapsible) */}
-                  <div className="pt-2 border-t border-white/10">
-                    <button
-                      onClick={() => setShowProvenance(!showProvenance)}
-                      className="w-full flex items-center justify-between text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] py-1 transition-colors"
-                    >
-                      <span className="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
-                        <Layers size={13} />
-                        Deterministic Algorithmic Provenance Trail
-                      </span>
-                      {showProvenance ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-
-                    {showProvenance && (
-                      <div className="mt-3 p-3.5 rounded-[12px] bg-black/40 border border-white/5 font-mono text-[11px] text-[var(--text-muted)] space-y-2">
-                        {results.consensusMatrix.provenanceChain.map((step, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <span className="text-[var(--accent-main)] font-bold shrink-0">[{idx + 1}]</span>
-                            <span className="leading-relaxed">{step}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden relative">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent-main)] transition-all duration-700"
+                      style={{ width: `${results.consensusMatrix.confidenceScore}%` }}
+                    />
                   </div>
                 </div>
               )}
@@ -1347,35 +1236,6 @@ export default function ResearchEngine() {
               {/* End of results padding */}
               <div className="pb-12" />
             </div>
-
-            {/* Right Column: Knowledge Panel (Desktop) */}
-            {results.consensusMatrix && (
-              <div className="hidden lg:block w-80 shrink-0 space-y-4">
-                {/* DSGT Quick Stats Card */}
-                <div className="glass-card p-5 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)]/40 to-transparent shadow-xl space-y-3">
-                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                    <span className="flex items-center gap-1.5">
-                      <ShieldCheck size={13} />
-                      Consensus Engine
-                    </span>
-                    <span className="text-emerald-400 font-bold">{results.consensusMatrix.confidenceScore}%</span>
-                  </div>
-
-                  <div className="text-sm font-black italic tracking-tight text-[var(--foreground)]">
-                    {results.consensusMatrix.consensusLevel}
-                  </div>
-
-                  <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                    Deterministic verification across {results.consensusMatrix.corroboratedLayersCount} of 4 canonical literature layers.
-                  </p>
-
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-[var(--text-muted)]">
-                    <span>Corroborated Sources:</span>
-                    <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.totalCorroboratedSources} citations</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
