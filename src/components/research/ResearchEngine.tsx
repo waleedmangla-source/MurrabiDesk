@@ -863,7 +863,7 @@ export default function ResearchEngine() {
                 const itemKey = `rk-${item.volume}-${item.pageNum}-${idx}`;
                 const citation = `[Ruhani Khazain, Vol. ${item.volume}, "${item.bookTitle}", p. ${item.pageNum}]`;
                 return (
-                  <div key={itemKey} className="space-y-2 group">
+                  <div key={itemKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                     {/* Breadcrumb Header */}
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                       <div className="flex items-center gap-2">
@@ -1026,7 +1026,7 @@ export default function ResearchEngine() {
 
               {/* ── 4. AL ISLAM OFFICIAL ARTICLES ───────────────────────────── */}
               {(activeFilter === 'all' || activeFilter === 'alislam') && displayedAlIslam.map((art) => (
-                <div key={art.id} className="space-y-2 group">
+                <div key={art.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                   <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                     <div className="w-6 h-6 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-[10px] shrink-0">
                       AL
@@ -1115,7 +1115,7 @@ export default function ResearchEngine() {
                       const isRoR = pub.source === 'Review of Religions';
 
                       return (
-                        <div key={pub.id} className="space-y-2 group">
+                        <div key={pub.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                           <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                             <div className="flex items-center gap-2">
                               <div className={clsx(
