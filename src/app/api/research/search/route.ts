@@ -9,7 +9,6 @@ import {
 } from '@/lib/khazain-data';
 import {
   searchQuranVerses,
-  searchHadithTraditions,
   searchSunnahHadith,
   searchAlIslamResources,
   searchPeriodicals,
@@ -385,8 +384,8 @@ export async function POST(req: NextRequest) {
         }
         return results;
       } catch (e) {
-        console.warn('[Research API] Sunnah.com search fallback error:', e);
-        return searchHadithTraditions(rawQuery);
+        console.warn('[Research API] Sunnah.com live search error:', e);
+        return [];
       }
     })();
 
