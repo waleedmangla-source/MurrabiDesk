@@ -73,6 +73,36 @@ export interface RuhaniKhazainSearchResult {
   readerUrl: string;
 }
 
+export interface AudioResult {
+  id: string;
+  source: 'Ask Islam';
+  title: string;
+  speaker: string;
+  category: string;
+  url: string;
+  audioUrl: string;
+  duration?: string;
+  topics?: string[];
+}
+
+export interface VideoResult {
+  id: string;
+  source: 'YouTube' | 'MTA.tv';
+  title: string;
+  channel: string;
+  duration?: string;
+  published?: string;
+  url: string;
+  thumbnail: string;
+  transcriptSnippet?: string;
+  transcriptTimestampSec?: number;
+  description?: string;
+}
+
+export type MediaItemResult = 
+  | ({ mediaType: 'audio' } & AudioResult)
+  | ({ mediaType: 'video' } & VideoResult);
+
 export interface ResearchDossier {
   topic: string;
   title: string;
@@ -97,6 +127,10 @@ export interface MultiSourceSearchResult {
   ahadith: HadithResult[];
   alislamArticles: AlIslamArticleResult[];
   publications: PublicationResult[];
+  audios?: AudioResult[];
+  videos?: VideoResult[];
+  media?: MediaItemResult[];
+  totalMediaHits?: number;
   dossier?: ResearchDossier;
   totalResults: number;
   totalAlHakamHits?: number;

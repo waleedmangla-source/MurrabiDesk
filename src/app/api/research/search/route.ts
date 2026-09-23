@@ -15,8 +15,13 @@ import {
   MultiSourceSearchResult,
   RuhaniKhazainSearchResult,
   HadithResult,
-  ResearchDossier
+  ResearchDossier,
+  AudioResult,
+  VideoResult,
+  MediaItemResult
 } from '@/lib/research-sources';
+import { searchAskIslamAudios } from '@/lib/askislam-data';
+import { searchMediaVideos } from '@/lib/video-search';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
 import { expandQueryVector } from '@/lib/dsgt/query-expansion';
 import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
@@ -477,13 +482,38 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults] = await Promise.all([
+    const askIslamPromise: Promise<AudioResult[]> = (async () => {
+      try {
+        return searchAskIslamAudios(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Ask Islam search failed:', e);
+        return [];
+      }
+    })();
+
+    const videosPromise: Promise<VideoResult[]> = (async () => {
+      try {
+        return await searchMediaVideos(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Video search failed:', e);
+        return [];
+      }
+    })();
+
+    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults, askIslamResults, videoResults] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
       hadithPromise,
       alislamPromise,
-      periodicalsPromise
+      periodicalsPromise,
+      askIslamPromise,
+      videosPromise
     ]);
+
+    const media: MediaItemResult[] = [
+      ...askIslamResults.map(a => ({ mediaType: 'audio' as const, ...a })),
+      ...videoResults.map(v => ({ mediaType: 'video' as const, ...v }))
+    ];
 
     // ─────────────────────────────────────────────────────────────────────────
     // Phase 5: Consensus Triangulation Matrix & Evidence Verifier
@@ -498,7 +528,7 @@ export async function POST(req: NextRequest) {
     );
 
     const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlIslamHits || 0);
-    const totalResults = rkResults.length + quranResults.length + hadithResults.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits);
+    const totalResults = rkResults.length + quranResults.length + hadithResults.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) + media.length;
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
@@ -508,6 +538,10 @@ export async function POST(req: NextRequest) {
       ahadith: hadithResults,
       alislamArticles: alislamResults,
       publications: periodicalsResults,
+      audios: askIslamResults,
+      videos: videoResults,
+      media,
+      totalMediaHits: media.length,
       consensusMatrix,
       hitsRankings,
       totalResults,

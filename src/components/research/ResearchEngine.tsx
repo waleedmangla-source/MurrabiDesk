@@ -22,7 +22,11 @@ import {
   Volume2,
   BookmarkCheck,
   LogIn,
-  Home
+  Home,
+  PlayCircle,
+  Video,
+  Headphones,
+  Radio
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
@@ -34,10 +38,13 @@ import {
   HadithResult,
   AlIslamArticleResult,
   PublicationResult,
-  TheologicalConsensusMatrix
+  TheologicalConsensusMatrix,
+  AudioResult,
+  VideoResult,
+  MediaItemResult
 } from '@/lib/research-sources';
 
-type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'articles';
+type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'articles' | 'media';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -215,6 +222,9 @@ export default function ResearchEngine() {
     setAlislamCache({});
   };
 
+  // Media sub-filter: all, audio, video, transcripts
+  const [mediaSubFilter, setMediaSubFilter] = useState<'all' | 'audio' | 'video' | 'transcripts'>('all');
+
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -237,18 +247,50 @@ export default function ResearchEngine() {
     const periodicalsCount = results ? Math.max(results.publications.length, alHakamCount + rorCount) : 0;
     const articlesCount = results?.totalArticleHits || (alislamCount + periodicalsCount);
     const rkCount = results ? results.ruhaniKhazain.length : 0;
-    const allCount = rkCount + quranCount + ahadithCount + articlesCount;
+    const audiosCount = results?.audios?.length || 0;
+    const videosCount = results?.videos?.length || 0;
+    const mediaCount = results?.totalMediaHits || (results?.media?.length) || (audiosCount + videosCount);
+    const allCount = rkCount + quranCount + ahadithCount + articlesCount + mediaCount;
 
     return {
       all: allCount,
       quran: quranCount,
       ahadith: ahadithCount,
       articles: articlesCount,
+      media: mediaCount,
+      audios: audiosCount,
+      videos: videosCount,
       rk: rkCount,
       alislam: alislamCount,
       periodicals: periodicalsCount
     };
   }, [results]);
+
+  const allMediaItems = useMemo<MediaItemResult[]>(() => {
+    if (!results) return [];
+    if (results.media && results.media.length > 0) return results.media;
+    const list: MediaItemResult[] = [];
+    if (results.audios) {
+      list.push(...results.audios.map(a => ({ mediaType: 'audio' as const, ...a })));
+    }
+    if (results.videos) {
+      list.push(...results.videos.map(v => ({ mediaType: 'video' as const, ...v })));
+    }
+    return list;
+  }, [results]);
+
+  const filteredMediaItems = useMemo<MediaItemResult[]>(() => {
+    if (mediaSubFilter === 'audio') {
+      return allMediaItems.filter(m => m.mediaType === 'audio');
+    }
+    if (mediaSubFilter === 'video') {
+      return allMediaItems.filter(m => m.mediaType === 'video');
+    }
+    if (mediaSubFilter === 'transcripts') {
+      return allMediaItems.filter(m => m.mediaType === 'video' && !!m.transcriptSnippet);
+    }
+    return allMediaItems;
+  }, [allMediaItems, mediaSubFilter]);
 
   // Compute total pages based on the currently active filter
   const totalPages = useMemo(() => {
@@ -266,6 +308,8 @@ export default function ResearchEngine() {
         );
         return Math.max(1, sourcePages);
       }
+      case 'media':
+        return Math.max(1, Math.ceil(filteredMediaItems.length / ITEMS_PER_PAGE));
       case 'all': {
         const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
         const sourcePages = Math.max(
@@ -274,12 +318,13 @@ export default function ResearchEngine() {
           results.totalPagesAlIslam || Math.ceil((results.totalAlIslamHits || results.alislamArticles.length) / 20)
         );
         const hadithPages = Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(rkPages, sourcePages, hadithPages));
+        const mediaPages = Math.ceil(allMediaItems.length / ITEMS_PER_PAGE);
+        return Math.max(1, Math.max(rkPages, sourcePages, hadithPages, mediaPages));
       }
       default:
         return 1;
     }
-  }, [results, activeFilter]);
+  }, [results, activeFilter, filteredMediaItems, allMediaItems]);
 
   // Paginated slices for each corpus
   const displayedRuhaniKhazain = useMemo(() => {
@@ -332,6 +377,15 @@ export default function ResearchEngine() {
     }
     return [];
   }, [results, currentPage, periodicalsCache]);
+
+  const displayedMedia = useMemo(() => {
+    if (!results) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? allMediaItems.slice(0, 6) : [];
+    }
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredMediaItems.slice(start, start + ITEMS_PER_PAGE);
+  }, [results, currentPage, activeFilter, allMediaItems, filteredMediaItems]);
 
   const handlePageChange = async (newPage: number) => {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
@@ -624,7 +678,8 @@ export default function ResearchEngine() {
             { id: 'all', label: 'All Sources', count: counts.all, icon: Search },
             { id: 'quran', label: 'Holy Qur\'an', count: counts.quran, icon: BookOpen },
             { id: 'ahadith', label: 'Ahadith', count: counts.ahadith, icon: Scroll },
-            { id: 'articles', label: 'Articles', count: counts.articles, icon: Newspaper }
+            { id: 'articles', label: 'Articles', count: counts.articles, icon: Newspaper },
+            { id: 'media', label: 'Media', count: counts.media, icon: PlayCircle }
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeFilter === tab.id;
@@ -665,12 +720,6 @@ export default function ResearchEngine() {
             <span>
               Found {counts.all} records in {searchTime}s for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
             </span>
-            {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
-              <span className="text-emerald-400 font-bold lowercase tracking-normal flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                {results.totalAlHakamHits} matching articles in Al Hakam official archive
-              </span>
-            )}
           </div>
         )}
 
@@ -1205,7 +1254,314 @@ export default function ResearchEngine() {
                 </div>
               )}
 
-              {/* ── 6. GOOGLE-STYLE CANONICAL PAGINATION CONTROLS ─────────── */}
+              {/* ── 6. MEDIA RESULTS: ASK ISLAM, YOUTUBE & MTA.TV ────────────────────── */}
+              {(activeFilter === 'all' || activeFilter === 'media') && displayedMedia.length > 0 && (
+                <div className="space-y-6">
+                  {/* Media Sub-filter pills (only in 'media' tab) */}
+                  {activeFilter === 'media' && (
+                    <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-black/10 dark:border-white/10 mb-4 select-none">
+                      <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)] mr-2 flex items-center gap-1.5">
+                        <Filter size={12} />
+                        Filter:
+                      </span>
+                      {[
+                        { id: 'all', label: `All Media (${allMediaItems.length})` },
+                        { id: 'audio', label: `Audios (${results?.audios?.length || 0})` },
+                        { id: 'video', label: `Videos (${results?.videos?.length || 0})` },
+                        { id: 'transcripts', label: `Transcript Matches (${allMediaItems.filter(m => m.mediaType === 'video' && !!m.transcriptSnippet).length})` }
+                      ].map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => {
+                            setMediaSubFilter(sub.id as any);
+                            setCurrentPage(1);
+                          }}
+                          className={clsx(
+                            "px-3 py-1.5 rounded-full text-xs font-bold transition-all",
+                            mediaSubFilter === sub.id
+                              ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)] scale-105"
+                              : "glass bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--foreground)] border border-white/10"
+                          )}
+                        >
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Media Stream Items */}
+                  {displayedMedia.map((item, idx) => {
+                    const itemKey = `media-${item.mediaType}-${item.id || idx}`;
+
+                    // ── AUDIO ITEM: ASK ISLAM (askislam.org) ──
+                    if (item.mediaType === 'audio') {
+                      const citation = `[Ask Islam: Q&A with Hazrat Mirza Tahir Ahmad (rh) — "${item.title}"]\nListen: ${item.audioUrl}\nSource: ${item.url}`;
+
+                      return (
+                        <div key={itemKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                          {/* Breadcrumb Header */}
+                          <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                                <img
+                                  src="https://www.google.com/s2/favicons?domain=askislam.org&sz=128"
+                                  alt="Ask Islam"
+                                  className="w-4 h-4 object-contain rounded-sm"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                                <span className="text-[var(--foreground)]">askislam.org</span>
+                                <span>›</span>
+                                <span>Audio Q&A</span>
+                                <span>›</span>
+                                <span className="truncate">{item.category}</span>
+                              </div>
+                            </div>
+
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1 shrink-0">
+                              <Headphones size={11} />
+                              Audio Recording
+                            </span>
+                          </div>
+
+                          {/* Title */}
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{item.title}</span>
+                              <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                            </a>
+                          </h3>
+
+                          {/* Speaker Tag */}
+                          <div className="text-xs text-[var(--text-muted)] font-semibold flex items-center gap-2">
+                            <span>Speaker: <strong className="text-[var(--foreground)]">{item.speaker}</strong></span>
+                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                            <span>Category: {item.category}</span>
+                          </div>
+
+                          {/* Inline HTML5 Audio Player */}
+                          <div className="pt-1 pb-1">
+                            <audio
+                              controls
+                              preload="none"
+                              src={item.audioUrl}
+                              className="w-full h-10 rounded-xl bg-white/5 border border-white/10"
+                            />
+                          </div>
+
+                          {/* Bottom Actions */}
+                          <div className="flex items-center justify-between pt-1 text-xs">
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                              >
+                                <Globe size={13} />
+                                View on Ask Islam
+                                <ExternalLink size={11} className="opacity-60" />
+                              </a>
+                              <a
+                                href={item.audioUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 rounded-[10px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/20 font-bold flex items-center gap-1.5 transition-colors"
+                              >
+                                <Headphones size={13} />
+                                Direct MP3 Stream
+                              </a>
+                            </div>
+
+                            <button
+                              onClick={() => copyToClipboard(citation, itemKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // ── VIDEO ITEM: YOUTUBE & MTA.TV ──
+                    const isYouTube = item.source === 'YouTube';
+                    const videoCitation = `[Video: "${item.title}" — ${item.channel} (${item.source})]\nWatch: ${item.url}${item.transcriptSnippet ? `\nTranscript Quote: ${item.transcriptSnippet}` : ''}`;
+
+                    return (
+                      <div key={itemKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        {/* Breadcrumb Header */}
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                              <img
+                                src={`https://www.google.com/s2/favicons?domain=${isYouTube ? 'youtube.com' : 'mta.tv'}&sz=128`}
+                                alt={item.source}
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)]">{isYouTube ? 'YouTube' : 'MTA.tv'}</span>
+                              <span>›</span>
+                              <span className="truncate">{item.channel}</span>
+                              {item.published && (
+                                <>
+                                  <span>•</span>
+                                  <span>{item.published}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {item.transcriptSnippet ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/25 flex items-center gap-1 shrink-0">
+                              <Volume2 size={11} />
+                              Spoken Transcript Match
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1 shrink-0">
+                              <Video size={11} />
+                              Video
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                          >
+                            <span>{item.title}</span>
+                            <ExternalLink size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                          </a>
+                        </h3>
+
+                        {/* Card Layout: Thumbnail + Description */}
+                        <div className="flex flex-col sm:flex-row gap-4 items-start">
+                          {item.thumbnail && (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="relative rounded-xl overflow-hidden group/thumb shrink-0 w-full sm:w-48 aspect-video bg-black/40 border border-white/10 shadow-sm block"
+                            >
+                              <img
+                                src={item.thumbnail}
+                                alt={item.title}
+                                className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/30 group-hover/thumb:bg-black/10 transition-colors flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg group-hover/thumb:scale-110 transition-transform">
+                                  <PlayCircle size={20} />
+                                </div>
+                              </div>
+                              {item.duration && (
+                                <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono font-bold tracking-wider">
+                                  {item.duration}
+                                </span>
+                              )}
+                            </a>
+                          )}
+
+                          <div className="flex-1 space-y-2">
+                            {item.description && (
+                              <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium line-clamp-3">
+                                {item.description}
+                              </p>
+                            )}
+
+                            {/* Spoken Transcript Highlight Box with Clickable Timestamp */}
+                            {item.transcriptSnippet && (
+                              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs space-y-1.5">
+                                <div className="flex items-center justify-between text-amber-400 font-black uppercase text-[10px] tracking-wider">
+                                  <div className="flex items-center gap-1.5">
+                                    <Volume2 size={13} />
+                                    <span>Spoken in Video Transcript</span>
+                                  </div>
+                                  {item.transcriptTimestampSec !== undefined && (
+                                    <a
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-2.5 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-mono text-[10px] font-bold transition-colors flex items-center gap-1 active:scale-95"
+                                    >
+                                      <span>Jump to {item.transcriptSnippet.match(/\[([0-9:]+)\]/)?.[1] || 'Timestamp'}</span>
+                                      <ExternalLink size={9} />
+                                    </a>
+                                  )}
+                                </div>
+                                <p className="text-[var(--foreground)]/90 italic font-medium leading-relaxed">
+                                  {item.transcriptSnippet}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Bottom Actions */}
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={clsx(
+                              "px-3 py-1.5 rounded-[10px] font-bold flex items-center gap-1.5 transition-colors",
+                              isYouTube
+                                ? "bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20"
+                                : "bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/20"
+                            )}
+                          >
+                            <PlayCircle size={13} />
+                            <span>{isYouTube ? 'Watch on YouTube' : 'Watch on MTA.tv'}</span>
+                            <ExternalLink size={11} className="opacity-60" />
+                          </a>
+
+                          <button
+                            onClick={() => copyToClipboard(videoCitation, itemKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Media Tab Jump Banner for 'all' tab */}
+                  {activeFilter === 'all' && allMediaItems.length > 6 && (
+                    <div className="p-3.5 rounded-xl glass bg-[var(--accent-main)]/10 border border-[var(--accent-main)]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <span className="text-[var(--text-muted)] font-medium">
+                        Showing top media results ({allMediaItems.length} total audios & videos available)
+                      </span>
+                      <button
+                        onClick={() => handleTabChange('media')}
+                        className="text-[var(--accent-main)] hover:brightness-110 font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
+                      >
+                        <span>Browse all {allMediaItems.length} in Media tab</span>
+                        <ArrowRight size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── 7. GOOGLE-STYLE CANONICAL PAGINATION CONTROLS ─────────── */}
               {totalPages > 1 && (
                 <div className="pt-8 pb-4 flex flex-col items-center gap-3 border-t border-white/10 select-none">
                   {/* Page indicator info */}
@@ -1227,6 +1583,11 @@ export default function ResearchEngine() {
                     {activeFilter === 'articles' && (
                       <span className="text-emerald-400 font-bold">
                         • {counts.articles} total articles (Review of Religions, Al Hakam & Al Islam)
+                      </span>
+                    )}
+                    {activeFilter === 'media' && (
+                      <span className="text-[var(--accent-main)] font-bold">
+                        • {filteredMediaItems.length} recordings & videos (Ask Islam, YouTube & MTA.tv)
                       </span>
                     )}
                   </div>
