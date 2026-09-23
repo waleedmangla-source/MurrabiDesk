@@ -71,125 +71,206 @@ export async function fetchLiveAlHakam(
 }
 
 /**
- * Scrapes real-time search results directly from Review of Religions (reviewofreligions.org)
+ * Fetches real-time search results directly from Review of Religions (reviewofreligions.org)
+ * Supports pagination, category extraction, publication dates, and total page estimation.
  */
-export async function fetchLiveReviewOfReligions(query: string): Promise<PublicationResult[]> {
+export async function fetchLiveReviewOfReligions(
+  query: string,
+  page: number = 1
+): Promise<{ results: PublicationResult[]; totalHits: number; totalPages: number }> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
     const encoded = encodeURIComponent(query);
-    const res = await fetch(`https://www.reviewofreligions.org/?s=${encoded}`, {
-      headers: { 'User-Agent': USER_AGENT },
+    const targetUrl = page <= 1
+      ? `https://www.reviewofreligions.org/?s=${encoded}`
+      : `https://www.reviewofreligions.org/page/${page}/?s=${encoded}`;
+
+    const res = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      },
       signal: controller.signal
     });
 
     clearTimeout(timeoutId);
-    if (!res.ok) return [];
+    if (!res.ok) return { results: [], totalHits: 0, totalPages: 0 };
 
     const html = await res.text();
     const $ = cheerio.load(html);
-    const publications: PublicationResult[] = [];
-    const seenUrls = new Set<string>();
 
-    $('article, .post-item, .entry, h2, h3').each((i, el) => {
-      const $link = $(el).is('a') ? $(el) : $(el).find('a').first();
-      const title = $link.text().trim();
-      const href = $link.attr('href');
-      const summary = $(el).find('p, .summary, .excerpt').first().text().trim();
-
-      if (
-        href &&
-        href.startsWith('https://www.reviewofreligions.org/') &&
-        title &&
-        title.length > 5 &&
-        title.length < 160 &&
-        !href.includes('/page/') &&
-        !href.includes('/category/') &&
-        !href.includes('/tag/')
-      ) {
-        if (!seenUrls.has(href)) {
-          seenUrls.add(href);
-          publications.push({
-            id: `ror-live-${publications.length + 1}`,
-            source: 'Review of Religions',
-            title,
-            summary: summary ? summary.slice(0, 220) : `Review of Religions treatise investigating "${title}".`,
-            url: href,
-            topics: [query]
-          });
-        }
+    // Extract maximum page number from pagination links
+    let maxPage = 1;
+    $('.page-numbers, .pagination a, .herald-pagination a, a.page-numbers, span.page-numbers').each((_, el) => {
+      const txt = $(el).text().trim().replace(/,/g, '');
+      const num = parseInt(txt, 10);
+      if (!isNaN(num) && num > maxPage) {
+        maxPage = num;
       }
     });
 
-    return publications.slice(0, 15);
+    const publications: PublicationResult[] = [];
+    const seenUrls = new Set<string>();
+
+    $('h2.entry-title').each((_, el) => {
+      const $a = $(el).find('a').first();
+      const title = $a.text().trim();
+      const href = $a.attr('href');
+      if (!href || seenUrls.has(href)) return;
+      seenUrls.add(href);
+
+      const header = $(el).closest('.entry-header');
+      const parentCol = header.length > 0 ? header.parent() : $(el).parent();
+
+      const category = header.find('.meta-category a').first().text().trim() || 'Review of Religions';
+      const date = header.find('.herald-date .updated, .entry-meta .updated, time').first().text().trim();
+      const snippet = parentCol.find('.entry-content, p').first().text().trim();
+
+      publications.push({
+        id: `ror-${href.replace(/[^a-zA-Z0-9]/g, '-')}`,
+        source: 'Review of Religions',
+        title,
+        summary: snippet || `Review of Religions treatise exploring "${title}".`,
+        url: href,
+        date: date || undefined,
+        topics: [query, category]
+      });
+    });
+
+    // Review of Religions serves 30 articles per page
+    const totalHits = maxPage * 30;
+    return { results: publications, totalHits, totalPages: maxPage };
   } catch (err) {
     console.warn('[External Sources] Failed to fetch live Review of Religions:', err);
-    return [];
+    return { results: [], totalHits: 0, totalPages: 0 };
   }
 }
 
 /**
- * Scrapes real-time search results directly from Al Islam (alislam.org)
+ * Fetches real-time search results directly from Al Islam (alislam.org)
+ * Supports pagination, taxonomy/category detection, dates, and older/newer entries.
  */
-export async function fetchLiveAlIslam(query: string): Promise<AlIslamArticleResult[]> {
+export async function fetchLiveAlIslam(
+  query: string,
+  page: number = 1
+): Promise<{ results: AlIslamArticleResult[]; totalHits: number; totalPages: number }> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
     const encoded = encodeURIComponent(query);
-    const res = await fetch(`https://www.alislam.org/?s=${encoded}`, {
-      headers: { 'User-Agent': USER_AGENT },
+    const targetUrl = page <= 1
+      ? `https://www.alislam.org/?s=${encoded}`
+      : `https://www.alislam.org/page/${page}/?s=${encoded}`;
+
+    const res = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      },
       signal: controller.signal
     });
 
     clearTimeout(timeoutId);
-    if (!res.ok) return [];
+    if (!res.ok) return { results: [], totalHits: 0, totalPages: 0 };
 
     const html = await res.text();
     const $ = cheerio.load(html);
+
+    const hasOlder = $('div.navigation .alignleft a').length > 0;
+    const totalPages = hasOlder ? Math.max(page + 1, 10) : page;
+
     const articles: AlIslamArticleResult[] = [];
     const seenUrls = new Set<string>();
 
-    $('article, .search-result, .entry, .post, .card, li.search-item, h2, h3').each((i, el) => {
-      const $link = $(el).is('a') ? $(el) : $(el).find('a').first();
-      const title = $link.text().trim();
-      const href = $link.attr('href');
-      const summary = $(el).find('p, .summary, .excerpt').first().text().trim();
+    $('div.hentry, article, .search-result').each((_, el) => {
+      const $a = $(el).find('h3 a, h2 a, a[rel="bookmark"]').first();
+      const title = $a.text().trim();
+      const href = $a.attr('href');
+      if (!href || seenUrls.has(href)) return;
+      seenUrls.add(href);
 
-      if (
-        href &&
-        href.startsWith('https://www.alislam.org/') &&
-        title &&
-        title.length > 5 &&
-        title.length < 160 &&
-        !href.includes('/page/') &&
-        !href.includes('/tag/') &&
-        !href.includes('/category/')
-      ) {
-        if (!seenUrls.has(href)) {
-          seenUrls.add(href);
-          let category: AlIslamArticleResult['category'] = 'Article';
-          if (href.includes('/book/')) category = 'Book';
-          else if (href.includes('/question/')) category = 'Q&A';
-          else if (href.includes('/sermon/')) category = 'Friday Sermon';
-          else if (href.includes('/topics/')) category = 'Topic Portal';
+      const date = $(el).find('small, .entry-date, time').first().text().trim();
+      const classAttr = $(el).attr('class') || '';
 
-          articles.push({
-            id: `alislam-live-${articles.length + 1}`,
-            title,
-            category,
-            summary: summary ? summary.slice(0, 220) : `Official Al Islam resource detailing "${title}".`,
-            url: href,
-            topics: [query]
-          });
-        }
-      }
+      let category: AlIslamArticleResult['category'] = 'Article';
+      if (classAttr.includes('type-question') || href.includes('/question/')) category = 'Q&A';
+      else if (classAttr.includes('type-video') || href.includes('/video/')) category = 'Video';
+      else if (classAttr.includes('type-book') || href.includes('/book/')) category = 'Book';
+      else if (classAttr.includes('type-sermon') || href.includes('/sermon/')) category = 'Friday Sermon';
+      else if (href.includes('/topics/')) category = 'Topic Portal';
+
+      const snippet = $(el).find('.entry-content, .postmetadata, p').first().text().trim();
+
+      articles.push({
+        id: `alislam-${href.replace(/[^a-zA-Z0-9]/g, '-')}`,
+        title,
+        category,
+        summary: snippet && snippet.length > 15 ? snippet : `Al Islam resource detailing "${title}".`,
+        url: href,
+        date: date || undefined,
+        topics: [query, category]
+      });
     });
 
-    return articles.slice(0, 15);
+    const totalHits = totalPages * (articles.length || 20);
+    return { results: articles, totalHits, totalPages };
   } catch (err) {
     console.warn('[External Sources] Failed to fetch live Al Islam:', err);
-    return [];
+    return { results: [], totalHits: 0, totalPages: 0 };
   }
+}
+
+/**
+ * Unified multi-source article searcher:
+ * Queries all supported article publications (Al Hakam, Review of Religions, Al Islam)
+ * with standardized pagination and metadata.
+ */
+export async function fetchAllLiveArticles(
+  query: string,
+  pageIndex: number = 0
+): Promise<{
+  publications: PublicationResult[];
+  alislamArticles: AlIslamArticleResult[];
+  totalAlHakamHits: number;
+  totalRoRHits: number;
+  totalAlIslamHits: number;
+  totalArticleHits: number;
+  totalPagesAlHakam: number;
+  totalPagesRoR: number;
+  totalPagesAlIslam: number;
+  totalPages: number;
+}> {
+  const humanPage = pageIndex + 1;
+  const [alHakamData, rorData, alIslamData] = await Promise.all([
+    fetchLiveAlHakam(query, pageIndex),
+    fetchLiveReviewOfReligions(query, humanPage),
+    fetchLiveAlIslam(query, humanPage)
+  ]);
+
+  const publications: PublicationResult[] = [
+    ...alHakamData.results,
+    ...rorData.results
+  ];
+
+  const totalAlHakamHits = alHakamData.totalHits;
+  const totalRoRHits = rorData.totalHits;
+  const totalAlIslamHits = alIslamData.totalHits;
+  const totalArticleHits = totalAlHakamHits + totalRoRHits + totalAlIslamHits;
+  const totalPages = Math.max(alHakamData.totalPages, rorData.totalPages, alIslamData.totalPages);
+
+  return {
+    publications,
+    alislamArticles: alIslamData.results,
+    totalAlHakamHits,
+    totalRoRHits,
+    totalAlIslamHits,
+    totalArticleHits,
+    totalPagesAlHakam: alHakamData.totalPages,
+    totalPagesRoR: rorData.totalPages,
+    totalPagesAlIslam: alIslamData.totalPages,
+    totalPages
+  };
 }

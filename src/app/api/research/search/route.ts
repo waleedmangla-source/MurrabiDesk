@@ -88,18 +88,64 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
     }
 
-    // Fast-path: On-demand page retrieval for Al Hakam Archive
-    if (typeof body.alhakamPage === 'number') {
-      const pageNum = Math.max(0, Math.floor(body.alhakamPage));
-      const alHakamData = await fetchLiveAlHakam(rawQuery, pageNum);
+    // Fast-path: On-demand page retrieval for Articles (Al Hakam, Review of Religions, Al Islam)
+    if (
+      typeof body.articlePage === 'number' ||
+      typeof body.alhakamPage === 'number' ||
+      typeof body.periodicalPage === 'number'
+    ) {
+      const pageIndex = Math.max(0, Math.floor(body.articlePage ?? body.alhakamPage ?? body.periodicalPage));
+      const humanPage = pageIndex + 1;
+
+      // Extract winning concept if query is non-Latin (Urdu/Arabic)
+      const hasLatinQuery = /[a-zA-Z]/.test(rawQuery);
+      let englishSearchQuery = rawQuery;
+      if (!hasLatinQuery) {
+        const dsgtCtx = disambiguateTheologicalContext(rawQuery);
+        if (dsgtCtx.winningSense?.primaryConcept) {
+          englishSearchQuery = dsgtCtx.winningSense.primaryConcept;
+        }
+      }
+
+      let [alHakamData, rorData, alIslamData] = await Promise.all([
+        fetchLiveAlHakam(rawQuery, pageIndex),
+        fetchLiveReviewOfReligions(englishSearchQuery, humanPage),
+        fetchLiveAlIslam(rawQuery, humanPage)
+      ]);
+
+      if (alHakamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+        alHakamData = await fetchLiveAlHakam(englishSearchQuery, pageIndex);
+      }
+      if (alIslamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+        alIslamData = await fetchLiveAlIslam(englishSearchQuery, humanPage);
+      }
+
+      const publications: PublicationResult[] = [
+        ...alHakamData.results,
+        ...rorData.results
+      ];
+
+      const totalAlHakamHits = alHakamData.totalHits;
+      const totalRoRHits = rorData.totalHits;
+      const totalAlIslamHits = alIslamData.totalHits;
+      const totalArticleHits = totalAlHakamHits + totalRoRHits + totalAlIslamHits;
+      const totalPages = Math.max(alHakamData.totalPages, rorData.totalPages, alIslamData.totalPages);
+
       return NextResponse.json({
         success: true,
         data: {
           query: rawQuery,
-          publications: alHakamData.results,
-          totalAlHakamHits: alHakamData.totalHits,
-          totalPages: alHakamData.totalPages,
-          currentPage: pageNum + 1
+          publications,
+          alislamArticles: alIslamData.results,
+          totalAlHakamHits,
+          totalRoRHits,
+          totalAlIslamHits,
+          totalArticleHits,
+          totalPagesAlHakam: alHakamData.totalPages,
+          totalPagesRoR: rorData.totalPages,
+          totalPagesAlIslam: alIslamData.totalPages,
+          totalPages,
+          currentPage: humanPage
         }
       });
     }
@@ -329,6 +375,13 @@ export async function POST(req: NextRequest) {
       return results;
     })();
 
+    let totalAlHakamHits = 0;
+    let totalRoRHits = 0;
+    let totalAlIslamHits = 0;
+    let totalPagesAlHakam = 0;
+    let totalPagesRoR = 0;
+    let totalPagesAlIslam = 0;
+
     const alislamPromise: Promise<AlIslamArticleResult[]> = (async () => {
       if (!requestedSources.includes('alislam')) return [];
       const localResults = searchAlIslamResources(rawQuery);
@@ -339,13 +392,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Query live Al Islam search in parallel with fallback
+      // Query live Al Islam search with pagination support
       try {
-        const liveArticles = await fetchLiveAlIslam(rawQuery);
+        let liveAlIslam = await fetchLiveAlIslam(rawQuery, 1);
+        if (liveAlIslam.results.length === 0 && !hasLatin && dsgtContext.winningSense?.primaryConcept) {
+          liveAlIslam = await fetchLiveAlIslam(dsgtContext.winningSense.primaryConcept, 1);
+        }
+
+        totalAlIslamHits = liveAlIslam.totalHits;
+        totalPagesAlIslam = liveAlIslam.totalPages;
+
         const merged: AlIslamArticleResult[] = [...localResults];
         const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
 
-        for (const art of liveArticles) {
+        for (const art of liveAlIslam.results) {
           const normUrl = art.url.toLowerCase();
           if (!seenUrls.has(normUrl)) {
             seenUrls.add(normUrl);
@@ -359,7 +419,6 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    let totalAlHakamHits = 0;
     const periodicalsPromise: Promise<PublicationResult[]> = (async () => {
       if (!requestedSources.includes('periodicals')) return [];
       const localResults = searchPeriodicals(rawQuery);
@@ -372,12 +431,23 @@ export async function POST(req: NextRequest) {
 
       // Query live Al Hakam Official API and Review of Religions in parallel
       try {
-        const [alHakamData, liveRoR] = await Promise.all([
+        const englishSearchQuery = (!hasLatin && dsgtContext.winningSense?.primaryConcept)
+          ? dsgtContext.winningSense.primaryConcept
+          : rawQuery;
+
+        let [alHakamData, rorData] = await Promise.all([
           fetchLiveAlHakam(rawQuery, 0),
-          fetchLiveReviewOfReligions(rawQuery)
+          fetchLiveReviewOfReligions(englishSearchQuery, 1)
         ]);
 
+        if (alHakamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+          alHakamData = await fetchLiveAlHakam(englishSearchQuery, 0);
+        }
+
         totalAlHakamHits = alHakamData.totalHits;
+        totalPagesAlHakam = alHakamData.totalPages;
+        totalRoRHits = rorData.totalHits;
+        totalPagesRoR = rorData.totalPages;
 
         const merged: PublicationResult[] = [...localResults];
         const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
@@ -392,7 +462,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Incorporate live Review of Religions articles
-        for (const pub of liveRoR) {
+        for (const pub of rorData.results) {
           const normUrl = pub.url.toLowerCase();
           if (!seenUrls.has(normUrl)) {
             seenUrls.add(normUrl);
@@ -427,7 +497,8 @@ export async function POST(req: NextRequest) {
       hitsRankings
     );
 
-    const totalResults = rkResults.length + quranResults.length + hadithResults.length + alislamResults.length + Math.max(periodicalsResults.length, totalAlHakamHits);
+    const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlIslamHits || 0);
+    const totalResults = rkResults.length + quranResults.length + hadithResults.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits);
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
@@ -440,7 +511,13 @@ export async function POST(req: NextRequest) {
       consensusMatrix,
       hitsRankings,
       totalResults,
-      totalAlHakamHits
+      totalAlHakamHits,
+      totalRoRHits,
+      totalAlIslamHits,
+      totalArticleHits,
+      totalPagesAlHakam,
+      totalPagesRoR,
+      totalPagesAlIslam
     };
 
     return NextResponse.json({

@@ -65,9 +65,10 @@ export default function ResearchEngine() {
   const [searchTime, setSearchTime] = useState<string>("0.12");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-  // Pagination & Periodicals Cache
+  // Pagination & Articles Cache
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [periodicalsCache, setPeriodicalsCache] = useState<Record<number, PublicationResult[]>>({});
+  const [alislamCache, setAlislamCache] = useState<Record<number, AlIslamArticleResult[]>>({});
   const [loadingPeriodicalPage, setLoadingPeriodicalPage] = useState<boolean>(false);
 
   useEffect(() => {
@@ -188,6 +189,11 @@ export default function ResearchEngine() {
           1: data.data.publications
         });
       }
+      if (data.data?.alislamArticles) {
+        setAlislamCache({
+          1: data.data.alislamArticles
+        });
+      }
     } catch (err: any) {
       setError(err.message || "Failed to complete multi-source query.");
     } finally {
@@ -206,6 +212,7 @@ export default function ResearchEngine() {
     setQuery("");
     setCurrentPage(1);
     setPeriodicalsCache({});
+    setAlislamCache({});
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -224,9 +231,11 @@ export default function ResearchEngine() {
   const counts = useMemo(() => {
     const quranCount = results ? results.quranVerses.length : 0;
     const ahadithCount = results ? (results.ahadith?.length || 0) : 0;
-    const alislamCount = results ? results.alislamArticles.length : 0;
-    const periodicalsCount = results ? Math.max(results.publications.length, results.totalAlHakamHits || 0) : 0;
-    const articlesCount = alislamCount + periodicalsCount;
+    const alHakamCount = results?.totalAlHakamHits || 0;
+    const rorCount = results?.totalRoRHits || 0;
+    const alislamCount = results ? (results.totalAlIslamHits || results.alislamArticles.length) : 0;
+    const periodicalsCount = results ? Math.max(results.publications.length, alHakamCount + rorCount) : 0;
+    const articlesCount = results?.totalArticleHits || (alislamCount + periodicalsCount);
     const rkCount = results ? results.ruhaniKhazain.length : 0;
     const allCount = rkCount + quranCount + ahadithCount + articlesCount;
 
@@ -250,15 +259,22 @@ export default function ResearchEngine() {
       case 'ahadith':
         return Math.max(1, Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE));
       case 'articles': {
-        const perPages = Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE);
-        const alislamPages = Math.ceil(results.alislamArticles.length / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(perPages, alislamPages));
+        const sourcePages = Math.max(
+          results.totalPagesAlHakam || Math.ceil((results.totalAlHakamHits || 0) / 10),
+          results.totalPagesRoR || Math.ceil((results.totalRoRHits || 0) / 30),
+          results.totalPagesAlIslam || Math.ceil((results.totalAlIslamHits || results.alislamArticles.length) / 20)
+        );
+        return Math.max(1, sourcePages);
       }
       case 'all': {
         const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
-        const perPages = Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE);
+        const sourcePages = Math.max(
+          results.totalPagesAlHakam || Math.ceil((results.totalAlHakamHits || 0) / 10),
+          results.totalPagesRoR || Math.ceil((results.totalRoRHits || 0) / 30),
+          results.totalPagesAlIslam || Math.ceil((results.totalAlIslamHits || results.alislamArticles.length) / 20)
+        );
         const hadithPages = Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(rkPages, perPages, hadithPages));
+        return Math.max(1, Math.max(rkPages, sourcePages, hadithPages));
       }
       default:
         return 1;
@@ -292,15 +308,19 @@ export default function ResearchEngine() {
 
   const displayedAlIslam = useMemo(() => {
     if (!results) return [];
+    if (alislamCache[currentPage]) {
+      return alislamCache[currentPage];
+    }
     if (activeFilter === 'all') {
       return currentPage === 1 ? results.alislamArticles.slice(0, ITEMS_PER_PAGE) : [];
     }
     if (activeFilter === 'articles') {
+      if (currentPage === 1) return results.alislamArticles;
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       return results.alislamArticles.slice(start, start + ITEMS_PER_PAGE);
     }
     return [];
-  }, [results, currentPage, activeFilter]);
+  }, [results, currentPage, activeFilter, alislamCache]);
 
   const displayedPublications = useMemo(() => {
     if (!results) return [];
@@ -317,8 +337,8 @@ export default function ResearchEngine() {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
     setCurrentPage(newPage);
 
-    // Fetch on-demand page for Al Hakam Archive if not cached
-    if ((activeFilter === 'articles' || activeFilter === 'all') && !periodicalsCache[newPage]) {
+    // Fetch on-demand page for all articles (Al Hakam, Review of Religions, Al Islam) if not cached
+    if ((activeFilter === 'articles' || activeFilter === 'all') && (!periodicalsCache[newPage] || !alislamCache[newPage])) {
       setLoadingPeriodicalPage(true);
       try {
         const res = await fetch('/api/research/search', {
@@ -326,18 +346,26 @@ export default function ResearchEngine() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: submittedQuery,
-            alhakamPage: newPage - 1
+            articlePage: newPage - 1
           })
         });
         const data = await res.json();
-        if (data.success && data.data?.publications) {
-          setPeriodicalsCache(prev => ({
-            ...prev,
-            [newPage]: data.data.publications
-          }));
+        if (data.success && data.data) {
+          if (data.data.publications) {
+            setPeriodicalsCache(prev => ({
+              ...prev,
+              [newPage]: data.data.publications
+            }));
+          }
+          if (data.data.alislamArticles) {
+            setAlislamCache(prev => ({
+              ...prev,
+              [newPage]: data.data.alislamArticles
+            }));
+          }
         }
       } catch (err) {
-        console.warn('Failed to fetch periodical page:', err);
+        console.warn('Failed to fetch article page:', err);
       } finally {
         setLoadingPeriodicalPage(false);
       }
@@ -1002,36 +1030,99 @@ export default function ResearchEngine() {
               {/* ── 5. PERIODICALS & PAPERS ─────────────────────────────────── */}
               {(activeFilter === 'all' || activeFilter === 'articles') && (
                 <div className="space-y-6">
-                  {/* Live Al Hakam Archive Callout Banner */}
-                  {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
-                    <div className="p-4 rounded-[16px] glass bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-1">
-                          <img
-                            src="https://www.google.com/s2/favicons?domain=alhakam.org&sz=128"
-                            alt="Al Hakam"
-                            className="w-5 h-5 object-contain rounded-sm"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div>
-                          <span className="font-black text-emerald-400 text-sm">
-                            Al Hakam Archive: {results.totalAlHakamHits} results found
-                          </span>
-                          <p className="text-[var(--text-muted)] text-[11px] font-medium">
-                            Displaying top verified articles directly from the live alhakam.org search database
-                          </p>
+                  {/* Live Online Article Archives Callout Banner */}
+                  {(results.totalAlHakamHits || results.totalRoRHits || results.totalAlIslamHits) && (
+                    <div className="p-4 rounded-[16px] glass bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-3 text-xs shadow-md">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center -space-x-1 shrink-0">
+                            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-0.5 shadow-sm">
+                              <img
+                                src="https://www.google.com/s2/favicons?domain=alhakam.org&sz=128"
+                                alt="Al Hakam"
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-0.5 shadow-sm">
+                              <img
+                                src="https://www.google.com/s2/favicons?domain=reviewofreligions.org&sz=128"
+                                alt="Review of Religions"
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-0.5 shadow-sm">
+                              <img
+                                src="https://www.google.com/s2/favicons?domain=alislam.org&sz=128"
+                                alt="Al Islam"
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-black text-emerald-400 text-sm">
+                              Live Article Archives: {(results.totalArticleHits || ((results.totalAlHakamHits || 0) + (results.totalRoRHits || 0) + (results.totalAlIslamHits || 0)))} results found
+                            </span>
+                            <p className="text-[var(--text-muted)] text-[11px] font-medium">
+                              Aggregated live from alhakam.org, reviewofreligions.org, and alislam.org with complete pagination
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <a
-                        href={`https://www.alhakam.org/search?q=${encodeURIComponent(submittedQuery)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto shrink-0 border border-emerald-500/30"
-                      >
-                        <span>Browse all {results.totalAlHakamHits} on alhakam.org</span>
-                        <ExternalLink size={12} />
-                      </a>
+
+                      {/* Source breakdown pills with direct search links */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-emerald-500/20">
+                        {typeof results.totalAlHakamHits === 'number' && results.totalAlHakamHits > 0 && (
+                          <a
+                            href={`https://www.alhakam.org/search?q=${encodeURIComponent(submittedQuery)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-emerald-500/20 text-white/90 hover:text-emerald-300 font-semibold text-[11px] flex items-center gap-1.5 transition-colors border border-white/10"
+                          >
+                            <img
+                              src="https://www.google.com/s2/favicons?domain=alhakam.org&sz=128"
+                              alt="Al Hakam"
+                              className="w-3.5 h-3.5 object-contain"
+                            />
+                            <span>Al Hakam: <strong className="text-emerald-400">{results.totalAlHakamHits}</strong></span>
+                            <ExternalLink size={10} className="opacity-60" />
+                          </a>
+                        )}
+                        {typeof results.totalRoRHits === 'number' && results.totalRoRHits > 0 && (
+                          <a
+                            href={`https://www.reviewofreligions.org/?s=${encodeURIComponent(submittedQuery)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-emerald-500/20 text-white/90 hover:text-emerald-300 font-semibold text-[11px] flex items-center gap-1.5 transition-colors border border-white/10"
+                          >
+                            <img
+                              src="https://www.google.com/s2/favicons?domain=reviewofreligions.org&sz=128"
+                              alt="Review of Religions"
+                              className="w-3.5 h-3.5 object-contain"
+                            />
+                            <span>Review of Religions: <strong className="text-emerald-400">{results.totalRoRHits}</strong></span>
+                            <ExternalLink size={10} className="opacity-60" />
+                          </a>
+                        )}
+                        {typeof results.totalAlIslamHits === 'number' && results.totalAlIslamHits > 0 && (
+                          <a
+                            href={`https://www.alislam.org/?s=${encodeURIComponent(submittedQuery)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-emerald-500/20 text-white/90 hover:text-emerald-300 font-semibold text-[11px] flex items-center gap-1.5 transition-colors border border-white/10"
+                          >
+                            <img
+                              src="https://www.google.com/s2/favicons?domain=alislam.org&sz=128"
+                              alt="Al Islam"
+                              className="w-3.5 h-3.5 object-contain"
+                            />
+                            <span>Al Islam: <strong className="text-emerald-400">{results.totalAlIslamHits}+</strong></span>
+                            <ExternalLink size={10} className="opacity-60" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -1039,10 +1130,10 @@ export default function ResearchEngine() {
                     <div className="py-16 text-center space-y-3 glass rounded-2xl border border-emerald-500/20 p-8 my-4">
                       <Loader2 size={32} className="animate-spin text-emerald-400 mx-auto" />
                       <p className="text-sm font-bold text-emerald-400">
-                        Loading Al Hakam Archive Page {currentPage} of {totalPages}...
+                        Loading Article Archives Page {currentPage} of {totalPages}...
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
-                        Retrieving verified historical articles from alhakam.org
+                        Retrieving verified live articles from reviewofreligions.org, alhakam.org, and alislam.org
                       </p>
                     </div>
                   ) : (
@@ -1097,16 +1188,16 @@ export default function ResearchEngine() {
                   )}
 
                   {/* Articles Tab Jump Banner for 'all' tab */}
-                  {activeFilter === 'all' && (results.totalAlHakamHits || results.publications.length) > ITEMS_PER_PAGE && (
+                  {activeFilter === 'all' && (results.totalArticleHits || results.totalAlHakamHits || results.publications.length) > ITEMS_PER_PAGE && (
                     <div className="p-3.5 rounded-xl glass bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <span className="text-[var(--text-muted)] font-medium">
-                        Showing page {currentPage} of Al Hakam Archive ({results.totalAlHakamHits || results.publications.length} total articles available)
+                        Showing page {currentPage} of Article Archives ({(results.totalArticleHits || results.totalAlHakamHits || results.publications.length)} total articles available)
                       </span>
                       <button
                         onClick={() => handleTabChange('articles')}
                         className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
                       >
-                        <span>Browse all {results.totalAlHakamHits || results.publications.length} in Articles tab</span>
+                        <span>Browse all {results.totalArticleHits || results.totalAlHakamHits || results.publications.length} in Articles tab</span>
                         <ArrowRight size={12} />
                       </button>
                     </div>
@@ -1135,7 +1226,7 @@ export default function ResearchEngine() {
                     )}
                     {activeFilter === 'articles' && (
                       <span className="text-emerald-400 font-bold">
-                        • {counts.articles} total articles (Al Hakam & Al Islam)
+                        • {counts.articles} total articles (Review of Religions, Al Hakam & Al Islam)
                       </span>
                     )}
                   </div>

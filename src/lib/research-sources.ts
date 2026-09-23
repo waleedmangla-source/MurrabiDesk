@@ -28,7 +28,7 @@ export interface AlIslamArticleResult {
   id: string;
   title: string;
   author?: string;
-  category: 'Article' | 'Book' | 'Friday Sermon' | 'Q&A' | 'Topic Portal';
+  category: 'Article' | 'Book' | 'Friday Sermon' | 'Q&A' | 'Topic Portal' | 'Video';
   summary: string;
   url: string;
   date?: string;
@@ -100,6 +100,12 @@ export interface MultiSourceSearchResult {
   dossier?: ResearchDossier;
   totalResults: number;
   totalAlHakamHits?: number;
+  totalRoRHits?: number;
+  totalAlIslamHits?: number;
+  totalArticleHits?: number;
+  totalPagesAlHakam?: number;
+  totalPagesRoR?: number;
+  totalPagesAlIslam?: number;
   consensusMatrix?: TheologicalConsensusMatrix;
   hitsRankings?: HitsRankings;
 }
