@@ -9,12 +9,12 @@ import {
 } from '@/lib/khazain-data';
 import {
   searchQuranVerses,
+  searchHadithTraditions,
   searchAlIslamResources,
   searchPeriodicals,
-  findTheologicalDossier,
-  synthesizeSmartTheologicalResponse,
   MultiSourceSearchResult,
   RuhaniKhazainSearchResult,
+  HadithResult,
   ResearchDossier
 } from '@/lib/research-sources';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     const requestedSources: string[] = Array.isArray(body.sources) && body.sources.length > 0 
       ? body.sources 
-      : ['ruhani-khazain', 'quran', 'alislam', 'periodicals', 'dossier'];
+      : ['ruhani-khazain', 'quran', 'ahadith', 'alislam', 'periodicals'];
 
     // ─────────────────────────────────────────────────────────────────────────
     // Phase 1: Theological Lesk Context Disambiguation
@@ -317,6 +317,18 @@ export async function POST(req: NextRequest) {
       return results;
     })();
 
+    const hadithPromise: Promise<HadithResult[]> = (async () => {
+      if (!requestedSources.includes('ahadith')) return [];
+      const results = searchHadithTraditions(rawQuery);
+      if (results.length === 0 && dsgtContext.winningSense) {
+        const extra = searchHadithTraditions(dsgtContext.winningSense.primaryConcept);
+        for (const item of extra) {
+          if (!results.some(r => r.id === item.id)) results.push(item);
+        }
+      }
+      return results;
+    })();
+
     const alislamPromise: Promise<AlIslamArticleResult[]> = (async () => {
       if (!requestedSources.includes('alislam')) return [];
       const localResults = searchAlIslamResources(rawQuery);
@@ -395,9 +407,10 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    const [rkResults, quranResults, alislamResults, periodicalsResults] = await Promise.all([
+    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
+      hadithPromise,
       alislamPromise,
       periodicalsPromise
     ]);
@@ -414,34 +427,16 @@ export async function POST(req: NextRequest) {
       hitsRankings
     );
 
-    // Scholarly Dossier
-    let dossierResult: ResearchDossier | undefined = undefined;
-    if (requestedSources.includes('dossier')) {
-      const preSynthesized = findTheologicalDossier(rawQuery);
-      if (preSynthesized) {
-        dossierResult = preSynthesized;
-      } else {
-        const synthesized = synthesizeSmartTheologicalResponse(
-          rawQuery,
-          rkResults,
-          quranResults,
-          alislamResults,
-          periodicalsResults
-        );
-        if (synthesized) dossierResult = synthesized;
-      }
-    }
-
-    const totalResults = rkResults.length + quranResults.length + alislamResults.length + Math.max(periodicalsResults.length, totalAlHakamHits) + (dossierResult ? 1 : 0);
+    const totalResults = rkResults.length + quranResults.length + hadithResults.length + alislamResults.length + Math.max(periodicalsResults.length, totalAlHakamHits);
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
       normalizedTerms,
       ruhaniKhazain: rkResults,
       quranVerses: quranResults,
+      ahadith: hadithResults,
       alislamArticles: alislamResults,
       publications: periodicalsResults,
-      dossier: dossierResult,
       consensusMatrix,
       hitsRankings,
       totalResults,

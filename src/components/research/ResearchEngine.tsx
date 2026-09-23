@@ -32,13 +32,13 @@ import {
   MultiSourceSearchResult,
   RuhaniKhazainSearchResult,
   QuranVerseResult,
+  HadithResult,
   AlIslamArticleResult,
   PublicationResult,
-  ResearchDossier,
   TheologicalConsensusMatrix
 } from '@/lib/research-sources';
 
-type ActiveSourceFilter = 'all' | 'ruhani-khazain' | 'quran' | 'alislam' | 'periodicals' | 'dossier';
+type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'articles';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -226,20 +226,22 @@ export default function ResearchEngine() {
 
   // Filter count badges
   const counts = useMemo(() => {
-    const periodicalsCount = results ? Math.max(results.publications.length, results.totalAlHakamHits || 0) : 0;
-    const rkCount = results ? results.ruhaniKhazain.length : 0;
     const quranCount = results ? results.quranVerses.length : 0;
+    const ahadithCount = results ? (results.ahadith?.length || 0) : 0;
     const alislamCount = results ? results.alislamArticles.length : 0;
-    const dossierCount = results?.dossier ? 1 : 0;
-    const allCount = rkCount + quranCount + alislamCount + periodicalsCount + dossierCount;
+    const periodicalsCount = results ? Math.max(results.publications.length, results.totalAlHakamHits || 0) : 0;
+    const articlesCount = alislamCount + periodicalsCount;
+    const rkCount = results ? results.ruhaniKhazain.length : 0;
+    const allCount = rkCount + quranCount + ahadithCount + articlesCount;
 
     return {
       all: allCount,
-      rk: rkCount,
       quran: quranCount,
+      ahadith: ahadithCount,
+      articles: articlesCount,
+      rk: rkCount,
       alislam: alislamCount,
-      periodicals: periodicalsCount,
-      dossier: dossierCount
+      periodicals: periodicalsCount
     };
   }, [results]);
 
@@ -247,18 +249,20 @@ export default function ResearchEngine() {
   const totalPages = useMemo(() => {
     if (!results) return 1;
     switch (activeFilter) {
-      case 'ruhani-khazain':
-        return Math.max(1, Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE));
-      case 'periodicals':
-        return Math.max(1, Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE));
-      case 'alislam':
-        return Math.max(1, Math.ceil(results.alislamArticles.length / ITEMS_PER_PAGE));
       case 'quran':
         return Math.max(1, Math.ceil(results.quranVerses.length / ITEMS_PER_PAGE));
+      case 'ahadith':
+        return Math.max(1, Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE));
+      case 'articles': {
+        const perPages = Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE);
+        const alislamPages = Math.ceil(results.alislamArticles.length / ITEMS_PER_PAGE);
+        return Math.max(1, Math.max(perPages, alislamPages));
+      }
       case 'all': {
         const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
         const perPages = Math.ceil((results.totalAlHakamHits || results.publications.length) / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(rkPages, perPages));
+        const hadithPages = Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE);
+        return Math.max(1, Math.max(rkPages, perPages, hadithPages));
       }
       default:
         return 1;
@@ -281,13 +285,25 @@ export default function ResearchEngine() {
     return results.quranVerses.slice(start, start + ITEMS_PER_PAGE);
   }, [results, currentPage, activeFilter]);
 
+  const displayedAhadith = useMemo(() => {
+    if (!results || !results.ahadith) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.ahadith : [];
+    }
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return results.ahadith.slice(start, start + ITEMS_PER_PAGE);
+  }, [results, currentPage, activeFilter]);
+
   const displayedAlIslam = useMemo(() => {
     if (!results) return [];
     if (activeFilter === 'all') {
       return currentPage === 1 ? results.alislamArticles.slice(0, ITEMS_PER_PAGE) : [];
     }
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return results.alislamArticles.slice(start, start + ITEMS_PER_PAGE);
+    if (activeFilter === 'articles') {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return results.alislamArticles.slice(start, start + ITEMS_PER_PAGE);
+    }
+    return [];
   }, [results, currentPage, activeFilter]);
 
   const displayedPublications = useMemo(() => {
@@ -306,7 +322,7 @@ export default function ResearchEngine() {
     setCurrentPage(newPage);
 
     // Fetch on-demand page for Al Hakam Archive if not cached
-    if ((activeFilter === 'periodicals' || activeFilter === 'all') && !periodicalsCache[newPage]) {
+    if ((activeFilter === 'articles' || activeFilter === 'all') && !periodicalsCache[newPage]) {
       setLoadingPeriodicalPage(true);
       try {
         const res = await fetch('/api/research/search', {
@@ -582,11 +598,9 @@ export default function ResearchEngine() {
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 md:gap-6 overflow-x-auto custom-scrollbar mt-3 select-none text-xs md:text-sm">
           {[
             { id: 'all', label: 'All Sources', count: counts.all, icon: Search },
-            { id: 'ruhani-khazain', label: 'Ruhani Khazain', count: counts.rk, icon: Scroll },
             { id: 'quran', label: 'Holy Qur\'an', count: counts.quran, icon: BookOpen },
-            { id: 'alislam', label: 'Al Islam', count: counts.alislam, icon: Globe },
-            { id: 'periodicals', label: 'Periodicals', count: counts.periodicals, icon: Newspaper },
-            { id: 'dossier', label: 'Scholarly Overview', count: counts.dossier, icon: BookmarkCheck }
+            { id: 'ahadith', label: 'Ahadith', count: counts.ahadith, icon: Scroll },
+            { id: 'articles', label: 'Articles', count: counts.articles, icon: Newspaper }
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeFilter === tab.id;
@@ -659,7 +673,7 @@ export default function ResearchEngine() {
             {/* Left Column: Results Stream */}
             <div className="flex-1 max-w-2xl space-y-8">
               {/* ── 0. DSGT CONSENSUS TRIANGULATION MATRIX (Mathematical Corroboration) ── */}
-              {(activeFilter === 'all' || activeFilter === 'dossier') && results.consensusMatrix && (
+              {activeFilter === 'all' && results.consensusMatrix && (
                 <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/35 bg-gradient-to-br from-[var(--accent-soft)]/50 via-white/5 to-transparent relative overflow-hidden shadow-xl space-y-5">
                   {/* Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
@@ -785,81 +799,8 @@ export default function ResearchEngine() {
                 </div>
               )}
 
-              {/* ── 1. SCHOLARLY OVERVIEW (Deterministic Theological Synthesis) */}
-              {(activeFilter === 'all' || activeFilter === 'dossier') && results.dossier && (
-                <div className="glass-card p-6 md:p-7 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)] via-white/5 to-transparent relative overflow-hidden shadow-xl">
-                  {/* Scholarly Overview Header */}
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 flex items-center justify-center text-[var(--accent-main)] shadow-sm">
-                        <BookmarkCheck size={16} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-black italic tracking-tight text-[var(--foreground)] flex items-center gap-2">
-                          Scholarly Overview
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)] opacity-70">
-                            • Theological Synthesis
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        const copyTxt = `${results.dossier?.title}\n\n${results.dossier?.theologicalThesis}\n\nKey Points:\n${results.dossier?.keyArguments.map(a => `- ${a}`).join('\n')}`;
-                        copyToClipboard(copyTxt, 'scholarly-overview');
-                      }}
-                      className="text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-white/5 transition-colors font-bold"
-                      title="Copy Overview"
-                    >
-                      {copiedId === 'scholarly-overview' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      <span className="text-[11px] uppercase tracking-wider">{copiedId === 'scholarly-overview' ? "Copied" : "Copy Briefing"}</span>
-                    </button>
-                  </div>
-
-                  {/* Core Thesis Paragraph */}
-                  <p className="text-sm md:text-base text-[var(--foreground)] leading-relaxed font-medium mb-4">
-                    {results.dossier.theologicalThesis}
-                  </p>
-
-                  {/* Bullet Points */}
-                  {results.dossier.keyArguments && results.dossier.keyArguments.length > 0 && (
-                    <div className="space-y-2.5 mb-5">
-                      {results.dossier.keyArguments.map((point, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-[var(--foreground)]/90">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-main)] mt-2 shrink-0" />
-                          <span className="font-medium leading-relaxed">{point}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Citation Chips */}
-                  <div className="pt-3 border-t border-white/10 flex flex-wrap gap-2">
-                    {results.dossier.quranicEvidence?.map((q, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-[10px] bg-white/5 border border-white/10 text-[11px] font-bold text-[var(--accent-main)] flex items-center gap-1"
-                      >
-                        <BookOpen size={11} />
-                        {q.ref}
-                      </span>
-                    ))}
-                    {results.dossier.ruhaniKhazainCitations?.map((c, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-[10px] bg-white/5 border border-white/10 text-[11px] font-bold text-[var(--foreground)] flex items-center gap-1"
-                      >
-                        <Scroll size={11} className="text-[var(--accent-main)]" />
-                        {c.book} (Vol {c.volume})
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── 2. RUHANI KHAZAIN RESULTS ───────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'ruhani-khazain') && displayedRuhaniKhazain.map((item, idx) => {
+              {/* ── 1. RUHANI KHAZAIN RESULTS ───────────────────────────────── */}
+              {activeFilter === 'all' && displayedRuhaniKhazain.map((item, idx) => {
                 const itemKey = `rk-${item.volume}-${item.pageNum}-${idx}`;
                 const citation = `[Ruhani Khazain, Vol. ${item.volume}, "${item.bookTitle}", p. ${item.pageNum}]`;
                 return (
@@ -934,28 +875,21 @@ export default function ResearchEngine() {
                 );
               })}
 
-              {/* Ruhani Khazain Tab Jump Banner for 'all' tab */}
+              {/* Ruhani Khazain Note for 'all' tab */}
               {activeFilter === 'all' && results.ruhaniKhazain.length > ITEMS_PER_PAGE && (
-                <div className="p-3.5 rounded-xl glass bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="p-3.5 rounded-xl glass bg-white/5 border border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[var(--text-muted)] font-medium">
-                    Showing page {currentPage} ({displayedRuhaniKhazain.length} of {results.ruhaniKhazain.length} matches across 23 volumes)
+                    Showing page {currentPage} ({displayedRuhaniKhazain.length} of {results.ruhaniKhazain.length} matches across 23 volumes of Ruhani Khazain)
                   </span>
-                  <button
-                    onClick={() => handleTabChange('ruhani-khazain')}
-                    className="text-[var(--accent-main)] hover:text-white font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
-                  >
-                    <span>Browse all {results.ruhaniKhazain.length} in Ruhani Khazain tab</span>
-                    <ArrowRight size={12} />
-                  </button>
                 </div>
               )}
 
-              {/* ── 3. HOLY QUR'AN THEMATIC RESULTS ─────────────────────────── */}
+              {/* ── 2. HOLY QUR'AN THEMATIC RESULTS ─────────────────────────── */}
               {(activeFilter === 'all' || activeFilter === 'quran') && displayedQuran.map((v) => {
                 const verseKey = `quran-${v.surahNumber}-${v.verseNumber}`;
                 const quranCitation = `[Holy Qur'an, Surah ${v.surahNameEnglish} (${v.surahNumber}:${v.verseNumber})]\n"${v.arabicText}"\nTranslation: "${v.englishTranslation}"`;
                 return (
-                  <div key={verseKey} className="space-y-3 group p-5 rounded-[16px] glass border border-white/10 hover:border-emerald-500/30 transition-all">
+                  <div key={verseKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                     {/* Header */}
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                       <div className="flex items-center gap-2">
@@ -1024,8 +958,117 @@ export default function ResearchEngine() {
                 );
               })}
 
-              {/* ── 4. AL ISLAM OFFICIAL ARTICLES ───────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'alislam') && displayedAlIslam.map((art) => (
+              {/* ── 3. CANONICAL AHADITH RESULTS ────────────────────────────── */}
+              {(activeFilter === 'all' || activeFilter === 'ahadith') && displayedAhadith.map((h, idx) => {
+                const hadithKey = `hadith-${h.id || idx}`;
+                const citationText = `[Hadith: ${h.book}${h.chapter ? `, ${h.chapter}` : ''}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.narrator ? ` — Narrated by ${h.narrator}` : ''}]\n"${h.arabicText ? `${h.arabicText}\n` : ''}${h.englishTranslation}"`;
+                return (
+                  <div key={hadithKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                    {/* Header */}
+                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-[10px] shrink-0">
+                          HD
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                          <span className="text-amber-400 font-bold">Ahadith</span>
+                          <span>›</span>
+                          <span className="text-[var(--foreground)]">{h.book}</span>
+                          {h.chapter && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate">{h.chapter}</span>
+                            </>
+                          )}
+                          {h.hadithNumber && (
+                            <>
+                              <span>•</span>
+                              <span>No. {h.hadithNumber}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">
+                        <ShieldCheck size={11} />
+                        Prophetic Tradition
+                      </span>
+                    </div>
+
+                    {/* Narrator if available */}
+                    {h.narrator && (
+                      <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
+                        Narrated by <span className="text-[var(--foreground)]">{h.narrator}</span>
+                      </div>
+                    )}
+
+                    {/* Arabic Text if available */}
+                    {h.arabicText && (
+                      <div
+                        dir="rtl"
+                        className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
+                      >
+                        {h.arabicText}
+                      </div>
+                    )}
+
+                    {/* English Translation */}
+                    <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-amber-500/40 pl-3">
+                      "{h.englishTranslation}"
+                    </p>
+
+                    {/* Urdu Translation if available */}
+                    {h.urduTranslation && (
+                      <div
+                        dir="rtl"
+                        className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right"
+                      >
+                        {h.urduTranslation}
+                      </div>
+                    )}
+
+                    {/* Context Note if available */}
+                    {h.contextNote && (
+                      <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-white/[0.02] p-3 rounded-[10px] border border-white/5 font-medium">
+                        <span className="text-amber-400 font-bold mr-1">Contextual Exegesis:</span>
+                        {h.contextNote}
+                      </div>
+                    )}
+
+                    {/* Bottom Actions */}
+                    <div className="flex items-center justify-between pt-1 text-xs">
+                      {h.url ? (
+                        <a
+                          href={h.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Globe size={13} />
+                          Explore Tradition
+                          <ExternalLink size={11} className="opacity-60" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)] font-semibold">
+                          {h.book}
+                        </span>
+                      )}
+
+                      <button
+                        onClick={() => copyToClipboard(citationText, hadithKey)}
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                        title="Copy Citation"
+                      >
+                        {copiedId === hadithKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        <span className="text-[11px] uppercase tracking-wider">{copiedId === hadithKey ? "Copied" : "Cite"}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* ── 4. ARTICLES: AL ISLAM & PERIODICALS ──────────────────────── */}
+              {(activeFilter === 'all' || activeFilter === 'articles') && displayedAlIslam.map((art) => (
                 <div key={art.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                   <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                     <div className="w-6 h-6 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-[10px] shrink-0">
@@ -1069,7 +1112,7 @@ export default function ResearchEngine() {
               ))}
 
               {/* ── 5. PERIODICALS & PAPERS ─────────────────────────────────── */}
-              {(activeFilter === 'all' || activeFilter === 'periodicals') && (
+              {(activeFilter === 'all' || activeFilter === 'articles') && (
                 <div className="space-y-6">
                   {/* Live Al Hakam Archive Callout Banner */}
                   {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
@@ -1180,17 +1223,17 @@ export default function ResearchEngine() {
                     })
                   )}
 
-                  {/* Periodicals Tab Jump Banner for 'all' tab */}
+                  {/* Articles Tab Jump Banner for 'all' tab */}
                   {activeFilter === 'all' && (results.totalAlHakamHits || results.publications.length) > ITEMS_PER_PAGE && (
                     <div className="p-3.5 rounded-xl glass bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <span className="text-[var(--text-muted)] font-medium">
                         Showing page {currentPage} of Al Hakam Archive ({results.totalAlHakamHits || results.publications.length} total articles available)
                       </span>
                       <button
-                        onClick={() => handleTabChange('periodicals')}
+                        onClick={() => handleTabChange('articles')}
                         className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95 transition-all self-start sm:self-auto"
                       >
-                        <span>Browse all {results.totalAlHakamHits || results.publications.length} in Periodicals tab</span>
+                        <span>Browse all {results.totalAlHakamHits || results.publications.length} in Articles tab</span>
                         <ArrowRight size={12} />
                       </button>
                     </div>
@@ -1207,14 +1250,19 @@ export default function ResearchEngine() {
                       Page <span className="text-[var(--foreground)] font-bold">{currentPage}</span> of{' '}
                       <span className="text-[var(--foreground)] font-bold">{totalPages}</span>
                     </span>
-                    {activeFilter === 'ruhani-khazain' && (
-                      <span className="text-[var(--accent-main)] font-bold">
-                        • {results.ruhaniKhazain.length} matches across Ruhani Khazain
+                    {activeFilter === 'quran' && (
+                      <span className="text-emerald-400 font-bold">
+                        • {results.quranVerses.length} verses from the Holy Qur'an
                       </span>
                     )}
-                    {activeFilter === 'periodicals' && (
+                    {activeFilter === 'ahadith' && (
+                      <span className="text-amber-400 font-bold">
+                        • {results.ahadith?.length || 0} prophetic traditions
+                      </span>
+                    )}
+                    {activeFilter === 'articles' && (
                       <span className="text-emerald-400 font-bold">
-                        • {results.totalAlHakamHits || results.publications.length} archive articles
+                        • {counts.articles} total articles (Al Hakam & Al Islam)
                       </span>
                     )}
                   </div>
@@ -1289,83 +1337,31 @@ export default function ResearchEngine() {
             </div>
 
             {/* Right Column: Knowledge Panel (Desktop) */}
-            {(results.dossier || results.consensusMatrix) && (
+            {results.consensusMatrix && (
               <div className="hidden lg:block w-80 shrink-0 space-y-4">
                 {/* DSGT Quick Stats Card */}
-                {results.consensusMatrix && (
-                  <div className="glass-card p-5 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)]/40 to-transparent shadow-xl space-y-3">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                      <span className="flex items-center gap-1.5">
-                        <ShieldCheck size={13} />
-                        Consensus Engine
-                      </span>
-                      <span className="text-emerald-400 font-bold">{results.consensusMatrix.confidenceScore}%</span>
-                    </div>
-
-                    <div className="text-sm font-black italic tracking-tight text-[var(--foreground)]">
-                      {results.consensusMatrix.consensusLevel}
-                    </div>
-
-                    <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                      Deterministic verification across {results.consensusMatrix.corroboratedLayersCount} of 4 canonical literature layers.
-                    </p>
-
-                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-[var(--text-muted)]">
-                      <span>Corroborated Sources:</span>
-                      <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.totalCorroboratedSources} citations</span>
-                    </div>
+                <div className="glass-card p-5 rounded-[18px] border border-[var(--accent-main)]/30 bg-gradient-to-br from-[var(--accent-soft)]/40 to-transparent shadow-xl space-y-3">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
+                    <span className="flex items-center gap-1.5">
+                      <ShieldCheck size={13} />
+                      Consensus Engine
+                    </span>
+                    <span className="text-emerald-400 font-bold">{results.consensusMatrix.confidenceScore}%</span>
                   </div>
-                )}
 
-                {results.dossier && (
-                  <div className="glass-card p-6 rounded-[18px] border border-white/10 shadow-xl space-y-4 sticky top-24">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-main)]">
-                      <BookOpen size={14} />
-                      Knowledge Panel
-                    </div>
-
-                    <h3 className="text-lg font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                      {results.dossier.title.replace('Theological Dossier: ', '')}
-                    </h3>
-
-                    <p className="text-xs text-[var(--text-muted)] leading-relaxed font-medium">
-                      {results.dossier.theologicalThesis.slice(0, 180)}...
-                    </p>
-
-                    <div className="pt-3 border-t border-white/5 space-y-2 text-xs">
-                      <div className="font-bold text-[var(--foreground)] uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
-                        Primary Corpus
-                      </div>
-                      <div className="text-[var(--text-muted)] font-medium">
-                        Ruhani Khazain (Volumes 1–23) • Holy Qur'an
-                      </div>
-                    </div>
-
-                    {results.dossier.hadithTraditions && results.dossier.hadithTraditions.length > 0 && (
-                      <div className="pt-2 border-t border-white/5 space-y-1 text-xs">
-                        <div className="font-bold text-[var(--foreground)] uppercase text-[10px] tracking-wider text-[var(--accent-main)]">
-                          Prophetic Tradition
-                        </div>
-                        <div className="text-[var(--text-muted)] italic font-medium leading-relaxed">
-                          "{results.dossier.hadithTraditions[0].text}"
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="pt-3">
-                      <button
-                        onClick={() => {
-                          const copyAll = `[THEOLOGICAL DOSSIER: ${results.dossier?.topic}]\n\n${results.dossier?.theologicalThesis}\n\nEvidence:\n${results.dossier?.keyArguments.join('\n')}`;
-                          copyToClipboard(copyAll, 'kp-copy');
-                        }}
-                        className="w-full py-2.5 px-3 rounded-[12px] bg-[var(--accent-soft)] hover:bg-[var(--accent-main)] hover:text-white text-[var(--accent-main)] font-black text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
-                      >
-                        {copiedId === 'kp-copy' ? <Check size={14} /> : <Copy size={14} />}
-                        <span>{copiedId === 'kp-copy' ? "Copied" : "Copy Complete Briefing"}</span>
-                      </button>
-                    </div>
+                  <div className="text-sm font-black italic tracking-tight text-[var(--foreground)]">
+                    {results.consensusMatrix.consensusLevel}
                   </div>
-                )}
+
+                  <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+                    Deterministic verification across {results.consensusMatrix.corroboratedLayersCount} of 4 canonical literature layers.
+                  </p>
+
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-[var(--text-muted)]">
+                    <span>Corroborated Sources:</span>
+                    <span className="text-[var(--accent-main)] font-black">{results.consensusMatrix.totalCorroboratedSources} citations</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
