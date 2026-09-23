@@ -1071,8 +1071,13 @@ export default function ResearchEngine() {
               {(activeFilter === 'all' || activeFilter === 'articles') && displayedAlIslam.map((art) => (
                 <div key={art.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                   <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                    <div className="w-6 h-6 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-[10px] shrink-0">
-                      AL
+                    <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                      <img
+                        src="https://www.google.com/s2/favicons?domain=alislam.org&sz=128"
+                        alt="Al Islam"
+                        className="w-4 h-4 object-contain rounded-sm"
+                        loading="lazy"
+                      />
                     </div>
                     <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
                       <span className="text-[var(--foreground)]">alislam.org</span>
@@ -1118,8 +1123,13 @@ export default function ResearchEngine() {
                   {results.totalAlHakamHits && results.totalAlHakamHits > 0 && (
                     <div className="p-4 rounded-[16px] glass bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-xs shrink-0">
-                          AH
+                        <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-1">
+                          <img
+                            src="https://www.google.com/s2/favicons?domain=alhakam.org&sz=128"
+                            alt="Al Hakam"
+                            className="w-5 h-5 object-contain rounded-sm"
+                            loading="lazy"
+                          />
                         </div>
                         <div>
                           <span className="font-black text-emerald-400 text-sm">
@@ -1161,11 +1171,13 @@ export default function ResearchEngine() {
                         <div key={pub.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                           <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                             <div className="flex items-center gap-2">
-                              <div className={clsx(
-                                "w-6 h-6 rounded-md flex items-center justify-center font-black text-[10px] shrink-0",
-                                isAlHakam ? "bg-emerald-500/20 text-emerald-400" : isRoR ? "bg-purple-500/20 text-purple-400" : "bg-amber-500/20 text-amber-400"
-                              )}>
-                                {isAlHakam ? 'AH' : isRoR ? 'RoR' : 'AF'}
+                              <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                                <img
+                                  src={`https://www.google.com/s2/favicons?domain=${isAlHakam ? 'alhakam.org' : isRoR ? 'reviewofreligions.org' : 'alfazl.com'}&sz=128`}
+                                  alt={pub.source}
+                                  className="w-4 h-4 object-contain rounded-sm"
+                                  loading="lazy"
+                                />
                               </div>
                               <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
                                 <span className="text-[var(--foreground)]">{pub.source}</span>
