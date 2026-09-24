@@ -47,6 +47,7 @@ import {
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
+import SearchStageTracker from './SearchStageTracker';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'literature' | 'articles' | 'audios' | 'videos';
 
@@ -789,14 +790,12 @@ export default function ResearchEngine() {
           </div>
         )}
 
-        {/* Loading Spinner */}
+        {/* Source-by-Source Stage Tracker */}
         {loading && (
-          <div className="py-20 text-center space-y-4 max-w-2xl mx-auto">
-            <Loader2 size={36} className="animate-spin text-[var(--accent-main)] mx-auto" />
-            <p className="text-sm font-bold text-[var(--text-muted)] tracking-wide">
-              Scanning Ruhani Khazain 1–23, Qur'an, Al Islam, and Periodicals...
-            </p>
-          </div>
+          <SearchStageTracker
+            query={submittedQuery || query}
+            active={loading}
+          />
         )}
 
         {/* Error message */}
