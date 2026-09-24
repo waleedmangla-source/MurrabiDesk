@@ -9,6 +9,12 @@ export interface CommentaryNoteItem {
   isImportantWords?: boolean;
 }
 
+export interface QuranWordToken {
+  ar: string;
+  translation?: string;
+  isVerseMarker?: boolean;
+}
+
 export interface QuranCommentaryResponse {
   success: boolean;
   surah: number;
@@ -19,6 +25,7 @@ export interface QuranCommentaryResponse {
   englishTranslation?: string;
   urduTranslation?: string;
   conciseSummary?: string;
+  tokens?: QuranWordToken[];
   fiveVolumeCommentary: CommentaryNoteItem[];
   shortCommentary: CommentaryNoteItem[];
   tafseerSagheer: CommentaryNoteItem[];
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
 async function fetchCommentary(surah: number, verse: number) {
   try {
     const url = `https://api.readquran.app/chapter/${surah}:${verse}-${verse}`;
-    const payload = { en: true, ur: true, v5: true, sc: true, ts: true };
+    const payload = { en: true, ur: true, v5: true, sc: true, ts: true, hover: 0, f: 1 };
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
@@ -164,14 +171,31 @@ async function fetchCommentary(surah: number, verse: number) {
       }
     }
 
+    // 6. Extract word-by-word tokens from Al Islam
+    const arText = typeof verseData.ar === 'string' ? verseData.ar : (verseData.ar?.text || '');
+    let tokens: QuranWordToken[] | undefined = undefined;
+    if (arText && Array.isArray(verseData.words)) {
+      const arTokens = arText.split(' ');
+      tokens = arTokens.map((ar: string, idx: number) => {
+        const rawT = verseData.words[idx]?.t;
+        const cleanT = rawT && typeof rawT === 'string' ? rawT.trim() : undefined;
+        return {
+          ar,
+          translation: cleanT && cleanT.length > 0 ? cleanT : undefined,
+          isVerseMarker: /[﴿﴾]/.test(ar)
+        };
+      });
+    }
+
     const responseData: QuranCommentaryResponse = {
       success: true,
       surah,
       verse,
-      arabicText: verseData.ar?.text || undefined,
+      arabicText: arText || verseData.ar?.text || undefined,
       englishTranslation: verseData.en?.text || undefined,
       urduTranslation: verseData.ur?.text || undefined,
       conciseSummary: conciseSummary || undefined,
+      tokens,
       fiveVolumeCommentary,
       shortCommentary,
       tafseerSagheer,

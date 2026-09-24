@@ -27,7 +27,8 @@ import {
   Video,
   Headphones,
   Radio,
-  BookMarked
+  BookMarked,
+  Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
@@ -48,6 +49,7 @@ import {
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
 import SearchStageTracker from './SearchStageTracker';
+import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'literature' | 'articles' | 'audios' | 'videos';
 
@@ -396,6 +398,15 @@ export default function ResearchEngine() {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return results.quranVerses.slice(start, start + ITEMS_PER_PAGE);
   }, [results, currentPage, activeFilter]);
+
+  // Pre-fetch word-for-word data for currently displayed Quran verses
+  useEffect(() => {
+    if (displayedQuran && displayedQuran.length > 0) {
+      prefetchQuranWords(
+        displayedQuran.map(v => ({ surah: v.surahNumber, verse: v.verseNumber }))
+      );
+    }
+  }, [displayedQuran]);
 
   const displayedAhadith = useMemo(() => {
     if (!results || !results.ahadith) return [];
@@ -851,19 +862,25 @@ export default function ResearchEngine() {
                         </div>
                       </div>
 
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
-                        <ShieldCheck size={11} />
-                        Canonical Root Authority
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <Sparkles size={11} />
+                          Word-by-Word
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                          <ShieldCheck size={11} />
+                          Canonical Root Authority
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Arabic Text */}
-                    <div
-                      dir="rtl"
+                    {/* Arabic Text with Word-for-Word Hover (Al Islam) */}
+                    <QuranVerseWithHover
+                      surahNumber={v.surahNumber}
+                      verseNumber={v.verseNumber}
+                      fallbackArabicText={v.arabicText}
                       className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
-                    >
-                      {v.arabicText}
-                    </div>
+                    />
 
                     {/* English Translation */}
                     <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-emerald-500/40 pl-3">

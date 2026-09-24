@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { QuranCommentaryResponse, CommentaryNoteItem } from '@/app/api/research/quran-commentary/route';
+import QuranVerseWithHover from './QuranVerseWithHover';
 
 interface QuranCommentaryModalProps {
   surah: number;
@@ -221,12 +222,17 @@ export default function QuranCommentaryModal({
           {/* Scripture Card (Arabic + Translations) */}
           <div className="p-4 sm:p-5 rounded-xl glass bg-white/[0.03] border border-white/10 space-y-3.5">
             {arabicText && (
-              <div
-                dir="rtl"
-                className="text-right font-arabic text-xl sm:text-2xl text-[var(--foreground)] leading-loose tracking-wide"
-              >
-                {arabicText}
-              </div>
+              <QuranVerseWithHover
+                surahNumber={surah}
+                verseNumber={verse}
+                fallbackArabicText={arabicText}
+                className={clsx(
+                  "tracking-wide",
+                  fontSize === 'sm' && "text-lg sm:text-xl",
+                  fontSize === 'base' && "text-xl sm:text-2xl",
+                  fontSize === 'lg' && "text-2xl sm:text-3xl"
+                )}
+              />
             )}
 
             {englishText && (
