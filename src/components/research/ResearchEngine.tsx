@@ -1431,6 +1431,8 @@ export default function ResearchEngine() {
                     displayedPublications.map((pub) => {
                       const isAlHakam = pub.source === 'Al Hakam';
                       const isRoR = pub.source === 'Review of Religions';
+                      const isAlFazl = pub.source === 'Al Fazl';
+                      const isUrdu = isAlFazl || /[\u0600-\u06FF]/.test(pub.title);
 
                       return (
                         <div key={pub.id} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
@@ -1438,7 +1440,7 @@ export default function ResearchEngine() {
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
                                 <img
-                                  src={`https://www.google.com/s2/favicons?domain=${isAlHakam ? 'alhakam.org' : isRoR ? 'reviewofreligions.org' : 'alfazl.com'}&sz=128`}
+                                  src={`https://www.google.com/s2/favicons?domain=${isAlHakam ? 'alhakam.org' : isRoR ? 'reviewofreligions.org' : isAlFazl ? 'alfazl.com' : 'alislam.org'}&sz=128`}
                                   alt={pub.source}
                                   className="w-4 h-4 object-contain rounded-sm"
                                   loading="lazy"
@@ -1447,12 +1449,18 @@ export default function ResearchEngine() {
                               <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
                                 <span className="text-[var(--foreground)]">{pub.source}</span>
                                 <span>›</span>
-                                <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : 'Monthly Magazine')}</span>
+                                <span>{pub.date || (isAlHakam ? 'Weekly Newspaper' : isAlFazl ? 'Daily Newspaper' : 'Monthly Magazine')}</span>
                               </div>
                             </div>
                           </div>
 
-                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                          <h3
+                            dir={isUrdu ? "rtl" : "ltr"}
+                            className={clsx(
+                              "text-lg md:text-xl font-black tracking-tight text-[var(--foreground)] leading-snug",
+                              isUrdu ? "font-urdu text-right text-xl md:text-2xl not-italic" : "italic"
+                            )}
+                          >
                             <button
                               type="button"
                               onClick={() => setActiveReadingArticle({
@@ -1469,7 +1477,13 @@ export default function ResearchEngine() {
                             </button>
                           </h3>
 
-                          <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                          <p
+                            dir={isUrdu ? "rtl" : "ltr"}
+                            className={clsx(
+                              "text-sm text-[var(--foreground)]/80 leading-relaxed font-medium",
+                              isUrdu ? "font-urdu text-right leading-loose text-base" : ""
+                            )}
+                          >
                             {pub.summary}
                           </p>
 
@@ -1872,7 +1886,7 @@ export default function ResearchEngine() {
                     )}
                     {activeFilter === 'articles' && (
                       <span className="text-emerald-400 font-bold">
-                        • {counts.articles} total articles (Review of Religions, Al Hakam & Al Islam)
+                        • {counts.articles} total articles (Review of Religions, Al Hakam, Al Fazl & Al Islam)
                       </span>
                     )}
                     {activeFilter === 'audios' && (

@@ -224,52 +224,159 @@ export async function fetchLiveAlIslam(
 }
 
 /**
+ * Fetches real-time search results directly from Daily / Weekly Al Fazl International (alfazl.com)
+ * Official Urdu organ and periodical archive of the Ahmadiyya Muslim Community.
+ * Parses .post-item elements, titles, dates, excerpts, and pagination.
+ */
+export async function fetchLiveAlFazl(
+  query: string,
+  page: number = 1
+): Promise<{ results: PublicationResult[]; totalHits: number; totalPages: number }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const cleanQuery = query.trim();
+    if (!cleanQuery) return { results: [], totalHits: 0, totalPages: 0 };
+
+    const encoded = encodeURIComponent(cleanQuery);
+    const targetUrl = page <= 1
+      ? `https://alfazl.com/?s=${encoded}`
+      : `https://alfazl.com/page/${page}/?s=${encoded}`;
+
+    const res = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'ur,en-US,en;q=0.9'
+      },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    if (!res.ok) return { results: [], totalHits: 0, totalPages: 0 };
+
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    // Extract maximum page number from pagination links
+    let maxPage = 1;
+    $('a[href*="/page/"]').each((_, el) => {
+      const href = $(el).attr('href') || '';
+      const match = href.match(/\/page\/(\d+)\//);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > maxPage) {
+          maxPage = num;
+        }
+      }
+    });
+
+    const publications: PublicationResult[] = [];
+    const seenUrls = new Set<string>();
+
+    $('li.post-item, .post-item').each((_, el) => {
+      const $titleA = $(el).find('h2.post-title a').first();
+      const title = $titleA.text().trim();
+      const href = $titleA.attr('href');
+      if (!title || !href || seenUrls.has(href)) return;
+      seenUrls.add(href);
+
+      const category = $(el).find('.post-cat').first().text().trim() || 'Al Fazl International';
+      const date = $(el).find('.date.meta-item, .post-meta .date').first().text().trim();
+      const rawExcerpt = $(el).find('p.post-excerpt').first().text().trim();
+
+      const cleanSnippet = rawExcerpt
+        .replace(/&hellip;/g, '...')
+        .replace(/&nbsp;/g, ' ')
+        .trim();
+
+      // Extract numeric post ID from class (e.g. "post-152712")
+      const classAttr = $(el).attr('class') || '';
+      const idMatch = classAttr.match(/post-(\d+)/);
+      const postId = idMatch ? idMatch[1] : href.replace(/[^a-zA-Z0-9]/g, '-');
+
+      publications.push({
+        id: `alfazl-${postId}`,
+        source: 'Al Fazl',
+        title,
+        summary: cleanSnippet || `روزنامہ الفضل انٹرنیشنل: ${title}`,
+        url: href,
+        date: date || undefined,
+        topics: [cleanQuery, category]
+      });
+    });
+
+    const totalHits = maxPage * (publications.length || 10);
+    return { results: publications, totalHits, totalPages: maxPage };
+  } catch (err) {
+    console.warn('[External Sources] Failed to fetch live Al Fazl:', err);
+    return { results: [], totalHits: 0, totalPages: 0 };
+  }
+}
+
+/**
  * Unified multi-source article searcher:
- * Queries all supported article publications (Al Hakam, Review of Religions, Al Islam)
+ * Queries all supported article publications (Al Hakam, Review of Religions, Al Fazl, Al Islam)
  * with standardized pagination and metadata.
  */
 export async function fetchAllLiveArticles(
   query: string,
-  pageIndex: number = 0
+  pageIndex: number = 0,
+  urduQuery?: string
 ): Promise<{
   publications: PublicationResult[];
   alislamArticles: AlIslamArticleResult[];
   totalAlHakamHits: number;
   totalRoRHits: number;
+  totalAlFazlHits: number;
   totalAlIslamHits: number;
   totalArticleHits: number;
   totalPagesAlHakam: number;
   totalPagesRoR: number;
+  totalPagesAlFazl: number;
   totalPagesAlIslam: number;
   totalPages: number;
 }> {
   const humanPage = pageIndex + 1;
-  const [alHakamData, rorData, alIslamData] = await Promise.all([
+  const effectiveUrduQuery = urduQuery || query;
+
+  const [alHakamData, rorData, alFazlData, alIslamData] = await Promise.all([
     fetchLiveAlHakam(query, pageIndex),
     fetchLiveReviewOfReligions(query, humanPage),
+    fetchLiveAlFazl(effectiveUrduQuery, humanPage),
     fetchLiveAlIslam(query, humanPage)
   ]);
 
   const publications: PublicationResult[] = [
     ...alHakamData.results,
-    ...rorData.results
+    ...rorData.results,
+    ...alFazlData.results
   ];
 
   const totalAlHakamHits = alHakamData.totalHits;
   const totalRoRHits = rorData.totalHits;
+  const totalAlFazlHits = alFazlData.totalHits;
   const totalAlIslamHits = alIslamData.totalHits;
-  const totalArticleHits = totalAlHakamHits + totalRoRHits + totalAlIslamHits;
-  const totalPages = Math.max(alHakamData.totalPages, rorData.totalPages, alIslamData.totalPages);
+  const totalArticleHits = totalAlHakamHits + totalRoRHits + totalAlFazlHits + totalAlIslamHits;
+  const totalPages = Math.max(
+    alHakamData.totalPages,
+    rorData.totalPages,
+    alFazlData.totalPages,
+    alIslamData.totalPages
+  );
 
   return {
     publications,
     alislamArticles: alIslamData.results,
     totalAlHakamHits,
     totalRoRHits,
+    totalAlFazlHits,
     totalAlIslamHits,
     totalArticleHits,
     totalPagesAlHakam: alHakamData.totalPages,
     totalPagesRoR: rorData.totalPages,
+    totalPagesAlFazl: alFazlData.totalPages,
     totalPagesAlIslam: alIslamData.totalPages,
     totalPages
   };

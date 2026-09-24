@@ -139,10 +139,12 @@ export interface MultiSourceSearchResult {
   totalResults: number;
   totalAlHakamHits?: number;
   totalRoRHits?: number;
+  totalAlFazlHits?: number;
   totalAlIslamHits?: number;
   totalArticleHits?: number;
   totalPagesAlHakam?: number;
   totalPagesRoR?: number;
+  totalPagesAlFazl?: number;
   totalPagesAlIslam?: number;
   consensusMatrix?: TheologicalConsensusMatrix;
   hitsRankings?: HitsRankings;

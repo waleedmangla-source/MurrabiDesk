@@ -64,9 +64,9 @@ const STAGES: SearchStage[] = [
   {
     id: 'periodicals',
     name: 'Live Periodicals & Papers',
-    badge: 'Al Hakam & RoR',
-    description: 'Scanning alhakam.org, reviewofreligions.org & alislam.org',
-    activeText: 'Connecting live to Al Hakam and Review of Religions...',
+    badge: 'Al Hakam, RoR & Al Fazl',
+    description: 'Scanning alhakam.org, reviewofreligions.org, alfazl.com & alislam.org',
+    activeText: 'Connecting live to Al Hakam, Review of Religions & Al Fazl...',
     doneText: 'Periodical archives collected',
     icon: Newspaper
   },

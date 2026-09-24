@@ -81,6 +81,9 @@ export default function ArticleReaderModal({
     return initialSource;
   })();
 
+  const isAlFazl = currentSource === 'Al Fazl';
+  const isUrdu = isAlFazl || /[\u0600-\u06FF]/.test(currentTitle) || /[\u0600-\u06FF]/.test(article?.contentHtml || '');
+
   const fetchArticleContent = async (targetUrl: string) => {
     setLoading(true);
     setError(null);
@@ -300,7 +303,13 @@ export default function ArticleReaderModal({
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[var(--foreground)] tracking-tight leading-tight font-serif">
+              <h1
+                dir={isUrdu ? "rtl" : "ltr"}
+                className={clsx(
+                  "text-2xl sm:text-3xl md:text-4xl font-black text-[var(--foreground)] tracking-tight leading-snug",
+                  isUrdu ? "font-urdu text-right text-3xl sm:text-4xl md:text-5xl" : "font-serif leading-tight"
+                )}
+              >
                 {currentTitle}
               </h1>
 
@@ -340,7 +349,13 @@ export default function ArticleReaderModal({
                   Extracting article text from {currentSource}...
                 </p>
                 {initialSummary && (
-                  <div className="p-4 rounded-xl glass bg-white/5 border border-white/10 text-sm text-[var(--text-muted)] italic max-w-lg text-center mt-4">
+                  <div
+                    dir={isUrdu ? "rtl" : "ltr"}
+                    className={clsx(
+                      "p-4 rounded-xl glass bg-white/5 border border-white/10 text-sm text-[var(--text-muted)] italic max-w-lg text-center mt-4",
+                      isUrdu && "font-urdu leading-loose not-italic"
+                    )}
+                  >
                     "{initialSummary}"
                   </div>
                 )}
@@ -378,12 +393,14 @@ export default function ArticleReaderModal({
             {!loading && !error && article && (
               <div
                 onClick={handleContentClick}
+                dir={isUrdu ? "rtl" : "ltr"}
                 className={clsx(
                   "article-reader-body select-text transition-all",
-                  fontSize === 'sm' && "text-sm leading-relaxed",
-                  fontSize === 'base' && "text-base leading-relaxed md:leading-loose",
-                  fontSize === 'lg' && "text-lg leading-loose",
-                  fontSize === 'xl' && "text-xl leading-loose"
+                  isUrdu && "font-urdu text-right",
+                  fontSize === 'sm' && (isUrdu ? "text-base leading-loose" : "text-sm leading-relaxed"),
+                  fontSize === 'base' && (isUrdu ? "text-lg leading-loose" : "text-base leading-relaxed md:leading-loose"),
+                  fontSize === 'lg' && (isUrdu ? "text-xl leading-loose" : "text-lg leading-loose"),
+                  fontSize === 'xl' && (isUrdu ? "text-2xl leading-loose" : "text-xl leading-loose")
                 )}
                 dangerouslySetInnerHTML={{ __html: article.contentHtml }}
               />
@@ -391,7 +408,13 @@ export default function ArticleReaderModal({
 
             {/* Fallback to summary if no content HTML */}
             {!loading && !error && (!article || !article.contentHtml) && initialSummary && (
-              <div className="p-6 rounded-2xl glass bg-white/5 border border-white/10 text-base leading-relaxed text-[var(--foreground)]">
+              <div
+                dir={isUrdu ? "rtl" : "ltr"}
+                className={clsx(
+                  "p-6 rounded-2xl glass bg-white/5 border border-white/10 text-[var(--foreground)]",
+                  isUrdu ? "font-urdu text-right text-lg leading-loose" : "text-base leading-relaxed"
+                )}
+              >
                 {initialSummary}
               </div>
             )}
