@@ -81,6 +81,9 @@ export default function ArticleReaderModal({
     return initialSource;
   })();
 
+  const currentTitle = article?.title || initialTitle;
+  const currentAuthor = article?.author || initialAuthor;
+
   const isAlFazl = currentSource === 'Al Fazl';
   const isUrdu = isAlFazl || /[\u0600-\u06FF]/.test(currentTitle) || /[\u0600-\u06FF]/.test(article?.contentHtml || '');
 
@@ -163,9 +166,6 @@ export default function ArticleReaderModal({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const currentTitle = article?.title || initialTitle;
-  const currentAuthor = article?.author || initialAuthor;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">

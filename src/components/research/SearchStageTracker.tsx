@@ -45,11 +45,11 @@ const STAGES: SearchStage[] = [
   },
   {
     id: 'khazain',
-    name: 'Ruhani Khazain',
-    badge: 'Volumes 1–23',
-    description: 'Full-text indexing of the Promised Messiah (as) library',
-    activeText: 'Scanning 23-volume library with exact page citations...',
-    doneText: 'Primary theological writings indexed',
+    name: 'Ruhani Khazain, Malfuzat & Tazkirah',
+    badge: '23 Vols RK, 10 Vols Malfuzat & Revelations',
+    description: 'Indexing written treatises, spoken sittings & divine communications',
+    activeText: 'Scanning 23 volumes of Ruhani Khazain, 10 volumes of Malfuzat & Tazkirah...',
+    doneText: 'Treatises, discourses & revelations matched',
     icon: Layers
   },
   {

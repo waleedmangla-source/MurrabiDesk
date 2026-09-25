@@ -44,7 +44,9 @@ import {
   AudioResult,
   VideoResult,
   MediaItemResult,
-  BookItem
+  BookItem,
+  MalfuzatResult,
+  TazkirahResult
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
@@ -246,8 +248,8 @@ export default function ResearchEngine() {
     setAlislamCache({});
   };
 
-  // Literature sub-filter: all, khazain, books
-  const [literatureSubFilter, setLiteratureSubFilter] = useState<'all' | 'khazain' | 'books'>('all');
+  // Literature sub-filter: all, khazain, malfuzat, tazkirah, books
+  const [literatureSubFilter, setLiteratureSubFilter] = useState<'all' | 'khazain' | 'malfuzat' | 'tazkirah' | 'books'>('all');
 
   // Video sub-filter: all, youtube, mta, transcripts
   const [videoSubFilter, setVideoSubFilter] = useState<'all' | 'youtube' | 'mta' | 'transcripts'>('all');
@@ -258,10 +260,20 @@ export default function ResearchEngine() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const scrollResearchToTop = (top: number = 0) => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top, behavior: 'smooth' });
+      const container = document.getElementById('research-scroll-container');
+      if (container) {
+        container.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+  };
+
   const handleTabChange = (newTab: ActiveSourceFilter) => {
     setActiveFilter(newTab);
     setCurrentPage(1);
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    scrollResearchToTop(120);
   };
 
   // Filter count badges
@@ -269,8 +281,10 @@ export default function ResearchEngine() {
     const quranCount = results ? results.quranVerses.length : 0;
     const ahadithCount = results ? (results.ahadith?.length || 0) : 0;
     const rkCount = results ? results.ruhaniKhazain.length : 0;
+    const malfuzatCount = results?.malfuzat?.length || 0;
+    const tazkirahCount = results?.tazkirah?.length || 0;
     const booksCount = results?.books?.length || 0;
-    const literatureCount = rkCount + booksCount;
+    const literatureCount = rkCount + malfuzatCount + tazkirahCount + booksCount;
     const alHakamCount = results?.totalAlHakamHits || 0;
     const rorCount = results?.totalRoRHits || 0;
     const alislamArticlesOnly = results?.alislamArticles?.filter(a => a.category !== 'Book') || [];
@@ -290,6 +304,8 @@ export default function ResearchEngine() {
       audios: audiosCount,
       videos: videosCount,
       rk: rkCount,
+      malfuzat: malfuzatCount,
+      tazkirah: tazkirahCount,
       books: booksCount,
       alislam: alislamCount,
       periodicals: periodicalsCount
@@ -322,6 +338,12 @@ export default function ResearchEngine() {
         if (literatureSubFilter === 'khazain') {
           return Math.max(1, Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE));
         }
+        if (literatureSubFilter === 'malfuzat') {
+          return Math.max(1, Math.ceil((results.malfuzat?.length || 0) / ITEMS_PER_PAGE));
+        }
+        if (literatureSubFilter === 'tazkirah') {
+          return Math.max(1, Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE));
+        }
         if (literatureSubFilter === 'books') {
           return Math.max(1, Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE));
         }
@@ -329,6 +351,8 @@ export default function ResearchEngine() {
           1,
           Math.max(
             Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE),
+            Math.ceil((results.malfuzat?.length || 0) / ITEMS_PER_PAGE),
+            Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE),
             Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE)
           )
         );
@@ -347,6 +371,8 @@ export default function ResearchEngine() {
         return Math.max(1, Math.ceil(filteredVideos.length / ITEMS_PER_PAGE));
       case 'all': {
         const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
+        const malfuzatPages = Math.ceil((results.malfuzat?.length || 0) / ITEMS_PER_PAGE);
+        const tazkirahPages = Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE);
         const bookPages = Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE);
         const sourcePages = Math.max(
           results.totalPagesAlHakam || Math.ceil((results.totalAlHakamHits || 0) / 10),
@@ -356,7 +382,7 @@ export default function ResearchEngine() {
         const hadithPages = Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE);
         const audioPages = Math.ceil((results.audios?.length || 0) / ITEMS_PER_PAGE);
         const videoPages = Math.ceil((results.videos?.length || 0) / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(rkPages, bookPages, sourcePages, hadithPages, audioPages, videoPages));
+        return Math.max(1, Math.max(rkPages, malfuzatPages, tazkirahPages, bookPages, sourcePages, hadithPages, audioPages, videoPages));
       }
       default:
         return 1;
@@ -370,9 +396,35 @@ export default function ResearchEngine() {
       return currentPage === 1 ? results.ruhaniKhazain.slice(0, 5) : [];
     }
     if (activeFilter === 'literature') {
-      if (literatureSubFilter === 'books') return [];
+      if (literatureSubFilter !== 'all' && literatureSubFilter !== 'khazain') return [];
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       return results.ruhaniKhazain.slice(start, start + ITEMS_PER_PAGE);
+    }
+    return [];
+  }, [results, currentPage, activeFilter, literatureSubFilter]);
+
+  const displayedMalfuzat = useMemo(() => {
+    if (!results || !results.malfuzat) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.malfuzat.slice(0, 3) : [];
+    }
+    if (activeFilter === 'literature') {
+      if (literatureSubFilter !== 'all' && literatureSubFilter !== 'malfuzat') return [];
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return results.malfuzat.slice(start, start + ITEMS_PER_PAGE);
+    }
+    return [];
+  }, [results, currentPage, activeFilter, literatureSubFilter]);
+
+  const displayedTazkirah = useMemo(() => {
+    if (!results || !results.tazkirah) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.tazkirah.slice(0, 3) : [];
+    }
+    if (activeFilter === 'literature') {
+      if (literatureSubFilter !== 'all' && literatureSubFilter !== 'tazkirah') return [];
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return results.tazkirah.slice(start, start + ITEMS_PER_PAGE);
     }
     return [];
   }, [results, currentPage, activeFilter, literatureSubFilter]);
@@ -383,7 +435,7 @@ export default function ResearchEngine() {
       return currentPage === 1 ? results.books.slice(0, 3) : [];
     }
     if (activeFilter === 'literature') {
-      if (literatureSubFilter === 'khazain') return [];
+      if (literatureSubFilter !== 'all' && literatureSubFilter !== 'books') return [];
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       return results.books.slice(start, start + ITEMS_PER_PAGE);
     }
@@ -399,12 +451,15 @@ export default function ResearchEngine() {
     return results.quranVerses.slice(start, start + ITEMS_PER_PAGE);
   }, [results, currentPage, activeFilter]);
 
-  // Pre-fetch word-for-word data for currently displayed Quran verses
+  // Pre-fetch word-for-word data for top visible Quran verses lazily after initial render
   useEffect(() => {
     if (displayedQuran && displayedQuran.length > 0) {
-      prefetchQuranWords(
-        displayedQuran.map(v => ({ surah: v.surahNumber, verse: v.verseNumber }))
-      );
+      const timer = setTimeout(() => {
+        prefetchQuranWords(
+          displayedQuran.slice(0, 5).map(v => ({ surah: v.surahNumber, verse: v.verseNumber }))
+        );
+      }, 800);
+      return () => clearTimeout(timer);
     }
   }, [displayedQuran]);
 
@@ -501,7 +556,7 @@ export default function ResearchEngine() {
       }
     }
 
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    scrollResearchToTop(120);
   };
 
   const hasSearched = !!results || loading;
@@ -652,7 +707,7 @@ export default function ResearchEngine() {
   // MURABBI DESK UI: RESULTS STATE (Google Structure + Murabbi OS Aesthetics)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="w-full flex flex-col min-h-screen">
+    <div className="w-full flex flex-col min-h-full pb-24">
       {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar + Auth CTA) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-3 pb-0 px-4 md:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[208px_1fr_208px] items-center gap-4">
@@ -1121,6 +1176,38 @@ export default function ResearchEngine() {
 
                       <button
                         type="button"
+                        onClick={() => { setLiteratureSubFilter('malfuzat'); setCurrentPage(1); }}
+                        className={clsx(
+                          "px-3 py-1.5 rounded-[10px] transition-all flex items-center gap-1.5",
+                          literatureSubFilter === 'malfuzat'
+                            ? "bg-[var(--accent-main)] text-white shadow-sm"
+                            : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
+                        )}
+                      >
+                        <span>Malfuzat (10 Vols)</span>
+                        <span className={clsx("px-1.5 py-0.2 rounded text-[10px]", literatureSubFilter === 'malfuzat' ? "bg-black/20" : "bg-white/10")}>
+                          {counts.malfuzat}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => { setLiteratureSubFilter('tazkirah'); setCurrentPage(1); }}
+                        className={clsx(
+                          "px-3 py-1.5 rounded-[10px] transition-all flex items-center gap-1.5",
+                          literatureSubFilter === 'tazkirah'
+                            ? "bg-[var(--accent-main)] text-white shadow-sm"
+                            : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
+                        )}
+                      >
+                        <span>Tazkirah (Revelations)</span>
+                        <span className={clsx("px-1.5 py-0.2 rounded text-[10px]", literatureSubFilter === 'tazkirah' ? "bg-black/20" : "bg-white/10")}>
+                          {counts.tazkirah}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => { setLiteratureSubFilter('books'); setCurrentPage(1); }}
                         className={clsx(
                           "px-3 py-1.5 rounded-[10px] transition-all flex items-center gap-1.5",
@@ -1319,11 +1406,262 @@ export default function ResearchEngine() {
                     );
                   })}
 
+                  {/* ── Malfuzat (10 Volumes of Spoken Discourses) ── */}
+                  {(literatureSubFilter === 'all' || literatureSubFilter === 'malfuzat') && displayedMalfuzat.map((m) => {
+                    const malfuzatKey = `malfuzat-${m.id}`;
+                    const malfuzatCitation = `[Malfuzat, Vol. ${m.volume}, p. ${m.pageNum}, "${m.title}", ${m.dateStr}]\n"${m.urduText}"\nTranslation: "${m.englishTranslation}"\nSource: ${m.url}`;
+                    return (
+                      <div key={malfuzatKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-black text-[10px] shrink-0">
+                              MZ
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)] font-bold">Malfuzat</span>
+                              <span>›</span>
+                              <span className="text-emerald-400 font-bold">Vol {m.volume}</span>
+                              <span>›</span>
+                              <span>{m.dateStr}</span>
+                              {m.location && (
+                                <>
+                                  <span>•</span>
+                                  <span>{m.location}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
+                            <BookOpen size={11} />
+                            Spoken Discourses
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: m.url,
+                                title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
+                                source: 'Malfuzat',
+                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
+                                summary: m.englishTranslation
+                              })}
+                              className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{m.title}</span>
+                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                            </button>
+                          </h3>
+                          {m.urduTitle && (
+                            <span dir="rtl" className="text-base font-urdu text-[var(--text-muted)] font-normal">
+                              {m.urduTitle}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide flex flex-wrap items-center gap-2">
+                          <span>By <span className="text-[var(--foreground)]">Hazrat Mirza Ghulam Ahmad (as)</span></span>
+                          {m.sittingContext && (
+                            <>
+                              <span>•</span>
+                              <span className="italic">{m.sittingContext}</span>
+                            </>
+                          )}
+                          {m.scribe && (
+                            <>
+                              <span>•</span>
+                              <span>Scribe: <span className="text-[var(--foreground)]">{m.scribe}</span></span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Urdu text block in beautiful Nastaliq */}
+                        <div
+                          dir="rtl"
+                          className="p-4 rounded-[14px] glass bg-emerald-500/[0.03] border border-emerald-500/15 text-base md:text-lg leading-loose font-urdu text-[var(--foreground)] text-right"
+                        >
+                          {m.urduText}
+                        </div>
+
+                        {/* English translation */}
+                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                          {m.englishTranslation}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: m.url,
+                                title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
+                                source: 'Malfuzat',
+                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
+                                summary: m.englishTranslation
+                              })}
+                              className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                            >
+                              <BookOpen size={13} />
+                              <span>Read in Murabbi Desk</span>
+                            </button>
+
+                            <a
+                              href={m.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Globe size={13} />
+                              <span>Al Islam Malfuzat</span>
+                              <ExternalLink size={11} className="opacity-60" />
+                            </a>
+                          </div>
+
+                          <button
+                            onClick={() => copyToClipboard(malfuzatCitation, malfuzatKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === malfuzatKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === malfuzatKey ? "Copied" : "Cite"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* ── Tazkirah (Divine Revelations, Dreams & Visions) ── */}
+                  {(literatureSubFilter === 'all' || literatureSubFilter === 'tazkirah') && displayedTazkirah.map((t) => {
+                    const tazkirahKey = `tazkirah-${t.id}`;
+                    const tazkirahCitation = `[Tadhkirah (${t.language}), p. ${t.pageEnglish || t.pageUrdu}, ${t.dateStr}]\n"${t.originalText}"\nTranslation: "${t.englishTranslation}"\nHistorical Context: ${t.historicalContext}\nSource: ${t.url}`;
+                    return (
+                      <div key={tazkirahKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/20 flex items-center justify-center font-black text-[10px] shrink-0">
+                              TZ
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)] font-bold">Tadhkirah</span>
+                              <span>›</span>
+                              <span className="text-amber-400 font-bold">{t.year}</span>
+                              <span>›</span>
+                              <span>{t.dateStr}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">
+                              <Sparkles size={11} />
+                              {t.category}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-[var(--text-muted)] border border-white/10 hidden sm:inline">
+                              {t.language}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: t.url,
+                                title: `Tadhkirah (${t.year}): ${t.title}`,
+                                source: 'Tadhkirah',
+                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
+                                summary: t.englishTranslation
+                              })}
+                              className="text-left hover:text-amber-400 transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{t.title}</span>
+                              <Sparkles size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-amber-400 transition-all shrink-0" />
+                            </button>
+                          </h3>
+                          {t.urduTitle && (
+                            <span dir="rtl" className="text-base font-urdu text-[var(--text-muted)] font-normal">
+                              {t.urduTitle}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Original Revelation Box in distinctive calligraphic styling */}
+                        <div
+                          dir="rtl"
+                          className="p-4 rounded-[14px] glass bg-amber-500/[0.04] border border-amber-500/20 text-base md:text-xl leading-loose font-urdu font-bold text-[var(--foreground)] text-right"
+                        >
+                          {t.originalText}
+                        </div>
+
+                        {/* English translation */}
+                        <p className="text-sm text-[var(--foreground)]/85 leading-relaxed font-medium">
+                          {t.englishTranslation}
+                        </p>
+
+                        {/* Historical context note */}
+                        {t.historicalContext && (
+                          <div className="text-xs text-[var(--text-muted)] bg-white/[0.02] p-3 rounded-[10px] border border-white/5 leading-relaxed">
+                            <span className="font-bold text-[var(--foreground)]">Historical Context: </span>
+                            <span>{t.historicalContext}</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: t.url,
+                                title: `Tadhkirah: ${t.title}`,
+                                source: 'Tadhkirah',
+                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
+                                summary: t.englishTranslation
+                              })}
+                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                            >
+                              <BookOpen size={13} />
+                              <span>Read in Murabbi Desk</span>
+                            </button>
+
+                            <a
+                              href={t.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Globe size={13} />
+                              <span>Al Islam Tadhkirah</span>
+                              <ExternalLink size={11} className="opacity-60" />
+                            </a>
+
+                            {(t.pageEnglish || t.pageUrdu) && (
+                              <span className="text-[11px] text-[var(--text-muted)] hidden md:inline">
+                                Ref: {t.pageEnglish ? `Eng p. ${t.pageEnglish}` : ''}{t.pageEnglish && t.pageUrdu ? ' • ' : ''}{t.pageUrdu ? `Urdu p. ${t.pageUrdu}` : ''}
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => copyToClipboard(tazkirahCitation, tazkirahKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === tazkirahKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === tazkirahKey ? "Copied" : "Cite"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
                   {/* Literature Tab Jump Banner for 'all' tab */}
-                  {activeFilter === 'all' && (results?.ruhaniKhazain?.length || 0) + (results?.books?.length || 0) > 4 && (
+                  {activeFilter === 'all' && counts.literature > 4 && (
                     <div className="p-3.5 rounded-xl glass bg-purple-500/10 border border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <span className="text-[var(--text-muted)] font-medium">
-                        Showing top literature matches ({results.ruhaniKhazain.length} across 23 volumes of Ruhani Khazain{results.books?.length ? ` and ${results.books.length} published books` : ''})
+                        Showing top literature matches ({results.ruhaniKhazain.length} Ruhani Khazain, {results.malfuzat?.length || 0} Malfuzat, {results.tazkirah?.length || 0} Tazkirah{results.books?.length ? `, ${results.books.length} published books` : ''})
                       </span>
                       <button
                         onClick={() => handleTabChange('literature')}
@@ -1335,13 +1673,39 @@ export default function ResearchEngine() {
                     </div>
                   )}
 
+                  {/* Sub-filter specific empty states */}
+                  {activeFilter === 'literature' && counts.literature > 0 && (
+                    <>
+                      {literatureSubFilter === 'khazain' && counts.rk === 0 && (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
+                          No matches found specifically in Ruhani Khazain (23 Volumes). Try &quot;All Literature&quot; or &quot;Malfuzat&quot;.
+                        </div>
+                      )}
+                      {literatureSubFilter === 'malfuzat' && counts.malfuzat === 0 && (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
+                          No matches found specifically in Malfuzat (10 Volumes). Try &quot;All Literature&quot; or &quot;Ruhani Khazain&quot;.
+                        </div>
+                      )}
+                      {literatureSubFilter === 'tazkirah' && counts.tazkirah === 0 && (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
+                          No matches found specifically in Tazkirah (Revelations & Visions). Try &quot;All Literature&quot; or &quot;Ruhani Khazain&quot;.
+                        </div>
+                      )}
+                      {literatureSubFilter === 'books' && counts.books === 0 && (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
+                          No matches found specifically in Published Books. Try &quot;All Literature&quot; or &quot;Ruhani Khazain&quot;.
+                        </div>
+                      )}
+                    </>
+                  )}
+
                   {/* Literature Empty State */}
                   {activeFilter === 'literature' && counts.literature === 0 && (
                     <div className="py-16 text-center space-y-3 glass bg-white/[0.02] border border-white/5 rounded-[16px] p-8">
                       <BookMarked size={36} className="text-purple-400 mx-auto opacity-60" />
                       <h4 className="text-base font-bold text-[var(--foreground)]">No literature records found</h4>
                       <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-                        No books in Ruhani Khazain (23 Volumes) or published Ahmadiyya books directly matched &quot;{submittedQuery}&quot;. Try broader theological terms or switch to &quot;All Sources&quot;.
+                        No matches found across Ruhani Khazain (23 Vols), Malfuzat (10 Vols), Tazkirah or published books for &quot;{submittedQuery}&quot;. Try broader theological terms or switch to &quot;All Sources&quot;.
                       </p>
                     </div>
                   )}

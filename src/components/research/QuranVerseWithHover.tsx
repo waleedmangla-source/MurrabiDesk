@@ -75,7 +75,7 @@ interface QuranVerseWithHoverProps {
   showBadge?: boolean;
 }
 
-export default function QuranVerseWithHover({
+function QuranVerseWithHoverComponent({
   surahNumber,
   verseNumber,
   fallbackArabicText,
@@ -85,27 +85,36 @@ export default function QuranVerseWithHover({
   const key = `${surahNumber}:${verseNumber}`;
   const [wbwData, setWbwData] = useState<QuranVerseWbwData | null>(() => clientWbwCache.get(key) || null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Sync if cache gets updated externally (e.g. by background prefetch)
   useEffect(() => {
-    let isMounted = true;
     const currentKey = `${surahNumber}:${verseNumber}`;
+    if (!wbwData && clientWbwCache.has(currentKey)) {
+      setWbwData(clientWbwCache.get(currentKey)!);
+    }
+  }, [surahNumber, verseNumber, wbwData]);
 
+  // Load word-for-word data lazily on first hover/touch/interaction
+  const ensureLoaded = React.useCallback(() => {
+    const currentKey = `${surahNumber}:${verseNumber}`;
     if (clientWbwCache.has(currentKey)) {
       setWbwData(clientWbwCache.get(currentKey)!);
       return;
     }
+    if (wbwData || isLoading) return;
 
+    setIsLoading(true);
     fetchSingleVerse(surahNumber, verseNumber).then(data => {
-      if (isMounted && data) {
+      setIsLoading(false);
+      if (data) {
         setWbwData(data);
       }
+    }).catch(() => {
+      setIsLoading(false);
     });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [surahNumber, verseNumber]);
+  }, [surahNumber, verseNumber, wbwData, isLoading]);
 
   // Click outside to dismiss active touch tooltip on mobile
   useEffect(() => {
@@ -127,8 +136,12 @@ export default function QuranVerseWithHover({
   if (!wbwData || !wbwData.tokens || wbwData.tokens.length === 0) {
     return (
       <div
+        ref={containerRef}
+        onMouseEnter={ensureLoaded}
+        onTouchStart={ensureLoaded}
         dir="rtl"
-        className={clsx("text-right font-arabic select-text", className)}
+        className={clsx("text-right font-arabic select-text cursor-pointer", className)}
+        title="Hover to view word-for-word translation"
       >
         {fallbackArabicText}
       </div>
@@ -136,7 +149,12 @@ export default function QuranVerseWithHover({
   }
 
   return (
-    <div ref={containerRef} className="relative group/verse">
+    <div
+      ref={containerRef}
+      onMouseEnter={ensureLoaded}
+      onTouchStart={ensureLoaded}
+      className="relative group/verse"
+    >
       <div
         dir="rtl"
         className={clsx("text-right font-arabic select-text leading-loose", className)}
@@ -210,3 +228,6 @@ export default function QuranVerseWithHover({
     </div>
   );
 }
+
+const QuranVerseWithHover = React.memo(QuranVerseWithHoverComponent);
+export default QuranVerseWithHover;

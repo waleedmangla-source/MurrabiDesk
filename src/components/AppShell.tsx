@@ -237,7 +237,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isPublicStandalone = pathname === "/onboarding" || (!isAuthenticated && (pathname === "/research" || pathname.startsWith("/research")));
   if (isPublicStandalone) {
     return (
-      <div className="min-h-screen w-full bg-transparent">
+      <div className="h-screen h-dvh w-full bg-transparent flex flex-col overflow-hidden">
         {children}
       </div>
     );
@@ -460,7 +460,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onExit={() => setIsScreensaverActive(false)}
         />
 
-        <main className="flex-1 lg:overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
+        <main className="flex-1 min-h-0 lg:overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
           {/* Desktop sidebar re-open handle — inverted version of the close button */}
           {isSidebarCollapsed && (
             <div className="hidden lg:block fixed left-0 top-0 h-28 w-12 z-50 group/open-sidebar pointer-events-auto">

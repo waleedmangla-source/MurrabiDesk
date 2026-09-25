@@ -24,6 +24,8 @@ import {
 } from '@/lib/research-sources';
 import { searchAskIslamAudios } from '@/lib/askislam-data';
 import { searchMediaVideos } from '@/lib/video-search';
+import { searchMalfuzat, MalfuzatResult } from '@/lib/malfuzat-data';
+import { searchTazkirah, TazkirahResult } from '@/lib/tazkirah-data';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
 import { expandQueryVector } from '@/lib/dsgt/query-expansion';
 import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
@@ -576,7 +578,36 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    const [rkResults, quranResults, hadithResults, alislamResults, periodicalsResults, askIslamResults, videoResults, booksResults] = await Promise.all([
+    const malfuzatPromise: Promise<MalfuzatResult[]> = (async () => {
+      try {
+        return searchMalfuzat(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Malfuzat search failed:', e);
+        return [];
+      }
+    })();
+
+    const tazkirahPromise: Promise<TazkirahResult[]> = (async () => {
+      try {
+        return searchTazkirah(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Tazkirah search failed:', e);
+        return [];
+      }
+    })();
+
+    const [
+      rkResults,
+      quranResults,
+      hadithResults,
+      alislamResults,
+      periodicalsResults,
+      askIslamResults,
+      videoResults,
+      booksResults,
+      malfuzatResults,
+      tazkirahResults
+    ] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
       hadithPromise,
@@ -584,7 +615,9 @@ export async function POST(req: NextRequest) {
       periodicalsPromise,
       askIslamPromise,
       videosPromise,
-      booksPromise
+      booksPromise,
+      malfuzatPromise,
+      tazkirahPromise
     ]);
 
     // Merge any live Al Islam results identified as books
@@ -627,7 +660,15 @@ export async function POST(req: NextRequest) {
     );
 
     const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlFazlHits || 0) + (totalAlIslamHits || 0);
-    const totalResults = rkResults.length + quranResults.length + hadithResults.length + mergedBooks.length + Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) + media.length;
+    const totalResults =
+      rkResults.length +
+      quranResults.length +
+      hadithResults.length +
+      mergedBooks.length +
+      malfuzatResults.length +
+      tazkirahResults.length +
+      Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) +
+      media.length;
 
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
@@ -636,6 +677,10 @@ export async function POST(req: NextRequest) {
       quranVerses: quranResults,
       ahadith: hadithResults,
       books: mergedBooks,
+      malfuzat: malfuzatResults,
+      tazkirah: tazkirahResults,
+      totalMalfuzatHits: malfuzatResults.length,
+      totalTazkirahHits: tazkirahResults.length,
       totalBookHits: mergedBooks.length,
       alislamArticles: alislamResults,
       publications: periodicalsResults,

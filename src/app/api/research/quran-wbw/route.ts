@@ -142,8 +142,8 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Limit batch size to 30 verses per call for safety
-      const clamped = uniqueVerses.slice(0, 30);
+      // Limit batch size to 10 verses per call for safety and fast response
+      const clamped = uniqueVerses.slice(0, 10);
       const results: Record<string, QuranVerseWbwData> = {};
 
       await Promise.all(

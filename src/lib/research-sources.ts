@@ -121,6 +121,11 @@ import type { HitsRankings } from './dsgt/hits-engine';
 
 export type { TheologicalConsensusMatrix, TriangulationLayerStatus, HitsRankings };
 
+import type { MalfuzatResult } from './malfuzat-data';
+import type { TazkirahResult } from './tazkirah-data';
+
+export type { MalfuzatResult, TazkirahResult };
+
 export interface MultiSourceSearchResult {
   query: string;
   normalizedTerms: string[];
@@ -128,6 +133,10 @@ export interface MultiSourceSearchResult {
   quranVerses: QuranVerseResult[];
   ahadith: HadithResult[];
   books?: BookItem[];
+  malfuzat?: MalfuzatResult[];
+  tazkirah?: TazkirahResult[];
+  totalMalfuzatHits?: number;
+  totalTazkirahHits?: number;
   alislamArticles: AlIslamArticleResult[];
   publications: PublicationResult[];
   audios?: AudioResult[];
