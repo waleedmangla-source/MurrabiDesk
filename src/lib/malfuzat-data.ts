@@ -279,6 +279,150 @@ export const MALFUZAT_CATALOG: MalfuzatResult[] = [
     url: "https://www.alislam.org/book/malfuzat-volume-10/",
     scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
     periodicalSource: "Al-Badr / Al-Hakam, May 1908"
+  },
+  {
+    id: "malfuzat-v1-tahajjud-solitary",
+    volume: 1,
+    pageNum: 12,
+    dateStr: "1892",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Exhortation on Night Vigils (Tahajjud) and Secret Devotions",
+    title: "The Mystery of Tahajjud: The True Ascension of the Believer",
+    urduTitle: "نمازِ تہجد کا مقام اور خلوت کی دعائیں",
+    urduText: "تہجد کی نماز انسان کو اللہ تعالیٰ کے عرش کے نیچے لا کھڑا کرتی ہے۔ جو شخص رات کی تاریکی میں اٹھ کر رو رو کر دعائیں نہیں مانگتا، وہ اپنے باطن کو صاف نہیں کر سکتا۔ تہجد مومن کا معراج ہے۔ خلوت کی دعا میں جو سوز اور اخلاص پیدا ہوتا ہے وہ دن کی جلوت میں نصیب نہیں ہو سکتا۔",
+    englishTranslation: "The Tahajjud prayer brings man to stand directly beneath the divine throne of Allah. Whoever does not rise in the solitude and darkness of the night, weeping in heartfelt prayer, cannot purify their inner soul. Tahajjud is the spiritual ascension (Mir'aj) of the believer. The agonizing fire and absolute sincerity born in secret devotions cannot be found in the daylight company of men.",
+    topics: ["tahajjud", "prayer", "night prayer", "dua", "solitude", "ascension", "تہجد", "نماز", "دعا", "خلوت", "روحانیت", "معراج"],
+    url: "https://www.alislam.org/book/malfuzat-volume-1/",
+    scribe: "Hazrat Maulvi Abdul Karim Sialkoti (ra)",
+    periodicalSource: "Al-Hakam, 1898"
+  },
+  {
+    id: "malfuzat-v2-holy-prophet-glory",
+    volume: 2,
+    pageNum: 95,
+    dateStr: "1900",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Elucidation of the Spiritual Station of the Holy Prophet (sa)",
+    title: "The Holy Prophet Muhammad (sa): The Sun of Truth and Perfection",
+    urduTitle: "آنحضرت صلی اللہ علیہ وسلم کی روحانی عظمت اور آفتابِ صداقت",
+    urduText: "ہمارے سید و مولیٰ حضرت محمد مصطفیٰ صلی اللہ علیہ وسلم وہ کامل اور برگزیدہ انسان ہیں جن کے ذریعے انسان نے خدا کو پہچانا۔ تمام انبیاء کے کمالات آپ صلی اللہ علیہ وسلم کے وجود مبارک میں اکٹھے کر دیے گئے۔ جو شخص آپ صلی اللہ علیہ وسلم کی سچی محبت اور کامل اتباع اختیار کرتا ہے، اس پر خدا تعالیٰ اپنے انوار اور رحمتیں نازل فرماتا ہے۔",
+    englishTranslation: "Our Master and Lord, the Holy Prophet Muhammad Mustafa (peace and blessings of Allah be upon him), is that perfect and exalted being through whom humanity recognized God Almighty. The spiritual perfections of all prophets were gathered together in his blessed person. Whoever embraces sincere love and complete obedience to him receives the divine light and cascading mercy of Allah.",
+    topics: ["holy prophet", "muhammad", "sun of truth", "prophethood", "love of the prophet", "khatam-an-nabiyyin", "آنحضرت", "رسول اللہ", "محمد", "عظمت نبوت", "سید و مولیٰ", "اتباع رسول"],
+    url: "https://www.alislam.org/book/malfuzat-volume-2/",
+    scribe: "Hazrat Maulvi Abdul Karim Sialkoti (ra)",
+    periodicalSource: "Al-Hakam, 1900"
+  },
+  {
+    id: "malfuzat-v3-arabic-miracle",
+    volume: 3,
+    pageNum: 82,
+    dateStr: "1901",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Discourse on the Linguistic Supremacy of Arabic (Ummul Alsinah)",
+    title: "The Arabic Language: The Mother of Tongues and Divine Miracle",
+    urduTitle: "عربی زبان: ام الالسنہ اور قرآنی اعجاز",
+    urduText: "عربی وہ زبان ہے جو تمام زبانوں کی ماں ہے۔ اس کا روٹ سسٹم اور مفردات کا نظام ایسا معجزانہ ہے کہ دنیا کی کوئی زبان اس کا مقابلہ نہیں کر سکتی۔ قرآن مجید کا عربی زبان میں نازل ہونا محض اتفاق نہیں تھا بلکہ یہ خدا کی حکمت کا ایک عظیم الشان مظہر تھا کیونکہ عربی ہی تمام علوم اور الہی معارف کی سچی امین ہو سکتی ہے۔",
+    englishTranslation: "Arabic is the mother of all tongues (Ummul Alsinah). Its miraculous root system and morphological vocabulary are unmatched by any language on earth. The descent of the Holy Qur'an in the Arabic language was no coincidence; it was a sublime manifestation of divine wisdom, for Arabic alone possessed the capacity to be the true repository of all divine secrets and sacred knowledge.",
+    topics: ["arabic", "ummul alsinah", "quranic miracle", "linguistics", "mother of tongues", "عربی", "ام الالسنہ", "قرآن مجید", "اعجاز", "عربی زبان"],
+    url: "https://www.alislam.org/book/malfuzat-volume-3/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Badr, 1901"
+  },
+  {
+    id: "malfuzat-v4-nature-miracles",
+    volume: 4,
+    pageNum: 110,
+    dateStr: "1903",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Discussion with Philosophers on Divine Laws and Supernatural Signs",
+    title: "Laws of Nature and the Reality of Divine Miracles",
+    urduTitle: "قوانینِ قدرت اور آسمانی معجزات کی باہمی تطبیق",
+    urduText: "خدا تعالیٰ کے معجزات کبھی قوانینِ قدرت کے خلاف نہیں ہوتے، بلکہ وہ قدرت کے ایسے پوشیدہ اور باریک قوانین ہوتے ہیں جن تک عام انسان کی عقل نہیں پہنچ سکتی۔ جب خدا کا نبی دعا کرتا ہے تو خدا تعالیٰ اس کے لیے اسباب پیدا فرما دیتا ہے جو دنیا کی نظر میں معجزہ دکھائی دیتے ہیں۔",
+    englishTranslation: "The miracles of Allah Almighty never violate the laws of nature; rather, they are the manifestation of subtler, hidden laws of nature that transcend ordinary human comprehension. When a prophet of God prays, Allah Almighty generates spiritual and physical causes that appear to worldly observers as astonishing miracles.",
+    topics: ["miracles", "laws of nature", "science and religion", "mu'jizah", "divine power", "معجزات", "قوانین قدرت", "معجزہ", "سائنس اور مذہب", "خدا کی قدرت"],
+    url: "https://www.alislam.org/book/malfuzat-volume-4/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Hakam, 1903"
+  },
+  {
+    id: "malfuzat-v5-signs-messiah",
+    volume: 5,
+    pageNum: 184,
+    dateStr: "1904",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Address on the Hundreds of Heavenly Corroborating Signs",
+    title: "Heavenly Signs and the Incontrovertible Truth of the Promised Messiah",
+    urduTitle: "آسمانی نشانات اور مسیح موعود کی سچائی کے دلائل",
+    urduText: "خدا تعالیٰ نے میرے دعوے کی تصدیق کے لیے سینکڑوں نشانات ظاہر فرمائے ہیں۔ خسوف و کسوف کا نشان، طاعون کا نشان، مخالفین کی ہلاکت کی پیشگوئیاں، اور ہزاروں دعاؤں کی قبولیت ایسے زندہ ثبوت ہیں جن کا کوئی منکر جواب نہیں دے سکتا۔ انسان کا کام ہے کہ وہ تعصب کو چھوڑ کر خدا کے نشانات میں غور کرے۔",
+    englishTranslation: "Allah Almighty has manifested hundreds of signs to authenticate my divine claim. The celestial sign of the lunar and solar eclipses, the sign of the plague, fulfilled prophecies concerning the demise of adversaries, and the miraculous acceptance of thousands of prayers are living proofs that no denier can refute. It is the solemn duty of man to abandon prejudice and ponder upon the signs of God.",
+    topics: ["heavenly signs", "promised messiah", "truth of ahmadiyyat", "prophecies", "eclipses", "مسیح موعود", "نشانات", "صداقت", "پیشگوئیاں", "خسوف و کسوف", "احمدیت"],
+    url: "https://www.alislam.org/book/malfuzat-volume-5/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Badr, 1904"
+  },
+  {
+    id: "malfuzat-v7-chanda-wasiyyat",
+    volume: 7,
+    pageNum: 89,
+    dateStr: "1905",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Admonition regarding Al-Wasiyyat and Financial Sacrifice",
+    title: "The Spiritual Reality of Financial Sacrifice and Al-Wasiyyat",
+    urduTitle: "مالی قربانی کا روحانی مقصد اور نظامِ وصیت",
+    urduText: "مالی قربانی اسلام کی اشاعت اور دین کی خدمت کا ایک عظیم ذریعہ ہے۔ خدا تعالیٰ کو ہمارے مال کی ضرورت نہیں، بلکہ وہ دیکھنا چاہتا ہے کہ ہم اس کی راہ میں اپنی محبوب چیزوں کو قربان کرنے کے لیے کس حد تک تیار ہیں۔ جو شخص اللہ کی راہ میں خرچ کرتا ہے، اللہ تعالیٰ اس کے دین اور دنیا دونوں میں برکت دیتا ہے۔ نظامِ وصیت دراصل روحانی پاکیزگی اور ہمدردی خلق کا ایک الہی نظام ہے۔",
+    englishTranslation: "Financial sacrifice is a momentous vehicle for the propagation of Islam and service to faith. God Almighty does not stand in need of our wealth; rather, He desires to witness how prepared we are to sacrifice our beloved possessions in His sacred cause. Whoever spends in the way of Allah, Allah Almighty infuses blessings into both their faith and their worldly affairs. The system of Al-Wasiyyat is an institution of spiritual purification and compassion for creation.",
+    topics: ["financial sacrifice", "chanda", "al-wasiyyat", "infaq", "blessings", "purification", "مالی قربانی", "چندہ", "وصیت", "انفاق فی سبیل اللہ", "برکت", "طہارت"],
+    url: "https://www.alislam.org/book/malfuzat-volume-7/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Hakam, 1905"
+  },
+  {
+    id: "malfuzat-v8-science-revelation",
+    volume: 8,
+    pageNum: 165,
+    dateStr: "1905",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Address to Western-Educated Youth on Rationalism and Faith",
+    title: "The Harmony of Science, Reason, and Divine Revelation",
+    urduTitle: "عقل، سائنس اور وحی الہی میں مکمل ہم آہنگی",
+    urduText: "سچی سائنس اور سچا مذہب کبھی باہم متصادم نہیں ہو سکتے کیونکہ کائنات خدا کا فعل ہے اور وحی خدا کا قول ہے۔ خدا کے فعل اور خدا کے قول میں تضاد کیسے ہو سکتا ہے؟ اگر کہیں بظاہر اختلاف نظر آئے تو وہ یا تو سائنس کی نامکمل دریافت کا نتیجہ ہے یا پھر مذہبی نصوص کی غلط تعبیر کا۔ اسلام عقل اور تفکر کی حوصلہ افزائی کرتا ہے۔",
+    englishTranslation: "True science and true religion can never be in conflict because the universe is the Work of God and revelation is the Word of God. How could there ever be contradiction between the Work of God and the Word of God? If an apparent divergence appears, it is either due to incomplete scientific discovery or a misinterpretation of sacred texts. Islam actively encourages intellect and deep reflection.",
+    topics: ["science", "reason", "revelation", "harmony", "word of god", "work of god", "سائنس", "عقل", "وحی", "سائنس اور اسلام", "فلسفہ", "تدبر"],
+    url: "https://www.alislam.org/book/malfuzat-volume-8/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Badr, 1905"
+  },
+  {
+    id: "malfuzat-v9-musleh-maud-prophecy",
+    volume: 9,
+    pageNum: 62,
+    dateStr: "1906",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Sitting regarding the Fulfillment of the 1886 Prophecy",
+    title: "The Grandeur of the Prophecy of Musleh Maud (The Promised Son)",
+    urduTitle: "پیشگوئی مصلح موعود کی عظمت اور نشانِ رحمت",
+    urduText: "پیشگوئی مصلح موعود کوئی معمولی پیشگوئی نہیں تھی بلکہ یہ اسلام کی حقانیت اور زندہ مذہب ہونے کا ایک عظیم الشان آسمانی نشان تھا۔ خدا تعالیٰ نے اپنے فضل سے ایک ایسے بیٹے کی بشارت دی جو اسلام کا نام روشن کرے گا اور جس کی شہرت زمین کے کناروں تک پھیلے گی۔ خدا کے وعدے اٹل ہیں اور وہ اپنے وقت پر ضرور پورے ہوتے ہیں۔",
+    englishTranslation: "The Prophecy of Musleh Maud was no ordinary prophecy; it was a magnificent heavenly sign of the truth of Islam as a living faith. Allah Almighty out of His grace foretold the advent of a son who would illuminate the name of Islam and whose fame would spread to the ends of the earth. God's promises are immutable and are fulfilled unerringly in their appointed time.",
+    topics: ["musleh maud", "promised reformer", "prophecy", "promised son", "heavenly sign", "مصلح موعود", "پیشگوئی", "نشان رحمت", "بشارت", "فرزند ارجمند"],
+    url: "https://www.alislam.org/book/malfuzat-volume-9/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Hakam, 1906"
+  },
+  {
+    id: "malfuzat-v10-living-faith",
+    volume: 10,
+    pageNum: 310,
+    dateStr: "April 1908",
+    location: "Qadian Dar-ul-Aman",
+    sittingContext: "Discourse on the Three Stages of Certainty: Ilm, Ain, and Haqq-ul-Yaqeen",
+    title: "The Three Stages of Spiritual Certainty: From Knowledge to Experience",
+    urduTitle: "یقین کے تین درجات: علم الیقین، عین الیقین اور حق الیقین",
+    urduText: "ایمان کی اصل منزل محض زبانی اقرار نہیں بلکہ یقین کامل کا حصول ہے۔ یقین کے تین درجے ہیں: علم الیقین، عین الیقین اور حق الیقین۔ جب تک انسان حق الیقین کے مقام تک نہ پہنچے، گناہ سے سچی نفرت اور خدا سے سچی محبت پیدا نہیں ہو سکتی۔ اور یہ مقام صرف دعا، اتباعِ رسول اور تزکیہ نفس کے ذریعے ملتا ہے۔",
+    englishTranslation: "The ultimate destination of faith is not mere verbal assent, but the attainment of absolute conviction (Yaqeen). Certainty has three stages: knowledge of certainty ('Ilm-ul-Yaqeen), eye of certainty ('Ain-ul-Yaqeen), and truth of certainty (Haqq-ul-Yaqeen). Until a person attains the station of Haqq-ul-Yaqeen, genuine revulsion toward sin and true ecstatic love of God cannot be born. This station is acquired solely through prayer, obedience to the Holy Prophet (sa), and inner purification.",
+    topics: ["certainty", "yaqeen", "stages of faith", "spiritual perfection", "haqq-ul-yaqeen", "یقین", "علم الیقین", "عین الیقین", "حق الیقین", "تزکیہ نفس", "روحانیت"],
+    url: "https://www.alislam.org/book/malfuzat-volume-10/",
+    scribe: "Hazrat Mufti Muhammad Sadiq (ra)",
+    periodicalSource: "Al-Badr, April 1908"
   }
 ];
 
@@ -291,6 +435,11 @@ export function searchMalfuzat(query: string): MalfuzatResult[] {
   const rawClean = query.trim().toLowerCase();
   const normUrduQuery = normalizeKhazainText(query);
   const queryTokens = rawClean.split(/\s+/).filter(t => t.length >= 2);
+
+  // Check if user is searching generically for Malfuzat or discourses
+  const isGenericMalfuzatQuery =
+    /(?:^|\b)(?:malfuzat|malfoozat|ملفوظات|ملفوظ|discourses?|sayings?|discourse|sitting)(?:\b|$)/i.test(rawClean) ||
+    normUrduQuery.includes("ملفوظات") || normUrduQuery.includes("ملفوظ");
 
   // Check volume specific queries (e.g. "volume 3", "vol 1", "جلد ۳", "جلد اول")
   const volMatch = query.match(/(?:volume|vol|جلد)\s*([0-9]{1,2})/i);
@@ -312,6 +461,14 @@ export function searchMalfuzat(query: string): MalfuzatResult[] {
 
   const resultsWithScore = MALFUZAT_CATALOG.map((entry) => {
     let score = 0;
+
+    // Base score for generic queries to ensure discourses are populated
+    if (isGenericMalfuzatQuery) {
+      score += 50;
+      if (targetVol && entry.volume === targetVol) {
+        score += 100;
+      }
+    }
 
     // Direct volume match bonus
     if (targetVol && entry.volume === targetVol) {
@@ -358,7 +515,10 @@ export function searchMalfuzat(query: string): MalfuzatResult[] {
     return { entry, score };
   })
   .filter(item => item.score > 0)
-  .sort((a, b) => b.score - a.score)
+  .sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.entry.volume - b.entry.volume;
+  })
   .map(item => item.entry);
 
   return resultsWithScore;

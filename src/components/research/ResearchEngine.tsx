@@ -1224,117 +1224,8 @@ export default function ResearchEngine() {
                     </div>
                   )}
 
-                  {/* ── Published Books (Al Islam Library) ── */}
-                  {literatureSubFilter !== 'khazain' && displayedBooks.map((b) => {
-                    const bookKey = `book-${b.id}`;
-                    const bookCitation = `[Book: "${b.title}"${b.urduTitle ? ` (${b.urduTitle})` : ''} by ${b.author}${b.year ? `, ${b.year}` : ''}]\n"${b.summary}"\nSource: ${b.url}`;
-                    return (
-                      <div key={bookKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
-                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
-                              <img
-                                src="https://www.google.com/s2/favicons?domain=alislam.org&sz=128"
-                                alt="Al Islam Books"
-                                className="w-4 h-4 object-contain rounded-sm"
-                                loading="lazy"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                              <span className="text-[var(--foreground)] font-bold">Al Islam Books</span>
-                              <span>›</span>
-                              <span className="text-purple-400 font-bold">{b.category}</span>
-                              {b.year && (
-                                <>
-                                  <span>•</span>
-                                  <span>{b.year}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1 shrink-0">
-                            <BookMarked size={11} />
-                            Canonical Literature
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
-                            <button
-                              type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: b.url,
-                                title: b.title,
-                                source: 'Al Islam Books',
-                                author: b.author,
-                                summary: b.summary
-                              })}
-                              className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
-                            >
-                              <span>{b.title}</span>
-                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
-                            </button>
-                          </h3>
-                          {b.urduTitle && (
-                            <span dir="rtl" className="text-sm font-urdu text-[var(--text-muted)] font-normal">
-                              {b.urduTitle}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
-                          By <span className="text-[var(--foreground)]">{b.author}</span>
-                        </div>
-
-                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
-                          {b.summary}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-1 text-xs">
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: b.url,
-                                title: b.title,
-                                source: 'Al Islam Books',
-                                author: b.author,
-                                summary: b.summary
-                              })}
-                              className="px-3 py-1.5 rounded-[10px] bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
-                            >
-                              <BookOpen size={13} />
-                              <span>Read in Murabbi Desk</span>
-                            </button>
-
-                            <a
-                              href={b.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
-                            >
-                              <Globe size={13} />
-                              <span>Al Islam Library</span>
-                              <ExternalLink size={11} className="opacity-60" />
-                            </a>
-                          </div>
-
-                          <button
-                            onClick={() => copyToClipboard(bookCitation, bookKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === bookKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === bookKey ? "Copied" : "Cite"}</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
                   {/* ── Ruhani Khazain (23 Volumes) ── */}
-                  {literatureSubFilter !== 'books' && displayedRuhaniKhazain.map((item, idx) => {
+                  {(literatureSubFilter === 'all' || literatureSubFilter === 'khazain') && displayedRuhaniKhazain.map((item, idx) => {
                     const itemKey = `rk-${item.volume}-${item.pageNum}-${idx}`;
                     const citation = `[Ruhani Khazain, Vol. ${item.volume}, "${item.bookTitle}", p. ${item.pageNum}]`;
                     return (
@@ -1651,6 +1542,115 @@ export default function ResearchEngine() {
                           >
                             {copiedId === tazkirahKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                             <span className="text-[11px] uppercase tracking-wider">{copiedId === tazkirahKey ? "Copied" : "Cite"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* ── Published Books (Al Islam Library Catalog) ── */}
+                  {(literatureSubFilter === 'all' || literatureSubFilter === 'books') && displayedBooks.map((b) => {
+                    const bookKey = `book-${b.id}`;
+                    const bookCitation = `[Book: "${b.title}"${b.urduTitle ? ` (${b.urduTitle})` : ''} by ${b.author}${b.year ? `, ${b.year}` : ''}]\n"${b.summary}"\nSource: ${b.url}`;
+                    return (
+                      <div key={bookKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                              <img
+                                src="https://www.google.com/s2/favicons?domain=alislam.org&sz=128"
+                                alt="Al Islam Books"
+                                className="w-4 h-4 object-contain rounded-sm"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)] font-bold">Al Islam Books</span>
+                              <span>›</span>
+                              <span className="text-purple-400 font-bold">{b.category}</span>
+                              {b.year && (
+                                <>
+                                  <span>•</span>
+                                  <span>{b.year}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1 shrink-0">
+                            <BookMarked size={11} />
+                            Canonical Literature
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: b.url,
+                                title: b.title,
+                                source: 'Al Islam Books',
+                                author: b.author,
+                                summary: b.summary
+                              })}
+                              className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{b.title}</span>
+                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                            </button>
+                          </h3>
+                          {b.urduTitle && (
+                            <span dir="rtl" className="text-sm font-urdu text-[var(--text-muted)] font-normal">
+                              {b.urduTitle}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
+                          By <span className="text-[var(--foreground)]">{b.author}</span>
+                        </div>
+
+                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                          {b.summary}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setActiveReadingArticle({
+                                url: b.url,
+                                title: b.title,
+                                source: 'Al Islam Books',
+                                author: b.author,
+                                summary: b.summary
+                              })}
+                              className="px-3 py-1.5 rounded-[10px] bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                            >
+                              <BookOpen size={13} />
+                              <span>Read in Murabbi Desk</span>
+                            </button>
+
+                            <a
+                              href={b.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Globe size={13} />
+                              <span>Al Islam Library</span>
+                              <ExternalLink size={11} className="opacity-60" />
+                            </a>
+                          </div>
+
+                          <button
+                            onClick={() => copyToClipboard(bookCitation, bookKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === bookKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === bookKey ? "Copied" : "Cite"}</span>
                           </button>
                         </div>
                       </div>
