@@ -1300,7 +1300,7 @@ export default function ResearchEngine() {
                   {/* ── Malfuzat (10 Volumes of Spoken Discourses) ── */}
                   {(literatureSubFilter === 'all' || literatureSubFilter === 'malfuzat') && displayedMalfuzat.map((m) => {
                     const malfuzatKey = `malfuzat-${m.id}`;
-                    const malfuzatCitation = `[Malfuzat, Vol. ${m.volume}, p. ${m.pageNum}, "${m.title}", ${m.dateStr}]\n"${m.urduText}"\nTranslation: "${m.englishTranslation}"\nSource: ${m.url}`;
+                    const malfuzatCitation = `[Malfuzat, Vol. ${m.volume}, p. ${m.pageNum}, "${m.title}", ${m.dateStr}]\n${m.urduText ? `"${m.urduText}"\nTranslation: ` : ''}"${m.englishTranslation}"\nSource: ${m.url}`;
                     return (
                       <div key={malfuzatKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
@@ -1369,13 +1369,15 @@ export default function ResearchEngine() {
                           )}
                         </div>
 
-                        {/* Urdu text block in beautiful Nastaliq */}
-                        <div
-                          dir="rtl"
-                          className="p-4 rounded-[14px] glass bg-emerald-500/[0.03] border border-emerald-500/15 text-base md:text-lg leading-loose font-urdu text-[var(--foreground)] text-right"
-                        >
-                          {m.urduText}
-                        </div>
+                        {/* Urdu text block in beautiful Nastaliq if present */}
+                        {m.urduText ? (
+                          <div
+                            dir="rtl"
+                            className="p-4 rounded-[14px] glass bg-emerald-500/[0.03] border border-emerald-500/15 text-base md:text-lg leading-loose font-urdu text-[var(--foreground)] text-right"
+                          >
+                            {m.urduText}
+                          </div>
+                        ) : null}
 
                         {/* English translation */}
                         <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">

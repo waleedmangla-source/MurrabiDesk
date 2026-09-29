@@ -1,0 +1,96 @@
+{
+  "series": "Malfuzat (English Translation)",
+  "author": "Hazrat Mirza Ghulam Ahmad, The Promised Messiah and Mahdi (as)",
+  "publisher": "Islam International Publications Ltd.",
+  "availableVolumesCount": 8,
+  "volumes": [
+    {
+      "volume": 1,
+      "volumeRoman": "I",
+      "title": "Malfuzat – Volume I",
+      "dateRange": "1891 to October 1898",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-1.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-1/",
+      "totalPdfPages": 338,
+      "totalBookPages": 317,
+      "outputFile": "volume_1.json"
+    },
+    {
+      "volume": 2,
+      "volumeRoman": "II",
+      "title": "Malfuzat – Volume II",
+      "dateRange": "January 1899 to August 1900",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-2.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-2/",
+      "totalPdfPages": 342,
+      "totalBookPages": 324,
+      "outputFile": "volume_2.json"
+    },
+    {
+      "volume": 3,
+      "volumeRoman": "III",
+      "title": "Malfuzat – Volume III",
+      "dateRange": "September 1900 to August 1901",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-3.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-iii/",
+      "totalPdfPages": 366,
+      "totalBookPages": 347,
+      "outputFile": "volume_3.json"
+    },
+    {
+      "volume": 4,
+      "volumeRoman": "IV",
+      "title": "Malfuzat – Volume IV",
+      "dateRange": "September 1901 to December 1901",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-4.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-iv/",
+      "totalPdfPages": 319,
+      "totalBookPages": 304,
+      "outputFile": "volume_4.json"
+    },
+    {
+      "volume": 7,
+      "volumeRoman": "VII",
+      "title": "Malfuzat – Volume VII",
+      "dateRange": "October 1904 to September 1905",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-7.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-vii/",
+      "totalPdfPages": 622,
+      "totalBookPages": 605,
+      "outputFile": "volume_7.json"
+    },
+    {
+      "volume": 8,
+      "volumeRoman": "VIII",
+      "title": "Malfuzat – Volume VIII",
+      "dateRange": "October 1905 to October 1906",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-8.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-viii/",
+      "totalPdfPages": 554,
+      "totalBookPages": 539,
+      "outputFile": "volume_8.json"
+    },
+    {
+      "volume": 9,
+      "volumeRoman": "IX",
+      "title": "Malfuzat – Volume IX",
+      "dateRange": "November 1906 to October 1907",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-9.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-ix/",
+      "totalPdfPages": 614,
+      "totalBookPages": 597,
+      "outputFile": "volume_9.json"
+    },
+    {
+      "volume": 10,
+      "volumeRoman": "X",
+      "title": "Malfuzat – Volume X",
+      "dateRange": "November 1907 to May 1908",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Malfuzat-10.pdf",
+      "sourceUrl": "https://www.alislam.org/book/malfuzat-volume-x/",
+      "totalPdfPages": 658,
+      "totalBookPages": 643,
+      "outputFile": "volume_10.json"
+    }
+  ]
+}

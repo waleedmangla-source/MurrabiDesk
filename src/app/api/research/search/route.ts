@@ -24,7 +24,8 @@ import {
 } from '@/lib/research-sources';
 import { searchAskIslamAudios } from '@/lib/askislam-data';
 import { searchMediaVideos } from '@/lib/video-search';
-import { searchMalfuzat, MalfuzatResult } from '@/lib/malfuzat-data';
+import { MalfuzatResult } from '@/lib/malfuzat-data';
+import { searchUnifiedMalfuzat } from '@/lib/malfuzat-fulltext';
 import { searchTazkirah, TazkirahResult } from '@/lib/tazkirah-data';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
 import { expandQueryVector } from '@/lib/dsgt/query-expansion';
@@ -580,7 +581,7 @@ export async function POST(req: NextRequest) {
 
     const malfuzatPromise: Promise<MalfuzatResult[]> = (async () => {
       try {
-        return searchMalfuzat(rawQuery);
+        return searchUnifiedMalfuzat(rawQuery);
       } catch (e) {
         console.warn('[Research API] Malfuzat search failed:', e);
         return [];
