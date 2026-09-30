@@ -28,7 +28,8 @@ import {
   Headphones,
   Radio,
   BookMarked,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
@@ -50,6 +51,7 @@ import {
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
+import MalfuzatPdfModal from './MalfuzatPdfModal';
 import SearchStageTracker from './SearchStageTracker';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
 
@@ -95,6 +97,17 @@ export default function ResearchEngine() {
     surahNameArabic?: string;
     arabicText?: string;
     englishText?: string;
+    urduText?: string;
+  } | null>(null);
+
+  const [activeMalfuzatPdf, setActiveMalfuzatPdf] = useState<{
+    volume: number;
+    pageNum: number | string;
+    pdfPage: number;
+    title: string;
+    urduTitle?: string;
+    dateStr?: string;
+    englishTranslation?: string;
     urduText?: string;
   } | null>(null);
 
@@ -1334,17 +1347,20 @@ export default function ResearchEngine() {
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
                             <button
                               type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: pdfTargetUrl,
+                              onClick={() => setActiveMalfuzatPdf({
+                                volume: m.volume,
+                                pageNum: m.pageNum,
+                                pdfPage: m.pdfPage || (typeof m.pageNum === 'number' ? m.pageNum : 1),
                                 title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
-                                source: 'Malfuzat',
-                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
-                                summary: m.englishTranslation
+                                urduTitle: m.urduTitle,
+                                dateStr: m.dateStr,
+                                englishTranslation: m.englishTranslation,
+                                urduText: m.urduText
                               })}
-                              className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
+                              className="text-left hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5 group/link"
                             >
                               <span>{m.title}</span>
-                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-[var(--accent-main)] transition-all shrink-0" />
+                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-emerald-400 transition-all shrink-0" />
                             </button>
                           </h3>
                           {m.urduTitle && (
@@ -1386,7 +1402,26 @@ export default function ResearchEngine() {
                         </p>
 
                         <div className="flex items-center justify-between pt-1 text-xs">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => setActiveMalfuzatPdf({
+                                volume: m.volume,
+                                pageNum: m.pageNum,
+                                pdfPage: m.pdfPage || (typeof m.pageNum === 'number' ? m.pageNum : 1),
+                                title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
+                                urduTitle: m.urduTitle,
+                                dateStr: m.dateStr,
+                                englishTranslation: m.englishTranslation,
+                                urduText: m.urduText
+                              })}
+                              className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95 shadow-sm"
+                              title={`Open authentic Malfuzat Vol. ${m.volume} PDF directly inside Murabbi Desk on page ${m.pdfPage || m.pageNum}`}
+                            >
+                              <BookOpen size={13} />
+                              <span>Open PDF in Murabbi Desk (p. {m.pdfPage || m.pageNum})</span>
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => setActiveReadingArticle({
@@ -1396,22 +1431,21 @@ export default function ResearchEngine() {
                                 author: 'Hazrat Mirza Ghulam Ahmad (as)',
                                 summary: m.englishTranslation
                               })}
-                              className="px-3 py-1.5 rounded-[10px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                              className="px-2.5 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs"
+                              title="Read formatted extracted discourse text"
                             >
-                              <BookOpen size={13} />
-                              <span>Read in Murabbi Desk</span>
+                              <FileText size={13} />
+                              <span>Text View</span>
                             </button>
 
                             <a
                               href={pdfTargetUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
-                              title={`Open official Malfuzat Vol. ${m.volume} PDF directly on page ${m.pdfPage || m.pageNum}`}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 transition-colors"
+                              title={`Open PDF on Al Islam in new browser tab (Page ${m.pdfPage || m.pageNum})`}
                             >
-                              <Globe size={13} />
-                              <span>Open on Al Islam (PDF p. {m.pdfPage || m.pageNum})</span>
-                              <ExternalLink size={11} className="opacity-60" />
+                              <ExternalLink size={13} />
                             </a>
                           </div>
 
@@ -2364,6 +2398,21 @@ export default function ResearchEngine() {
           initialEnglishText={activeCommentaryVerse.englishText}
           initialUrduText={activeCommentaryVerse.urduText}
           onClose={() => setActiveCommentaryVerse(null)}
+        />
+      )}
+
+      {/* ── IN-DESK MALFUZAT PDF VIEWER MODAL ── */}
+      {activeMalfuzatPdf && (
+        <MalfuzatPdfModal
+          volume={activeMalfuzatPdf.volume}
+          pageNum={activeMalfuzatPdf.pageNum}
+          pdfPage={activeMalfuzatPdf.pdfPage}
+          title={activeMalfuzatPdf.title}
+          urduTitle={activeMalfuzatPdf.urduTitle}
+          dateStr={activeMalfuzatPdf.dateStr}
+          englishTranslation={activeMalfuzatPdf.englishTranslation}
+          urduText={activeMalfuzatPdf.urduText}
+          onClose={() => setActiveMalfuzatPdf(null)}
         />
       )}
     </div>

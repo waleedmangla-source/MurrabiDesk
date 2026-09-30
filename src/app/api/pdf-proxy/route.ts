@@ -66,6 +66,8 @@ export async function GET(request: NextRequest) {
     responseHeaders.set('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
     responseHeaders.set('Accept-Ranges', 'bytes');
     responseHeaders.set('Content-Type', upstreamRes.headers.get('content-type') || 'application/pdf');
+    responseHeaders.set('Content-Disposition', 'inline; filename="Malfuzat.pdf"');
+    responseHeaders.set('X-Content-Type-Options', 'nosniff');
 
     const contentRange = upstreamRes.headers.get('content-range');
     if (contentRange) responseHeaders.set('Content-Range', contentRange);
