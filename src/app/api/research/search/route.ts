@@ -556,7 +556,16 @@ export async function POST(req: NextRequest) {
 
     const videosPromise: Promise<VideoResult[]> = (async () => {
       try {
-        return await searchMediaVideos(rawQuery);
+        const results = await searchMediaVideos(rawQuery);
+        if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = await searchMediaVideos(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+              results.push(item);
+            }
+          }
+        }
+        return results;
       } catch (e) {
         console.warn('[Research API] Video search failed:', e);
         return [];

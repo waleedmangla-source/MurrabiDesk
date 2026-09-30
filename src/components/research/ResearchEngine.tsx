@@ -2061,34 +2061,40 @@ export default function ResearchEngine() {
                 <div className="space-y-6">
                   {/* Video Sub-filter pills (only in 'videos' tab) */}
                   {activeFilter === 'videos' && (
-                    <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-black/10 dark:border-white/10 mb-4 select-none">
-                      <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)] mr-2 flex items-center gap-1.5">
-                        <Filter size={12} />
-                        Filter:
-                      </span>
-                      {[
-                        { id: 'all', label: `All Videos (${results?.videos?.length || 0})` },
-                        { id: 'youtube', label: `YouTube (${results?.videos?.filter(v => v.source === 'YouTube').length || 0})` },
-                        { id: 'mta', label: `MTA.tv (${results?.videos?.filter(v => v.source === 'MTA.tv').length || 0})` },
-                        { id: 'transcripts', label: `Transcript Matches (${results?.videos?.filter(v => !!v.transcriptSnippet).length || 0})` }
-                      ].map((sub) => (
-                        <button
-                          key={sub.id}
-                          type="button"
-                          onClick={() => {
-                            setVideoSubFilter(sub.id as any);
-                            setCurrentPage(1);
-                          }}
-                          className={clsx(
-                            "px-3 py-1.5 rounded-full text-xs font-bold transition-all",
-                            videoSubFilter === sub.id
-                              ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)] scale-105"
-                              : "glass bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--foreground)] border border-white/10"
-                          )}
-                        >
-                          {sub.label}
-                        </button>
-                      ))}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-black/10 dark:border-white/10 mb-4 select-none">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)] mr-2 flex items-center gap-1.5">
+                          <Filter size={12} />
+                          Filter:
+                        </span>
+                        {[
+                          { id: 'all', label: `All Videos (${results?.videos?.length || 0})` },
+                          { id: 'youtube', label: `YouTube (${results?.videos?.filter(v => v.source === 'YouTube').length || 0})` },
+                          { id: 'mta', label: `MTA.tv (${results?.videos?.filter(v => v.source === 'MTA.tv').length || 0})` },
+                          { id: 'transcripts', label: `Transcript Matches (${results?.videos?.filter(v => !!v.transcriptSnippet).length || 0})` }
+                        ].map((sub) => (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => {
+                              setVideoSubFilter(sub.id as any);
+                              setCurrentPage(1);
+                            }}
+                            className={clsx(
+                              "px-3 py-1.5 rounded-full text-xs font-bold transition-all",
+                              videoSubFilter === sub.id
+                                ? "bg-[var(--accent-main)] text-white shadow-md shadow-[var(--accent-glow)] scale-105"
+                                : "glass bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--foreground)] border border-white/10"
+                            )}
+                          >
+                            {sub.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-[11px] font-semibold text-emerald-400/90 flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>27 Authorized Channels Only</span>
+                      </div>
                     </div>
                   )}
 
@@ -2096,7 +2102,7 @@ export default function ResearchEngine() {
                   {displayedVideos.map((item, idx) => {
                     const itemKey = `video-${item.id || idx}`;
                     const isYouTube = item.source === 'YouTube';
-                    const videoCitation = `[Video: "${item.title}" — ${item.channel} (${item.source})]\nWatch: ${item.url}${item.transcriptSnippet ? `\nTranscript Quote: ${item.transcriptSnippet}` : ''}`;
+                    const videoCitation = `[Video: "${item.title}" — ${item.channel}${item.channelHandle ? ` (${item.channelHandle})` : ''} (${item.source})]\nWatch: ${item.url}${item.transcriptSnippet ? `\nTranscript Quote: ${item.transcriptSnippet}` : ''}`;
 
                     return (
                       <div key={itemKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
@@ -2115,6 +2121,14 @@ export default function ResearchEngine() {
                               <span className="text-[var(--foreground)]">{isYouTube ? 'YouTube' : 'MTA.tv'}</span>
                               <span>›</span>
                               <span className="truncate">{item.channel}</span>
+                              {item.channelHandle && (
+                                <span className="text-[var(--text-muted)] lowercase font-mono">({item.channelHandle})</span>
+                              )}
+                              {item.channelCategory && (
+                                <span className="hidden md:inline-block px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] text-[var(--accent-light)] font-medium normal-case tracking-normal">
+                                  {item.channelCategory}
+                                </span>
+                              )}
                               {item.published && (
                                 <>
                                   <span>•</span>
@@ -2298,7 +2312,7 @@ export default function ResearchEngine() {
                     )}
                     {activeFilter === 'videos' && (
                       <span className="text-red-400 font-bold">
-                        • {filteredVideos.length} videos from YouTube & MTA.tv
+                        • {filteredVideos.length} videos from YouTube (27 Approved Ahmadiyya Channels) & MTA.tv
                       </span>
                     )}
                   </div>

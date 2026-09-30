@@ -92,6 +92,8 @@ export interface VideoResult {
   source: 'YouTube' | 'MTA.tv';
   title: string;
   channel: string;
+  channelHandle?: string;
+  channelCategory?: string;
   duration?: string;
   published?: string;
   url: string;
