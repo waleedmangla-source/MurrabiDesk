@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import * as cheerio from 'cheerio';
 
 export const runtime = 'nodejs';
@@ -45,6 +47,72 @@ export async function POST(req: NextRequest) {
     }
 
     const source = body.source || detectSourceFromUrl(targetUrl);
+
+    // ── SPECIAL HANDLER: MALFUZAT LOCAL CORPUS ──────────────────────────────
+    if (source === 'Malfuzat' || targetUrl.includes('/pdf/Malfuzat-') || targetUrl.includes('/malfuzat-volume-')) {
+      const volMatch = targetUrl.match(/Malfuzat-(\d{1,2})\.pdf(?:#page=(\d+))?/i) ||
+                       targetUrl.match(/malfuzat-volume-([ivx0-9]+)/i);
+
+      if (volMatch) {
+        let volNum = parseInt(volMatch[1], 10);
+        if (isNaN(volNum)) {
+          const romanMap: Record<string, number> = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 };
+          volNum = romanMap[volMatch[1].toLowerCase()] || 1;
+        }
+
+        const pageMatch = targetUrl.match(/#page=(\d+)/i);
+        const targetPage = pageMatch ? parseInt(pageMatch[1], 10) : null;
+
+        const jsonPath = path.join(process.cwd(), 'public', 'malfuzat-en', `volume_${volNum}.json`);
+        if (fs.existsSync(jsonPath)) {
+          try {
+            const volData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+            let matchedPage = null;
+
+            if (targetPage !== null) {
+              matchedPage = volData.pages.find((p: any) => p.pdf_page === targetPage) ||
+                            volData.pages.find((p: any) => p.page_num === targetPage);
+            }
+            if (!matchedPage && volData.pages.length > 0) {
+              matchedPage = volData.pages[0];
+            }
+
+            if (matchedPage) {
+              const paras = matchedPage.text.split('\n\n').filter(Boolean);
+              const contentHtml = paras.map((p: string) => {
+                const trimmed = p.trim();
+                if (/[\u0600-\u06FF]/.test(trimmed) && trimmed.length < 250) {
+                  return `<div dir="rtl" class="my-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-urdu text-xl leading-loose text-right">${trimmed.replace(/\n/g, '<br/>')}</div>`;
+                }
+                return `<p class="my-3 leading-relaxed text-[var(--foreground)]">${trimmed.replace(/\n/g, '<br/>')}</p>`;
+              }).join('');
+
+              const title = matchedPage.headings && matchedPage.headings.length > 0
+                ? `${matchedPage.headings[0]} (Malfuzat Vol. ${volData.volumeRoman}, p. ${matchedPage.page_num})`
+                : `Malfuzat Volume ${volData.volumeRoman}, Page ${matchedPage.page_num}`;
+
+              const { wordCount, readingTimeMinutes } = calculateReadingTime(matchedPage.text);
+
+              return NextResponse.json({
+                success: true,
+                article: {
+                  title,
+                  author: 'Hazrat Mirza Ghulam Ahmad (as)',
+                  date: matchedPage.dates && matchedPage.dates.length > 0 ? matchedPage.dates[0] : volData.dateRange,
+                  source: 'Malfuzat',
+                  url: targetUrl,
+                  contentHtml,
+                  wordCount,
+                  readingTimeMinutes
+                }
+              });
+            }
+          } catch (e) {
+            console.error('[Article Reader] Error serving Malfuzat local page:', e);
+          }
+        }
+      }
+    }
 
     // Fetch article HTML with realistic browser headers
     const res = await fetch(targetUrl, {

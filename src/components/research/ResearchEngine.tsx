@@ -1300,7 +1300,8 @@ export default function ResearchEngine() {
                   {/* ── Malfuzat (10 Volumes of Spoken Discourses) ── */}
                   {(literatureSubFilter === 'all' || literatureSubFilter === 'malfuzat') && displayedMalfuzat.map((m) => {
                     const malfuzatKey = `malfuzat-${m.id}`;
-                    const malfuzatCitation = `[Malfuzat, Vol. ${m.volume}, p. ${m.pageNum}, "${m.title}", ${m.dateStr}]\n${m.urduText ? `"${m.urduText}"\nTranslation: ` : ''}"${m.englishTranslation}"\nSource: ${m.url}`;
+                    const pdfTargetUrl = m.pdfUrl || m.url;
+                    const malfuzatCitation = `[Malfuzat, Vol. ${m.volume}, p. ${m.pageNum}${m.pdfPage ? ` (PDF p. ${m.pdfPage})` : ''}, "${m.title}", ${m.dateStr}]\n${m.urduText ? `"${m.urduText}"\nTranslation: ` : ''}"${m.englishTranslation}"\nSource: ${pdfTargetUrl}`;
                     return (
                       <div key={malfuzatKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
                         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
@@ -1334,7 +1335,7 @@ export default function ResearchEngine() {
                             <button
                               type="button"
                               onClick={() => setActiveReadingArticle({
-                                url: m.url,
+                                url: pdfTargetUrl,
                                 title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
                                 source: 'Malfuzat',
                                 author: 'Hazrat Mirza Ghulam Ahmad (as)',
@@ -1389,7 +1390,7 @@ export default function ResearchEngine() {
                             <button
                               type="button"
                               onClick={() => setActiveReadingArticle({
-                                url: m.url,
+                                url: pdfTargetUrl,
                                 title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
                                 source: 'Malfuzat',
                                 author: 'Hazrat Mirza Ghulam Ahmad (as)',
@@ -1402,13 +1403,14 @@ export default function ResearchEngine() {
                             </button>
 
                             <a
-                              href={m.url}
+                              href={pdfTargetUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                              title={`Open official Malfuzat Vol. ${m.volume} PDF directly on page ${m.pdfPage || m.pageNum}`}
                             >
                               <Globe size={13} />
-                              <span>Al Islam Malfuzat</span>
+                              <span>Open on Al Islam (PDF p. {m.pdfPage || m.pageNum})</span>
                               <ExternalLink size={11} className="opacity-60" />
                             </a>
                           </div>

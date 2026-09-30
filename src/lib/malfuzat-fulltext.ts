@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { MalfuzatResult, searchMalfuzat } from './malfuzat-data';
+import { MalfuzatResult, searchMalfuzat, getMalfuzatPdfUrl } from './malfuzat-data';
 import { THEOLOGICAL_TOPIC_MAP } from './khazain-data';
 
 interface MalfuzatPage {
@@ -205,6 +205,8 @@ export function searchMalfuzatFullText(query: string, maxResults = 25): Malfuzat
           ? `${headingTitle} (Malfuzat Vol. ${vol.volumeRoman}, p. ${page.page_num})`
           : `Malfuzat Volume ${vol.volumeRoman}, Page ${page.page_num}`;
 
+        const directPdfUrl = `${vol.sourcePdfUrl || `https://files.alislam.cloud/pdf/Malfuzat-${vol.volume}.pdf`}#page=${page.pdf_page}`;
+
         hits.push({
           volume: vol.volume,
           volumeRoman: vol.volumeRoman,
@@ -215,7 +217,7 @@ export function searchMalfuzatFullText(query: string, maxResults = 25): Malfuzat
           snippet,
           dateStr: page.dates && page.dates.length > 0 ? page.dates[0] : vol.dateRange,
           score,
-          sourceUrl: `${vol.sourceUrl}#page=${page.page_num}`,
+          sourceUrl: directPdfUrl,
           headings: page.headings || []
         });
       }
@@ -239,6 +241,7 @@ export function searchMalfuzatFullText(query: string, maxResults = 25): Malfuzat
       id: `malfuzat-en-v${hit.volume}-p${hit.pageNum}`,
       volume: hit.volume,
       pageNum: numericPage,
+      pdfPage: hit.pdfPage,
       dateStr: hit.dateStr,
       location: "Discourses of the Promised Messiah (as)",
       sittingContext: `Malfuzat Volume ${hit.volumeRoman} (${hit.volume === 1 ? '1891–1898' : hit.volume === 2 ? '1899–1900' : hit.volume === 3 ? '1900–1901' : hit.volume === 4 ? '1901' : hit.volume === 7 ? '1904–1905' : hit.volume === 8 ? '1905–1906' : hit.volume === 9 ? '1906–1907' : '1907–1908'})`,
@@ -248,8 +251,9 @@ export function searchMalfuzatFullText(query: string, maxResults = 25): Malfuzat
       englishTranslation: hit.snippet,
       topics: ["malfuzat", `volume ${hit.volume}`, ...hit.headings.slice(0, 3)],
       url: hit.sourceUrl,
+      pdfUrl: hit.sourceUrl,
       scribe: "Islam International Publications Ltd.",
-      periodicalSource: `Official English Translation, Malfuzat Vol. ${hit.volumeRoman}, p. ${hit.pageNum}`
+      periodicalSource: `Official English Translation, Malfuzat Vol. ${hit.volumeRoman}, p. ${hit.pageNum} (PDF p. ${hit.pdfPage})`
     };
   });
 }
@@ -264,6 +268,25 @@ export function searchUnifiedMalfuzat(query: string): MalfuzatResult[] {
   // 2. Search curated catalog
   const catalogResults = searchMalfuzat(query);
 
+  const volumes = getMalfuzatEnglishVolumes();
+
+  const enrichPdfUrl = (item: MalfuzatResult): MalfuzatResult => {
+    if (item.pdfPage && item.pdfUrl) return item;
+    const volData = volumes.find(v => v.volume === item.volume);
+    let pdfPage: number | undefined = undefined;
+    if (volData) {
+      const match = volData.pages.find(p => p.page_num === item.pageNum && p.pdf_page >= item.pageNum);
+      if (match) pdfPage = match.pdf_page;
+    }
+    const pdfUrl = getMalfuzatPdfUrl(item.volume, item.pageNum, pdfPage);
+    return {
+      ...item,
+      pdfPage: pdfPage || item.pdfPage,
+      pdfUrl,
+      url: pdfUrl
+    };
+  };
+
   // Combine and deduplicate
   const combined: MalfuzatResult[] = [];
   const seenKeys = new Set<string>();
@@ -273,7 +296,7 @@ export function searchUnifiedMalfuzat(query: string): MalfuzatResult[] {
     const key = `vol-${item.volume}-p-${item.pageNum}`;
     if (!seenKeys.has(key)) {
       seenKeys.add(key);
-      combined.push(item);
+      combined.push(enrichPdfUrl(item));
     }
   }
 
@@ -282,7 +305,7 @@ export function searchUnifiedMalfuzat(query: string): MalfuzatResult[] {
     const key = `vol-${item.volume}-p-${item.pageNum}`;
     if (!seenKeys.has(key)) {
       seenKeys.add(key);
-      combined.push(item);
+      combined.push(enrichPdfUrl(item));
     }
   }
 
