@@ -802,12 +802,12 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Center Wing: Centered Search Pill Bar + Toggle */}
+          {/* Center Wing: Centered Search Pill Bar + Search Button + Toggle */}
           <div className="w-full max-w-2xl mx-auto flex items-center justify-center gap-2">
-            <form onSubmit={handleFormSubmit} className="relative flex-1">
+            <form onSubmit={handleFormSubmit} className="relative flex-1 flex items-center gap-2">
               <div
                 className={clsx(
-                  "relative flex items-center w-full rounded-[14px] md:rounded-full transition-all",
+                  "relative flex items-center flex-1 w-full rounded-[14px] md:rounded-full transition-all",
                   "glass bg-black/20 dark:bg-black/35 border border-white/10 shadow-sm",
                   "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
                 )}
@@ -822,7 +822,7 @@ export default function ResearchEngine() {
                       ? "Verbatim search..."
                       : "Search Ahmadiyya resources..."
                   }
-                  className="w-full pl-5 pr-20 py-2.5 bg-transparent text-sm md:text-base font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
+                  className="w-full pl-5 pr-10 py-2.5 bg-transparent text-sm md:text-base font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
                 />
 
                 {query && (
@@ -840,24 +840,29 @@ export default function ResearchEngine() {
                   type="button"
                   onClick={toggleVoiceSearch}
                   className={clsx(
-                    "p-2 rounded-xl mr-1 transition-colors",
+                    "p-2 rounded-xl mr-2 transition-colors",
                     isListening
                       ? "text-red-500 animate-pulse"
                       : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
                   )}
+                  title="Search by voice"
                 >
                   <Mic size={18} />
                 </button>
-
-                {/* Search submit button */}
-                <button
-                  type="submit"
-                  disabled={loading || !query.trim()}
-                  className="p-2 pr-3 text-[var(--accent-main)] hover:opacity-80"
-                >
-                  <Search size={18} />
-                </button>
               </div>
+
+              {/* Search submit button (Outside search bar, to the right) */}
+              <button
+                type="submit"
+                disabled={loading || !query.trim()}
+                title="Search"
+                className={clsx(
+                  "p-2.5 rounded-full border transition-all duration-200 select-none cursor-pointer shrink-0 shadow-sm active:scale-95 flex items-center justify-center",
+                  "bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white border-[var(--accent-main)] shadow-sm shadow-[var(--accent-glow)]/30 disabled:opacity-40 disabled:pointer-events-none"
+                )}
+              >
+                <Search size={16} />
+              </button>
             </form>
 
             {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
