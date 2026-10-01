@@ -776,7 +776,7 @@ export default function ResearchEngine() {
               disabled={!query.trim()}
               className="px-9 py-3.5 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
             >
-              Murabbi Search
+              Search
             </button>
           </div>
         </div>
