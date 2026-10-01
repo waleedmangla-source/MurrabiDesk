@@ -765,14 +765,6 @@ export default function ResearchEngine() {
             </div>
           </form>
 
-          {/* Verbatim Mode Helper Note */}
-          {searchMode === 'verbatim' && (
-            <div className="mt-3.5 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-medium flex items-center gap-2 animate-in fade-in">
-              <span className="font-bold">🔤 Verbatim Mode Active:</span>
-              <span>Exact word-for-word string match + translation & phonetic equivalents (e.g. Khatam un Nabiyyin ⇄ خاتم النبیین ⇄ Seal of the Prophets)</span>
-            </div>
-          )}
-
           {/* Voice active prompt */}
           {isListening && (
             <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between text-xs animate-in fade-in w-full">
