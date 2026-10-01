@@ -1032,7 +1032,7 @@ export default function ResearchEngine() {
             <div className="w-full space-y-8">
               {/* ── Confidence Score Bar ── */}
               {activeFilter === 'all' && results.consensusMatrix && (
-                <div className="p-4 rounded-[14px] glass bg-white/[0.02] border border-white/10 space-y-1.5 shadow-sm">
+                <div className="space-y-1.5 pb-2">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-[var(--text-muted)] uppercase tracking-wider text-[10px] font-black">
                       Confidence
@@ -1041,7 +1041,7 @@ export default function ResearchEngine() {
                       {results.consensusMatrix.confidenceScore}%
                     </span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden relative">
+                  <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden relative">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent-main)] transition-all duration-700"
                       style={{ width: `${results.consensusMatrix.confidenceScore}%` }}
