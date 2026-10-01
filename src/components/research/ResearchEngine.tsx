@@ -802,9 +802,9 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Center Wing: Centered Search Pill Bar + Search Button + Toggle */}
+          {/* Center Wing: Centered Search Pill Bar + Toggle + Search Magnifying Glass */}
           <div className="w-full max-w-2xl mx-auto flex items-center justify-center gap-2">
-            <form onSubmit={handleFormSubmit} className="relative flex-1 flex items-center gap-2">
+            <form onSubmit={handleFormSubmit} className="relative flex-1 flex items-center gap-2.5">
               <div
                 className={clsx(
                   "relative flex items-center flex-1 w-full rounded-[14px] md:rounded-full transition-all",
@@ -851,57 +851,54 @@ export default function ResearchEngine() {
                 </button>
               </div>
 
-              {/* Search submit button (Outside search bar, to the right) */}
+              {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={searchMode === 'verbatim'}
+                onClick={() => {
+                  const nextMode = searchMode === 'verbatim' ? 'contextual' : 'verbatim';
+                  setSearchMode(nextMode);
+                  if (submittedQuery) performSearch(submittedQuery, nextMode);
+                }}
+                className={clsx(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
+                  searchMode === 'verbatim'
+                    ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
+                    : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
+                )}
+                title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
+              >
+                <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
+                  Verbatim
+                </span>
+                <div
+                  className={clsx(
+                    "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
+                    searchMode === 'verbatim'
+                      ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
+                      : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
+                      searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
+                    )}
+                  />
+                </div>
+              </button>
+
+              {/* Magnifying Glass Search Button */}
               <button
                 type="submit"
                 disabled={loading || !query.trim()}
                 title="Search"
-                className={clsx(
-                  "p-2.5 rounded-full border transition-all duration-200 select-none cursor-pointer shrink-0 shadow-sm active:scale-95 flex items-center justify-center",
-                  "bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white border-[var(--accent-main)] shadow-sm shadow-[var(--accent-glow)]/30 disabled:opacity-40 disabled:pointer-events-none"
-                )}
+                className="p-2 rounded-full text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all cursor-pointer shrink-0 active:scale-90 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center"
               >
-                <Search size={16} />
+                <Search size={20} />
               </button>
             </form>
-
-            {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
-            <button
-              type="button"
-              role="switch"
-              aria-checked={searchMode === 'verbatim'}
-              onClick={() => {
-                const nextMode = searchMode === 'verbatim' ? 'contextual' : 'verbatim';
-                setSearchMode(nextMode);
-                if (submittedQuery) performSearch(submittedQuery, nextMode);
-              }}
-              className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
-                searchMode === 'verbatim'
-                  ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
-                  : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
-              )}
-              title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
-            >
-              <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
-                Verbatim
-              </span>
-              <div
-                className={clsx(
-                  "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
-                  searchMode === 'verbatim'
-                    ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
-                    : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
-                )}
-              >
-                <div
-                  className={clsx(
-                    "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
-                    searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
-                  )}
-                />
-              </div>
-            </button>
           </div>
 
           {/* Right Wing: Balanced spacer (keeps center search bar perfectly centered) */}
