@@ -667,6 +667,10 @@ export default function ResearchEngine() {
               </span>
             </div>
           </div>
+
+          <p className="text-xs md:text-sm font-semibold text-[var(--text-muted)] tracking-wide mt-3 text-center max-w-lg">
+            Multi-Source Ahmadiyya Corpus Search
+          </p>
         </div>
 
         {/* Murabbi Form V4 / Google-Style Search Pill Box (Wide Centered) */}
