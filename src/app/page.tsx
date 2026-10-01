@@ -39,6 +39,7 @@ import QuickLinks from '@/components/QuickLinks';
 import { Button } from '@/components/ui/Button';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [activeHubTab, setActiveHubTab] = useState<'notes' | 'links'>('notes');
   const [isConnected, setIsConnected] = useState(false);
@@ -88,6 +89,7 @@ export default function Dashboard() {
         showWorldClock: parsed.showWorldClock ?? true,
         showPrayerTimes: parsed.showPrayerTimes ?? true,
         showAIPrompts: parsed.showAIPrompts ?? true,
+        showHabitStats: parsed.showHabitStats ?? true,
       });
     }
 

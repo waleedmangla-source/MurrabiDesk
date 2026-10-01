@@ -400,9 +400,9 @@ export default function TajnidPage() {
                         {contact.name}
                       </p>
                       {contact.lat && contact.lng ? (
-                        <MapPin size={11} className="text-emerald-400 shrink-0" title="Location verified" />
+                        <span title="Location verified"><MapPin size={11} className="text-emerald-400 shrink-0" /></span>
                       ) : (
-                        <MapPin size={11} className="text-red-400 shrink-0 opacity-60" title="Location missing" />
+                        <span title="Location missing"><MapPin size={11} className="text-red-400 shrink-0 opacity-60" /></span>
                       )}
                     </div>
 

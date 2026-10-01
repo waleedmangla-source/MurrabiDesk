@@ -28,6 +28,7 @@ import {
   Headphones,
   Radio,
   BookMarked,
+  Bookmark,
   Sparkles,
   FileText
 } from 'lucide-react';
@@ -48,7 +49,8 @@ import {
   BookItem,
   MalfuzatResult,
   TazkirahResult,
-  EssenceResult
+  EssenceResult,
+  SearchMode
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
@@ -80,6 +82,7 @@ export default function ResearchEngine() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const [searchMode, setSearchMode] = useState<SearchMode>('contextual');
   const [activeFilter, setActiveFilter] = useState<ActiveSourceFilter>('all');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<MultiSourceSearchResult | null>(null);
@@ -233,9 +236,10 @@ export default function ResearchEngine() {
     }
   };
 
-  const performSearch = async (searchQuery?: string) => {
+  const performSearch = async (searchQuery?: string, overrideMode?: SearchMode) => {
     const targetQuery = (searchQuery ?? query).trim();
     if (!targetQuery) return;
+    const mode = overrideMode ?? searchMode;
 
     setLoading(true);
     setError(null);
@@ -247,7 +251,7 @@ export default function ResearchEngine() {
       const res = await fetch('/api/research/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: targetQuery })
+        body: JSON.stringify({ query: targetQuery, searchMode: mode })
       });
 
       const data = await res.json();
@@ -592,7 +596,8 @@ export default function ResearchEngine() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: submittedQuery,
-            articlePage: newPage - 1
+            articlePage: newPage - 1,
+            searchMode
           })
         });
         const data = await res.json();
@@ -671,58 +676,104 @@ export default function ResearchEngine() {
         {/* Murabbi Form V4 / Google-Style Search Pill Box (Wide Centered) */}
         <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto flex flex-col items-center relative px-2 sm:px-6">
           <form onSubmit={handleFormSubmit} className="w-full relative">
-            <div
-              className={clsx(
-                "relative flex items-center w-full rounded-2xl md:rounded-full transition-all duration-300",
-                "glass bg-black/25 dark:bg-black/40 border border-white/10 dark:border-white/15 shadow-2xl hover:border-[var(--accent-main)]/40",
-                "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
-              )}
-            >
-              <div className="pl-6 pr-3 text-[var(--text-muted)]">
-                <Search size={22} />
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+              <div
+                className={clsx(
+                  "relative flex items-center flex-1 w-full rounded-2xl md:rounded-full transition-all duration-300",
+                  "glass bg-black/25 dark:bg-black/40 border border-white/10 dark:border-white/15 shadow-2xl hover:border-[var(--accent-main)]/40",
+                  "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
+                )}
+              >
+                <div className="pl-6 pr-3 text-[var(--text-muted)]">
+                  <Search size={22} />
+                </div>
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={
+                    searchMode === 'verbatim'
+                      ? "Verbatim search: exact phrase, Arabic, Urdu, or English transliteration..."
+                      : "Search topics, books, verses, or press mic to speak..."
+                  }
+                  className="w-full py-4 md:py-4.5 bg-transparent text-base md:text-lg font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
+                />
+
+                {/* Clear button */}
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="p-2 text-[var(--text-muted)] hover:text-[var(--foreground)] mr-1 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+
+                {/* Voice Search Microphone */}
+                <div className="pr-5 flex items-center">
+                  <button
+                    type="button"
+                    onClick={toggleVoiceSearch}
+                    title="Search by voice"
+                    className={clsx(
+                      "p-2.5 rounded-xl md:rounded-full transition-all flex items-center justify-center relative",
+                      isListening
+                        ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50"
+                        : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
+                    )}
+                  >
+                    <Mic size={22} />
+                    {isListening && (
+                      <span className="absolute -inset-1 rounded-full bg-red-500/30 animate-ping -z-10" />
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search topics, books, verses, or press mic to speak..."
-                className="w-full py-4 md:py-4.5 bg-transparent text-base md:text-lg font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
-              />
-
-              {/* Clear button */}
-              {query && (
+              {/* Mode Toggle Next to Search Bar */}
+              <div className="flex items-center p-1 rounded-2xl md:rounded-full glass bg-black/35 dark:bg-black/50 border border-white/10 shrink-0 shadow-lg self-center sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => setQuery("")}
-                  className="p-2 text-[var(--text-muted)] hover:text-[var(--foreground)] mr-1 rounded-lg hover:bg-white/5 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              )}
-
-              {/* Voice Search Microphone */}
-              <div className="pr-5 flex items-center">
-                <button
-                  type="button"
-                  onClick={toggleVoiceSearch}
-                  title="Search by voice"
+                  onClick={() => setSearchMode('contextual')}
                   className={clsx(
-                    "p-2.5 rounded-xl md:rounded-full transition-all flex items-center justify-center relative",
-                    isListening
-                      ? "bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50"
-                      : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
+                    "flex items-center gap-1.5 px-3.5 py-3 rounded-xl md:rounded-full text-xs font-bold transition-all duration-200 select-none",
+                    searchMode === 'contextual'
+                      ? "bg-gradient-to-r from-[var(--accent-main)] to-indigo-600 text-white shadow-md shadow-[var(--accent-glow)]"
+                      : "text-[var(--text-muted)] hover:text-white"
                   )}
+                  title="Contextual Search: DSGT semantic concept expansion, thematic bridging & related records"
                 >
-                  <Mic size={22} />
-                  {isListening && (
-                    <span className="absolute -inset-1 rounded-full bg-red-500/30 animate-ping -z-10" />
+                  <Sparkles size={14} className={searchMode === 'contextual' ? "text-amber-300" : "text-[var(--text-dim)]"} />
+                  <span>Contextual</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchMode('verbatim')}
+                  className={clsx(
+                    "flex items-center gap-1.5 px-3.5 py-3 rounded-xl md:rounded-full text-xs font-bold transition-all duration-200 select-none",
+                    searchMode === 'verbatim'
+                      ? "bg-amber-400 text-black font-black shadow-md shadow-amber-500/30"
+                      : "text-[var(--text-muted)] hover:text-white"
                   )}
+                  title="Verbatim Search: Exact phrase matching + automatic translations and phonetic transliterations"
+                >
+                  <span className="font-mono text-xs font-black">" "</span>
+                  <span>Verbatim</span>
                 </button>
               </div>
             </div>
           </form>
+
+          {/* Verbatim Mode Helper Note */}
+          {searchMode === 'verbatim' && (
+            <div className="mt-3.5 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-medium flex items-center gap-2 animate-in fade-in">
+              <span className="font-bold">🔤 Verbatim Mode Active:</span>
+              <span>Exact word-for-word string match + translation & phonetic equivalents (e.g. Khatam un Nabiyyin ⇄ خاتم النبیین ⇄ Seal of the Prophets)</span>
+            </div>
+          )}
 
           {/* Voice active prompt */}
           {isListening && (
@@ -775,9 +826,9 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Center Wing: Centered Search Pill Bar */}
-          <div className="w-full max-w-2xl mx-auto flex justify-center">
-            <form onSubmit={handleFormSubmit} className="relative w-full">
+          {/* Center Wing: Centered Search Pill Bar + Toggle */}
+          <div className="w-full max-w-2xl mx-auto flex items-center justify-center gap-2">
+            <form onSubmit={handleFormSubmit} className="relative flex-1">
               <div
                 className={clsx(
                   "relative flex items-center w-full rounded-[14px] md:rounded-full transition-all",
@@ -790,7 +841,11 @@ export default function ResearchEngine() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search Ahmadiyya resources..."
+                  placeholder={
+                    searchMode === 'verbatim'
+                      ? "Verbatim search..."
+                      : "Search Ahmadiyya resources..."
+                  }
                   className="w-full pl-5 pr-20 py-2.5 bg-transparent text-sm md:text-base font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
                 />
 
@@ -828,6 +883,44 @@ export default function ResearchEngine() {
                 </button>
               </div>
             </form>
+
+            {/* Sticky Header Mode Toggle */}
+            <div className="flex items-center p-0.5 rounded-full glass bg-black/40 border border-white/10 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchMode('contextual');
+                  if (submittedQuery) performSearch(submittedQuery, 'contextual');
+                }}
+                className={clsx(
+                  "px-2.5 py-1 rounded-full text-[11px] font-bold transition-all flex items-center gap-1",
+                  searchMode === 'contextual'
+                    ? "bg-[var(--accent-main)] text-white shadow-sm"
+                    : "text-[var(--text-muted)] hover:text-white"
+                )}
+                title="Switch to Contextual Search"
+              >
+                <Sparkles size={11} className={searchMode === 'contextual' ? "text-amber-300" : "text-[var(--text-dim)]"} />
+                <span className="hidden sm:inline">Contextual</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchMode('verbatim');
+                  if (submittedQuery) performSearch(submittedQuery, 'verbatim');
+                }}
+                className={clsx(
+                  "px-2.5 py-1 rounded-full text-[11px] font-bold transition-all flex items-center gap-1",
+                  searchMode === 'verbatim'
+                    ? "bg-amber-400 text-black font-black shadow-sm"
+                    : "text-[var(--text-muted)] hover:text-white"
+                )}
+                title="Switch to Verbatim Search (Exact word-for-word, translations & phonetics)"
+              >
+                <span className="font-mono text-[10px] font-black">" "</span>
+                <span className="hidden sm:inline">Verbatim</span>
+              </button>
+            </div>
           </div>
 
           {/* Right Wing: Auth / Dashboard CTA (Balanced with left wing) */}
@@ -896,12 +989,55 @@ export default function ResearchEngine() {
 
       {/* ── RESULTS BODY (Centered) ──────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1">
-        {/* Search Statistics */}
+        {/* Search Statistics & Verbatim Equivalents Bar */}
         {results && !loading && (
-          <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-6 max-w-5xl mx-auto text-center md:text-left flex flex-wrap items-center justify-between gap-2">
-            <span>
-              Found {counts.all} records in {searchTime}s for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
-            </span>
+          <div className="space-y-3 mb-6 max-w-5xl mx-auto">
+            <div className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] text-center md:text-left flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span>
+                  Found {counts.all} records in {searchTime}s for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
+                </span>
+                {results.searchMode === 'verbatim' ? (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-black tracking-wide">
+                    🔤 Verbatim Mode Active
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 text-[10px] font-black tracking-wide">
+                    🌐 Contextual DSGT Active
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Verbatim Matched Translations & Phonetics Info Card */}
+            {results.searchMode === 'verbatim' && results.verbatimEquivalents && (
+              (results.verbatimEquivalents.translations.length > 0 || results.verbatimEquivalents.phonetics.length > 0) && (
+                <div className="p-3.5 rounded-xl glass bg-amber-500/5 border border-amber-500/20 text-xs space-y-2 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold">
+                    <span className="text-sm">🔤</span>
+                    <span className="uppercase tracking-wider text-[11px] font-black">
+                      Verbatim Translations & Phonetic Transliterations
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="text-[var(--text-muted)] font-medium">Exact matched variants:</span>
+                    {results.verbatimEquivalents.allExactPhrases.map((phrase, idx) => (
+                      <span
+                        key={idx}
+                        className={clsx(
+                          "px-2.5 py-0.5 rounded-md font-mono border",
+                          phrase.toLowerCase() === results.verbatimEquivalents?.originalQuery?.toLowerCase()
+                            ? "bg-amber-400/20 text-amber-300 border-amber-400/40 font-bold"
+                            : "bg-white/5 text-[var(--foreground)] border-white/10"
+                        )}
+                      >
+                        "{phrase}"
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
 
@@ -910,6 +1046,7 @@ export default function ResearchEngine() {
           <SearchStageTracker
             query={submittedQuery || query}
             active={loading}
+            searchMode={searchMode}
           />
         )}
 

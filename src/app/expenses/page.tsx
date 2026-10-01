@@ -1476,7 +1476,7 @@ export default function ExpensesPage() {
       const pdfBase64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.readAsDataURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+        reader.readAsDataURL(new Blob([pdfBytes as any], { type: 'application/pdf' }));
       });
       
       const attachments = [
@@ -1556,7 +1556,7 @@ ${formData.comments || 'None'}
         },
         report: {
           fullName: formData.fullName,
-          email: formData.email,
+          email: (formData as any).email,
           month: formData.expense_month,
           purpose: formData.purpose,
           posting: formData.posting,
@@ -1695,7 +1695,7 @@ ${formData.comments || 'None'}
       const pdfBase64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.readAsDataURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+        reader.readAsDataURL(new Blob([pdfBytes as any], { type: 'application/pdf' }));
       });
 
       // Cloud Backup (Async)

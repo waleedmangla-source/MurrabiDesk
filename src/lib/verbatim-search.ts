@@ -19,11 +19,13 @@ export function normalizeKhazainText(text: string): string {
 
 export interface VerbatimEquivalents {
   original: string;
+  originalQuery?: string;
   exactQuery: string;
   isUrduOrArabic: boolean;
   translations: string[];
   phonetics: string[];
   allSearchTerms: string[];
+  allExactPhrases: string[];
 }
 
 export interface LexiconEntry {
@@ -387,13 +389,16 @@ export function resolveVerbatimEquivalents(query: string): VerbatimEquivalents {
   phonetics.delete(original);
   phonetics.delete(lowerOriginal);
 
+  const allTermsArr = Array.from(allSearchTerms);
   return {
     original,
+    originalQuery: original,
     exactQuery: original,
     isUrduOrArabic,
     translations: Array.from(translations),
     phonetics: Array.from(phonetics),
-    allSearchTerms: Array.from(allSearchTerms)
+    allSearchTerms: allTermsArr,
+    allExactPhrases: allTermsArr
   };
 }
 

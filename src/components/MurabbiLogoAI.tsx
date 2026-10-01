@@ -4,13 +4,11 @@ import clsx from "clsx";
 
 interface MurabbiLogoAIProps {
   className?: string;
-  glowIntensity?: "subtle" | "medium" | "vibrant";
   alt?: string;
 }
 
 export default function MurabbiLogoAI({
   className = "h-[130px] md:h-[180px] lg:h-[210px]",
-  glowIntensity = "medium",
   alt = "Murabbi Desk"
 }: MurabbiLogoAIProps) {
   return (
@@ -18,7 +16,7 @@ export default function MurabbiLogoAI({
       role="img"
       aria-label={alt}
       className={clsx(
-        "logo-ai-bubble-mask relative select-none pointer-events-none overflow-hidden transition-all duration-300",
+        "logo-ai-bubble-mask relative select-none pointer-events-none overflow-hidden",
         className
       )}
       style={{
@@ -33,20 +31,15 @@ export default function MurabbiLogoAI({
         maskPosition: "center",
       }}
     >
-      {/* ── Base Layer: Deep chromatic foundation for rich letterform contrast ── */}
-      <div className="absolute inset-0 bg-[#090d16]" />
-
-      {/* ── Murabbi AI Bubble Core Mesh (Living Iridescent Gradient) ── */}
+      {/* ── Murabbi AI Bubble Core Gradient (Exact Crimson & Royal Blue colors, Static) ── */}
       <div className="logo-bubble-core" />
 
-      {/* ── Secondary Layer: Mid-glass translucency & depth ── */}
+      {/* ── Glass Specular Highlights (Static) ── */}
       <div className="logo-bubble-mid" />
-
-      {/* ── Specular Glass Light Sweep ── */}
-      <div className="logo-bubble-specular" />
+      <div className="logo-bubble-sheen" />
 
       {/* ── Organic Micro-Noise Texture matching Murabbi AI Bubble ── */}
-      <div className="blob-noise opacity-20 pointer-events-none" />
+      <div className="blob-noise opacity-15 pointer-events-none" />
     </div>
   );
 }

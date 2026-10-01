@@ -661,6 +661,18 @@ export async function POST(req: NextRequest) {
     const videosPromise: Promise<VideoResult[]> = (async () => {
       try {
         const results = await searchMediaVideos(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (results.length < 3 && verbatimEquivs.translations.length > 0) {
+            const extra = await searchMediaVideos(verbatimEquivs.translations[0]);
+            for (const item of extra) {
+              if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+                results.push(item);
+              }
+            }
+          }
+          return results;
+        }
+
         if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
           const extra = await searchMediaVideos(dsgtContext.winningSense.primaryConcept);
           for (const item of extra) {
@@ -679,6 +691,16 @@ export async function POST(req: NextRequest) {
     const booksPromise: Promise<BookItem[]> = (async () => {
       try {
         const localBooks = searchAhmadiyyaBooks(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (localBooks.length === 0 && verbatimEquivs.translations.length > 0) {
+            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0]);
+            for (const item of extra) {
+              if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+            }
+          }
+          return localBooks;
+        }
+
         if (localBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
           const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept);
           for (const item of extra) {
@@ -694,7 +716,22 @@ export async function POST(req: NextRequest) {
 
     const malfuzatPromise: Promise<MalfuzatResult[]> = (async () => {
       try {
-        return searchUnifiedMalfuzat(rawQuery);
+        const results = searchUnifiedMalfuzat(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenKeys = new Set(results.map(r => `vol-${r.volume}-p-${r.pageNum}`));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchUnifiedMalfuzat(term);
+            for (const item of extra) {
+              const key = `vol-${item.volume}-p-${item.pageNum}`;
+              if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
       } catch (e) {
         console.warn('[Research API] Malfuzat search failed:', e);
         return [];
@@ -703,7 +740,21 @@ export async function POST(req: NextRequest) {
 
     const tazkirahPromise: Promise<TazkirahResult[]> = (async () => {
       try {
-        return searchUnifiedTazkirah(rawQuery);
+        const results = searchUnifiedTazkirah(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenIds = new Set(results.map(r => r.id));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchUnifiedTazkirah(term);
+            for (const item of extra) {
+              if (!seenIds.has(item.id)) {
+                seenIds.add(item.id);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
       } catch (e) {
         console.warn('[Research API] Tazkirah search failed:', e);
         return [];
@@ -712,7 +763,21 @@ export async function POST(req: NextRequest) {
 
     const essencePromise: Promise<EssenceResult[]> = (async () => {
       try {
-        return searchEssenceFullText(rawQuery);
+        const results = searchEssenceFullText(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenIds = new Set(results.map(r => r.id));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchEssenceFullText(term);
+            for (const item of extra) {
+              if (!seenIds.has(item.id)) {
+                seenIds.add(item.id);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
       } catch (e) {
         console.warn('[Research API] Essence of Islam search failed:', e);
         return [];
@@ -799,6 +864,8 @@ export async function POST(req: NextRequest) {
     const payload: MultiSourceSearchResult = {
       query: rawQuery,
       normalizedTerms,
+      searchMode,
+      verbatimEquivalents: searchMode === 'verbatim' ? verbatimEquivs : undefined,
       ruhaniKhazain: rkResults,
       quranVerses: quranResults,
       ahadith: hadithResults,

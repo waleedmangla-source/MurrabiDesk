@@ -302,45 +302,80 @@ export default function MurabbiAIPage() {
     }
   };
 
-  // Load from localStorage
-  useEffect(() => {
+  // Sync helper to save single conversation to Drive
+  const syncChatToDrive = async (conv: Conversation) => {
+    if (conv.isTemporary) return;
     try {
-      let loadedConvs: Conversation[] = [];
-      const saved = localStorage.getItem(STORAGE_KEY);
-      
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        loadedConvs = parsed.map((c: any) => ({
-          ...c,
-          messages: c.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
-        }));
-      } else {
-        // Migration from old storage
-        const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
-        if (oldSaved) {
-          const oldMsgs = JSON.parse(oldSaved).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
-          if (oldMsgs.length > 0) {
-            loadedConvs = [{
-              id: Date.now().toString(),
-              title: oldMsgs.find((m: any) => m.role === "user")?.content.slice(0, 30) || "Previous Chat",
-              messages: oldMsgs,
-              isTemporary: false,
-              updatedAt: Date.now()
-            }];
+      const syncService = await GoogleSyncService.fromLocalStorage();
+      if (syncService) {
+        const cleanConv = {
+          ...conv,
+          messages: conv.messages.slice(-50).filter(m => !m.isStreaming)
+        };
+        await syncService.saveChat(cleanConv);
+      }
+    } catch (err) {
+      console.warn("Failed to sync chat to Drive:", err);
+    }
+  };
+
+  // Load from Google Drive, falling back to localStorage
+  useEffect(() => {
+    async function loadChats() {
+      try {
+        let loadedConvs: Conversation[] = [];
+        const syncService = await GoogleSyncService.fromLocalStorage();
+
+        if (syncService) {
+          const driveChats = await syncService.listChats();
+          if (Array.isArray(driveChats) && driveChats.length > 0 && !driveChats[0].error) {
+            loadedConvs = driveChats.map((c: any) => ({
+              ...c,
+              messages: (c.messages || []).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+            }));
           }
         }
+
+        if (loadedConvs.length === 0) {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            loadedConvs = parsed.map((c: any) => ({
+              ...c,
+              messages: c.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+            }));
+          } else {
+            // Migration from old storage
+            const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
+            if (oldSaved) {
+              const oldMsgs = JSON.parse(oldSaved).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+              if (oldMsgs.length > 0) {
+                loadedConvs = [{
+                  id: Date.now().toString(),
+                  title: oldMsgs.find((m: any) => m.role === "user")?.content.slice(0, 30) || "Previous Chat",
+                  messages: oldMsgs,
+                  isTemporary: false,
+                  updatedAt: Date.now()
+                }];
+              }
+            }
+          }
+        }
+
+        if (loadedConvs.length > 0) {
+          setConversations(loadedConvs);
+          setCurrentConvId(loadedConvs[0].id);
+        } else {
+          handleNewChat(false);
+        }
+      } catch (e) {
+        console.error("Error loading chats:", e);
       }
-      
-      setConversations(loadedConvs);
-      if (loadedConvs.length > 0) {
-        setCurrentConvId(loadedConvs[0].id);
-      } else {
-        handleNewChat(false);
-      }
-    } catch {}
+    }
+    loadChats();
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage & sync to Drive
   useEffect(() => {
     if (conversations.length > 0) {
       const toSave = conversations
@@ -375,12 +410,26 @@ export default function MurabbiAIPage() {
     });
     setCurrentConvId(newConv.id);
     setApiError(null);
+    if (!isTemporary) {
+      syncChatToDrive(newConv);
+    }
   };
 
-  const deleteConversation = (id: string) => {
+  const deleteConversation = async (id: string) => {
+    const convToDelete = conversations.find(c => c.id === id);
     setConversations(prev => prev.filter(c => c.id !== id));
     if (currentConvId === id) {
       setCurrentConvId(conversations.find(c => c.id !== id)?.id || null);
+    }
+    if (convToDelete && !convToDelete.isTemporary) {
+      try {
+        const syncService = await GoogleSyncService.fromLocalStorage();
+        if (syncService) {
+          await syncService.deleteChat(id, (convToDelete as any).fileId);
+        }
+      } catch (err) {
+        console.warn("Failed to delete chat from Drive:", err);
+      }
     }
   };
 

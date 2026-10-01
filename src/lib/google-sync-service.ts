@@ -113,6 +113,15 @@ export class GoogleSyncService {
   async moveDriveFolder(folderName: string, module: string, sourceCategory: string, targetCategory: string) {
     return liquid.invoke('drive-move', { folderName, module, sourceCategory, targetCategory });
   }
+  async listChats() {
+    return liquid.invoke('list-chats');
+  }
+  async saveChat(conversation: any) {
+    return liquid.invoke('save-chat', { conversation });
+  }
+  async deleteChat(id: string, fileId?: string) {
+    return liquid.invoke('delete-chat', { id, fileId });
+  }
   static async getUserProfile(): Promise<any> {
     try {
       const info = await liquid.invoke('get-user-info');

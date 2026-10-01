@@ -81,7 +81,8 @@ function ComposeModal({
   initialSubject = '', 
   initialBody = '', 
   threadId, 
-  inReplyTo 
+  inReplyTo,
+  references
 }: { 
   onClose: () => void; 
   onSend: (d: ComposeData) => Promise<void>; 

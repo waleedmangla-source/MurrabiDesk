@@ -93,9 +93,10 @@ const STAGES: SearchStage[] = [
 interface SearchStageTrackerProps {
   query: string;
   active: boolean;
+  searchMode?: 'contextual' | 'verbatim';
 }
 
-export default function SearchStageTracker({ query, active }: SearchStageTrackerProps) {
+export default function SearchStageTracker({ query, active, searchMode }: SearchStageTrackerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [elapsedSec, setElapsedSec] = useState(0.0);
 
@@ -148,11 +149,20 @@ export default function SearchStageTracker({ query, active }: SearchStageTracker
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             </div>
             <div>
-              <h3 className="text-sm md:text-base font-black tracking-tight text-[var(--foreground)] flex items-center gap-1.5">
+              <h3 className="text-sm md:text-base font-black tracking-tight text-[var(--foreground)] flex items-center gap-1.5 flex-wrap">
                 <span>Multi-Source Search Engine</span>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
                   Live
                 </span>
+                {searchMode === 'verbatim' ? (
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                    🔤 Verbatim Match
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
+                    🌐 Contextual DSGT
+                  </span>
+                )}
               </h3>
               <p className="text-xs text-[var(--text-muted)] font-medium truncate max-w-xs md:max-w-md">
                 Searching for <strong className="text-[var(--foreground)]">"{query}"</strong>
