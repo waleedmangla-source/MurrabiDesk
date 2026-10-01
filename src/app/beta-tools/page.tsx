@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Youtube,
   Download,
+  Upload,
   Music,
   Video,
   Search,
@@ -351,6 +352,47 @@ export default function BetaToolsPage() {
       }
     } catch (e) {
       addTerminalLog(`[ERROR] Failed to initialize OCR session`);
+    }
+  };
+
+  const handleDirectOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setOcrStatus('idle');
+      setOcrResultText(null);
+      addTerminalLog(`[OCR] Direct local file upload initialized...`);
+      
+      try {
+        const res = await fetch('/api/ocr/create-session', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          const sessionId = data.sessionId;
+          setOcrSessionId(sessionId);
+          setOcrStatus('processing');
+          addTerminalLog(`[OCR] Session ${sessionId} initialized. Extracting text...`);
+
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const uploadRes = await fetch(`/api/ocr/${sessionId}/upload`, {
+            method: 'POST',
+            body: formData,
+          });
+          const uploadData = await uploadRes.json();
+          if (uploadData.success) {
+             setOcrStatus('completed');
+             setOcrResultText(uploadData.text);
+             addTerminalLog(`[OCR] Extraction successful. Length: ${uploadData.text.length} chars`);
+          } else {
+             setOcrStatus('error');
+             setOcrResultText(uploadData.error);
+             addTerminalLog(`[ERROR] ${uploadData.error}`);
+          }
+        }
+      } catch (err) {
+        addTerminalLog(`[ERROR] Failed to process direct upload`);
+        setOcrStatus('error');
+      }
     }
   };
 
@@ -877,15 +919,22 @@ export default function BetaToolsPage() {
                 </div>
 
                 {!ocrSessionId ? (
-                  <div className="mt-8">
-                    <p className="text-sm font-medium opacity-60 mb-6">Initialize a secure bridge to your mobile device to scan physical documents directly into the Murabbi environment.</p>
-                    <button
-                      onClick={generateOcrSession}
-                      className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-black rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3 mx-auto"
-                    >
-                      <QrCodeIcon size={16} />
-                      Generate Bridge Link
-                    </button>
+                  <div className="mt-8 flex flex-col items-center">
+                    <p className="text-sm font-medium opacity-60 mb-6 max-w-md">Initialize a secure bridge to your mobile device to scan physical documents, or upload a file directly.</p>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <button
+                        onClick={generateOcrSession}
+                        className="w-full sm:w-auto px-6 py-4 bg-amber-500 hover:bg-amber-600 text-black rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3"
+                      >
+                        <QrCodeIcon size={16} />
+                        Bridge Link
+                      </button>
+                      <label className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 cursor-pointer">
+                        <Upload size={16} />
+                        Upload File
+                        <input type="file" accept="image/*" className="hidden" onChange={handleDirectOcrUpload} />
+                      </label>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-6 flex flex-col items-center">

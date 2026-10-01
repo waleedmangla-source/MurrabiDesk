@@ -57,6 +57,7 @@ import TadhkirahPdfModal from './TadhkirahPdfModal';
 import EssencePdfModal from './EssencePdfModal';
 import SearchStageTracker from './SearchStageTracker';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
+import MurabbiLogoAI from '@/components/MurabbiLogoAI';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'literature' | 'articles' | 'audios' | 'videos';
 
@@ -648,21 +649,13 @@ export default function ResearchEngine() {
           )}
         </div>
 
-        {/* Ambient atmospheric glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-glow)] rounded-full blur-[130px] pointer-events-none -z-10 opacity-70" />
-
         {/* Murabbi Desk Text Logo */}
         <div className="flex flex-col items-center mb-8 animate-in fade-in zoom-in-95 duration-500">
           <div
             className="relative flex flex-col items-center cursor-pointer active:scale-95 transition-transform"
             onClick={resetToHome}
           >
-            <div className="absolute -inset-10 bg-[var(--accent-glow)] rounded-full blur-3xl opacity-50 pointer-events-none" />
-            <img
-              src="/text-logo.png"
-              alt="Murabbi Desk"
-              className="h-[130px] md:h-[180px] lg:h-[210px] w-auto object-contain transition-all duration-300 invert mix-blend-multiply select-none drop-shadow-2xl relative z-10"
-            />
+            <MurabbiLogoAI className="h-[130px] md:h-[180px] lg:h-[210px] w-auto drop-shadow-md" />
             <div className="flex items-center gap-2 mt-4 relative z-10">
               <span className="text-[11px] font-black uppercase tracking-[0.25em] px-4 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 shadow-sm">
                 Research Protocol
@@ -775,14 +768,10 @@ export default function ResearchEngine() {
           <div className="w-full flex items-center justify-center md:justify-start">
             <div
               onClick={resetToHome}
-              className="flex items-center cursor-pointer shrink-0 select-none group py-0.5"
+              className="flex items-center cursor-pointer shrink-0 select-none group py-0.5 active:scale-95 transition-transform"
               title="Murabbi Desk"
             >
-              <img
-                src="/text-logo.png"
-                alt="Murabbi Desk"
-                className="h-8 md:h-9 w-auto object-contain transition-all duration-300 invert mix-blend-multiply active:scale-95 group-hover:opacity-90"
-              />
+              <MurabbiLogoAI className="h-8 md:h-9 w-auto" />
             </div>
           </div>
 
