@@ -740,24 +740,28 @@ export default function ResearchEngine() {
                 aria-checked={searchMode === 'verbatim'}
                 onClick={() => setSearchMode(prev => prev === 'verbatim' ? 'contextual' : 'verbatim')}
                 className={clsx(
-                  "flex items-center gap-2.5 px-4 py-3 rounded-2xl md:rounded-full glass border transition-all duration-200 select-none group cursor-pointer shrink-0 self-center sm:self-auto shadow-md",
+                  "flex items-center gap-2.5 px-4 py-3 rounded-2xl md:rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 self-center sm:self-auto shadow-sm active:scale-95",
                   searchMode === 'verbatim'
-                    ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-amber-500/10"
-                    : "bg-black/25 dark:bg-black/40 border-white/10 text-[var(--text-muted)] hover:border-white/20 hover:text-[var(--foreground)]"
+                    ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)] ring-1 ring-[var(--accent-main)]/30"
+                    : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/60 hover:text-[var(--accent-main)]"
                 )}
-                title={searchMode === 'verbatim' ? "Verbatim search is ON (click to turn off)" : "Turn ON Verbatim search (exact match + translations & phonetics)"}
+                title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
               >
-                <span className="text-xs font-bold tracking-tight">Verbatim</span>
+                <span className={clsx("text-xs tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
+                  Verbatim
+                </span>
                 <div
                   className={clsx(
-                    "w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 flex items-center relative",
-                    searchMode === 'verbatim' ? "bg-amber-400" : "bg-white/20 group-hover:bg-white/30"
+                    "w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
+                    searchMode === 'verbatim'
+                      ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
+                      : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
                   )}
                 >
                   <div
                     className={clsx(
-                      "w-3.5 h-3.5 rounded-full shadow-sm transition-transform duration-200 ease-out",
-                      searchMode === 'verbatim' ? "translate-x-3.5 bg-black" : "translate-x-0 bg-white"
+                      "w-3.5 h-3.5 rounded-full shadow-md transition-transform duration-200 ease-out bg-white",
+                      searchMode === 'verbatim' ? "translate-x-3.5" : "translate-x-0"
                     )}
                   />
                 </div>
@@ -868,24 +872,28 @@ export default function ResearchEngine() {
                 if (submittedQuery) performSearch(submittedQuery, nextMode);
               }}
               className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full glass border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm",
+                "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
                 searchMode === 'verbatim'
-                  ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-amber-500/10"
-                  : "bg-black/30 border-white/10 text-[var(--text-muted)] hover:border-white/20 hover:text-[var(--foreground)]"
+                  ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
+                  : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
               )}
-              title={searchMode === 'verbatim' ? "Verbatim search is ON (click to turn off)" : "Turn ON Verbatim search"}
+              title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
             >
-              <span className="text-[11px] font-bold tracking-tight">Verbatim</span>
+              <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
+                Verbatim
+              </span>
               <div
                 className={clsx(
-                  "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative",
-                  searchMode === 'verbatim' ? "bg-amber-400" : "bg-white/20 group-hover:bg-white/30"
+                  "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
+                  searchMode === 'verbatim'
+                    ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
+                    : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
                 )}
               >
                 <div
                   className={clsx(
-                    "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out",
-                    searchMode === 'verbatim' ? "translate-x-3 bg-black" : "translate-x-0 bg-white"
+                    "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
+                    searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
                   )}
                 />
               </div>
@@ -967,7 +975,7 @@ export default function ResearchEngine() {
                   Found {counts.all} records in {searchTime}s for <span className="text-[var(--foreground)]">"{submittedQuery}"</span>
                 </span>
                 {results.searchMode === 'verbatim' && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-black tracking-wide">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-[var(--accent-main)] text-[10px] font-black tracking-wide">
                     🔤 Verbatim Mode Active
                   </span>
                 )}
@@ -977,8 +985,8 @@ export default function ResearchEngine() {
             {/* Verbatim Matched Translations & Phonetics Info Card */}
             {results.searchMode === 'verbatim' && results.verbatimEquivalents && (
               (results.verbatimEquivalents.translations.length > 0 || results.verbatimEquivalents.phonetics.length > 0) && (
-                <div className="p-3.5 rounded-xl glass bg-amber-500/5 border border-amber-500/20 text-xs space-y-2 animate-in fade-in">
-                  <div className="flex items-center gap-2 text-amber-400 font-bold">
+                <div className="p-3.5 rounded-xl glass bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 text-xs space-y-2 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-[var(--accent-main)] font-bold">
                     <span className="text-sm">🔤</span>
                     <span className="uppercase tracking-wider text-[11px] font-black">
                       Verbatim Translations & Phonetic Transliterations
@@ -992,8 +1000,8 @@ export default function ResearchEngine() {
                         className={clsx(
                           "px-2.5 py-0.5 rounded-md font-mono border",
                           phrase.toLowerCase() === results.verbatimEquivalents?.originalQuery?.toLowerCase()
-                            ? "bg-amber-400/20 text-amber-300 border-amber-400/40 font-bold"
-                            : "bg-white/5 text-[var(--foreground)] border-white/10"
+                            ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] font-bold shadow-sm"
+                            : "bg-white/10 dark:bg-white/5 text-[var(--foreground)] border-white/20"
                         )}
                       >
                         "{phrase}"
