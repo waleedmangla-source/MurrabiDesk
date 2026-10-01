@@ -154,13 +154,9 @@ export default function SearchStageTracker({ query, active, searchMode }: Search
                 <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
                   Live
                 </span>
-                {searchMode === 'verbatim' ? (
+                {searchMode === 'verbatim' && (
                   <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
-                    🔤 Verbatim Match
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
-                    🌐 Contextual DSGT
+                    🔤 Verbatim
                   </span>
                 )}
               </h3>
