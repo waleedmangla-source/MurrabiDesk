@@ -785,7 +785,7 @@ export default function ResearchEngine() {
   return (
     <div className="w-full flex flex-col min-h-full pb-24">
       {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar + Auth CTA) ───────────── */}
-      <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-3 pb-0 px-4 md:px-8">
+      <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-5 md:pt-6 pb-0 px-4 md:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[208px_1fr_208px] items-center gap-4">
           {/* Left Wing: Navbar text logo */}
           <div className="w-full flex items-center justify-center md:justify-start">
@@ -794,7 +794,11 @@ export default function ResearchEngine() {
               className="flex items-center cursor-pointer shrink-0 select-none group py-0.5 active:scale-95 transition-transform"
               title="Murabbi Desk"
             >
-              <MurabbiLogoAI className="h-8 md:h-9 w-auto" />
+              <img
+                src="/text-logo.png"
+                alt="Murabbi Desk"
+                className="h-8 md:h-9 w-auto object-contain brightness-0 dark:brightness-100 transition-all select-none"
+              />
             </div>
           </div>
 
