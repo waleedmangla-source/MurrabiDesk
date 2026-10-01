@@ -48,21 +48,28 @@ const ACCENT_COLORS: Record<
   },
 };
 
-const navLinks = [
+export type NavCategory = "daily" | "research";
+
+export const dailyNavLinks = [
   { icon: Home, label: "Dashboard", href: "/" },
-  { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Mail, label: "Mail", href: "/emails" },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
-  { icon: FileText, label: "Notes", href: "/notes" },
-  { icon: Receipt, label: "Expenses", href: "/expenses" },
-  { icon: Activity, label: "Routine", href: "/habits" },
-  { icon: HardDrive, label: "Drive", href: "/drive" },
   { icon: ScrollText, label: "Letters", href: "/letters" },
+  { icon: Activity, label: "Routine", href: "/habits" },
+  { icon: Receipt, label: "Expenses", href: "/expenses" },
+  { icon: HardDrive, label: "Drive", href: "/drive" },
   { icon: Users, label: "Tajnid", href: "/tajnid" },
-  { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
+];
+
+export const researchNavLinks = [
+  { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Search, label: "Research", href: "/research" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
+  { icon: FileText, label: "Notes", href: "/notes" },
+  { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
+
+export const allNavLinks = [...dailyNavLinks, ...researchNavLinks];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -87,8 +94,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [accentColor, setAccentColor] = useState("flup");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [navCategory, setNavCategory] = useState<NavCategory>("daily");
   const pathname = usePathname();
   const router = useRouter();
+
+  // Auto-switch category based on current pathname
+  useEffect(() => {
+    if (researchNavLinks.some((l) => l.href === pathname)) {
+      setNavCategory("research");
+    } else if (dailyNavLinks.some((l) => l.href === pathname)) {
+      setNavCategory("daily");
+    }
+  }, [pathname]);
+
+  const currentNavLinks = navCategory === "daily" ? dailyNavLinks : researchNavLinks;
 
   const { emails } = useEmails();
   const unreadMailCount = emails.filter(
@@ -174,7 +193,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       }
       if ((e.metaKey || e.ctrlKey) && /^[1-8]$/.test(e.key)) {
         e.preventDefault();
-        const link = navLinks[parseInt(e.key) - 1];
+        const link = currentNavLinks[parseInt(e.key) - 1];
         if (link) router.push(link.href);
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
@@ -309,23 +328,60 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
+          {/* Category Toggle (Daily vs Research) */}
+          <div className="relative z-10 px-2 my-1">
+            <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-white/10 relative">
+              <button
+                type="button"
+                onClick={() => setNavCategory("daily")}
+                className={clsx(
+                  "py-1.5 text-xs font-black tracking-wider uppercase transition-all duration-200 rounded-lg z-10 relative",
+                  navCategory === "daily"
+                    ? "text-[var(--accent-main)] font-black"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                )}
+              >
+                Daily
+              </button>
+              <button
+                type="button"
+                onClick={() => setNavCategory("research")}
+                className={clsx(
+                  "py-1.5 text-xs font-black tracking-wider uppercase transition-all duration-200 rounded-lg z-10 relative",
+                  navCategory === "research"
+                    ? "text-[var(--accent-main)] font-black"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                )}
+              >
+                Research
+              </button>
+              {/* Sliding Pill Indicator */}
+              <div
+                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700/90 rounded-lg shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,1,0.4,1)] border border-black/[0.04] dark:border-white/10"
+                style={{
+                  transform: navCategory === "daily" ? "translateX(0%)" : "translateX(calc(100% + 4px))",
+                }}
+              />
+            </div>
+          </div>
+
           {/* Nav */}
           <nav className="sidebar-radio-container relative z-10 flex flex-col gap-0">
             <div className="sidebar-glider-container">
               <div
                 className="sidebar-glider"
                 style={{
-                  height: `calc(100% / ${navLinks.length})`,
-                  transform: `translateY(${Math.max(0, navLinks.findIndex((l) => pathname === l.href)) * 100}%)`,
-                  opacity: navLinks.some((l) => pathname === l.href) ? 1 : 0,
+                  height: `calc(100% / ${currentNavLinks.length})`,
+                  transform: `translateY(${Math.max(0, currentNavLinks.findIndex((l) => pathname === l.href)) * 100}%)`,
+                  opacity: currentNavLinks.some((l) => pathname === l.href) ? 1 : 0,
                 }}
               />
             </div>
-            {navLinks.map((link) => (
+            {currentNavLinks.map((link) => (
               <Link
                 key={link.label}
                 className={clsx(
-                  "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-4 px-5 font-bold tracking-tight z-10",
+                  "nav-link group transition-all duration-300 rounded-[14px] flex items-center gap-4 py-3.5 px-5 font-bold tracking-tight z-10",
                   pathname === link.href ? "active" : "text-gray-400"
                 )}
                 href={link.href}

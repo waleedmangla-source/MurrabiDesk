@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
@@ -27,22 +27,11 @@ import {
 } from "lucide-react";
 
 import AIBlobIcon from "@/components/AIBlobIcon";
-
-const navLinks = [
-  { icon: Home, label: "Dashboard", href: "/" },
-  { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
-  { icon: Mail, label: "Mail", href: "/emails" },
-  { icon: Calendar, label: "Calendar", href: "/calendar" },
-  { icon: FileText, label: "Notes", href: "/notes" },
-  { icon: Receipt, label: "Expenses", href: "/expenses" },
-  { icon: Activity, label: "Routine", href: "/habits" },
-  { icon: HardDrive, label: "Drive", href: "/drive" },
-  { icon: ScrollText, label: "Letters", href: "/letters" },
-  { icon: Users, label: "Tajnid", href: "/tajnid" },
-  { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
-  { icon: Search, label: "Research", href: "/research" },
-  { icon: BookOpen, label: "Reader", href: "/reader" },
-];
+import {
+  NavCategory,
+  dailyNavLinks,
+  researchNavLinks,
+} from "@/components/AppShell";
 
 interface SidebarDrawerProps {
   open: boolean;
@@ -69,6 +58,18 @@ export default function SidebarDrawer({
 }: SidebarDrawerProps) {
   const pathname = usePathname();
   const isFlupTheme = accentColor === "flup";
+  const [navCategory, setNavCategory] = useState<NavCategory>("daily");
+
+  // Auto-switch category based on current pathname
+  useEffect(() => {
+    if (researchNavLinks.some((l) => l.href === pathname)) {
+      setNavCategory("research");
+    } else if (dailyNavLinks.some((l) => l.href === pathname)) {
+      setNavCategory("daily");
+    }
+  }, [pathname]);
+
+  const currentNavLinks = navCategory === "daily" ? dailyNavLinks : researchNavLinks;
 
   // Close on route change
   useEffect(() => {
@@ -156,9 +157,46 @@ export default function SidebarDrawer({
           </div>
         </div>
 
+        {/* Category Toggle (Daily vs Research) */}
+        <div className="relative z-10 my-2">
+          <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-white/10 relative">
+            <button
+              type="button"
+              onClick={() => setNavCategory("daily")}
+              className={clsx(
+                "py-1.5 text-xs font-black tracking-wider uppercase transition-all duration-200 rounded-lg z-10 relative",
+                navCategory === "daily"
+                  ? "text-[var(--accent-main)] font-black"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              )}
+            >
+              Daily
+            </button>
+            <button
+              type="button"
+              onClick={() => setNavCategory("research")}
+              className={clsx(
+                "py-1.5 text-xs font-black tracking-wider uppercase transition-all duration-200 rounded-lg z-10 relative",
+                navCategory === "research"
+                  ? "text-[var(--accent-main)] font-black"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              )}
+            >
+              Research
+            </button>
+            {/* Sliding Pill Indicator */}
+            <div
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700/90 rounded-lg shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.2,1,0.4,1)] border border-black/[0.04] dark:border-white/10"
+              style={{
+                transform: navCategory === "daily" ? "translateX(0%)" : "translateX(calc(100% + 4px))",
+              }}
+            />
+          </div>
+        </div>
+
         {/* Nav Links */}
         <nav className="flex flex-col gap-0.5 relative z-10 flex-1 overflow-y-auto">
-          {navLinks.map((link) => (
+          {currentNavLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
