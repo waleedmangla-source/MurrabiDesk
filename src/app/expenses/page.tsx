@@ -1511,7 +1511,7 @@ export default function ExpensesPage() {
       // 1. Upload PDF to dedicated folder
       const driveRes = await googleSync.uploadFile(
         `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}.pdf`,
-        pdfBytes,
+        pdfBase64,
         'application/pdf',
         reportFolderName,
         'Expenses',
@@ -1521,6 +1521,8 @@ export default function ExpensesPage() {
       if (driveRes?.error) {
         console.warn('PDF Upload to Drive failed:', driveRes.error);
       }
+
+      const claimFolderId = driveRes?.folderId;
 
       // 2. Upload Summary .txt file
       const summaryText = `
@@ -1579,22 +1581,36 @@ ${formData.comments || 'None'}
         'application/json',
         reportFolderName,
         'Expenses',
-        'Pending'
+        'Pending',
+        claimFolderId
       );
 
-      // 3. Upload Receipts to the SAME folder
-      for (const r of receipts) {
-        await googleSync.uploadFile(
-          `RECEIPT_${r.name}`,
+      // 3. Upload Receipts to the SAME folder as separate standalone files
+      for (let i = 0; i < receipts.length; i++) {
+        const r = receipts[i];
+        if (!r.data) continue;
+        const rawName = r.name || `receipt_${i + 1}.jpg`;
+        const fileName = rawName.startsWith('RECEIPT_') || rawName.startsWith('REF_')
+          ? rawName
+          : `REF_${i + 1}_${rawName}`;
+
+        const uploadRes = await googleSync.uploadFile(
+          fileName,
           r.data,
-          r.type,
+          r.type || 'image/jpeg',
           reportFolderName,
-          'Expenses'
+          'Expenses',
+          'Pending',
+          claimFolderId
         );
+
+        if (uploadRes?.error) {
+          console.warn(`Receipt upload failed for ${fileName}:`, uploadRes.error);
+        }
       }
 
       // 4. Append to Google Sheets
-      const driveFolderUrl = driveRes?.folderLink || (driveRes?.folderId ? `https://drive.google.com/drive/folders/${driveRes.folderId}` : (driveRes?.link || ''));
+      const driveFolderUrl = driveRes?.folderLink || (claimFolderId ? `https://drive.google.com/drive/folders/${claimFolderId}` : (driveRes?.link || ''));
       const sheetRow = [[
         formData.date,
         formData.fullName,
@@ -1676,10 +1692,16 @@ ${formData.comments || 'None'}
         comments: formData.comments
       });
 
+      const pdfBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+      });
+
       // Cloud Backup (Async)
       googleSync.uploadFile(
         `Expense_Report_${formData.fullName.replace(/\s+/g, '_')}_${formData.expense_month}_${Date.now()}.pdf`,
-        pdfBytes,
+        pdfBase64,
         'application/pdf',
         'ManualDownloads',
         'Expenses',
