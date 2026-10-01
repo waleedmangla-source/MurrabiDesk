@@ -126,12 +126,16 @@ export type { TheologicalConsensusMatrix, TriangulationLayerStatus, HitsRankings
 import type { MalfuzatResult } from './malfuzat-data';
 import type { TazkirahResult } from './tazkirah-data';
 import type { EssenceResult } from './essence-data';
+import type { VerbatimEquivalents } from './verbatim-search';
 
-export type { MalfuzatResult, TazkirahResult, EssenceResult };
+export type SearchMode = 'contextual' | 'verbatim';
+export type { MalfuzatResult, TazkirahResult, EssenceResult, VerbatimEquivalents };
 
 export interface MultiSourceSearchResult {
   query: string;
   normalizedTerms: string[];
+  searchMode?: SearchMode;
+  verbatimEquivalents?: VerbatimEquivalents;
   ruhaniKhazain: RuhaniKhazainSearchResult[];
   quranVerses: QuranVerseResult[];
   ahadith: HadithResult[];

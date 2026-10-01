@@ -42,6 +42,7 @@ import {
   fetchLiveAlIslam
 } from '@/lib/external-sources';
 import { PublicationResult, AlIslamArticleResult } from '@/lib/research-sources';
+import { resolveVerbatimEquivalents } from '@/lib/verbatim-search';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -97,6 +98,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const rawQuery = String(body.query || '').trim();
+    const searchMode: 'contextual' | 'verbatim' = body.searchMode === 'verbatim' ? 'verbatim' : 'contextual';
+    const verbatimEquivs = resolveVerbatimEquivalents(rawQuery);
 
     if (!rawQuery) {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
@@ -116,7 +119,12 @@ export async function POST(req: NextRequest) {
       let englishSearchQuery = rawQuery;
       let urduSearchQuery = rawQuery;
 
-      if (!hasLatinQuery) {
+      if (searchMode === 'verbatim') {
+        const enMatch = verbatimEquivs.translations.find(t => /[a-zA-Z]/.test(t)) || rawQuery;
+        const urMatch = verbatimEquivs.translations.find(t => /[\u0600-\u06FF]/.test(t)) || rawQuery;
+        englishSearchQuery = enMatch;
+        urduSearchQuery = urMatch;
+      } else if (!hasLatinQuery) {
         const dsgtCtx = disambiguateTheologicalContext(rawQuery);
         if (dsgtCtx.winningSense?.primaryConcept) {
           englishSearchQuery = dsgtCtx.winningSense.primaryConcept;
@@ -317,6 +325,65 @@ export async function POST(req: NextRequest) {
     const ruhaniKhazainPromise: Promise<RuhaniKhazainSearchResult[]> = (async () => {
       if (!requestedSources.includes('ruhani-khazain')) return [];
       const matches: RuhaniKhazainSearchResult[] = [];
+
+      // ── Verbatim Mode: Exact string & translation/phonetic matching ──
+      if (searchMode === 'verbatim') {
+        const verbatimTargets: string[] = [];
+        if (!hasLatin) {
+          const norm = normalizeKhazainText(rawQuery);
+          if (norm) verbatimTargets.push(norm);
+        }
+        for (const t of [...verbatimEquivs.translations, ...verbatimEquivs.allSearchTerms]) {
+          if (/[\u0600-\u06FF]/.test(t)) {
+            const norm = normalizeKhazainText(t);
+            if (norm && !verbatimTargets.includes(norm)) verbatimTargets.push(norm);
+          }
+        }
+        if (verbatimTargets.length === 0) {
+          const norm = normalizeKhazainText(rawQuery);
+          if (norm) verbatimTargets.push(norm);
+        }
+
+        for (let volNum = 1; volNum <= 23; volNum++) {
+          const volData = getCachedVolume(volNum);
+          if (!volData) continue;
+
+          for (const page of volData.pages) {
+            for (const target of verbatimTargets) {
+              const pos = page.norm.indexOf(target);
+              if (pos !== -1) {
+                const rawStart = page.indexMap[pos] ?? pos;
+                const endNormPos = Math.min(page.indexMap.length - 1, pos + target.length - 1);
+                const rawEnd = (page.indexMap[endNormPos] ?? rawStart + target.length - 1) + 1;
+
+                const snippetStart = Math.max(0, rawStart - 120);
+                const snippetEnd = Math.min(page.text.length, rawEnd + 120);
+                const constituentBook = getBookForPage(volNum, page.page_num);
+
+                matches.push({
+                  volume: volNum,
+                  pageNum: page.page_num,
+                  bookTitle: constituentBook.title,
+                  bookUrduTitle: constituentBook.urduTitle,
+                  snippetBefore: page.text.slice(snippetStart, rawStart),
+                  matchedSlice: page.text.slice(rawStart, rawEnd),
+                  snippetAfter: page.text.slice(rawEnd, snippetEnd),
+                  matchedTerm: target,
+                  isExactPhrase: true,
+                  readerUrl: `/reader?volume=${volNum}&page=${page.page_num}`
+                });
+                break;
+              }
+            }
+            if (matches.length >= 1000) break;
+          }
+          if (matches.length >= 1000) break;
+        }
+
+        return matches;
+      }
+
+      // ── Contextual Mode: Thematic prioritization and Rocchio expansion ──
       const urduTerms = normalizedTerms.filter(t => /[\u0600-\u06FF]/.test(t));
       const activeSearchTerms = urduTerms.length > 0 ? urduTerms : normalizedTerms;
       const primaryTerm = activeSearchTerms[0] || normalizeKhazainText(rawQuery);
@@ -376,11 +443,30 @@ export async function POST(req: NextRequest) {
     const quranPromise: Promise<any[]> = (async () => {
       if (!requestedSources.includes('quran')) return [];
       const results = searchQuranVerses(rawQuery);
+      const seenVerses = new Set(results.map(r => `${r.surahNumber}:${r.verseNumber}`));
+
+      if (searchMode === 'verbatim') {
+        for (const term of verbatimEquivs.allSearchTerms.slice(0, 6)) {
+          if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+          const extra = searchQuranVerses(term);
+          for (const item of extra) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
+              results.push(item);
+            }
+          }
+        }
+        return results;
+      }
+
       if (results.length === 0 && dsgtExpanded.arabicQuranTerms.length > 0) {
         for (const arabicTerm of dsgtExpanded.arabicQuranTerms) {
           const extra = searchQuranVerses(arabicTerm);
           for (const item of extra) {
-            if (!results.some(r => r.surahNumber === item.surahNumber && r.verseNumber === item.verseNumber)) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
               results.push(item);
             }
           }
@@ -390,7 +476,9 @@ export async function POST(req: NextRequest) {
         for (const anchor of dsgtContext.winningSense.scripturalAnchors) {
           const extra = searchQuranVerses(anchor);
           for (const item of extra) {
-            if (!results.some(r => r.surahNumber === item.surahNumber && r.verseNumber === item.verseNumber)) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
               results.push(item);
             }
           }
@@ -403,6 +491,19 @@ export async function POST(req: NextRequest) {
       if (!requestedSources.includes('ahadith')) return [];
       try {
         const results = await searchSunnahHadith(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (results.length < 3 && verbatimEquivs.translations.length > 0) {
+            const primaryTrans = verbatimEquivs.translations[0];
+            const extra = await searchSunnahHadith(primaryTrans);
+            for (const item of extra) {
+              if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+                results.push(item);
+              }
+            }
+          }
+          return results;
+        }
+
         if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
           const extra = await searchSunnahHadith(dsgtContext.winningSense.primaryConcept);
           for (const item of extra) {
