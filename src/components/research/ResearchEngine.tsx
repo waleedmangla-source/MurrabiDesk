@@ -661,11 +661,6 @@ export default function ResearchEngine() {
             onClick={resetToHome}
           >
             <MurabbiLogoAI className="h-[130px] md:h-[180px] lg:h-[210px] w-auto drop-shadow-md" />
-            <div className="flex items-center gap-2 mt-4 relative z-10">
-              <span className="text-[11px] font-black uppercase tracking-[0.25em] px-4 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 shadow-sm">
-                Research Protocol
-              </span>
-            </div>
           </div>
 
           <p className="text-xs md:text-sm font-semibold text-[var(--text-muted)] tracking-wide mt-3 text-center max-w-lg">
