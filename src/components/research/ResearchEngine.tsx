@@ -784,166 +784,169 @@ export default function ResearchEngine() {
   // ═══════════════════════════════════════════════════════════════════════════
   return (
     <div className="w-full flex flex-col min-h-full pb-24">
-      {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar + Auth CTA) ───────────── */}
-      <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 pt-5 md:pt-6 pb-0 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[208px_1fr_208px] items-center gap-4">
-          {/* Left Wing: Navbar text logo */}
-          <div className="w-full flex items-center justify-center md:justify-start">
+      {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar) ───────────── */}
+      <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 py-3 md:py-3.5 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Left Wing: Navbar text logo (Bigger & centered from top to bottom within header div) */}
+          <div className="flex items-center justify-center md:justify-start shrink-0">
             <div
               onClick={resetToHome}
-              className="flex items-center cursor-pointer shrink-0 select-none group py-0.5 active:scale-95 transition-transform"
+              className="flex items-center cursor-pointer shrink-0 select-none group active:scale-95 transition-transform"
               title="Murabbi Desk"
             >
               <img
                 src="/text-logo.png"
                 alt="Murabbi Desk"
-                className="h-8 md:h-9 w-auto object-contain brightness-0 dark:brightness-100 transition-all select-none"
+                className="h-12 md:h-14 lg:h-16 w-auto object-contain brightness-0 dark:brightness-100 transition-all select-none"
               />
             </div>
           </div>
 
-          {/* Center Wing: Centered Search Pill Bar + Toggle + Search Magnifying Glass */}
-          <div className="w-full max-w-2xl mx-auto flex items-center justify-center gap-2">
-            <form onSubmit={handleFormSubmit} className="relative flex-1 flex items-center gap-2.5">
-              <div
-                className={clsx(
-                  "relative flex items-center flex-1 w-full rounded-[14px] md:rounded-full transition-all",
-                  "glass bg-black/20 dark:bg-black/35 border border-white/10 shadow-sm",
-                  "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
-                )}
-              >
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={
-                    searchMode === 'verbatim'
-                      ? "Verbatim search..."
-                      : "Search Ahmadiyya resources..."
-                  }
-                  className="w-full pl-5 pr-10 py-2.5 bg-transparent text-sm md:text-base font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
-                />
-
-                {query && (
-                  <button
-                    type="button"
-                    onClick={() => setQuery("")}
-                    className="p-1.5 text-[var(--text-muted)] hover:text-[var(--foreground)]"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-
-                {/* Voice search button */}
-                <button
-                  type="button"
-                  onClick={toggleVoiceSearch}
-                  className={clsx(
-                    "p-2 rounded-xl mr-2 transition-colors",
-                    isListening
-                      ? "text-red-500 animate-pulse"
-                      : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
-                  )}
-                  title="Search by voice"
-                >
-                  <Mic size={18} />
-                </button>
-              </div>
-
-              {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
-              <button
-                type="button"
-                role="switch"
-                aria-checked={searchMode === 'verbatim'}
-                onClick={() => {
-                  const nextMode = searchMode === 'verbatim' ? 'contextual' : 'verbatim';
-                  setSearchMode(nextMode);
-                  if (submittedQuery) performSearch(submittedQuery, nextMode);
-                }}
-                className={clsx(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
-                  searchMode === 'verbatim'
-                    ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
-                    : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
-                )}
-                title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
-              >
-                <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
-                  Verbatim
-                </span>
+          {/* Center Column: Search Pill Bar (top) + Tabs (bottom) */}
+          <div className="flex-1 flex flex-col items-center min-w-0">
+            {/* Search Pill Bar + Toggle + Search Magnifying Glass */}
+            <div className="w-full max-w-2xl mx-auto flex items-center justify-center">
+              <form onSubmit={handleFormSubmit} className="relative flex-1 flex items-center gap-2.5">
                 <div
                   className={clsx(
-                    "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
-                    searchMode === 'verbatim'
-                      ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
-                      : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
+                    "relative flex items-center flex-1 w-full rounded-[14px] md:rounded-full transition-all",
+                    "glass bg-black/20 dark:bg-black/35 border border-white/10 shadow-sm",
+                    "focus-within:border-[var(--accent-main)] focus-within:ring-2 focus-within:ring-[var(--accent-glow)]"
                   )}
                 >
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={
+                      searchMode === 'verbatim'
+                        ? "Verbatim search..."
+                        : "Search Ahmadiyya resources..."
+                    }
+                    className="w-full pl-5 pr-10 py-2.5 bg-transparent text-sm md:text-base font-bold text-[var(--foreground)] placeholder:text-[var(--text-dim)] focus:outline-none"
+                  />
+
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery("")}
+                      className="p-1.5 text-[var(--text-muted)] hover:text-[var(--foreground)]"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+
+                  {/* Voice search button */}
+                  <button
+                    type="button"
+                    onClick={toggleVoiceSearch}
+                    className={clsx(
+                      "p-2 rounded-xl mr-2 transition-colors",
+                      isListening
+                        ? "text-red-500 animate-pulse"
+                        : "text-[var(--accent-main)] hover:bg-[var(--accent-soft)]"
+                    )}
+                    title="Search by voice"
+                  >
+                    <Mic size={18} />
+                  </button>
+                </div>
+
+                {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={searchMode === 'verbatim'}
+                  onClick={() => {
+                    const nextMode = searchMode === 'verbatim' ? 'contextual' : 'verbatim';
+                    setSearchMode(nextMode);
+                    if (submittedQuery) performSearch(submittedQuery, nextMode);
+                  }}
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
+                    searchMode === 'verbatim'
+                      ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
+                      : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
+                  )}
+                  title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
+                >
+                  <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
+                    Verbatim
+                  </span>
                   <div
                     className={clsx(
-                      "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
-                      searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
-                    )}
-                  />
-                </div>
-              </button>
-
-              {/* Magnifying Glass Search Button */}
-              <button
-                type="submit"
-                disabled={loading || !query.trim()}
-                title="Search"
-                className="p-2 rounded-full text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all cursor-pointer shrink-0 active:scale-90 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center"
-              >
-                <Search size={20} />
-              </button>
-            </form>
-          </div>
-
-          {/* Right Wing: Balanced spacer (keeps center search bar perfectly centered) */}
-          <div className="w-full hidden md:block" />
-        </div>
-
-        {/* ── GOOGLE SEARCH TABS (Centered) ─────────────── */}
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 md:gap-6 overflow-x-auto custom-scrollbar mt-3 select-none text-xs md:text-sm">
-          {[
-            { id: 'all', label: 'All Sources', count: counts.all, icon: Search },
-            { id: 'quran', label: 'Holy Qur\'an', count: counts.quran, icon: BookOpen },
-            { id: 'ahadith', label: 'Ahadith', count: counts.ahadith, icon: Scroll },
-            { id: 'literature', label: 'Literature', count: counts.literature, icon: BookMarked },
-            { id: 'articles', label: 'Articles', count: counts.articles, icon: Newspaper },
-            { id: 'audios', label: 'Audios', count: counts.audios, icon: Headphones },
-            { id: 'videos', label: 'Videos', count: counts.videos, icon: PlayCircle }
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeFilter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id as ActiveSourceFilter)}
-                className={clsx(
-                  "pb-2.5 flex items-center gap-1.5 border-b-2 transition-all shrink-0 font-bold",
-                  active
-                    ? "border-[var(--accent-main)] text-[var(--accent-main)]"
-                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)]"
-                )}
-              >
-                <Icon size={14} />
-                <span>{tab.label}</span>
-                {tab.count > 0 && (
-                  <span
-                    className={clsx(
-                      "px-1.5 py-0.2 rounded-md text-[10px] font-black",
-                      active ? "bg-[var(--accent-soft)] text-[var(--accent-main)]" : "bg-white/10 text-[var(--text-muted)]"
+                      "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
+                      searchMode === 'verbatim'
+                        ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
+                        : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
                     )}
                   >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                    <div
+                      className={clsx(
+                        "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
+                        searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
+                      )}
+                    />
+                  </div>
+                </button>
+
+                {/* Magnifying Glass Search Button */}
+                <button
+                  type="submit"
+                  disabled={loading || !query.trim()}
+                  title="Search"
+                  className="p-2 rounded-full text-[var(--accent-main)] hover:bg-[var(--accent-soft)] transition-all cursor-pointer shrink-0 active:scale-90 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center"
+                >
+                  <Search size={20} />
+                </button>
+              </form>
+            </div>
+
+            {/* ── GOOGLE SEARCH TABS (Centered) ─────────────── */}
+            <div className="w-full flex items-center justify-center gap-4 md:gap-6 overflow-x-auto custom-scrollbar mt-3 select-none text-xs md:text-sm">
+              {[
+                { id: 'all', label: 'All Sources', count: counts.all, icon: Search },
+                { id: 'quran', label: 'Holy Qur\'an', count: counts.quran, icon: BookOpen },
+                { id: 'ahadith', label: 'Ahadith', count: counts.ahadith, icon: Scroll },
+                { id: 'literature', label: 'Literature', count: counts.literature, icon: BookMarked },
+                { id: 'articles', label: 'Articles', count: counts.articles, icon: Newspaper },
+                { id: 'audios', label: 'Audios', count: counts.audios, icon: Headphones },
+                { id: 'videos', label: 'Videos', count: counts.videos, icon: PlayCircle }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const active = activeFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id as ActiveSourceFilter)}
+                    className={clsx(
+                      "pb-1 flex items-center gap-1.5 border-b-2 transition-all shrink-0 font-bold",
+                      active
+                        ? "border-[var(--accent-main)] text-[var(--accent-main)]"
+                        : "border-transparent text-[var(--text-muted)] hover:text-[var(--foreground)]"
+                    )}
+                  >
+                    <Icon size={14} />
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span
+                        className={clsx(
+                          "px-1.5 py-0.2 rounded-md text-[10px] font-black",
+                          active ? "bg-[var(--accent-soft)] text-[var(--accent-main)]" : "bg-white/10 text-[var(--text-muted)]"
+                        )}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Wing: Balanced spacer matching left wing width */}
+          <div className="hidden md:block w-20 lg:w-28 shrink-0 pointer-events-none" />
         </div>
       </div>
 
