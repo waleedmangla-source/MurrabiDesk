@@ -765,23 +765,6 @@ export default function ResearchEngine() {
             </div>
           </form>
 
-          {/* Voice active prompt */}
-          {isListening && (
-            <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between text-xs animate-in fade-in w-full">
-              <div className="flex items-center gap-2.5 text-red-500 font-bold">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                <span>Listening for theological query... Speak now</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setVoiceLang(voiceLang === 'en-US' ? 'ur-PK' : 'en-US')}
-                className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-wider"
-              >
-                {voiceLang === 'en-US' ? 'English (US)' : 'Urdu (اردو)'}
-              </button>
-            </div>
-          )}
-
           {/* Murabbi Desk Action Button (Centered) */}
           <div className="flex items-center justify-center mt-6">
             <button
