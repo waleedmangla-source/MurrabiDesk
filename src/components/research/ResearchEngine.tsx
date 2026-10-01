@@ -904,26 +904,8 @@ export default function ResearchEngine() {
             </button>
           </div>
 
-          {/* Right Wing: Auth / Dashboard CTA (Balanced with left wing) */}
-          <div className="w-full flex items-center justify-center md:justify-end gap-2">
-            {isUserLoggedIn ? (
-              <Link
-                href="/"
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold glass border border-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5 active:scale-95"
-              >
-                <Home size={13} className="text-emerald-400" />
-                <span>Dashboard</span>
-              </Link>
-            ) : (
-              <Link
-                href="/onboarding"
-                className="px-4 py-1.5 rounded-full text-xs font-bold bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white transition-all shadow-md shadow-[var(--accent-glow)] flex items-center gap-1.5 active:scale-95"
-              >
-                <LogIn size={13} />
-                <span>Sign In</span>
-              </Link>
-            )}
-          </div>
+          {/* Right Wing: Balanced spacer (keeps center search bar perfectly centered) */}
+          <div className="w-full hidden md:block" />
         </div>
 
         {/* ── GOOGLE SEARCH TABS (Centered) ─────────────── */}
