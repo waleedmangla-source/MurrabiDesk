@@ -502,6 +502,16 @@ export default function MurabbiAIPage() {
     updateCurrentConvMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
+    // Trigger Drive sync for user message addition
+    const freshConv = conversations.find(c => c.id === currentConvId);
+    if (freshConv && !freshConv.isTemporary) {
+      syncChatToDrive({
+        ...freshConv,
+        messages: [...freshConv.messages, userMsg],
+        updatedAt: Date.now()
+      });
+    }
+
     const aiMsgId = (Date.now() + 1).toString();
     const aiMsg: Message = { id: aiMsgId, role: "assistant", content: "", timestamp: new Date(), isStreaming: true };
     updateCurrentConvMessages(prev => [...prev, aiMsg]);
@@ -559,6 +569,8 @@ export default function MurabbiAIPage() {
       // Automatically generate concise AI summary title for new conversations
       const targetConvId = currentConvId;
       const targetConv = conversations.find(c => c.id === targetConvId);
+      let updatedTitle = targetConv?.title;
+
       if (targetConv && (targetConv.title === "New Chat" || targetConv.title === "Temporary Chat" || targetConv.title.length > 30)) {
         try {
           const sumRes = await fetch("/api/ai/chat", {
@@ -590,6 +602,7 @@ export default function MurabbiAIPage() {
               }
               const cleanTitle = titleText.trim().replace(/^["']|["']$/g, '').slice(0, 40);
               if (cleanTitle) {
+                updatedTitle = cleanTitle;
                 setConversations(prev => prev.map(c => c.id === targetConvId ? { ...c, title: cleanTitle } : c));
               }
             }
@@ -597,6 +610,16 @@ export default function MurabbiAIPage() {
         } catch (e) {
           console.error("Failed to generate AI title summary:", e);
         }
+      }
+
+      // Sync final conversation with response & title to Drive
+      if (targetConv && !targetConv.isTemporary) {
+        syncChatToDrive({
+          ...targetConv,
+          title: updatedTitle || targetConv.title,
+          messages: [...targetConv.messages, userMsg, { id: aiMsgId, role: "assistant", content: accumulated, timestamp: new Date() }],
+          updatedAt: Date.now()
+        });
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
