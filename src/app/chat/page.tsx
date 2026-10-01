@@ -319,60 +319,77 @@ export default function MurabbiAIPage() {
     }
   };
 
-  // Load from Google Drive, falling back to localStorage
+  // Instant optimistic render from localStorage cache, followed by background Google Drive sync
   useEffect(() => {
-    async function loadChats() {
-      try {
-        let loadedConvs: Conversation[] = [];
-        const syncService = await GoogleSyncService.fromLocalStorage();
+    // Step 1: Render local cache instantly
+    let localConvs: Conversation[] = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        localConvs = parsed.map((c: any) => ({
+          ...c,
+          messages: (c.messages || []).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+        }));
+      } else {
+        const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
+        if (oldSaved) {
+          const oldMsgs = JSON.parse(oldSaved).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+          if (oldMsgs.length > 0) {
+            localConvs = [{
+              id: Date.now().toString(),
+              title: oldMsgs.find((m: any) => m.role === "user")?.content.slice(0, 30) || "Previous Chat",
+              messages: oldMsgs,
+              isTemporary: false,
+              updatedAt: Date.now()
+            }];
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse local chat cache:", e);
+    }
 
+    if (localConvs.length > 0) {
+      setConversations(localConvs);
+      setCurrentConvId(localConvs[0].id);
+    } else {
+      handleNewChat(false);
+    }
+
+    // Step 2: Sync with Google Drive in background
+    async function syncFromDrive() {
+      try {
+        const syncService = await GoogleSyncService.fromLocalStorage();
         if (syncService) {
           const driveChats = await syncService.listChats();
           if (Array.isArray(driveChats) && driveChats.length > 0 && !driveChats[0].error) {
-            loadedConvs = driveChats.map((c: any) => ({
+            const formattedDriveConvs: Conversation[] = driveChats.map((c: any) => ({
               ...c,
               messages: (c.messages || []).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
             }));
-          }
-        }
 
-        if (loadedConvs.length === 0) {
-          const saved = localStorage.getItem(STORAGE_KEY);
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            loadedConvs = parsed.map((c: any) => ({
-              ...c,
-              messages: c.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
-            }));
-          } else {
-            // Migration from old storage
-            const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
-            if (oldSaved) {
-              const oldMsgs = JSON.parse(oldSaved).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
-              if (oldMsgs.length > 0) {
-                loadedConvs = [{
-                  id: Date.now().toString(),
-                  title: oldMsgs.find((m: any) => m.role === "user")?.content.slice(0, 30) || "Previous Chat",
-                  messages: oldMsgs,
-                  isTemporary: false,
-                  updatedAt: Date.now()
-                }];
-              }
-            }
+            setConversations(prev => {
+              // Merge drive chats with current state, giving priority to newer updatedAt
+              const map = new Map<string, Conversation>();
+              prev.forEach(c => map.set(c.id, c));
+              formattedDriveConvs.forEach(dc => {
+                const existing = map.get(dc.id);
+                if (!existing || (dc.updatedAt && dc.updatedAt >= (existing.updatedAt || 0))) {
+                  map.set(dc.id, dc);
+                }
+              });
+              const merged = Array.from(map.values()).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+              return merged;
+            });
           }
-        }
-
-        if (loadedConvs.length > 0) {
-          setConversations(loadedConvs);
-          setCurrentConvId(loadedConvs[0].id);
-        } else {
-          handleNewChat(false);
         }
       } catch (e) {
-        console.error("Error loading chats:", e);
+        console.error("Background Drive sync error:", e);
       }
     }
-    loadChats();
+
+    syncFromDrive();
   }, []);
 
   // Save to localStorage & sync to Drive

@@ -31,15 +31,15 @@ export default function MurabbiLogoAI({
         maskPosition: "center",
       }}
     >
-      {/* ── Murabbi AI Bubble Core Gradient (Exact Crimson & Royal Blue colors, Static) ── */}
+      {/* ── Lighter Living Liquid Gradient with Flow Animation ── */}
       <div className="logo-bubble-core" />
 
-      {/* ── Glass Specular Highlights (Static) ── */}
+      {/* ── Glass Specular Radiance Overlays ── */}
       <div className="logo-bubble-mid" />
       <div className="logo-bubble-sheen" />
 
-      {/* ── Organic Micro-Noise Texture matching Murabbi AI Bubble ── */}
-      <div className="blob-noise opacity-15 pointer-events-none" />
+      {/* ── Dynamic Shimmering Noise Grain ── */}
+      <div className="logo-noise-animated" />
     </div>
   );
 }

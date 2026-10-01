@@ -57,28 +57,29 @@ export async function POST(request: Request) {
     });
 
     const files = filesRes.data.files || [];
-    const conversations: any[] = [];
 
-    // Download content for each chat JSON file
-    for (const file of files) {
-      if (!file.id) continue;
-      try {
-        const fileContentRes = await drive.files.get({
-          fileId: file.id,
-          alt: 'media',
-        }, { responseType: 'json' });
-
-        if (fileContentRes.data) {
-          const convData = fileContentRes.data;
-          conversations.push({
-            ...convData,
+    // Download content for all chat JSON files in parallel for maximum speed
+    const conversations = (await Promise.all(
+      files.map(async (file) => {
+        if (!file.id) return null;
+        try {
+          const fileContentRes = await drive.files.get({
             fileId: file.id,
-          });
+            alt: 'media',
+          }, { responseType: 'json' });
+
+          if (fileContentRes.data) {
+            return {
+              ...fileContentRes.data,
+              fileId: file.id,
+            };
+          }
+        } catch (readErr) {
+          console.warn(`Could not read chat file ${file.name}:`, readErr);
         }
-      } catch (readErr) {
-        console.warn(`Could not read chat file ${file.name}:`, readErr);
-      }
-    }
+        return null;
+      })
+    )).filter(Boolean);
 
     return NextResponse.json(conversations);
   } catch (error: any) {
