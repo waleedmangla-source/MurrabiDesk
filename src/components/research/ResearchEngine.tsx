@@ -47,11 +47,14 @@ import {
   MediaItemResult,
   BookItem,
   MalfuzatResult,
-  TazkirahResult
+  TazkirahResult,
+  EssenceResult
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
 import MalfuzatPdfModal from './MalfuzatPdfModal';
+import TadhkirahPdfModal from './TadhkirahPdfModal';
+import EssencePdfModal from './EssencePdfModal';
 import SearchStageTracker from './SearchStageTracker';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
 
@@ -109,6 +112,30 @@ export default function ResearchEngine() {
     dateStr?: string;
     englishTranslation?: string;
     urduText?: string;
+  } | null>(null);
+
+  const [activeTadhkirahPdf, setActiveTadhkirahPdf] = useState<{
+    pageNum?: number | string;
+    pdfPage: number;
+    title: string;
+    year?: number;
+    dateStr?: string;
+    category?: string;
+    originalText?: string;
+    englishTranslation?: string;
+    historicalContext?: string;
+  } | null>(null);
+
+  const [activeEssencePdf, setActiveEssencePdf] = useState<{
+    volume: number;
+    volumeRoman?: string;
+    pageNum?: number | string;
+    pdfPage: number;
+    title: string;
+    topic?: string;
+    sourceTreatise?: string;
+    excerpt?: string;
+    fullText?: string;
   } | null>(null);
 
   // Pagination & Articles Cache
@@ -261,8 +288,8 @@ export default function ResearchEngine() {
     setAlislamCache({});
   };
 
-  // Literature sub-filter: all, khazain, malfuzat, tazkirah, books
-  const [literatureSubFilter, setLiteratureSubFilter] = useState<'all' | 'khazain' | 'malfuzat' | 'tazkirah' | 'books'>('all');
+  // Literature sub-filter: all, khazain, malfuzat, tazkirah, essence, books
+  const [literatureSubFilter, setLiteratureSubFilter] = useState<'all' | 'khazain' | 'malfuzat' | 'tazkirah' | 'essence' | 'books'>('all');
 
   // Video sub-filter: all, youtube, mta, transcripts
   const [videoSubFilter, setVideoSubFilter] = useState<'all' | 'youtube' | 'mta' | 'transcripts'>('all');
@@ -296,8 +323,9 @@ export default function ResearchEngine() {
     const rkCount = results ? results.ruhaniKhazain.length : 0;
     const malfuzatCount = results?.malfuzat?.length || 0;
     const tazkirahCount = results?.tazkirah?.length || 0;
+    const essenceCount = results?.essenceOfIslam?.length || 0;
     const booksCount = results?.books?.length || 0;
-    const literatureCount = rkCount + malfuzatCount + tazkirahCount + booksCount;
+    const literatureCount = rkCount + malfuzatCount + tazkirahCount + essenceCount + booksCount;
     const alHakamCount = results?.totalAlHakamHits || 0;
     const rorCount = results?.totalRoRHits || 0;
     const alislamArticlesOnly = results?.alislamArticles?.filter(a => a.category !== 'Book') || [];
@@ -319,6 +347,7 @@ export default function ResearchEngine() {
       rk: rkCount,
       malfuzat: malfuzatCount,
       tazkirah: tazkirahCount,
+      essence: essenceCount,
       books: booksCount,
       alislam: alislamCount,
       periodicals: periodicalsCount
@@ -357,6 +386,9 @@ export default function ResearchEngine() {
         if (literatureSubFilter === 'tazkirah') {
           return Math.max(1, Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE));
         }
+        if (literatureSubFilter === 'essence') {
+          return Math.max(1, Math.ceil((results.essenceOfIslam?.length || 0) / ITEMS_PER_PAGE));
+        }
         if (literatureSubFilter === 'books') {
           return Math.max(1, Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE));
         }
@@ -366,6 +398,7 @@ export default function ResearchEngine() {
             Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE),
             Math.ceil((results.malfuzat?.length || 0) / ITEMS_PER_PAGE),
             Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE),
+            Math.ceil((results.essenceOfIslam?.length || 0) / ITEMS_PER_PAGE),
             Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE)
           )
         );
@@ -386,6 +419,7 @@ export default function ResearchEngine() {
         const rkPages = Math.ceil(results.ruhaniKhazain.length / ITEMS_PER_PAGE);
         const malfuzatPages = Math.ceil((results.malfuzat?.length || 0) / ITEMS_PER_PAGE);
         const tazkirahPages = Math.ceil((results.tazkirah?.length || 0) / ITEMS_PER_PAGE);
+        const essencePages = Math.ceil((results.essenceOfIslam?.length || 0) / ITEMS_PER_PAGE);
         const bookPages = Math.ceil((results.books?.length || 0) / ITEMS_PER_PAGE);
         const sourcePages = Math.max(
           results.totalPagesAlHakam || Math.ceil((results.totalAlHakamHits || 0) / 10),
@@ -395,7 +429,7 @@ export default function ResearchEngine() {
         const hadithPages = Math.ceil((results.ahadith?.length || 0) / ITEMS_PER_PAGE);
         const audioPages = Math.ceil((results.audios?.length || 0) / ITEMS_PER_PAGE);
         const videoPages = Math.ceil((results.videos?.length || 0) / ITEMS_PER_PAGE);
-        return Math.max(1, Math.max(rkPages, malfuzatPages, tazkirahPages, bookPages, sourcePages, hadithPages, audioPages, videoPages));
+        return Math.max(1, Math.max(rkPages, malfuzatPages, tazkirahPages, essencePages, bookPages, sourcePages, hadithPages, audioPages, videoPages));
       }
       default:
         return 1;
@@ -438,6 +472,19 @@ export default function ResearchEngine() {
       if (literatureSubFilter !== 'all' && literatureSubFilter !== 'tazkirah') return [];
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       return results.tazkirah.slice(start, start + ITEMS_PER_PAGE);
+    }
+    return [];
+  }, [results, currentPage, activeFilter, literatureSubFilter]);
+
+  const displayedEssence = useMemo(() => {
+    if (!results || !results.essenceOfIslam) return [];
+    if (activeFilter === 'all') {
+      return currentPage === 1 ? results.essenceOfIslam.slice(0, 3) : [];
+    }
+    if (activeFilter === 'literature') {
+      if (literatureSubFilter !== 'all' && literatureSubFilter !== 'essence') return [];
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return results.essenceOfIslam.slice(start, start + ITEMS_PER_PAGE);
     }
     return [];
   }, [results, currentPage, activeFilter, literatureSubFilter]);
@@ -1221,6 +1268,22 @@ export default function ResearchEngine() {
 
                       <button
                         type="button"
+                        onClick={() => { setLiteratureSubFilter('essence'); setCurrentPage(1); }}
+                        className={clsx(
+                          "px-3 py-1.5 rounded-[10px] transition-all flex items-center gap-1.5",
+                          literatureSubFilter === 'essence'
+                            ? "bg-[var(--accent-main)] text-white shadow-sm"
+                            : "text-[var(--text-muted)] hover:text-[var(--foreground)]"
+                        )}
+                      >
+                        <span>Essence of Islam (5 Vols)</span>
+                        <span className={clsx("px-1.5 py-0.2 rounded text-[10px]", literatureSubFilter === 'essence' ? "bg-black/20" : "bg-white/10")}>
+                          {counts.essence}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => { setLiteratureSubFilter('books'); setCurrentPage(1); }}
                         className={clsx(
                           "px-3 py-1.5 rounded-[10px] transition-all flex items-center gap-1.5",
@@ -1497,12 +1560,16 @@ export default function ResearchEngine() {
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
                             <button
                               type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: t.url,
-                                title: `Tadhkirah (${t.year}): ${t.title}`,
-                                source: 'Tadhkirah',
-                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
-                                summary: t.englishTranslation
+                              onClick={() => setActiveTadhkirahPdf({
+                                pageNum: t.pageEnglish || t.pageUrdu,
+                                pdfPage: t.pdfPage || (t.pageEnglish ? t.pageEnglish + 22 : 1),
+                                title: `Tadhkirah: ${t.title}`,
+                                year: t.year,
+                                dateStr: t.dateStr,
+                                category: t.category,
+                                originalText: t.originalText,
+                                englishTranslation: t.englishTranslation,
+                                historicalContext: t.historicalContext
                               })}
                               className="text-left hover:text-amber-400 transition-colors inline-flex items-center gap-1.5 group/link"
                             >
@@ -1518,12 +1585,14 @@ export default function ResearchEngine() {
                         </div>
 
                         {/* Original Revelation Box in distinctive calligraphic styling */}
-                        <div
-                          dir="rtl"
-                          className="p-4 rounded-[14px] glass bg-amber-500/[0.04] border border-amber-500/20 text-base md:text-xl leading-loose font-urdu font-bold text-[var(--foreground)] text-right"
-                        >
-                          {t.originalText}
-                        </div>
+                        {t.originalText ? (
+                          <div
+                            dir="rtl"
+                            className="p-4 rounded-[14px] glass bg-amber-500/[0.04] border border-amber-500/20 text-base md:text-xl leading-loose font-urdu font-bold text-[var(--foreground)] text-right"
+                          >
+                            {t.originalText}
+                          </div>
+                        ) : null}
 
                         {/* English translation */}
                         <p className="text-sm text-[var(--foreground)]/85 leading-relaxed font-medium">
@@ -1539,31 +1608,55 @@ export default function ResearchEngine() {
                         )}
 
                         <div className="flex items-center justify-between pt-1 text-xs">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                             <button
                               type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: t.url,
+                              onClick={() => setActiveTadhkirahPdf({
+                                pageNum: t.pageEnglish || t.pageUrdu,
+                                pdfPage: t.pdfPage || (t.pageEnglish ? t.pageEnglish + 22 : 1),
                                 title: `Tadhkirah: ${t.title}`,
-                                source: 'Tadhkirah',
-                                author: 'Hazrat Mirza Ghulam Ahmad (as)',
-                                summary: t.englishTranslation
+                                year: t.year,
+                                dateStr: t.dateStr,
+                                category: t.category,
+                                originalText: t.originalText,
+                                englishTranslation: t.englishTranslation,
+                                historicalContext: t.historicalContext
                               })}
-                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
+                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95 shadow-sm"
+                              title={`Open authentic Tadhkirah publication PDF directly inside Murabbi Desk on page ${t.pdfPage || (t.pageEnglish ? t.pageEnglish + 22 : 1)}`}
                             >
                               <BookOpen size={13} />
-                              <span>Read in Murabbi Desk</span>
+                              <span>Open PDF in Murabbi Desk (p. {t.pageEnglish || t.pdfPage || ''})</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setActiveTadhkirahPdf({
+                                pageNum: t.pageEnglish || t.pageUrdu,
+                                pdfPage: t.pdfPage || (t.pageEnglish ? t.pageEnglish + 22 : 1),
+                                title: `Tadhkirah: ${t.title}`,
+                                year: t.year,
+                                dateStr: t.dateStr,
+                                category: t.category,
+                                originalText: t.originalText,
+                                englishTranslation: t.englishTranslation,
+                                historicalContext: t.historicalContext
+                              })}
+                              className="px-2.5 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs"
+                              title="Read revelation text"
+                            >
+                              <FileText size={13} />
+                              <span>Text View</span>
                             </button>
 
                             <a
-                              href={t.url}
+                              href={t.pdfUrl || `https://files.alislam.cloud/pdf/Tadhkirah.pdf#page=${t.pdfPage || 1}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 transition-colors"
+                              title="Open raw Tadhkirah PDF on Al Islam in new browser tab"
                             >
-                              <Globe size={13} />
-                              <span>Al Islam Tadhkirah</span>
-                              <ExternalLink size={11} className="opacity-60" />
+                              <ExternalLink size={13} />
                             </a>
 
                             {(t.pageEnglish || t.pageUrdu) && (
@@ -1580,6 +1673,139 @@ export default function ResearchEngine() {
                           >
                             {copiedId === tazkirahKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                             <span className="text-[11px] uppercase tracking-wider">{copiedId === tazkirahKey ? "Copied" : "Cite"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* ── The Essence of Islam Series (Volumes I to V) ── */}
+                  {(literatureSubFilter === 'all' || literatureSubFilter === 'essence') && displayedEssence.map((e) => {
+                    const essenceKey = `essence-${e.id}`;
+                    const essenceCitation = `[The Essence of Islam, Vol. ${e.volumeRoman}, p. ${e.pageNum} (PDF p. ${e.pdfPage}) - "${e.title}"${e.sourceTreatise ? ` (${e.sourceTreatise})` : ''}]\n"${e.excerpt}"\nSource: ${e.pdfUrl}`;
+                    return (
+                      <div key={essenceKey} className="space-y-2 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-black text-[10px] shrink-0">
+                              EI
+                            </div>
+                            <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
+                              <span className="text-[var(--foreground)] font-bold">The Essence of Islam</span>
+                              <span>›</span>
+                              <span className="text-indigo-400 font-bold">Vol. {e.volumeRoman}</span>
+                              <span>›</span>
+                              <span>p. {e.pageNum}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1 shrink-0">
+                              <Bookmark size={11} />
+                              {e.topic || `Volume ${e.volumeRoman}`}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-[var(--text-muted)] border border-white/10 hidden sm:inline">
+                              English
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                          <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
+                            <button
+                              type="button"
+                              onClick={() => setActiveEssencePdf({
+                                volume: e.volume,
+                                volumeRoman: e.volumeRoman,
+                                pageNum: e.pageNum,
+                                pdfPage: e.pdfPage,
+                                title: e.title,
+                                topic: e.topic,
+                                sourceTreatise: e.sourceTreatise,
+                                excerpt: e.excerpt,
+                                fullText: e.fullText
+                              })}
+                              className="text-left hover:text-indigo-400 transition-colors inline-flex items-center gap-1.5 group/link"
+                            >
+                              <span>{e.title}</span>
+                              <BookOpen size={13} className="opacity-40 group-hover/link:opacity-100 group-hover/link:text-indigo-400 transition-all shrink-0" />
+                            </button>
+                          </h3>
+                        </div>
+
+                        {/* Ruhani Khazain Source Treatise tag if present */}
+                        {e.sourceTreatise && (
+                          <div className="text-xs text-indigo-400 font-medium italic flex items-center gap-1.5">
+                            <Bookmark size={12} className="shrink-0 opacity-80" />
+                            <span>From: {e.sourceTreatise}</span>
+                          </div>
+                        )}
+
+                        {/* Excerpt text */}
+                        <p className="text-sm text-[var(--foreground)]/85 leading-relaxed font-medium">
+                          {e.excerpt}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => setActiveEssencePdf({
+                                volume: e.volume,
+                                volumeRoman: e.volumeRoman,
+                                pageNum: e.pageNum,
+                                pdfPage: e.pdfPage,
+                                title: e.title,
+                                topic: e.topic,
+                                sourceTreatise: e.sourceTreatise,
+                                excerpt: e.excerpt,
+                                fullText: e.fullText
+                              })}
+                              className="px-3 py-1.5 rounded-[10px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95 shadow-sm"
+                              title={`Open authentic The Essence of Islam Vol. ${e.volumeRoman} PDF directly inside Murabbi Desk on page ${e.pdfPage}`}
+                            >
+                              <BookOpen size={13} />
+                              <span>Open PDF in Murabbi Desk (Vol. {e.volumeRoman}, p. {e.pageNum})</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setActiveEssencePdf({
+                                volume: e.volume,
+                                volumeRoman: e.volumeRoman,
+                                pageNum: e.pageNum,
+                                pdfPage: e.pdfPage,
+                                title: e.title,
+                                topic: e.topic,
+                                sourceTreatise: e.sourceTreatise,
+                                excerpt: e.excerpt,
+                                fullText: e.fullText
+                              })}
+                              className="px-2.5 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs"
+                              title="Read full excerpt text"
+                            >
+                              <FileText size={13} />
+                              <span>Text View</span>
+                            </button>
+
+                            <a
+                              href={e.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border border-white/10 transition-colors"
+                              title={`Open raw PDF on Al Islam in new browser tab (Page ${e.pdfPage})`}
+                            >
+                              <ExternalLink size={13} />
+                            </a>
+                          </div>
+
+                          <button
+                            onClick={() => copyToClipboard(essenceCitation, essenceKey)}
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                            title="Copy Citation"
+                          >
+                            {copiedId === essenceKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            <span className="text-[11px] uppercase tracking-wider">{copiedId === essenceKey ? "Copied" : "Cite"}</span>
                           </button>
                         </div>
                       </div>
@@ -1699,7 +1925,7 @@ export default function ResearchEngine() {
                   {activeFilter === 'all' && counts.literature > 4 && (
                     <div className="p-3.5 rounded-xl glass bg-purple-500/10 border border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <span className="text-[var(--text-muted)] font-medium">
-                        Showing top literature matches ({results.ruhaniKhazain.length} Ruhani Khazain, {results.malfuzat?.length || 0} Malfuzat, {results.tazkirah?.length || 0} Tazkirah{results.books?.length ? `, ${results.books.length} published books` : ''})
+                        Showing top literature matches ({results.ruhaniKhazain.length} Ruhani Khazain, {results.malfuzat?.length || 0} Malfuzat, {results.tazkirah?.length || 0} Tadhkirah, {results.essenceOfIslam?.length || 0} Essence of Islam{results.books?.length ? `, ${results.books.length} published books` : ''})
                       </span>
                       <button
                         onClick={() => handleTabChange('literature')}
@@ -1726,7 +1952,12 @@ export default function ResearchEngine() {
                       )}
                       {literatureSubFilter === 'tazkirah' && counts.tazkirah === 0 && (
                         <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
-                          No matches found specifically in Tazkirah (Revelations & Visions). Try &quot;All Literature&quot; or &quot;Ruhani Khazain&quot;.
+                          No matches found specifically in Tadhkirah (Revelations & Visions). Try &quot;All Literature&quot; or &quot;Essence of Islam&quot;.
+                        </div>
+                      )}
+                      {literatureSubFilter === 'essence' && counts.essence === 0 && (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)] glass bg-white/[0.02] border border-white/5 rounded-xl p-6">
+                          No matches found specifically in The Essence of Islam (Volumes I–V). Try &quot;All Literature&quot; or &quot;Ruhani Khazain&quot;.
                         </div>
                       )}
                       {literatureSubFilter === 'books' && counts.books === 0 && (
@@ -1743,7 +1974,7 @@ export default function ResearchEngine() {
                       <BookMarked size={36} className="text-purple-400 mx-auto opacity-60" />
                       <h4 className="text-base font-bold text-[var(--foreground)]">No literature records found</h4>
                       <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-                        No matches found across Ruhani Khazain (23 Vols), Malfuzat (10 Vols), Tazkirah or published books for &quot;{submittedQuery}&quot;. Try broader theological terms or switch to &quot;All Sources&quot;.
+                        No matches found across Ruhani Khazain (23 Vols), Malfuzat (10 Vols), Tadhkirah, Essence of Islam (5 Vols) or published books for &quot;{submittedQuery}&quot;. Try broader theological terms or switch to &quot;All Sources&quot;.
                       </p>
                     </div>
                   )}
@@ -2427,6 +2658,38 @@ export default function ResearchEngine() {
           englishTranslation={activeMalfuzatPdf.englishTranslation}
           urduText={activeMalfuzatPdf.urduText}
           onClose={() => setActiveMalfuzatPdf(null)}
+        />
+      )}
+
+      {/* ── IN-DESK TADHKIRAH PDF VIEWER MODAL ── */}
+      {activeTadhkirahPdf && (
+        <TadhkirahPdfModal
+          pageNum={activeTadhkirahPdf.pageNum}
+          pdfPage={activeTadhkirahPdf.pdfPage}
+          title={activeTadhkirahPdf.title}
+          year={activeTadhkirahPdf.year}
+          dateStr={activeTadhkirahPdf.dateStr}
+          category={activeTadhkirahPdf.category}
+          originalText={activeTadhkirahPdf.originalText}
+          englishTranslation={activeTadhkirahPdf.englishTranslation}
+          historicalContext={activeTadhkirahPdf.historicalContext}
+          onClose={() => setActiveTadhkirahPdf(null)}
+        />
+      )}
+
+      {/* ── IN-DESK THE ESSENCE OF ISLAM PDF VIEWER MODAL ── */}
+      {activeEssencePdf && (
+        <EssencePdfModal
+          volume={activeEssencePdf.volume}
+          volumeRoman={activeEssencePdf.volumeRoman}
+          pageNum={activeEssencePdf.pageNum}
+          pdfPage={activeEssencePdf.pdfPage}
+          title={activeEssencePdf.title}
+          topic={activeEssencePdf.topic}
+          sourceTreatise={activeEssencePdf.sourceTreatise}
+          excerpt={activeEssencePdf.excerpt}
+          fullText={activeEssencePdf.fullText}
+          onClose={() => setActiveEssencePdf(null)}
         />
       )}
     </div>

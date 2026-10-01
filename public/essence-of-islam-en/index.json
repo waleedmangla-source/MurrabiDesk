@@ -1,0 +1,95 @@
+{
+  "series": "The Essence of Islam (Extracts from Ruhani Khazain)",
+  "author": "Hazrat Mirza Ghulam Ahmad, The Promised Messiah and Mahdi (as)",
+  "translator": "Muhammad Zafrulla Khan",
+  "publisher": "Islam International Publications Ltd.",
+  "totalVolumes": 5,
+  "volumes": [
+    {
+      "volume": 1,
+      "volumeRoman": "I",
+      "title": "The Essence of Islam – Volume I",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Essence-1.pdf",
+      "sourceUrl": "https://www.alislam.org/book/essence-islam-volume-1/",
+      "totalPdfPages": 543,
+      "totalBookPages": 507,
+      "outputFile": "volume_1.json",
+      "topics": [
+        "Islam",
+        "Allah the Exalted",
+        "The Holy Prophet (sa)",
+        "The Holy Quran"
+      ]
+    },
+    {
+      "volume": 2,
+      "volumeRoman": "II",
+      "title": "The Essence of Islam – Volume II",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Essence-2.pdf",
+      "sourceUrl": "https://www.alislam.org/book/essence-islam-volume-2/",
+      "totalPdfPages": 505,
+      "totalBookPages": 493,
+      "outputFile": "volume_2.json",
+      "topics": [
+        "Prayer",
+        "Remembrance of God",
+        "Angels",
+        "Destiny",
+        "Life After Death",
+        "Repentance",
+        "Patience"
+      ]
+    },
+    {
+      "volume": 3,
+      "volumeRoman": "III",
+      "title": "The Essence of Islam – Volume III",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/essence-3.pdf",
+      "sourceUrl": "https://www.alislam.org/book/essence-islam-volume-3/",
+      "totalPdfPages": 487,
+      "totalBookPages": 471,
+      "outputFile": "volume_3.json",
+      "topics": [
+        "Natural, Moral and Spiritual States of Man",
+        "Faith and Insight",
+        "Prophethood in Islam",
+        "The Messiah and Second Coming",
+        "Dajjal",
+        "Women",
+        "The Veil"
+      ]
+    },
+    {
+      "volume": 4,
+      "volumeRoman": "IV",
+      "title": "The Essence of Islam – Volume IV",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Essence-4.pdf",
+      "sourceUrl": "https://www.alislam.org/book/essence-islam-volume-4/",
+      "totalPdfPages": 334,
+      "totalBookPages": 322,
+      "outputFile": "volume_4.json",
+      "topics": [
+        "Status and Claim of the Promised Messiah",
+        "Signs and Prophecies",
+        "Instructions for the Jama'at",
+        "Ahmadiyya Community"
+      ]
+    },
+    {
+      "volume": 5,
+      "volumeRoman": "V",
+      "title": "The Essence of Islam – Volume V",
+      "sourcePdfUrl": "https://files.alislam.cloud/pdf/Essence-5.pdf",
+      "sourceUrl": "https://www.alislam.org/book/essence-islam-volume-5/",
+      "totalPdfPages": 240,
+      "totalBookPages": 226,
+      "outputFile": "volume_5.json",
+      "topics": [
+        "The Living Miracle of the Quran",
+        "Jihad",
+        "Religious Tolerance",
+        "Spiritual Realities"
+      ]
+    }
+  ]
+}

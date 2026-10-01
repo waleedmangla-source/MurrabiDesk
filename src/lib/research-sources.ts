@@ -125,8 +125,9 @@ export type { TheologicalConsensusMatrix, TriangulationLayerStatus, HitsRankings
 
 import type { MalfuzatResult } from './malfuzat-data';
 import type { TazkirahResult } from './tazkirah-data';
+import type { EssenceResult } from './essence-data';
 
-export type { MalfuzatResult, TazkirahResult };
+export type { MalfuzatResult, TazkirahResult, EssenceResult };
 
 export interface MultiSourceSearchResult {
   query: string;
@@ -137,8 +138,10 @@ export interface MultiSourceSearchResult {
   books?: BookItem[];
   malfuzat?: MalfuzatResult[];
   tazkirah?: TazkirahResult[];
+  essenceOfIslam?: EssenceResult[];
   totalMalfuzatHits?: number;
   totalTazkirahHits?: number;
+  totalEssenceHits?: number;
   alislamArticles: AlIslamArticleResult[];
   publications: PublicationResult[];
   audios?: AudioResult[];

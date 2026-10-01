@@ -15,8 +15,19 @@ export interface TazkirahResult {
   historicalContext: string;
   pageUrdu?: number; // Page in Tadhkirah 4th Urdu Edition
   pageEnglish?: number; // Page in Tadhkirah 2019 English Edition
+  pdfPage?: number; // 1-based physical page in Tadhkirah.pdf
+  pdfUrl?: string; // Direct URL to PDF with #page=N
   topics: string[];
   url: string;
+  relevanceScore?: number;
+}
+
+/**
+ * Returns direct official Al Islam CDN PDF URL for Tadhkirah with exact #page=N jump.
+ */
+export function getTadhkirahPdfUrl(pageNum?: number | string, pdfPage?: number): string {
+  const targetPage = pdfPage || (typeof pageNum === 'number' ? pageNum + 22 : 1);
+  return `https://files.alislam.cloud/pdf/Tadhkirah.pdf#page=${targetPage}`;
 }
 
 export const TAZKIRAH_CATALOG: TazkirahResult[] = [

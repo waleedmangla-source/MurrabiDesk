@@ -26,7 +26,10 @@ import { searchAskIslamAudios } from '@/lib/askislam-data';
 import { searchMediaVideos } from '@/lib/video-search';
 import { MalfuzatResult } from '@/lib/malfuzat-data';
 import { searchUnifiedMalfuzat } from '@/lib/malfuzat-fulltext';
-import { searchTazkirah, TazkirahResult } from '@/lib/tazkirah-data';
+import { searchUnifiedTazkirah } from '@/lib/tazkirah-fulltext';
+import { searchEssenceFullText } from '@/lib/essence-fulltext';
+import { EssenceResult } from '@/lib/essence-data';
+import { TazkirahResult } from '@/lib/tazkirah-data';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
 import { expandQueryVector } from '@/lib/dsgt/query-expansion';
 import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
@@ -599,9 +602,18 @@ export async function POST(req: NextRequest) {
 
     const tazkirahPromise: Promise<TazkirahResult[]> = (async () => {
       try {
-        return searchTazkirah(rawQuery);
+        return searchUnifiedTazkirah(rawQuery);
       } catch (e) {
         console.warn('[Research API] Tazkirah search failed:', e);
+        return [];
+      }
+    })();
+
+    const essencePromise: Promise<EssenceResult[]> = (async () => {
+      try {
+        return searchEssenceFullText(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Essence of Islam search failed:', e);
         return [];
       }
     })();
@@ -616,7 +628,8 @@ export async function POST(req: NextRequest) {
       videoResults,
       booksResults,
       malfuzatResults,
-      tazkirahResults
+      tazkirahResults,
+      essenceResults
     ] = await Promise.all([
       ruhaniKhazainPromise,
       quranPromise,
@@ -627,7 +640,8 @@ export async function POST(req: NextRequest) {
       videosPromise,
       booksPromise,
       malfuzatPromise,
-      tazkirahPromise
+      tazkirahPromise,
+      essencePromise
     ]);
 
     // Merge any live Al Islam results identified as books
@@ -677,6 +691,7 @@ export async function POST(req: NextRequest) {
       mergedBooks.length +
       malfuzatResults.length +
       tazkirahResults.length +
+      essenceResults.length +
       Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) +
       media.length;
 
@@ -689,8 +704,10 @@ export async function POST(req: NextRequest) {
       books: mergedBooks,
       malfuzat: malfuzatResults,
       tazkirah: tazkirahResults,
+      essenceOfIslam: essenceResults,
       totalMalfuzatHits: malfuzatResults.length,
       totalTazkirahHits: tazkirahResults.length,
+      totalEssenceHits: essenceResults.length,
       totalBookHits: mergedBooks.length,
       alislamArticles: alislamResults,
       publications: periodicalsResults,

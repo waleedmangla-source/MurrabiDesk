@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
     responseHeaders.set('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
     responseHeaders.set('Accept-Ranges', 'bytes');
     responseHeaders.set('Content-Type', upstreamRes.headers.get('content-type') || 'application/pdf');
-    responseHeaders.set('Content-Disposition', 'inline; filename="Malfuzat.pdf"');
+    const pdfName = targetUrl.split('/').pop()?.split('?')[0]?.split('#')[0] || 'document.pdf';
+    responseHeaders.set('Content-Disposition', `inline; filename="${pdfName}"`);
     responseHeaders.set('X-Content-Type-Options', 'nosniff');
 
     const contentRange = upstreamRes.headers.get('content-range');

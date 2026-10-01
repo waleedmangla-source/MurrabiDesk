@@ -22,7 +22,6 @@ import {
   Check,
   ArrowLeft,
   X,
-  Layers,
   FileSpreadsheet
 } from "lucide-react";
 import clsx from "clsx";
@@ -85,20 +84,20 @@ function useHasGoogleToken(): boolean {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType === 'application/vnd.google-apps.folder') return <Folder size={15} className="text-blue-400" />;
-  if (mimeType.includes('image/')) return <ImageIcon size={15} className="text-emerald-400" />;
-  if (mimeType.includes('video/')) return <Video size={15} className="text-red-400" />;
-  if (mimeType.includes('audio/')) return <Music size={15} className="text-purple-400" />;
+  if (mimeType === 'application/vnd.google-apps.folder') return <Folder size={15} className="text-blue-600" />;
+  if (mimeType.includes('image/')) return <ImageIcon size={15} className="text-emerald-600" />;
+  if (mimeType.includes('video/')) return <Video size={15} className="text-red-600" />;
+  if (mimeType.includes('audio/')) return <Music size={15} className="text-purple-600" />;
   if (mimeType.includes('spreadsheet') || mimeType.includes('sheet') || mimeType.includes('csv')) {
-    return <FileSpreadsheet size={15} className="text-emerald-500" />;
+    return <FileSpreadsheet size={15} className="text-emerald-600" />;
   }
   if (mimeType.includes('pdf') || mimeType.includes('text/') || mimeType.includes('document')) {
-    return <FileText size={15} className="text-orange-400" />;
+    return <FileText size={15} className="text-amber-600" />;
   }
   if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar') || mimeType.includes('archive')) {
-    return <Archive size={15} className="text-yellow-400" />;
+    return <Archive size={15} className="text-yellow-600" />;
   }
-  return <File size={15} className="text-white/60" />;
+  return <File size={15} className="text-slate-700" />;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -274,10 +273,10 @@ export default function DrivePage() {
     : syncStatus === 'synced' ? CheckCircle
     : syncStatus === 'error' ? AlertCircle
     : RefreshCw;
-  const syncColor = syncStatus === 'synced' ? 'text-emerald-400'
-    : syncStatus === 'error' ? 'text-red-400'
-    : syncStatus === 'offline' ? 'text-white/20'
-    : 'text-white/30';
+  const syncColor = syncStatus === 'synced' ? 'text-emerald-600'
+    : syncStatus === 'error' ? 'text-red-600'
+    : syncStatus === 'offline' ? 'text-slate-400'
+    : 'text-slate-500';
 
   const FILTER_OPTIONS: { id: FilterType; label: string; icon: React.ElementType }[] = [
     { id: 'all', label: 'All Items', icon: HardDrive },
@@ -289,29 +288,29 @@ export default function DrivePage() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-transparent">
-      {/* ── Panel 1: Folder Sidebar — Desktop only (Following Mail tab structure) ── */}
-      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20">
+    <div className="flex flex-col lg:flex-row min-h-dvh lg:h-screen lg:overflow-hidden bg-[#f8fafc] text-black">
+      {/* ── Panel 1: Folder Sidebar — Desktop only ── */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-slate-200/80 bg-white/70 backdrop-blur-md">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">Drive</h1>
+          <h1 className="text-4xl font-black italic tracking-tighter text-black uppercase leading-none">Drive</h1>
         </div>
 
         {/* Account Header */}
-        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
-          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
+        <div className="px-5 pt-1 pb-4 border-b border-slate-200/80 mb-2">
+          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden">
             <div className="flex-1 min-w-0 overflow-hidden">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
+                <span className="text-[10px] font-bold tracking-tight text-slate-600 truncate">
                   {userEmail || 'Murabbi Desk Drive'}
                 </span>
                 {userEmail && (
                   <button
                     onClick={handleCopyEmail}
-                    className="p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all shrink-0"
+                    className="p-1 rounded-md hover:bg-slate-100 text-slate-500 hover:text-black transition-all shrink-0"
                     title="Copy email address"
                   >
-                    {copied ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+                    {copied ? <Check size={10} className="text-emerald-600" /> : <Copy size={10} />}
                   </button>
                 )}
               </div>
@@ -319,7 +318,7 @@ export default function DrivePage() {
           </div>
 
           {/* Animated Sidebar Tabs */}
-          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
+          <div className="relative flex bg-slate-100 rounded-xl p-1 mt-4 border border-slate-200/60">
             {/* Animated Background Pill */}
             <div
               className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
@@ -337,7 +336,7 @@ export default function DrivePage() {
                 onClick={() => setSidebarTab(t.id as any)}
                 className={clsx(
                   "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                  sidebarTab === t.id ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
+                  sidebarTab === t.id ? "text-black font-black" : "text-slate-600 hover:text-black"
                 )}
               >
                 {t.label}
@@ -360,21 +359,20 @@ export default function DrivePage() {
                 className={clsx(
                   "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
                   isRootActive
-                    ? "font-black text-white border-[var(--accent-main)]"
-                    : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                    ? "font-black text-black border-[var(--accent-main)] bg-emerald-500/10"
+                    : "text-slate-700 hover:bg-slate-100 hover:text-black border-transparent"
                 )}
-                style={isRootActive ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
               >
                 <HardDrive size={15} className="shrink-0 text-[var(--accent-main)]" />
-                <span className="text-xs font-bold flex-1 truncate">Murabbi Desk</span>
-                <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-white/10 text-white/70">
+                <span className="text-xs font-bold flex-1 truncate text-black">Murabbi Desk</span>
+                <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-800">
                   Root
                 </span>
               </button>
 
               {/* Subfolders header */}
               {discoveredSubfolders.length > 0 && (
-                <div className="pt-4 pb-1 px-6 text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">
+                <div className="pt-4 pb-1 px-6 text-[8px] font-black uppercase tracking-[0.25em] text-slate-500">
                   Subdirectories
                 </div>
               )}
@@ -396,13 +394,12 @@ export default function DrivePage() {
                     className={clsx(
                       "w-full flex items-center gap-3 px-6 py-2.5 transition-all text-left border-l-2",
                       isSubActive
-                        ? "font-black text-white border-[var(--accent-main)]"
-                        : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                        ? "font-black text-black border-[var(--accent-main)] bg-emerald-500/10"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-black border-transparent"
                     )}
-                    style={isSubActive ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
                   >
-                    <Folder size={14} className="shrink-0 text-blue-400" />
-                    <span className="text-xs font-bold flex-1 truncate">{sub.name}</span>
+                    <Folder size={14} className="shrink-0 text-blue-600" />
+                    <span className="text-xs font-bold flex-1 truncate text-black">{sub.name}</span>
                   </button>
                 );
               })}
@@ -410,7 +407,7 @@ export default function DrivePage() {
           ) : (
             /* Filters Tab */
             <nav className="py-2 space-y-px">
-              <div className="pt-2 pb-2 px-6 text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">
+              <div className="pt-2 pb-2 px-6 text-[8px] font-black uppercase tracking-[0.25em] text-slate-500">
                 Filter by Type
               </div>
               {FILTER_OPTIONS.map(f => {
@@ -426,13 +423,12 @@ export default function DrivePage() {
                     className={clsx(
                       "w-full flex items-center gap-3 px-6 py-2.5 transition-all text-left border-l-2",
                       active
-                        ? "font-black text-white border-[var(--accent-main)]"
-                        : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                        ? "font-black text-black border-[var(--accent-main)] bg-emerald-500/10"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-black border-transparent"
                     )}
-                    style={active ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
                   >
                     <Icon size={14} className="shrink-0 text-[var(--accent-main)]" />
-                    <span className="text-xs font-bold flex-1">{f.label}</span>
+                    <span className="text-xs font-bold flex-1 text-black">{f.label}</span>
                   </button>
                 );
               })}
@@ -441,13 +437,13 @@ export default function DrivePage() {
         </div>
 
         {/* Bottom Action Button (Open in Drive) */}
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-slate-200/80">
           {currentFolderDriveLink ? (
             <a
               href={currentFolderDriveLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-md hover:brightness-110"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-black transition-all active:scale-95 shadow-md hover:brightness-105"
               style={{ background: 'var(--accent-main)' }}
             >
               <ExternalLink size={14} />
@@ -456,7 +452,7 @@ export default function DrivePage() {
           ) : (
             <button
               disabled
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white/40 bg-white/5"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 bg-slate-100"
             >
               <HardDrive size={14} />
               Murabbi Desk
@@ -465,8 +461,8 @@ export default function DrivePage() {
         </div>
       </div>
 
-      {/* ── Mobile Folder Strip — shown only on mobile/tablet (Harmonized with Mail) ── */}
-      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar">
+      {/* ── Mobile Folder Strip ── */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-slate-200/80 bg-white/80 shrink-0 no-scrollbar">
         <button
           onClick={() => {
             setFolderStack([{ id: rootFolderId || 'root', name: 'Murabbi Desk' }]);
@@ -474,9 +470,8 @@ export default function DrivePage() {
           }}
           className={clsx(
             "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-            isRootActive ? "text-white" : "text-[var(--text-muted)] border border-white/10"
+            isRootActive ? "text-black bg-[var(--accent-main)]" : "text-slate-700 border border-slate-300 bg-white"
           )}
-          style={isRootActive ? { background: 'var(--accent-main)' } : {}}
         >
           <HardDrive size={11} />
           Murabbi Desk
@@ -495,9 +490,8 @@ export default function DrivePage() {
               }}
               className={clsx(
                 "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                active ? "text-white" : "text-[var(--text-muted)] border border-white/10"
+                active ? "text-black bg-[var(--accent-main)]" : "text-slate-700 border border-slate-300 bg-white"
               )}
-              style={active ? { background: 'var(--accent-main)' } : {}}
             >
               <Folder size={11} />
               {sub.name}
@@ -506,31 +500,31 @@ export default function DrivePage() {
         })}
       </div>
 
-      {/* ── Panel 2: File List (Harmonized with Mail Panel 2) ── */}
+      {/* ── Panel 2: File List ── */}
       <div className={clsx(
-        "flex flex-col border-b lg:border-b-0 lg:border-r border-white/5 bg-transparent overflow-hidden",
+        "flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200/80 bg-slate-50/50 overflow-hidden",
         selectedFile
           ? "hidden lg:flex lg:w-[340px] xl:w-[380px] lg:shrink-0 lg:h-full"
           : "flex w-full lg:w-[340px] xl:w-[380px] lg:flex-none lg:shrink-0 lg:h-full"
       )}>
         {/* List Header */}
-        <div className="shrink-0 px-4 lg:px-5 pt-4 lg:pt-8 pb-4 border-b border-white/5">
-          <h1 className="text-2xl lg:text-4xl font-black tracking-tighter text-white uppercase mb-3 truncate leading-none">
+        <div className="shrink-0 px-4 lg:px-5 pt-4 lg:pt-8 pb-4 border-b border-slate-200/80">
+          <h1 className="text-2xl lg:text-4xl font-black tracking-tighter text-black uppercase mb-3 truncate leading-none">
             {currentFolder.name}
           </h1>
           <div className="flex items-center justify-between mb-3">
             <div className="min-w-0 pr-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)] truncate opacity-60">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 truncate">
                 {userEmail || 'Murabbi Desk'}
               </p>
-              <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-dim)]">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-700">
                 {filteredFiles.length} {filteredFiles.length === 1 ? 'item' : 'items'}
                 {selectedFilter !== 'all' && ` • ${selectedFilter}`}
               </p>
             </div>
             <button
               onClick={() => fetchFiles(currentFolder.id)}
-              className="p-2 rounded-xl hover:bg-black/10 transition-all text-[var(--text-dim)] hover:text-[var(--foreground)]"
+              className="p-2 rounded-xl hover:bg-slate-200 text-slate-600 hover:text-black transition-all"
               title="Refresh"
             >
               <SyncIcon size={15} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
@@ -538,18 +532,18 @@ export default function DrivePage() {
           </div>
 
           {/* Search */}
-          <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-3 py-2">
-            <Search size={13} className="text-[var(--text-dim)] shrink-0" />
+          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-3 py-2 shadow-sm">
+            <Search size={13} className="text-slate-500 shrink-0" />
             <input
               type="text"
               placeholder="Search in folder..."
               value={query}
               onChange={e => setQuery(e.target.value)}
-              className="flex-1 bg-transparent text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none"
+              className="flex-1 bg-transparent text-xs text-black placeholder-slate-400 outline-none font-medium"
             />
             {query && (
               <button onClick={() => setQuery('')}>
-                <X size={12} className="text-[var(--text-dim)] hover:text-white" />
+                <X size={12} className="text-slate-400 hover:text-black" />
               </button>
             )}
           </div>
@@ -557,24 +551,24 @@ export default function DrivePage() {
 
         {/* Breadcrumb Path Strip (when navigated into subfolders) */}
         {folderStack.length > 1 && (
-          <div className="px-4 py-2 bg-white/[0.02] border-b border-white/5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] font-bold uppercase tracking-wider text-[var(--text-dim)]">
+          <div className="px-4 py-2 bg-slate-100/80 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px] font-bold uppercase tracking-wider text-slate-600">
             <button
               onClick={handleNavigateUp}
-              className="flex items-center gap-1 hover:text-white transition-colors mr-1"
+              className="flex items-center gap-1 hover:text-black transition-colors mr-1"
               title="Go up one level"
             >
               <ChevronLeft size={12} />
               <span>Up</span>
             </button>
-            <span className="opacity-30">|</span>
+            <span className="opacity-40">|</span>
             {folderStack.map((folder, index) => (
               <React.Fragment key={folder.id}>
                 {index > 0 && <ChevronRight size={10} className="shrink-0 opacity-40" />}
                 <button
                   onClick={() => handleNavigateToPath(index)}
                   className={clsx(
-                    "hover:text-white transition-colors whitespace-nowrap px-1",
-                    index === folderStack.length - 1 ? "text-[var(--accent-main)] font-black" : "opacity-70"
+                    "hover:text-black transition-colors whitespace-nowrap px-1",
+                    index === folderStack.length - 1 ? "text-[var(--accent-main)] font-black" : "text-slate-700"
                   )}
                 >
                   {folder.name}
@@ -587,18 +581,18 @@ export default function DrivePage() {
         {/* File List Items */}
         <div className="flex-1 overflow-y-auto custom-scrollbar relative">
           {syncStatus === 'syncing' && files.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-[var(--text-dim)] p-8">
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-600 p-8">
               <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Loading files...</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-700">Loading files...</p>
             </div>
           )}
 
           {!isConnected && (
             <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-soft)' }}>
-                <HardDrive size={24} style={{ color: 'var(--accent-main)' }} />
+              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-emerald-500/10">
+                <HardDrive size={24} className="text-[var(--accent-main)]" />
               </div>
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)]">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-700">
                 Sign in with Google to view files
               </p>
             </div>
@@ -606,13 +600,13 @@ export default function DrivePage() {
 
           {isConnected && filteredFiles.length === 0 && syncStatus !== 'syncing' && (
             <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
-              <HardDrive size={32} className="text-[var(--text-dim)] opacity-30" />
+              <HardDrive size={32} className="text-slate-300" />
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-[var(--text-dim)]">
+                <p className="text-xs font-black uppercase tracking-widest text-black">
                   {query ? 'No matching files found' : folderStack.length === 1 ? 'Murabbi Desk is empty' : 'Folder is empty'}
                 </p>
                 {!query && (
-                  <p className="text-[10px] text-white/30 font-medium max-w-xs mx-auto mt-1">
+                  <p className="text-[10px] text-slate-600 font-medium max-w-xs mx-auto mt-1">
                     Files created or uploaded to Murabbi Desk appear here.
                   </p>
                 )}
@@ -629,22 +623,21 @@ export default function DrivePage() {
                 key={file.id}
                 onClick={() => handleFileClick(file)}
                 className={clsx(
-                  "w-full flex items-start gap-3 px-4 py-3 border-b border-white/5 text-left transition-all group",
+                  "w-full flex items-start gap-3 px-4 py-3 border-b border-slate-200/60 text-left transition-all group",
                   isSelected
-                    ? "bg-black/40 border-l-2 border-l-[var(--accent-main)]"
-                    : "hover:bg-black/10 border-l-2 border-l-transparent"
+                    ? "bg-slate-200/60 border-l-2 border-l-[var(--accent-main)]"
+                    : "hover:bg-slate-100/80 border-l-2 border-l-transparent"
                 )}
-                style={isSelected ? { background: 'rgba(0, 0, 0, 0.4)' } : {}}
               >
                 <div className="shrink-0 mt-0.5 relative">
                   {file.thumbnailLink ? (
-                    <div className="w-8 h-8 rounded-lg border border-white/10 overflow-hidden bg-white/5">
+                    <div className="w-8 h-8 rounded-lg border border-slate-300 overflow-hidden bg-white">
                       <img src={file.thumbnailLink} alt="" className="w-full h-full object-cover" />
                     </div>
                   ) : (
                     <div className={clsx(
                       "w-8 h-8 rounded-lg flex items-center justify-center",
-                      isFolder ? "bg-blue-500/10 text-blue-400" : "bg-white/5 text-white/60"
+                      isFolder ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-700"
                     )}>
                       {getFileIcon(file.mimeType)}
                     </div>
@@ -654,20 +647,20 @@ export default function DrivePage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
                     <p className={clsx(
-                      "text-xs truncate transition-colors",
-                      isSelected ? "font-black text-[var(--accent-main)]" : "font-bold text-white/90 group-hover:text-white"
+                      "text-xs truncate transition-colors font-black text-black group-hover:text-black",
+                      isSelected && "text-[var(--accent-main)]"
                     )}>
                       {file.name}
                     </p>
                     {file.modifiedTime && (
-                      <span className="text-[9px] text-[var(--text-dim)] shrink-0 font-bold">
+                      <span className="text-[9px] text-slate-500 shrink-0 font-bold">
                         {relativeTime(file.modifiedTime)}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[9px] text-[var(--text-dim)]">
+                  <div className="flex items-center gap-2 text-[9px] text-slate-600">
                     {isFolder ? (
-                      <span className="uppercase tracking-wider font-bold text-blue-400/80">Folder</span>
+                      <span className="uppercase tracking-wider font-bold text-blue-600">Folder</span>
                     ) : (
                       <>
                         {file.size && <span>{formatBytes(file.size)}</span>}
@@ -679,7 +672,7 @@ export default function DrivePage() {
                 </div>
 
                 {isFolder && (
-                  <ChevronRight size={14} className="text-white/20 group-hover:text-white/60 shrink-0 self-center transition-colors" />
+                  <ChevronRight size={14} className="text-slate-400 group-hover:text-black shrink-0 self-center transition-colors" />
                 )}
               </button>
             );
@@ -687,24 +680,24 @@ export default function DrivePage() {
         </div>
       </div>
 
-      {/* ── Panel 3: File Viewer Main Area (Harmonized with Mail Panel 3) ── */}
+      {/* ── Panel 3: File Viewer Main Area ── */}
       <div className={clsx(
-        "flex-1 flex flex-col h-full bg-black/10 relative overflow-hidden",
+        "flex-1 flex flex-col h-full bg-slate-100/40 relative overflow-hidden",
         !selectedFile ? "hidden lg:flex" : "flex"
       )}>
         {selectedFile ? (
           <div className="flex flex-col h-full w-full">
-            <div className="shrink-0 p-4 border-b border-white/5 glass flex justify-between items-center z-10">
+            <div className="shrink-0 p-4 border-b border-slate-200/80 bg-white/80 backdrop-blur-md flex justify-between items-center z-10">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   onClick={() => setSelectedFile(null)}
-                  className="lg:hidden p-2 rounded-xl hover:bg-white/5 text-white/50 hover:text-white transition-all mr-1"
+                  className="lg:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 hover:text-black transition-all mr-1"
                   title="Back to file list"
                 >
                   <ArrowLeft size={16} />
                 </button>
                 {getFileIcon(selectedFile.mimeType)}
-                <h2 className="text-sm font-bold text-white truncate pr-4">{selectedFile.name}</h2>
+                <h2 className="text-sm font-bold text-black truncate pr-4">{selectedFile.name}</h2>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {selectedFile.webViewLink && (
@@ -712,7 +705,7 @@ export default function DrivePage() {
                     href={selectedFile.webViewLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-xs font-bold uppercase tracking-wider text-white"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 transition-colors text-xs font-bold uppercase tracking-wider text-black border border-slate-200 shadow-sm"
                   >
                     <ExternalLink size={14} />
                     Open in Drive
@@ -721,7 +714,7 @@ export default function DrivePage() {
               </div>
             </div>
 
-            <div className="flex-1 relative bg-black/40">
+            <div className="flex-1 relative bg-white">
               {/* Google Drive Preview iframe */}
               <iframe
                 src={`https://drive.google.com/file/d/${selectedFile.id}/preview`}
@@ -733,14 +726,14 @@ export default function DrivePage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center gap-4 animate-in fade-in zoom-in-95 duration-500 p-8">
-            <div className="w-20 h-20 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/20 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
               <HardDrive size={32} className="text-[var(--accent-main)]" />
             </div>
             <div>
-              <h2 className="text-xl font-black italic tracking-tight text-white/80 uppercase">
+              <h2 className="text-xl font-black italic tracking-tight text-black uppercase">
                 Murabbi Desk Drive
               </h2>
-              <p className="text-xs text-white/40 mt-2 max-w-sm font-medium">
+              <p className="text-xs text-slate-600 mt-2 max-w-sm font-medium">
                 Select a file from the sidebar to preview its contents, or navigate through your Murabbi Desk folders.
               </p>
             </div>
@@ -749,7 +742,7 @@ export default function DrivePage() {
                 href={currentFolderDriveLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 text-xs font-bold transition-all uppercase tracking-wider"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-black border border-slate-200 shadow-sm text-xs font-bold transition-all uppercase tracking-wider"
               >
                 <ExternalLink size={14} />
                 Open in Google Drive

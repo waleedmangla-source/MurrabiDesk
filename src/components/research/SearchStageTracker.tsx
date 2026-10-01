@@ -45,11 +45,11 @@ const STAGES: SearchStage[] = [
   },
   {
     id: 'khazain',
-    name: 'Ruhani Khazain, Malfuzat & Tazkirah',
-    badge: '23 Vols RK, 10 Vols Malfuzat & Revelations',
-    description: 'Indexing written treatises, spoken sittings & divine communications',
-    activeText: 'Scanning 23 volumes of Ruhani Khazain, 10 volumes of Malfuzat & Tazkirah...',
-    doneText: 'Treatises, discourses & revelations matched',
+    name: 'Ruhani Khazain, Malfuzat, Tadhkirah & Essence of Islam',
+    badge: '23 Vols RK, 10 Vols Malfuzat, Tadhkirah & 5 Vols Essence',
+    description: 'Indexing written treatises, spoken discourses, divine revelations & thematic extracts',
+    activeText: 'Scanning 23 volumes of Ruhani Khazain, Malfuzat, Tadhkirah & Essence of Islam...',
+    doneText: 'Treatises, discourses, revelations & thematic extracts matched',
     icon: Layers
   },
   {
