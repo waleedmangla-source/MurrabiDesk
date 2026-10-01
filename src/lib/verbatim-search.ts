@@ -1,5 +1,21 @@
 // Verbatim Search & Phonetic / Translation Resolver for Murabbi Desk
-import { normalizeKhazainText } from './khazain-data';
+
+/**
+ * Normalizes Arabic/Urdu text for exact string comparison
+ */
+export function normalizeKhazainText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+    .replace(/\u0640/g, '')
+    .replace(/[آأإٱ]/g, 'ا')
+    .replace(/[ك]/g, 'ک')
+    .replace(/[يىئ]/g, 'ی')
+    .replace(/[ةه]/g, 'ہ')
+    .replace(/[\u200C\u200D]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
 export interface VerbatimEquivalents {
   original: string;
@@ -290,7 +306,12 @@ export function resolveVerbatimEquivalents(query: string): VerbatimEquivalents {
       const cleanNormKhazain = normalizeKhazainText(original);
       for (const urdu of entry.urdu) {
         const cleanUrdu = normalizeKhazainText(urdu);
-        if (cleanNormKhazain === cleanUrdu || cleanNormKhazain.includes(cleanUrdu) || cleanUrdu.includes(cleanNormKhazain)) {
+        if (cleanNormKhazain === cleanUrdu) {
+          matched = true;
+          break;
+        }
+        // Multi-word phrase check
+        if (cleanUrdu.includes(' ') && (cleanNormKhazain.includes(cleanUrdu) || cleanUrdu.includes(cleanNormKhazain))) {
           matched = true;
           break;
         }
@@ -298,7 +319,11 @@ export function resolveVerbatimEquivalents(query: string): VerbatimEquivalents {
       if (!matched) {
         for (const ar of entry.arabic) {
           const cleanAr = normalizeKhazainText(ar);
-          if (cleanNormKhazain === cleanAr || cleanNormKhazain.includes(cleanAr) || cleanAr.includes(cleanNormKhazain)) {
+          if (cleanNormKhazain === cleanAr) {
+            matched = true;
+            break;
+          }
+          if (cleanAr.includes(' ') && (cleanNormKhazain.includes(cleanAr) || cleanAr.includes(cleanNormKhazain))) {
             matched = true;
             break;
           }
@@ -308,7 +333,11 @@ export function resolveVerbatimEquivalents(query: string): VerbatimEquivalents {
       // 2. Check English and Phonetic matches
       for (const en of entry.english) {
         const normEn = normalizeForExactSearch(en);
-        if (normQuery === normEn || normQuery.includes(normEn) || normEn.includes(normQuery)) {
+        if (normQuery === normEn) {
+          matched = true;
+          break;
+        }
+        if (normEn.includes(' ') && normQuery.includes(' ') && (normQuery.includes(normEn) || normEn.includes(normQuery))) {
           matched = true;
           break;
         }
@@ -316,17 +345,14 @@ export function resolveVerbatimEquivalents(query: string): VerbatimEquivalents {
       if (!matched) {
         for (const ph of entry.phonetic) {
           const normPh = normalizeForExactSearch(ph);
-          if (normQuery === normPh || normQuery.includes(normPh) || normPh.includes(normQuery)) {
+          if (normQuery === normPh) {
             matched = true;
             break;
           }
-        }
-      }
-      if (!matched && queryTokens.length > 1) {
-        // Multi-token intersection check
-        const allEnPh = [...entry.english, ...entry.phonetic].map(normalizeForExactSearch);
-        if (queryTokens.every(token => allEnPh.some(term => term.includes(token)))) {
-          matched = true;
+          if (normPh.includes(' ') && normQuery.includes(' ') && (normQuery.includes(normPh) || normPh.includes(normQuery))) {
+            matched = true;
+            break;
+          }
         }
       }
     }
