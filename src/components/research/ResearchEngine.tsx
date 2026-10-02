@@ -783,7 +783,7 @@ export default function ResearchEngine() {
   // MURABBI DESK UI: RESULTS STATE (Google Structure + Murabbi OS Aesthetics)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="w-full flex flex-col min-h-full pb-24">
+    <div className="w-full flex flex-col h-screen overflow-hidden">
       {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 py-3 md:py-3.5 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -951,7 +951,7 @@ export default function ResearchEngine() {
       </div>
 
       {/* ── RESULTS BODY (Centered) ──────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1">
+      <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1 overflow-y-auto pb-24 custom-scrollbar">
         {/* Search Statistics & Verbatim Equivalents Bar */}
         {results && !loading && (
           <div className="space-y-3 mb-6 max-w-5xl mx-auto">
@@ -1966,21 +1966,6 @@ export default function ResearchEngine() {
 
                         <div className="flex items-center justify-between pt-1 text-xs">
                           <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: b.url,
-                                title: b.title,
-                                source: 'Al Islam Books',
-                                author: b.author,
-                                summary: b.summary
-                              })}
-                              className="px-3 py-1.5 rounded-[10px] bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/20 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
-                            >
-                              <BookOpen size={13} />
-                              <span>Read in Murabbi Desk</span>
-                            </button>
-
                             <a
                               href={b.url}
                               target="_blank"
@@ -2108,20 +2093,6 @@ export default function ResearchEngine() {
 
                   <div className="flex items-center justify-between pt-1 text-xs">
                     <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setActiveReadingArticle({
-                          url: art.url,
-                          title: art.title,
-                          source: 'Al Islam',
-                          author: art.author,
-                          summary: art.summary
-                        })}
-                        className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
-                      >
-                        <BookOpen size={13} className="text-[var(--accent-main)]" />
-                        <span>Read in Murabbi Desk</span>
-                      </button>
                       {art.author && (
                         <span className="text-xs text-[var(--text-muted)] font-semibold hidden sm:inline">
                           By {art.author}
@@ -2207,20 +2178,6 @@ export default function ResearchEngine() {
 
                           <div className="flex items-center justify-between pt-1 text-xs">
                             <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                onClick={() => setActiveReadingArticle({
-                                  url: pub.url,
-                                  title: pub.title,
-                                  source: pub.source,
-                                  author: pub.author,
-                                  summary: pub.summary
-                                })}
-                                className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors text-xs active:scale-95"
-                              >
-                                <BookOpen size={13} className="text-[var(--accent-main)]" />
-                                <span>Read in Murabbi Desk</span>
-                              </button>
                               {pub.author && (
                                 <span className="text-xs text-[var(--text-muted)] font-semibold hidden sm:inline">
                                   By {pub.author}
