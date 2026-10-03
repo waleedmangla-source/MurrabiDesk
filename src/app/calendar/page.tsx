@@ -577,7 +577,7 @@ function TimeGrid({ columns, onSlotClick, onNewEvent }: {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Day headers */}
-      <div className={`grid border-b border-white/5`} style={{ gridTemplateColumns: `56px repeat(${columns.length}, 1fr)` }}>
+      <div className="grid border-b border-white/5 overflow-y-scroll no-scrollbar" style={{ gridTemplateColumns: `56px repeat(${columns.length}, 1fr)` }}>
         <div className="h-14" />
         {columns.map(col => {
           const isToday = sameDay(col.date, today);
@@ -598,13 +598,13 @@ function TimeGrid({ columns, onSlotClick, onNewEvent }: {
       </div>
 
       {/* Scrollable grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-scroll custom-scrollbar">
         <div className="relative" style={{ gridTemplateColumns: `56px repeat(${columns.length}, 1fr)`, display: "grid" }}>
           {/* Hours column */}
           <div className="relative">
             {HOURS.map(h => (
               <div key={h} className="h-16 flex items-start justify-end pr-3 pt-0">
-                <span className="text-[9px] font-bold text-[var(--text-dim)] -translate-y-2">{h > 0 ? formatHour(h) : ""}</span>
+                <span className="text-[9px] font-bold text-[var(--text-dim)] -translate-y-1/2">{h > 0 ? formatHour(h) : ""}</span>
               </div>
             ))}
           </div>
@@ -616,7 +616,10 @@ function TimeGrid({ columns, onSlotClick, onNewEvent }: {
             return (
               <div
                 key={col.date.toISOString()}
-                className="relative border-l border-white/5"
+                className={clsx(
+                  "relative border-l border-white/5",
+                  isToday && "bg-[var(--accent-main)]/[0.04]"
+                )}
                 style={{ height: `${HOURS.length * 64}px` }}
               >
                 {/* Hour lines */}
