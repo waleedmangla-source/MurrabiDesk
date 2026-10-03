@@ -73,20 +73,35 @@ export const allNavLinks = [...dailyNavLinks, ...researchNavLinks];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const [isInitialAppLoading, setIsInitialAppLoading] = useState(true);
+  const [isInitialAppLoading, setIsInitialAppLoading] = useState(false);
   const [isLoadingFadeOut, setIsLoadingFadeOut] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    const progressTimer = setTimeout(() => setLoadingProgress(100), 50);
-    const fadeTimer = setTimeout(() => setIsLoadingFadeOut(true), 3000);
-    const removeTimer = setTimeout(() => setIsInitialAppLoading(false), 4500);
-    return () => {
-      clearTimeout(progressTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(removeTimer);
-    };
+    // Only show "Initializing System" on first time opening the app or on full page refresh.
+    // Do NOT show when opening new tabs in an active browser session.
+    try {
+      const navEntry = performance.getEntriesByType?.('navigation')?.[0] as PerformanceNavigationTiming | undefined;
+      const isReload = navEntry ? navEntry.type === 'reload' : (performance as any)?.navigation?.type === 1;
+      const hasInitialized = sessionStorage.getItem('murabbi_system_initialized');
+
+      // If it's a reload OR if this session has never been initialized, show the splash
+      if (isReload || !hasInitialized) {
+        sessionStorage.setItem('murabbi_system_initialized', 'true');
+        setIsInitialAppLoading(true);
+        const progressTimer = setTimeout(() => setLoadingProgress(100), 50);
+        const fadeTimer = setTimeout(() => setIsLoadingFadeOut(true), 3000);
+        const removeTimer = setTimeout(() => setIsInitialAppLoading(false), 4500);
+        return () => {
+          clearTimeout(progressTimer);
+          clearTimeout(fadeTimer);
+          clearTimeout(removeTimer);
+        };
+      }
+    } catch {
+      // Safe fallback if sessionStorage / performance is unavailable
+    }
   }, []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScreensaverActive, setIsScreensaverActive] = useState(false);
