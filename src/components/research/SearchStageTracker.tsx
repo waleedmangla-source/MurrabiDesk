@@ -170,30 +170,6 @@ export default function SearchStageTracker({ query, active, searchMode }: Search
             <span>{elapsedSec.toFixed(1)}s</span>
           </div>
         </div>
-
-        {/* Subtle, clean source pills with no checkmarks or spinners */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
-          {STAGES.map((stage, idx) => {
-            const isDone = currentStep > idx || !active;
-            const isCurrent = currentStep === idx && active;
-
-            return (
-              <span
-                key={stage.id}
-                className={clsx(
-                  "text-[11px] px-2.5 py-1 rounded-lg border transition-all duration-200 font-medium",
-                  isCurrent
-                    ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 font-semibold"
-                    : isDone
-                    ? "bg-white/[0.03] border-white/10 text-[var(--foreground)]/70"
-                    : "bg-transparent border-transparent text-[var(--text-muted)]/40"
-                )}
-              >
-                {stage.name.split(',')[0].replace("The ", "")}
-              </span>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
