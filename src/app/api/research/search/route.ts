@@ -100,6 +100,9 @@ export async function POST(req: NextRequest) {
     const rawQuery = String(body.query || '').trim();
     const searchMode: 'contextual' | 'verbatim' = body.searchMode === 'verbatim' ? 'verbatim' : 'contextual';
     const verbatimEquivs = resolveVerbatimEquivalents(rawQuery);
+    const yearFrom = typeof body.yearFrom === 'number' ? body.yearFrom : null;
+    const yearTo = typeof body.yearTo === 'number' ? body.yearTo : null;
+    const filterLanguage: 'all' | 'en' | 'ar' | 'ur' = ['en', 'ar', 'ur'].includes(body.language) ? body.language : 'all';
 
     if (!rawQuery) {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
@@ -194,9 +197,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const requestedSources: string[] = Array.isArray(body.sources) && body.sources.length > 0 
-      ? body.sources 
-      : ['ruhani-khazain', 'quran', 'ahadith', 'alislam', 'periodicals'];
+    // Check if client provided custom sources filter. If not provided or empty, all sources are enabled.
+    const customSources: string[] = Array.isArray(body.sources) && body.sources.length > 0 ? body.sources : [];
+    const isSourceEnabled = (src: string) => customSources.length === 0 || customSources.includes(src);
 
     // ─────────────────────────────────────────────────────────────────────────
     // Phase 1: Theological Lesk Context Disambiguation
@@ -323,7 +326,7 @@ export async function POST(req: NextRequest) {
     // Multi-Source Parallel Execution
     // ─────────────────────────────────────────────────────────────────────────
     const ruhaniKhazainPromise: Promise<RuhaniKhazainSearchResult[]> = (async () => {
-      if (!requestedSources.includes('ruhani-khazain')) return [];
+      if (!isSourceEnabled('ruhani-khazain')) return [];
       const matches: RuhaniKhazainSearchResult[] = [];
 
       // ── Verbatim Mode: Exact string & translation/phonetic matching ──
@@ -441,7 +444,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const quranPromise: Promise<any[]> = (async () => {
-      if (!requestedSources.includes('quran')) return [];
+      if (!isSourceEnabled('quran')) return [];
       const results = searchQuranVerses(rawQuery);
       const seenVerses = new Set(results.map(r => `${r.surahNumber}:${r.verseNumber}`));
 
@@ -488,7 +491,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const hadithPromise: Promise<HadithResult[]> = (async () => {
-      if (!requestedSources.includes('ahadith')) return [];
+      if (!isSourceEnabled('ahadith')) return [];
       try {
         const results = await searchSunnahHadith(rawQuery);
         if (searchMode === 'verbatim') {
@@ -529,7 +532,7 @@ export async function POST(req: NextRequest) {
     let totalPagesAlIslam = 0;
 
     const alislamPromise: Promise<AlIslamArticleResult[]> = (async () => {
-      if (!requestedSources.includes('alislam')) return [];
+      if (!isSourceEnabled('alislam') && !isSourceEnabled('periodicals')) return [];
       const localResults = searchAlIslamResources(rawQuery);
       if (localResults.length === 0 && dsgtContext.winningSense) {
         const extra = searchAlIslamResources(dsgtContext.winningSense.primaryConcept);
@@ -566,7 +569,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const periodicalsPromise: Promise<PublicationResult[]> = (async () => {
-      if (!requestedSources.includes('periodicals')) return [];
+      if (!isSourceEnabled('periodicals')) return [];
       const localResults = searchPeriodicals(rawQuery);
       if (localResults.length === 0 && dsgtContext.winningSense) {
         const extra = searchPeriodicals(dsgtContext.winningSense.primaryConcept);
@@ -650,6 +653,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const askIslamPromise: Promise<AudioResult[]> = (async () => {
+      if (!isSourceEnabled('audios')) return [];
       try {
         return searchAskIslamAudios(rawQuery);
       } catch (e) {
@@ -659,6 +663,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const videosPromise: Promise<VideoResult[]> = (async () => {
+      if (!isSourceEnabled('videos')) return [];
       try {
         const results = await searchMediaVideos(rawQuery);
         if (searchMode === 'verbatim') {
@@ -689,6 +694,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const booksPromise: Promise<BookItem[]> = (async () => {
+      if (!isSourceEnabled('books') && !isSourceEnabled('literature')) return [];
       try {
         const localBooks = searchAhmadiyyaBooks(rawQuery);
         if (searchMode === 'verbatim') {
@@ -715,6 +721,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const malfuzatPromise: Promise<MalfuzatResult[]> = (async () => {
+      if (!isSourceEnabled('malfuzat') && !isSourceEnabled('literature')) return [];
       try {
         const results = searchUnifiedMalfuzat(rawQuery);
         if (searchMode === 'verbatim') {
@@ -739,6 +746,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const tazkirahPromise: Promise<TazkirahResult[]> = (async () => {
+      if (!isSourceEnabled('tazkirah') && !isSourceEnabled('literature')) return [];
       try {
         const results = searchUnifiedTazkirah(rawQuery);
         if (searchMode === 'verbatim') {
@@ -762,6 +770,7 @@ export async function POST(req: NextRequest) {
     })();
 
     const essencePromise: Promise<EssenceResult[]> = (async () => {
+      if (!isSourceEnabled('essence') && !isSourceEnabled('literature')) return [];
       try {
         const results = searchEssenceFullText(rawQuery);
         if (searchMode === 'verbatim') {
@@ -837,6 +846,52 @@ export async function POST(req: NextRequest) {
       ...videoResults.map(v => ({ mediaType: 'video' as const, ...v }))
     ];
 
+    // ── Apply Year Range Filtering ──
+    const filterYear = (dateStr?: string | number): number | null => {
+      if (!dateStr) return null;
+      if (typeof dateStr === 'number') return dateStr;
+      const match = String(dateStr).match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+      return match ? parseInt(match[1], 10) : null;
+    };
+
+    let filteredPublications = periodicalsResults;
+    let filteredAlIslam = alislamResults;
+    let filteredTazkirah = tazkirahResults;
+    let filteredMalfuzat = malfuzatResults;
+
+    if (yearFrom !== null || yearTo !== null) {
+      const isInYearRange = (year: number | null) => {
+        if (year === null) return true; // Keep if no year information available
+        if (yearFrom !== null && year < yearFrom) return false;
+        if (yearTo !== null && year > yearTo) return false;
+        return true;
+      };
+
+      filteredPublications = periodicalsResults.filter(p => isInYearRange(filterYear(p.date)));
+      filteredAlIslam = alislamResults.filter(a => isInYearRange(filterYear(a.date)));
+      filteredTazkirah = tazkirahResults.filter(t => isInYearRange(t.year || filterYear(t.dateStr)));
+      filteredMalfuzat = malfuzatResults.filter(m => isInYearRange(filterYear(m.dateStr)));
+    }
+
+    // ── Apply Language Filtering ──
+    let filteredQuran = quranResults;
+    let filteredHadith = hadithResults;
+
+    if (filterLanguage === 'en') {
+      // English: require English translation content, keep English literature
+      filteredQuran = quranResults.filter(q => Boolean(q.englishTranslation));
+      filteredHadith = hadithResults.filter(h => Boolean(h.englishTranslation));
+      filteredPublications = filteredPublications.filter(p => p.source === 'Review of Religions' || p.source === 'Al Hakam');
+    } else if (filterLanguage === 'ar') {
+      // Arabic: emphasize Quran and Arabic hadith text, Arabic treatises
+      filteredQuran = quranResults.filter(q => Boolean(q.arabicText));
+      filteredHadith = hadithResults.filter(h => Boolean(h.arabicText));
+    } else if (filterLanguage === 'ur') {
+      // Urdu: emphasize Urdu translations and Urdu publications
+      filteredQuran = quranResults.filter(q => Boolean(q.urduTranslation));
+      filteredPublications = filteredPublications.filter(p => p.source === 'Al Fazl');
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Phase 5: Consensus Triangulation Matrix & Evidence Verifier
     // ─────────────────────────────────────────────────────────────────────────
@@ -852,13 +907,13 @@ export async function POST(req: NextRequest) {
     const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlFazlHits || 0) + (totalAlIslamHits || 0);
     const totalResults =
       rkResults.length +
-      quranResults.length +
-      hadithResults.length +
+      filteredQuran.length +
+      filteredHadith.length +
       mergedBooks.length +
-      malfuzatResults.length +
-      tazkirahResults.length +
+      filteredMalfuzat.length +
+      filteredTazkirah.length +
       essenceResults.length +
-      Math.max(alislamResults.length + periodicalsResults.length, totalArticleHits) +
+      Math.max(filteredAlIslam.length + filteredPublications.length, totalArticleHits) +
       media.length;
 
     const payload: MultiSourceSearchResult = {
@@ -867,18 +922,18 @@ export async function POST(req: NextRequest) {
       searchMode,
       verbatimEquivalents: searchMode === 'verbatim' ? verbatimEquivs : undefined,
       ruhaniKhazain: rkResults,
-      quranVerses: quranResults,
-      ahadith: hadithResults,
+      quranVerses: filteredQuran,
+      ahadith: filteredHadith,
       books: mergedBooks,
-      malfuzat: malfuzatResults,
-      tazkirah: tazkirahResults,
+      malfuzat: filteredMalfuzat,
+      tazkirah: filteredTazkirah,
       essenceOfIslam: essenceResults,
-      totalMalfuzatHits: malfuzatResults.length,
-      totalTazkirahHits: tazkirahResults.length,
+      totalMalfuzatHits: filteredMalfuzat.length,
+      totalTazkirahHits: filteredTazkirah.length,
       totalEssenceHits: essenceResults.length,
       totalBookHits: mergedBooks.length,
-      alislamArticles: alislamResults,
-      publications: periodicalsResults,
+      alislamArticles: filteredAlIslam,
+      publications: filteredPublications,
       audios: askIslamResults,
       videos: videoResults,
       media,

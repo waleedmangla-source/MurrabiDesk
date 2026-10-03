@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ArrowRight,
   Filter,
+  SlidersHorizontal,
   ShieldCheck,
   Volume2,
   BookmarkCheck,
@@ -50,7 +51,9 @@ import {
   MalfuzatResult,
   TazkirahResult,
   EssenceResult,
-  SearchMode
+  SearchMode,
+  SearchFilters,
+  SearchLanguage
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
@@ -58,6 +61,7 @@ import MalfuzatPdfModal from './MalfuzatPdfModal';
 import TadhkirahPdfModal from './TadhkirahPdfModal';
 import EssencePdfModal from './EssencePdfModal';
 import SearchStageTracker from './SearchStageTracker';
+import SearchFiltersPopup from './SearchFiltersPopup';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
 import MurabbiLogoAI from '@/components/MurabbiLogoAI';
 
@@ -82,7 +86,22 @@ export default function ResearchEngine() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
-  const [searchMode, setSearchMode] = useState<SearchMode>('contextual');
+  const [filters, setFilters] = useState<SearchFilters>({
+    verbatim: false,
+    yearFrom: null,
+    yearTo: null,
+    sources: [],
+    language: 'all'
+  });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const searchMode: SearchMode = filters.verbatim ? 'verbatim' : 'contextual';
+  const setSearchMode = (val: SearchMode | ((prev: SearchMode) => SearchMode)) => {
+    setFilters(prev => {
+      const currentMode: SearchMode = prev.verbatim ? 'verbatim' : 'contextual';
+      const nextMode = typeof val === 'function' ? val(currentMode) : val;
+      return { ...prev, verbatim: nextMode === 'verbatim' };
+    });
+  };
   const [activeFilter, setActiveFilter] = useState<ActiveSourceFilter>('all');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<MultiSourceSearchResult | null>(null);
@@ -236,10 +255,15 @@ export default function ResearchEngine() {
     }
   };
 
-  const performSearch = async (searchQuery?: string, overrideMode?: SearchMode) => {
+  const performSearch = async (
+    searchQuery?: string,
+    overrideMode?: SearchMode,
+    overrideFilters?: SearchFilters
+  ) => {
     const targetQuery = (searchQuery ?? query).trim();
     if (!targetQuery) return;
-    const mode = overrideMode ?? searchMode;
+    const activeFilters = overrideFilters ?? filters;
+    const mode = overrideMode ?? (activeFilters.verbatim ? 'verbatim' : 'contextual');
 
     setLoading(true);
     setError(null);
@@ -251,7 +275,14 @@ export default function ResearchEngine() {
       const res = await fetch('/api/research/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: targetQuery, searchMode: mode })
+        body: JSON.stringify({
+          query: targetQuery,
+          searchMode: mode,
+          yearFrom: activeFilters.yearFrom,
+          yearTo: activeFilters.yearTo,
+          sources: activeFilters.sources,
+          language: activeFilters.language
+        })
       });
 
       const data = await res.json();
@@ -597,7 +628,11 @@ export default function ResearchEngine() {
           body: JSON.stringify({
             query: submittedQuery,
             articlePage: newPage - 1,
-            searchMode
+            searchMode,
+            yearFrom: filters.yearFrom,
+            yearTo: filters.yearTo,
+            sources: filters.sources,
+            language: filters.language
           })
         });
         const data = await res.json();
@@ -853,43 +888,39 @@ export default function ResearchEngine() {
                   </button>
                 </div>
 
-                {/* Sticky Header Small Verbatim On/Off Toggle Switch */}
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={searchMode === 'verbatim'}
-                  onClick={() => {
-                    const nextMode = searchMode === 'verbatim' ? 'contextual' : 'verbatim';
-                    setSearchMode(nextMode);
-                    if (submittedQuery) performSearch(submittedQuery, nextMode);
-                  }}
-                  className={clsx(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shrink-0 shadow-sm active:scale-95",
-                    searchMode === 'verbatim'
-                      ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]/30"
-                      : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)]"
-                  )}
-                  title={searchMode === 'verbatim' ? "Verbatim search is ON (click to switch to contextual search)" : "Turn ON Verbatim search (exact words + Arabic/Urdu equivalents)"}
-                >
-                  <span className={clsx("text-[11px] tracking-tight transition-colors", searchMode === 'verbatim' ? "font-black text-[var(--accent-main)]" : "font-bold")}>
-                    Verbatim
-                  </span>
-                  <div
+                {/* Sticky Header Filters Button (Opens settings & filters popup) */}
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(prev => !prev)}
                     className={clsx(
-                      "w-7 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center relative border",
-                      searchMode === 'verbatim'
-                        ? "bg-[var(--accent-main)] border-[var(--accent-main)]"
-                        : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 group-hover:border-slate-400"
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-200 select-none group cursor-pointer shadow-sm active:scale-95",
+                      filtersOpen || filters.verbatim || filters.yearFrom !== null || filters.yearTo !== null || filters.sources.length > 0 || filters.language !== 'all'
+                        ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] ring-1 ring-[var(--accent-main)]/30 font-bold"
+                        : "bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-[var(--accent-main)]/50 hover:text-[var(--accent-main)] font-semibold"
                     )}
+                    title="Open Search Settings & Filters"
                   >
-                    <div
-                      className={clsx(
-                        "w-3 h-3 rounded-full shadow-sm transition-transform duration-200 ease-out bg-white",
-                        searchMode === 'verbatim' ? "translate-x-3" : "translate-x-0"
-                      )}
-                    />
-                  </div>
-                </button>
+                    <SlidersHorizontal size={14} className={clsx("transition-transform", filtersOpen && "rotate-90")} />
+                    <span className="text-[11px] tracking-tight">Filters</span>
+                    {(filters.verbatim || filters.yearFrom !== null || filters.yearTo !== null || filters.sources.length > 0 || filters.language !== 'all') && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-main)] animate-pulse" />
+                    )}
+                  </button>
+
+                  {/* Settings & Filters Popup */}
+                  <SearchFiltersPopup
+                    filters={filters}
+                    isOpen={filtersOpen}
+                    onClose={() => setFiltersOpen(false)}
+                    onChange={(next) => setFilters(next)}
+                    onApply={() => {
+                      if (submittedQuery) {
+                        performSearch(submittedQuery, undefined, filters);
+                      }
+                    }}
+                  />
+                </div>
 
                 {/* Magnifying Glass Search Button */}
                 <button
@@ -963,6 +994,21 @@ export default function ResearchEngine() {
                 {results.searchMode === 'verbatim' && (
                   <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 text-[var(--accent-main)] text-[10px] font-black tracking-wide">
                     🔤 Verbatim Mode Active
+                  </span>
+                )}
+                {(filters.yearFrom !== null || filters.yearTo !== null) && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[var(--foreground)] text-[10px] font-bold">
+                    📅 {filters.yearFrom ?? 'Start'} – {filters.yearTo ?? 'Present'}
+                  </span>
+                )}
+                {filters.language !== 'all' && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[var(--foreground)] text-[10px] font-bold uppercase">
+                    🌐 {filters.language}
+                  </span>
+                )}
+                {filters.sources.length > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[var(--foreground)] text-[10px] font-bold">
+                    📚 {filters.sources.length} sources filtered
                   </span>
                 )}
               </div>

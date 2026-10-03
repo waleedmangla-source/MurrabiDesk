@@ -129,6 +129,16 @@ import type { EssenceResult } from './essence-data';
 import type { VerbatimEquivalents } from './verbatim-search';
 
 export type SearchMode = 'contextual' | 'verbatim';
+export type SearchLanguage = 'all' | 'en' | 'ar' | 'ur';
+
+export interface SearchFilters {
+  verbatim: boolean;
+  yearFrom: number | null;
+  yearTo: number | null;
+  sources: string[]; // empty = all sources
+  language: SearchLanguage;
+}
+
 export type { MalfuzatResult, TazkirahResult, EssenceResult, VerbatimEquivalents };
 
 export interface MultiSourceSearchResult {
