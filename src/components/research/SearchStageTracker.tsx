@@ -137,147 +137,60 @@ export default function SearchStageTracker({ query, active, searchMode }: Search
     ? Math.min(95, Math.max(10, Math.round(((currentStep + 1) / STAGES.length) * 90)))
     : 100;
 
-  return (
-    <div className="w-full max-w-2xl mx-auto py-8 px-4 animate-in fade-in duration-300">
-      {/* Top Header Card */}
-      <div className="p-5 md:p-6 rounded-2xl glass bg-[#050713]/90 dark:bg-[#020310]/90 border border-white/10 shadow-2xl space-y-5">
-        {/* Header Bar with Live Indicator & Elapsed Time */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-              <Loader2 size={15} className="animate-spin text-emerald-400" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-black tracking-tight text-[var(--foreground)] flex items-center gap-1.5 flex-wrap">
-                <span>Multi-Source Search Engine</span>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-                  Live
-                </span>
-                {searchMode === 'verbatim' && (
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
-                    🔤 Verbatim
-                  </span>
-                )}
-              </h3>
-              <p className="text-xs text-[var(--text-muted)] font-medium truncate max-w-xs md:max-w-md">
-                Searching for <strong className="text-[var(--foreground)]">"{query}"</strong>
-              </p>
-            </div>
-          </div>
+  const activeStage = STAGES[Math.min(currentStep, STAGES.length - 1)];
 
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[var(--text-muted)] font-bold">
-              {elapsedSec.toFixed(1)}s elapsed
-            </span>
-            <span className="text-emerald-400 font-bold hidden sm:inline">
-              Step {Math.min(currentStep + 1, STAGES.length)} of {STAGES.length}
-            </span>
+  return (
+    <div className="w-full max-w-xl mx-auto py-12 px-4 animate-in fade-in duration-300">
+      <div className="p-6 md:p-8 rounded-2xl glass bg-[#050713]/90 dark:bg-[#020310]/90 border border-white/10 shadow-2xl space-y-6 text-center">
+        {/* Simple single pulsing loader & stage title */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <Loader2 size={20} className="animate-spin text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--foreground)]">
+              {activeStage?.name || "Searching sources..."}
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">
+              Searching for <strong className="text-[var(--foreground)]">"{query}"</strong>
+            </p>
           </div>
         </div>
 
-        {/* Linear Progress Bar */}
-        <div className="space-y-1.5">
+        {/* Minimal Progress Bar */}
+        <div className="space-y-2">
           <div className="w-full h-1.5 rounded-full bg-white/5 border border-white/10 overflow-hidden relative">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 rounded-full transition-all duration-300 ease-out shadow-sm shadow-emerald-500/50"
+              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+          <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] font-mono">
+            <span>{activeStage?.activeText || "Scanning libraries..."}</span>
+            <span>{elapsedSec.toFixed(1)}s</span>
+          </div>
         </div>
 
-        {/* ── STAGE-BY-STAGE PIPELINE LIST ── */}
-        <div className="divide-y divide-white/5 pt-1">
+        {/* Subtle, clean source pills with no checkmarks or spinners */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
           {STAGES.map((stage, idx) => {
             const isDone = currentStep > idx || !active;
-            const isActive = currentStep === idx && active;
-            const isPending = currentStep < idx && active;
-            const Icon = stage.icon;
+            const isCurrent = currentStep === idx && active;
 
             return (
-              <div
+              <span
                 key={stage.id}
                 className={clsx(
-                  "py-3 flex items-center justify-between gap-3 transition-all duration-200",
-                  isActive && "bg-white/[0.03] -mx-3 px-3 rounded-xl scale-[1.01]",
-                  isPending && "opacity-40"
+                  "text-[11px] px-2.5 py-1 rounded-lg border transition-all duration-200 font-medium",
+                  isCurrent
+                    ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 font-semibold"
+                    : isDone
+                    ? "bg-white/[0.03] border-white/10 text-[var(--foreground)]/70"
+                    : "bg-transparent border-transparent text-[var(--text-muted)]/40"
                 )}
               >
-                {/* Left: Icon & Name */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={clsx(
-                      "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
-                      isDone
-                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-sm shadow-emerald-500/20"
-                        : isActive
-                        ? "bg-teal-500/20 border-teal-400/50 text-teal-300 shadow-md shadow-teal-500/30"
-                        : "bg-white/5 border-white/10 text-[var(--text-muted)]"
-                    )}
-                  >
-                    {isDone ? (
-                      <Check size={16} className="text-emerald-400 stroke-[3]" />
-                    ) : isActive ? (
-                      <Loader2 size={16} className="animate-spin text-teal-300" />
-                    ) : (
-                      <Icon size={15} />
-                    )}
-                  </div>
-
-                  <div className="truncate">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={clsx(
-                          "text-xs md:text-sm font-bold tracking-tight",
-                          isDone
-                            ? "text-[var(--foreground)]"
-                            : isActive
-                            ? "text-teal-300 font-extrabold"
-                            : "text-[var(--text-muted)]"
-                        )}
-                      >
-                        {stage.name}
-                      </span>
-                      <span className="text-[10px] font-semibold text-[var(--text-muted)] hidden sm:inline px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
-                        {stage.badge}
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-[var(--text-muted)] truncate">
-                      {isActive ? (
-                        <span className="text-teal-400 font-medium animate-pulse">
-                          {stage.activeText}
-                        </span>
-                      ) : isDone ? (
-                        <span className="text-emerald-400/80 font-medium">
-                          {stage.doneText}
-                        </span>
-                      ) : (
-                        <span>{stage.description}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right: Stage Status Badge */}
-                <div className="shrink-0 text-right">
-                  {isDone ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                      <Check size={11} className="stroke-[3]" />
-                      <span>Ready</span>
-                    </span>
-                  ) : isActive ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-teal-300 px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 animate-pulse">
-                      <Loader2 size={10} className="animate-spin" />
-                      <span>Scanning</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-mono text-[var(--text-dim)] uppercase tracking-wider px-2 py-0.5">
-                      Queued
-                    </span>
-                  )}
-                </div>
-              </div>
+                {stage.name.split(',')[0].replace("The ", "")}
+              </span>
             );
           })}
         </div>
