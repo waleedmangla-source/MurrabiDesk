@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Filter,
   SlidersHorizontal,
+  Plus,
   ShieldCheck,
   Volume2,
   BookmarkCheck,
@@ -167,6 +168,31 @@ export default function ResearchEngine() {
   const [alislamCache, setAlislamCache] = useState<Record<number, AlIslamArticleResult[]>>({});
   const [loadingPeriodicalPage, setLoadingPeriodicalPage] = useState<boolean>(false);
 
+  // Session Storage persistence keys
+  const SESSION_STORAGE_KEY = "murabbi_last_research_session";
+
+  // Restore previous search session on mount (persists across tab switches/reopens until new search or browser restart)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.submittedQuery && parsed.results) {
+          setQuery(parsed.query || parsed.submittedQuery);
+          setSubmittedQuery(parsed.submittedQuery);
+          setResults(parsed.results);
+          if (parsed.filters) setFilters(parsed.filters);
+          if (parsed.activeFilter) setActiveFilter(parsed.activeFilter);
+          if (parsed.searchTime) setSearchTime(parsed.searchTime);
+          if (parsed.periodicalsCache) setPeriodicalsCache(parsed.periodicalsCache);
+          if (parsed.alislamCache) setAlislamCache(parsed.alislamCache);
+        }
+      }
+    } catch (e) {
+      console.warn("[Research Engine] Failed to restore session search:", e);
+    }
+  }, []);
+
   useEffect(() => {
     const isAuth = !!localStorage.getItem("google_refresh_token_encrypted");
     const isGuest = localStorage.getItem("murabbi_guest_mode") === "true";
@@ -303,6 +329,25 @@ export default function ResearchEngine() {
           1: data.data.alislamArticles
         });
       }
+
+      // Persist current session search to survive tab switches/reopens
+      try {
+        sessionStorage.setItem(
+          SESSION_STORAGE_KEY,
+          JSON.stringify({
+            query: targetQuery,
+            submittedQuery: targetQuery,
+            results: data.data,
+            filters: activeFilters,
+            activeFilter,
+            searchTime: elapsed,
+            periodicalsCache: data.data?.publications ? { 1: data.data.publications } : {},
+            alislamCache: data.data?.alislamArticles ? { 1: data.data.alislamArticles } : {}
+          })
+        );
+      } catch (e) {
+        console.warn("[Research Engine] Failed to save search to session:", e);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to complete multi-source query.");
     } finally {
@@ -322,6 +367,11 @@ export default function ResearchEngine() {
     setCurrentPage(1);
     setPeriodicalsCache({});
     setAlislamCache({});
+    try {
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch (e) {
+      // ignore
+    }
   };
 
   // Literature sub-filter: all, khazain, malfuzat, tazkirah, essence, books
@@ -350,6 +400,16 @@ export default function ResearchEngine() {
     setActiveFilter(newTab);
     setCurrentPage(1);
     scrollResearchToTop(120);
+    try {
+      const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.activeFilter = newTab;
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(parsed));
+      }
+    } catch (e) {
+      // ignore
+    }
   };
 
   // Filter count badges
@@ -976,8 +1036,18 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Right Wing: Balanced spacer matching left wing width */}
-          <div className="hidden md:block w-20 lg:w-28 shrink-0 pointer-events-none" />
+          {/* Right Wing: New Search Button */}
+          <div className="flex items-center justify-end md:w-28 shrink-0">
+            <button
+              type="button"
+              onClick={resetToHome}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/10 dark:hover:bg-white/5 border border-white/10 transition-all active:scale-95 shadow-sm"
+              title="Start a new search and clear previous results"
+            >
+              <Plus size={14} className="text-[var(--accent-main)]" />
+              <span>New Search</span>
+            </button>
+          </div>
         </div>
       </div>
 
