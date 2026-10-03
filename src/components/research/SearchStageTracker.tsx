@@ -30,7 +30,7 @@ const STAGES: SearchStage[] = [
     name: "The Holy Qur'an & Tafsir",
     badge: '114 Surahs',
     description: 'Analyzing Arabic text, translations & 5-Volume Commentary',
-    activeText: 'Parsing Arabic root morphology & classical exegesis...',
+    activeText: "Searching Holy Qur'an...",
     doneText: 'Verses & 5-Vol. commentary matched',
     icon: BookOpen
   },
@@ -39,7 +39,7 @@ const STAGES: SearchStage[] = [
     name: 'Canonical Ahadith',
     badge: 'Sunnah.com Database',
     description: 'Querying live authentic traditions across Bukhari, Muslim, Tirmidhi',
-    activeText: 'Executing live queries against authentic Sunnah database...',
+    activeText: 'Searching Ahadith...',
     doneText: 'Prophetic traditions retrieved',
     icon: Scroll
   },
@@ -48,7 +48,7 @@ const STAGES: SearchStage[] = [
     name: 'Ruhani Khazain, Malfuzat, Tadhkirah & Essence of Islam',
     badge: '23 Vols RK, 10 Vols Malfuzat, Tadhkirah & 5 Vols Essence',
     description: 'Indexing written treatises, spoken discourses, divine revelations & thematic extracts',
-    activeText: 'Scanning 23 volumes of Ruhani Khazain, Malfuzat, Tadhkirah & Essence of Islam...',
+    activeText: 'Searching Ruhani Khazain & Malfuzat...',
     doneText: 'Treatises, discourses, revelations & thematic extracts matched',
     icon: Layers
   },
@@ -57,7 +57,7 @@ const STAGES: SearchStage[] = [
     name: 'Published Literature Catalog',
     badge: 'Al Islam Books',
     description: 'Searching treatises, historical books & theological works',
-    activeText: 'Reviewing published books, authors & topic catalogs...',
+    activeText: 'Searching Literature...',
     doneText: 'Published literature catalog matched',
     icon: Book
   },
@@ -66,7 +66,7 @@ const STAGES: SearchStage[] = [
     name: 'Live Periodicals & Papers',
     badge: 'Al Hakam, RoR & Al Fazl',
     description: 'Scanning alhakam.org, reviewofreligions.org, alfazl.com & alislam.org',
-    activeText: 'Connecting live to Al Hakam, Review of Religions & Al Fazl...',
+    activeText: 'Searching Periodicals & Papers...',
     doneText: 'Periodical archives collected',
     icon: Newspaper
   },
@@ -75,7 +75,7 @@ const STAGES: SearchStage[] = [
     name: 'Ask Islam & MTA Media',
     badge: 'Audio & Video',
     description: 'Searching audio Q&As and MTA video spoken transcripts',
-    activeText: 'Matching spoken audio & video transcript timestamps...',
+    activeText: 'Searching Media & Audios...',
     doneText: 'Spoken media timestamps ready',
     icon: Headphones
   },
@@ -84,7 +84,7 @@ const STAGES: SearchStage[] = [
     name: 'Theological Triangulation',
     badge: 'Consensus Matrix',
     description: 'Cross-referencing Quran, Hadith & Khazain theological consensus',
-    activeText: 'Synthesizing cross-source theological consensus matrix...',
+    activeText: 'Searching Theological Insights...',
     doneText: 'Consensus verified',
     icon: ShieldCheck
   }
@@ -166,7 +166,7 @@ export default function SearchStageTracker({ query, active, searchMode }: Search
             />
           </div>
           <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] font-mono">
-            <span>{activeStage?.activeText || "Scanning libraries..."}</span>
+            <span>{activeStage?.activeText || "Searching sources..."}</span>
             <span>{elapsedSec.toFixed(1)}s</span>
           </div>
         </div>
