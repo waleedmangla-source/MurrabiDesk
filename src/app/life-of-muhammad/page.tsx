@@ -1,36 +1,52 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { clsx } from "clsx";
-
-const events = [
-  { year: "570 A.D.", title: "Birth in Mecca", desc: "The Prophet (sa) was born in Mecca in August 570 A.D. He was given the name Muhammad, which means 'The Praised One'." },
-  { year: "Age 25", title: "Marriage to Khadija (ra)", desc: "After leading her trading caravan to Syria with great success, Khadija (ra), impressed by his integrity and honesty, offered her hand in marriage." },
-  { year: "Age 40", title: "First Revelation", desc: "In the cave of Hira, he received the first revelation from God, commanding him to 'Recite in the name of thy Lord'. This marked the beginning of his prophethood." },
-  { year: "Early Prophethood", title: "The Faithful Persecuted", desc: "Early converts like Bilal, Yasir, and Sumayya endured terrible tortures by the Meccans. Yet, their hearts remained stout and their faith steadfast." },
-  { year: "5th Year of Call", title: "Emigration to Abyssinia", desc: "To escape extreme persecution, a party of Muslims migrated to Abyssinia to seek refuge under a just Christian King, the Negus." },
-  { year: "10th Year of Call", title: "Journey to Ta'if", desc: "After the death of Khadija and Abu Talib, he sought support in Ta'if but was brutally stoned and driven out, yet he prayed for their guidance." },
-  { year: "622 A.D.", title: "The Hijra (Migration)", desc: "Due to intense persecution and assassination plots, the Prophet (sa) and his followers migrated from Mecca to Medina, marking the beginning of the Islamic calendar." },
-  { year: "2 A.H.", title: "Battle of Badr", desc: "A poorly equipped Muslim force of 313 men defeated a heavily armed Meccan army of 1000, fulfilling a great prophecy of victory." },
-  { year: "3 A.H.", title: "Battle of Uhud", desc: "Meccans attacked to avenge Badr. Despite early success, a strategic mistake led to heavy Muslim losses, and the Prophet (sa) was severely wounded." },
-  { year: "5 A.H.", title: "Battle of the Ditch", desc: "A confederate army of over 10,000 besieged Medina. Muslims dug a trench for defense. God sent a severe storm that forced the enemies to disperse." },
-  { year: "6 A.H.", title: "Treaty of Hudaibiya", desc: "The Prophet (sa) led 1500 companions for pilgrimage but was stopped. A 10-year peace treaty was signed, initially seeming disadvantageous but leading to great victories." },
-  { year: "7 A.H.", title: "Letters to Kings", desc: "The Prophet (sa) sent envoys with letters inviting the rulers of Rome (Heraclius), Iran (Chosroes), Egypt (Muqauqis), and Abyssinia to accept Islam." },
-  { year: "7 A.H.", title: "Fall of Khaibar", desc: "Muslims marched against the Jewish stronghold of Khaibar, a center of anti-Islamic intrigues, and conquered it, bringing peace to the region." },
-  { year: "8 A.H.", title: "Fall of Mecca", desc: "Following a breach of the Hudaibiya treaty by the Meccans, the Prophet (sa) marched with 10,000 followers and conquered Mecca without bloodshed, granting a general amnesty." },
-  { year: "8 A.H.", title: "Battle of Hunain", desc: "Muslims faced a fierce ambush by the Hawazin and Thaqif tribes. Despite initial panic, the Prophet's steadfastness rallied the troops to victory." },
-  { year: "9 A.H.", title: "Expedition of Tabuk", desc: "Responding to rumors of a Roman attack, the Prophet (sa) led an army to the Syrian border. Finding no enemy, he signed peace treaties with border tribes." },
-  { year: "10 A.H.", title: "The Last Pilgrimage", desc: "The Prophet (sa) performed his final Hajj, delivering a farewell address establishing human equality. The verse declaring the perfection of religion was revealed." },
-  { year: "11 A.H.", title: "Passing Away", desc: "Having completed his divine mission, the Prophet (sa) fell ill and passed away in Medina. Abu Bakr (ra) reminded the grieving Muslims that God is ever living." }
-];
+import { 
+  BookOpen, 
+  ChevronLeft, 
+  ChevronRight, 
+  Search, 
+  Bookmark, 
+  Calendar
+} from "lucide-react";
+import { TIMELINE_EVENTS, TimelineEvent } from "@/data/timelineData";
 
 export default function LifeOfMuhammadTimeline() {
+  const [selectedVol, setSelectedVol] = useState<number | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  
+  // Filter events based on volume, category, and search query
+  const filteredEvents = useMemo(() => {
+    return TIMELINE_EVENTS.filter((ev) => {
+      if (selectedVol !== 'all' && ev.vol !== selectedVol) return false;
+      if (activeCategory !== 'all' && ev.category !== activeCategory) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = ev.title.toLowerCase().includes(q);
+        const matchesDesc = ev.desc.toLowerCase().includes(q);
+        const matchesYear = ev.year.toLowerCase().includes(q);
+        const matchesTags = ev.tags.some(t => t.toLowerCase().includes(q));
+        if (!matchesTitle && !matchesDesc && !matchesYear && !matchesTags) return false;
+      }
+      return true;
+    });
+  }, [selectedVol, activeCategory, searchQuery]);
+
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset active index if out of bounds upon filter change
+  useEffect(() => {
+    if (activeIndex >= filteredEvents.length) {
+      setActiveIndex(Math.max(0, filteredEvents.length - 1));
+    }
+  }, [filteredEvents.length, activeIndex]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [bulgeScale, setBulgeScale] = useState(0);
   const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
-  const lastMousePosRef = useRef<{ x: number; time: number } | null>(null);
   const velocityRef = useRef<number>(0);
   const currentPosRef = useRef<number | null>(null);
   const targetPosRef = useRef<number | null>(null);
@@ -52,6 +68,22 @@ export default function LifeOfMuhammadTimeline() {
     };
   }, []);
 
+  // Keyboard navigation (ArrowLeft & ArrowRight)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'ArrowRight' || e.key === 'l') {
+        e.preventDefault();
+        setActiveIndex(prev => Math.min(filteredEvents.length - 1, prev + 1));
+      } else if (e.key === 'ArrowLeft' || e.key === 'h') {
+        e.preventDefault();
+        setActiveIndex(prev => Math.max(0, prev - 1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredEvents.length]);
+
   // Continuous animation loop that bounds scrub speed
   const startTrackingLoop = () => {
     if (loopRef.current) return;
@@ -69,7 +101,7 @@ export default function LifeOfMuhammadTimeline() {
 
         const dx = targetPosRef.current - currentPosRef.current;
         
-        // Speed cap: Maximum allowed speed is ~1.2 px/ms (~1200 px/sec), preventing jarring skips
+        // Speed cap: Maximum allowed speed is ~1.2 px/ms, preventing jarring skips
         const maxStep = 1.2 * dt; 
         let step = dx * 0.18; // Smooth natural follow
 
@@ -77,7 +109,7 @@ export default function LifeOfMuhammadTimeline() {
           step = Math.sign(step) * maxStep;
         }
 
-        // Subtler, more balanced directional skew pull
+        // Directional skew pull
         const v = step / dt; // px/ms
         velocityRef.current = v;
         const targetSkew = Math.max(-25, Math.min(25, v * 22));
@@ -90,13 +122,13 @@ export default function LifeOfMuhammadTimeline() {
         setBulgeSkew(prev => prev + (targetSkew - prev) * 0.20);
 
         // Update active index based on the speed-limited position
-        if (containerWidth > 0) {
-          const marginLeft = 40;
-          const marginRight = 160;
+        if (containerWidth > 0 && filteredEvents.length > 0) {
+          const marginLeft = 60;
+          const marginRight = 80;
           const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-          let newIndex = Math.round(((curX - marginLeft) / eventTrackWidth) * (events.length - 1));
+          let newIndex = Math.round(((curX - marginLeft) / eventTrackWidth) * (filteredEvents.length - 1));
           if (newIndex < 0) newIndex = 0;
-          if (newIndex >= events.length) newIndex = events.length - 1;
+          if (newIndex >= filteredEvents.length) newIndex = filteredEvents.length - 1;
           setActiveIndex(newIndex);
         }
 
@@ -146,7 +178,7 @@ export default function LifeOfMuhammadTimeline() {
       cancelAnimationFrame(collapseAnimRef.current);
     }
 
-    const duration = 380; // Snappy ease-out collapse
+    const duration = 380;
     const startTime = performance.now();
     const startScale = bulgeScale > 0 ? bulgeScale : 1;
     const startSkew = bulgeSkew;
@@ -154,7 +186,6 @@ export default function LifeOfMuhammadTimeline() {
     const animateCollapse = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
-      // Pronounced ease-out curve (quartic-style): shrinks swiftly then cushions softly into straight line
       const currentScale = startScale * Math.pow(1 - progress, 3.5);
       const currentSkew = startSkew * Math.pow(1 - progress, 3.5);
 
@@ -174,13 +205,12 @@ export default function LifeOfMuhammadTimeline() {
     collapseAnimRef.current = requestAnimationFrame(animateCollapse);
   };
 
-  // SVG Bulge parameters (3x bigger bulge)
-  const cy = 120;
-  const baseThickness = 9; // Slightly thicker overall line (18px total track height)
+  // SVG Bulge parameters
+  const cy = 110;
+  const baseThickness = 8;
   const r = 140;
-  const maxH = 68;
+  const maxH = 64;
 
-  // Helper to get half-height at coordinate x (incorporating dynamic directional pull)
   const getBulgeHalfHeight = (x: number) => {
     if (hoverX === null || bulgeScale === 0) return baseThickness;
     const apexX = hoverX + bulgeSkew;
@@ -190,7 +220,6 @@ export default function LifeOfMuhammadTimeline() {
     return baseThickness + maxH * bulgeScale * factor;
   };
 
-  // SVG Bulge generation with directional pull skew
   const getTimelinePath = () => {
     let path = "";
     if (hoverX === null || containerWidth === 0 || bulgeScale === 0) {
@@ -214,7 +243,6 @@ export default function LifeOfMuhammadTimeline() {
     return path;
   };
 
-  // SVG Bulge only path for isolated shadow/glow
   const getBulgeOnlyPath = () => {
     if (hoverX === null || containerWidth === 0 || bulgeScale === 0) return "";
     const hx = hoverX;
@@ -233,10 +261,9 @@ export default function LifeOfMuhammadTimeline() {
     return path;
   };
 
-  // Vertical dashes that bulge in both height and thickness with the line
   const renderVerticalDashes = () => {
     if (containerWidth <= 0) return null;
-    const dashSpacing = 15; // Halved the number of vertical dashes for clean spacing
+    const dashSpacing = 15;
     const count = Math.floor(containerWidth / dashSpacing);
     const dashes = [];
     const apexX = hoverX !== null ? hoverX + bulgeSkew : 0;
@@ -252,30 +279,20 @@ export default function LifeOfMuhammadTimeline() {
         const origDist = Math.abs(origX - apexX);
         if (origDist < r) {
           isNearCursor = true;
-          
-          // Non-linear coordinate transformation:
-          // We stretch the coordinate space outwards from the center so that 
-          // dashes are spaced progressively further apart the closer they are to the apex (u -> 0)
-          const u = origDist / r; // 0 at center, 1 at boundary
-          // Power curve p < 1 stretches values near 0 outward, expanding center spacing
+          const u = origDist / r;
           const warpedU = Math.pow(u, 0.58);
           const effectiveDist = (1 - bulgeScale) * origDist + bulgeScale * (warpedU * r);
           x = origX > apexX ? apexX + effectiveDist : apexX - effectiveDist;
 
-          // Smooth cosine curve matching the bulge profile
           const dist = Math.abs(x - apexX);
           const factor = 0.5 * (1 + Math.cos(Math.min(1, dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
 
-          // Distinct peaked profile so the single closest dash to the center is prominently the thickest
-          // factor^1.8 creates a sharp crest where the exact center dash reaches up to 13px - 14px
           const peakFactor = Math.pow(factor, 1.8);
           strokeWidth = 2 + 11.5 * bulgeScale * peakFactor;
         }
       }
 
-      // Full vertical span: extend slightly beyond halfHeight so that
-      // clipPath="url(#timeline-track-clip)" cuts them precisely at the exact boundary of the bulge
       const overshoot = isNearCursor ? 12 : 2;
       const y1 = cy - halfHeight - overshoot;
       const y2 = cy + halfHeight + overshoot;
@@ -287,72 +304,220 @@ export default function LifeOfMuhammadTimeline() {
           y1={y1}
           x2={x}
           y2={y2}
-          stroke="#064e3b" // Deep dark emerald (#064e3b - darker version of theme color)
+          stroke="#064e3b"
           strokeWidth={strokeWidth}
-          strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.3}
-          strokeLinecap="butt" // Hardcut flat ends clipped flush at the bulge perimeter
+          strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.25}
+          strokeLinecap="butt"
         />
       );
     }
     return dashes;
   };
 
-  const activeEvent = events[activeIndex] || events[0];
+  const activeEvent: TimelineEvent | undefined = filteredEvents[activeIndex] || filteredEvents[0];
+
+  const categories = [
+    { id: 'all', label: 'All Categories' },
+    { id: 'Milestone', label: 'Milestones' },
+    { id: 'Battle / Expedition', label: 'Battles & Expeditions' },
+    { id: 'Treaty & Diplomatic', label: 'Treaties & Envoys' },
+    { id: 'Revelation & Law', label: 'Revelations & Laws' },
+    { id: 'Personal & Family', label: 'Life & Family' }
+  ];
 
   return (
-    <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-700">
+    <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-500 bg-background text-main">
       
-      {/* Page Header */}
-      <header className="pt-6 lg:pt-8 pb-1 px-6 text-center shrink-0 z-20">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black italic tracking-tight text-main uppercase">
-          The Life of The Holy Prophet <span className="text-accent-main font-bold normal-case tracking-normal">(PBUH)</span>
-        </h1>
-        <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-accent-main opacity-80 mt-1">
-          Chronological Timeline
-        </p>
+      {/* Top Header & Multi-Volume Controls */}
+      <header className="pt-4 pb-2 px-6 shrink-0 z-30 flex flex-col items-center border-b border-border/40 bg-background/80 backdrop-blur-md">
+        <div className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
+          
+          {/* Main Title & Subtitle */}
+          <div className="text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2">
+              <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <BookOpen size={18} />
+              </span>
+              <h1 className="text-xl md:text-2xl font-black italic tracking-tight uppercase text-main">
+                The Life of The Holy Prophet <span className="text-accent-main font-bold normal-case tracking-normal">(PBUH)</span>
+              </h1>
+            </div>
+            <p className="text-[11px] font-semibold text-muted tracking-wide mt-0.5">
+              Based on the authoritative treatise <span className="font-bold text-accent-main">Seal of the Prophets</span> (Vols. I–III) by Hadrat Mirza Bashir Ahmad (ra)
+            </p>
+          </div>
+
+          {/* Volume Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-800/60 rounded-2xl border border-slate-300/40 dark:border-white/10 text-xs font-bold">
+            <button
+              onClick={() => setSelectedVol('all')}
+              className={clsx(
+                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
+                selectedVol === 'all' 
+                  ? "bg-accent-main text-white shadow-sm font-black" 
+                  : "text-muted hover:text-main"
+              )}
+            >
+              All Volumes ({TIMELINE_EVENTS.length})
+            </button>
+            <button
+              onClick={() => setSelectedVol(1)}
+              className={clsx(
+                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
+                selectedVol === 1 
+                  ? "bg-accent-main text-white shadow-sm font-black" 
+                  : "text-muted hover:text-main"
+              )}
+            >
+              Vol. 1: Makkan Era
+            </button>
+            <button
+              onClick={() => setSelectedVol(2)}
+              className={clsx(
+                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
+                selectedVol === 2 
+                  ? "bg-accent-main text-white shadow-sm font-black" 
+                  : "text-muted hover:text-main"
+              )}
+            >
+              Vol. 2: Early Medina (1–5 A.H.)
+            </button>
+            <button
+              onClick={() => setSelectedVol(3)}
+              className={clsx(
+                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
+                selectedVol === 3 
+                  ? "bg-accent-main text-white shadow-sm font-black" 
+                  : "text-muted hover:text-main"
+              )}
+            >
+              Vol. 3: Treaties & Envoys (6 A.H.+)
+            </button>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div className="w-full max-w-7xl flex flex-wrap items-center justify-between gap-3 mt-2.5 pt-2 border-t border-border/20">
+          
+          {/* Category Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full no-scrollbar">
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setActiveCategory(c.id)}
+                className={clsx(
+                  "px-2.5 py-1 rounded-lg text-[10px] uppercase font-bold tracking-wider whitespace-nowrap transition-all border",
+                  activeCategory === c.id
+                    ? "bg-accent-main/15 border-accent-main text-accent-main font-black"
+                    : "border-border/50 text-muted hover:text-main bg-background/50"
+                )}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Box & Quick Navigation */}
+          <div className="flex items-center gap-2 w-full md:w-auto ml-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="text"
+                placeholder="Search events, companions, treaties..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-300/60 dark:border-white/10 text-main placeholder-muted focus:outline-none focus:ring-1 focus:ring-accent-main"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted hover:text-main"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Quick Arrow Jump Buttons */}
+            <div className="flex items-center gap-1 bg-slate-200/50 dark:bg-slate-800/50 p-0.5 rounded-xl border border-slate-300/40 dark:border-white/10">
+              <button
+                onClick={() => setActiveIndex(prev => Math.max(0, prev - 1))}
+                disabled={activeIndex <= 0}
+                className="p-1 rounded-lg hover:bg-background disabled:opacity-30 text-main transition"
+                title="Previous Event (Left Arrow)"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[11px] font-mono font-bold px-1.5 text-accent-main">
+                {filteredEvents.length > 0 ? `${activeIndex + 1}/${filteredEvents.length}` : '0/0'}
+              </span>
+              <button
+                onClick={() => setActiveIndex(prev => Math.min(filteredEvents.length - 1, prev + 1))}
+                disabled={activeIndex >= filteredEvents.length - 1}
+                className="p-1 rounded-lg hover:bg-background disabled:opacity-30 text-main transition"
+                title="Next Event (Right Arrow)"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
-      {/* Top Title Section */}
-      <section className="flex-[0.25] flex flex-col justify-end items-center pb-3 lg:pb-4 px-4 relative z-10">
-         <div className="glass px-8 py-3.5 lg:py-4 rounded-2xl relative min-w-[280px] max-w-xl text-center shadow-sm">
-            <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-main uppercase">
-               {activeEvent.title}
+      {/* Top Active Title Speech Box */}
+      <section className="flex-[0.16] flex flex-col justify-end items-center pb-2 px-4 relative z-10 shrink-0">
+        {activeEvent ? (
+          <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-accent-main/15 text-accent-main border border-accent-main/20">
+                {activeEvent.period}
+              </span>
+              <span className="text-xs text-muted">•</span>
+              <span className="text-[11px] font-bold text-accent-main tracking-wider uppercase">
+                {activeEvent.year}
+              </span>
+            </div>
+            <h2 className="text-xl md:text-2xl font-black italic tracking-tight text-main uppercase">
+              {activeEvent.title}
             </h2>
             {/* Speech bubble tail */}
-            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
-         </div>
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
+          </div>
+        ) : (
+          <div className="glass px-6 py-3 rounded-2xl text-center text-muted text-sm">
+            No events match your search criteria.
+          </div>
+        )}
       </section>
 
-      {/* Middle Timeline Track Section */}
+      {/* Middle Interactive Bulging Timeline Track */}
       <section 
-        className="relative h-72 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-8 lg:mt-10"
+        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-1"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <div className="absolute inset-0 flex items-center">
-          <div className="relative w-full h-[240px]">
-            {/* SVG Track spanning edge to edge with fade out near the edges */}
+          <div className="relative w-full h-[210px]">
+            {/* SVG Track spanning edge to edge with fade out near the ends */}
             <svg 
               width="100%" 
-              height="240" 
+              height="210" 
               className="absolute top-0 left-0 overflow-visible text-accent-main"
               style={{
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
-                maskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%)',
+                maskImage: 'linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%)',
               }}
             >
               <defs>
                 <clipPath id="timeline-track-clip">
                   <path d={getTimelinePath()} />
                 </clipPath>
-                {/* Generous filter region with soft shadow and glow */}
                 <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
                   <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
                   <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
                 </filter>
-                {/* Gradual white radial gradient / glow towards the center of the bulge */}
                 {hoverX !== null && (
                   <radialGradient 
                     id="bulge-white-gradient" 
@@ -369,7 +534,7 @@ export default function LifeOfMuhammadTimeline() {
                 )}
               </defs>
 
-              {/* Bulge Drop Shadow & Glow (rendered behind the track so edges stay crisp) */}
+              {/* Bulge Drop Shadow & Glow */}
               {hoverX !== null && bulgeScale > 0 && (
                 <path 
                   d={getBulgeOnlyPath()} 
@@ -385,7 +550,7 @@ export default function LifeOfMuhammadTimeline() {
                 fill="currentColor" 
               />
 
-              {/* Gradual White Gradient Towards the Bulge Center */}
+              {/* Gradual White Glow Towards Bulge Center */}
               {hoverX !== null && bulgeScale > 0 && (
                 <path 
                   d={getBulgeOnlyPath()} 
@@ -395,25 +560,28 @@ export default function LifeOfMuhammadTimeline() {
                 />
               )}
 
-              {/* Vertical Dashes Bulging Across the Width of the Line */}
+              {/* Vertical Dashes Bulging Across the Line */}
               <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
                 {renderVerticalDashes()}
               </g>
             </svg>
 
             {/* Top Slanted Topic Titles (slanting up-right) */}
-            {containerWidth > 0 && events.map((ev, idx) => {
-              const marginLeft = 40;
-              const marginRight = 160;
+            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
+              const marginLeft = 60;
+              const marginRight = 80;
               const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (idx / (events.length - 1)) * eventTrackWidth;
+              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
+              const distFromActive = Math.abs(idx - activeIndex);
+              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
+
               return (
                 <div 
-                  key={`top-${idx}`}
-                  className="absolute flex items-center pointer-events-none z-10"
+                  key={`top-${ev.id}`}
+                  className="absolute flex items-center pointer-events-none z-10 transition-transform duration-200"
                   style={{ 
                     left: `${x}px`,
                     top: `${cy - halfH}px`,
@@ -421,35 +589,44 @@ export default function LifeOfMuhammadTimeline() {
                     transformOrigin: '0 50%'
                   }}
                 >
-                   {/* The slanted tick */}
-                   <div className={clsx(
-                     "h-[2.5px] transition-all duration-300 rounded-full", 
-                     isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-10 bg-main opacity-25 dark:opacity-40"
-                   )} />
-                   {/* The topic title */}
-                   <span className={clsx(
-                     "ml-2.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
-                     isActive ? "text-accent-main scale-110 drop-shadow-sm opacity-100" : "text-muted opacity-60"
-                   )}>
-                     {ev.title}
-                   </span>
+                  {/* The slanted tick mark */}
+                  <div className={clsx(
+                    "h-[2.5px] transition-all duration-300 rounded-full", 
+                    isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-8 bg-main opacity-25 dark:opacity-40"
+                  )} />
+                  {/* The title label */}
+                  {shouldShowLabel && (
+                    <span className={clsx(
+                      "ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
+                      isActive 
+                        ? "text-accent-main scale-110 drop-shadow-sm opacity-100 font-extrabold" 
+                        : distFromActive === 1
+                          ? "text-main opacity-70"
+                          : "text-muted opacity-45"
+                    )}>
+                      {ev.title}
+                    </span>
+                  )}
                 </div>
               );
             })}
 
             {/* Bottom Slanted Dates (slanting down-right) */}
-            {containerWidth > 0 && events.map((ev, idx) => {
-              const marginLeft = 40;
-              const marginRight = 160;
+            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
+              const marginLeft = 60;
+              const marginRight = 80;
               const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (idx / (events.length - 1)) * eventTrackWidth;
+              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
+              const distFromActive = Math.abs(idx - activeIndex);
+              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
+
               return (
                 <div 
-                  key={`bottom-${idx}`}
-                  className="absolute flex items-center pointer-events-none z-10"
+                  key={`bottom-${ev.id}`}
+                  className="absolute flex items-center pointer-events-none z-10 transition-transform duration-200"
                   style={{ 
                     left: `${x}px`,
                     top: `${cy + halfH}px`,
@@ -457,18 +634,22 @@ export default function LifeOfMuhammadTimeline() {
                     transformOrigin: '0 50%'
                   }}
                 >
-                   {/* The slanted tick */}
-                   <div className={clsx(
-                     "h-[2.5px] transition-all duration-300 rounded-full", 
-                     isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-10 bg-main opacity-25 dark:opacity-40"
-                   )} />
-                   {/* The date label */}
-                   <span className={clsx(
-                     "ml-2.5 text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                     isActive ? "text-accent-main font-black scale-110 drop-shadow-sm opacity-100" : "text-muted opacity-60"
-                   )}>
-                     {ev.year}
-                   </span>
+                  {/* The slanted tick mark */}
+                  <div className={clsx(
+                    "h-[2.5px] transition-all duration-300 rounded-full", 
+                    isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-8 bg-main opacity-25 dark:opacity-40"
+                  )} />
+                  {/* The date label */}
+                  {shouldShowLabel && (
+                    <span className={clsx(
+                      "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                      isActive 
+                        ? "text-accent-main font-black scale-110 drop-shadow-sm opacity-100" 
+                        : "text-muted opacity-50"
+                    )}>
+                      {ev.year}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -476,13 +657,61 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </section>
 
-      {/* Bottom Information Section */}
-      <section className="flex-1 flex flex-col justify-start items-center pt-12 lg:pt-14 px-4 z-10">
-        <article className="glass p-8 rounded-3xl max-w-3xl text-center border border-[var(--glass-border)] shadow-sm min-h-[160px] flex items-center justify-center">
-          <p className="text-lg md:text-xl text-muted leading-relaxed font-normal">
-            {activeEvent.desc}
-          </p>
-        </article>
+      {/* Bottom Comprehensive Detail Section */}
+      <section className="flex-1 flex flex-col justify-start items-center pt-6 lg:pt-8 px-4 pb-6 z-10 overflow-y-auto">
+        {activeEvent && (
+          <article className="glass p-6 md:p-8 rounded-3xl max-w-4xl w-full border border-[var(--glass-border)] shadow-xl relative animate-in fade-in slide-in-from-bottom-3 duration-300">
+            
+            {/* Metadata Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-border/30">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-emerald-500/15 text-emerald-500 border border-emerald-500/25">
+                  Vol. {activeEvent.vol}: {activeEvent.period}
+                </span>
+                <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-blue-500/15 text-blue-500 border border-blue-500/25">
+                  {activeEvent.category}
+                </span>
+              </div>
+
+              {/* Exact Date */}
+              <div className="flex items-center gap-1.5 text-xs font-bold text-muted">
+                <Calendar size={14} className="text-accent-main" />
+                <span>{activeEvent.date}</span>
+              </div>
+            </div>
+
+            {/* Deep Narrative Description */}
+            <p className="text-base md:text-lg text-main leading-relaxed font-normal mb-6 text-justify">
+              {activeEvent.desc}
+            </p>
+
+            {/* Tags & Source Citation Footer */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/30 text-xs">
+              
+              {/* Tags */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-bold text-muted uppercase tracking-wider mr-1">
+                  Key Subjects:
+                </span>
+                {activeEvent.tags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setSearchQuery(tag)}
+                    className="px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-slate-800/60 hover:bg-accent-main/20 text-muted hover:text-accent-main transition text-[11px] font-medium"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Book Source Citation */}
+              <div className="flex items-center gap-1.5 text-accent-main font-bold shrink-0">
+                <Bookmark size={14} />
+                <span>{activeEvent.source}</span>
+              </div>
+            </div>
+          </article>
+        )}
       </section>
 
     </main>
