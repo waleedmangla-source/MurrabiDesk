@@ -266,8 +266,8 @@ export default function LifeOfMuhammadTimeline() {
           const dist = Math.abs(x - apexX);
           const factor = 0.5 * (1 + Math.cos(Math.min(1, dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
-          // Physically bulge thickness from 2px up to 5px
-          strokeWidth = 2 + 3 * bulgeScale * factor;
+          // Substantially bulge stroke thickness from 2px on the baseline up to 7px at the center
+          strokeWidth = 2 + 5 * bulgeScale * factor;
         }
       }
 
