@@ -96,15 +96,15 @@ export default function LifeOfMuhammadTimeline() {
       cancelAnimationFrame(collapseAnimRef.current);
     }
 
-    const duration = 650; // Smooth, slow collapse back to straight line
+    const duration = 380; // Faster, snappier duration
     const startTime = performance.now();
     const startScale = bulgeScale > 0 ? bulgeScale : 1;
 
     const animateCollapse = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
-      // Cosine ease-out for calm, natural settling
-      const currentScale = startScale * Math.cos(progress * (Math.PI / 2));
+      // Pronounced ease-out curve (quartic-style): shrinks swiftly then cushions softly into straight line
+      const currentScale = startScale * Math.pow(1 - progress, 3.5);
 
       if (progress < 1) {
         setBulgeScale(currentScale);
