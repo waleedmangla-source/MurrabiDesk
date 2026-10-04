@@ -169,7 +169,7 @@ export default function LifeOfMuhammadTimeline() {
 
   // SVG Bulge parameters (3x bigger bulge)
   const cy = 120;
-  const baseThickness = 6;
+  const baseThickness = 9; // Slightly thicker overall line (18px total track height)
   const r = 140;
   const maxH = 68;
 
@@ -237,7 +237,7 @@ export default function LifeOfMuhammadTimeline() {
     for (let i = 1; i < count; i++) {
       const x = i * dashSpacing;
       let halfHeight = baseThickness;
-      let strokeWidth = 1.5;
+      let strokeWidth = 2;
       let isNearCursor = false;
 
       if (hoverX !== null && bulgeScale > 0) {
@@ -247,8 +247,8 @@ export default function LifeOfMuhammadTimeline() {
           // Smooth cosine curve matching the bulge profile
           const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
-          // Physically bulge thickness from 1.5px up to 5px
-          strokeWidth = 1.5 + 3.5 * bulgeScale * factor;
+          // Physically bulge thickness from 2px up to 5.5px
+          strokeWidth = 2 + 3.5 * bulgeScale * factor;
         }
       }
 
