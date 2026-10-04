@@ -33,7 +33,7 @@ export default function LifeOfMuhammadTimeline() {
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth - 100); // 50px padding on each side
+        setContainerWidth(containerRef.current.clientWidth);
       }
     };
     updateWidth();
@@ -47,7 +47,6 @@ export default function LifeOfMuhammadTimeline() {
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const padding = 50;
     
     let clientX = 0;
     if ('touches' in e) {
@@ -56,7 +55,7 @@ export default function LifeOfMuhammadTimeline() {
       clientX = e.clientX;
     }
 
-    let x = clientX - rect.left - padding;
+    let x = clientX - rect.left;
     const currentWidth = containerWidth;
     
     if (x < 0) x = 0;
@@ -70,8 +69,9 @@ export default function LifeOfMuhammadTimeline() {
       setHoverX(x);
 
       if (currentWidth > 0) {
-        const step = currentWidth / (events.length - 1);
-        let newIndex = Math.round(x / step);
+        const eventMargin = 90;
+        const eventTrackWidth = Math.max(10, currentWidth - eventMargin * 2);
+        let newIndex = Math.round(((x - eventMargin) / eventTrackWidth) * (events.length - 1));
         if (newIndex < 0) newIndex = 0;
         if (newIndex >= events.length) newIndex = events.length - 1;
         setActiveIndex(newIndex);
@@ -203,10 +203,18 @@ export default function LifeOfMuhammadTimeline() {
         onTouchMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 px-[50px] flex items-center">
+        <div className="absolute inset-0 flex items-center">
           <div className="relative w-full h-[150px]">
-            {/* SVG Track */}
-            <svg width="100%" height="150" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
+            {/* SVG Track spanning edge to edge with fade out near the edges */}
+            <svg 
+              width="100%" 
+              height="150" 
+              className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
+                maskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
+              }}
+            >
               <defs>
                 <clipPath id="timeline-track-clip">
                   <path d={getTimelinePath()} />
@@ -227,7 +235,9 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* Top Slanted Topic Titles (slanting up-right) */}
             {containerWidth > 0 && events.map((ev, idx) => {
-              const x = (idx / (events.length - 1)) * containerWidth;
+              const eventMargin = 90;
+              const eventTrackWidth = Math.max(10, containerWidth - eventMargin * 2);
+              const x = eventMargin + (idx / (events.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
@@ -260,7 +270,9 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* Bottom Slanted Dates (slanting down-right) */}
             {containerWidth > 0 && events.map((ev, idx) => {
-              const x = (idx / (events.length - 1)) * containerWidth;
+              const eventMargin = 90;
+              const eventTrackWidth = Math.max(10, containerWidth - eventMargin * 2);
+              const x = eventMargin + (idx / (events.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
