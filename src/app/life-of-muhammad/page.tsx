@@ -271,9 +271,11 @@ export default function LifeOfMuhammadTimeline() {
         }
       }
 
-      // Hardcut on top and bottom without rounded caps or inset gaps
-      const y1 = cy - halfHeight;
-      const y2 = cy + halfHeight;
+      // Full vertical span: extend slightly beyond halfHeight so that
+      // clipPath="url(#timeline-track-clip)" cuts them precisely at the exact boundary of the bulge
+      const overshoot = isNearCursor ? 12 : 2;
+      const y1 = cy - halfHeight - overshoot;
+      const y2 = cy + halfHeight + overshoot;
 
       dashes.push(
         <line
@@ -285,7 +287,7 @@ export default function LifeOfMuhammadTimeline() {
           stroke="#064e3b" // Deep dark emerald (#064e3b - darker version of theme color)
           strokeWidth={strokeWidth}
           strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.3}
-          strokeLinecap="butt" // Hardcut flat ends instead of rounded curves
+          strokeLinecap="butt" // Hardcut flat ends clipped flush at the bulge perimeter
         />
       );
     }
