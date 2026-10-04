@@ -28,7 +28,9 @@ export default function LifeOfMuhammadTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [bulgeScale, setBulgeScale] = useState(0);
   const rafRef = useRef<number | null>(null);
+  const collapseAnimRef = useRef<number | null>(null);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -41,6 +43,7 @@ export default function LifeOfMuhammadTimeline() {
     return () => {
       window.removeEventListener('resize', updateWidth);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (collapseAnimRef.current) cancelAnimationFrame(collapseAnimRef.current);
     };
   }, []);
 
@@ -64,8 +67,13 @@ export default function LifeOfMuhammadTimeline() {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
+    if (collapseAnimRef.current) {
+      cancelAnimationFrame(collapseAnimRef.current);
+      collapseAnimRef.current = null;
+    }
 
     rafRef.current = requestAnimationFrame(() => {
+      setBulgeScale(1);
       setHoverX(x);
 
       if (currentWidth > 0) {
@@ -82,8 +90,33 @@ export default function LifeOfMuhammadTimeline() {
   const handleMouseLeave = () => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     }
-    setHoverX(null);
+    if (collapseAnimRef.current) {
+      cancelAnimationFrame(collapseAnimRef.current);
+    }
+
+    const duration = 650; // Smooth, slow collapse back to straight line
+    const startTime = performance.now();
+    const startScale = bulgeScale > 0 ? bulgeScale : 1;
+
+    const animateCollapse = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // Cosine ease-out for calm, natural settling
+      const currentScale = startScale * Math.cos(progress * (Math.PI / 2));
+
+      if (progress < 1) {
+        setBulgeScale(currentScale);
+        collapseAnimRef.current = requestAnimationFrame(animateCollapse);
+      } else {
+        setBulgeScale(0);
+        setHoverX(null);
+        collapseAnimRef.current = null;
+      }
+    };
+
+    collapseAnimRef.current = requestAnimationFrame(animateCollapse);
   };
 
   // SVG Bulge parameters (3x bigger bulge)
@@ -94,30 +127,31 @@ export default function LifeOfMuhammadTimeline() {
 
   // Helper to get half-height at coordinate x
   const getBulgeHalfHeight = (x: number) => {
-    if (hoverX === null) return baseThickness;
+    if (hoverX === null || bulgeScale === 0) return baseThickness;
     const dist = Math.abs(x - hoverX);
     if (dist >= r) return baseThickness;
     const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
-    return baseThickness + maxH * factor;
+    return baseThickness + maxH * bulgeScale * factor;
   };
 
   // SVG Bulge generation
   const getTimelinePath = () => {
     let path = "";
-    if (hoverX === null || containerWidth === 0) {
+    if (hoverX === null || containerWidth === 0 || bulgeScale === 0) {
       path = `M 0,${cy - baseThickness} L ${containerWidth},${cy - baseThickness} L ${containerWidth},${cy + baseThickness} L 0,${cy + baseThickness} Z`;
     } else {
       const hx = hoverX;
+      const currentMaxH = maxH * bulgeScale;
       path += `M 0,${cy - baseThickness} `;
       path += `L ${Math.max(0, hx - r)},${cy - baseThickness} `;
-      path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - maxH} ${hx},${cy - baseThickness - maxH} `;
-      path += `C ${hx + r/2},${cy - baseThickness - maxH} ${hx + r/2},${cy - baseThickness} ${Math.min(containerWidth, hx + r)},${cy - baseThickness} `;
+      path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - currentMaxH} ${hx},${cy - baseThickness - currentMaxH} `;
+      path += `C ${hx + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2},${cy - baseThickness} ${Math.min(containerWidth, hx + r)},${cy - baseThickness} `;
       path += `L ${containerWidth},${cy - baseThickness} `;
       
       path += `L ${containerWidth},${cy + baseThickness} `;
       path += `L ${Math.min(containerWidth, hx + r)},${cy + baseThickness} `;
-      path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + maxH} ${hx},${cy + baseThickness + maxH} `;
-      path += `C ${hx - r/2},${cy + baseThickness + maxH} ${hx - r/2},${cy + baseThickness} ${Math.max(0, hx - r)},${cy + baseThickness} `;
+      path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + currentMaxH} ${hx},${cy + baseThickness + currentMaxH} `;
+      path += `C ${hx - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2},${cy + baseThickness} ${Math.max(0, hx - r)},${cy + baseThickness} `;
       path += `L 0,${cy + baseThickness} Z`;
     }
     return path;
@@ -136,15 +170,15 @@ export default function LifeOfMuhammadTimeline() {
       let strokeWidth = 1.5;
       let isNearCursor = false;
 
-      if (hoverX !== null) {
+      if (hoverX !== null && bulgeScale > 0) {
         const dist = Math.abs(x - hoverX);
         if (dist < r) {
           isNearCursor = true;
           // Smooth cosine curve matching the bulge profile
           const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
-          halfHeight = baseThickness + maxH * factor;
+          halfHeight = baseThickness + maxH * bulgeScale * factor;
           // Physically bulge thickness from 1.5px up to 5px
-          strokeWidth = 1.5 + 3.5 * factor;
+          strokeWidth = 1.5 + 3.5 * bulgeScale * factor;
         }
       }
 
@@ -161,7 +195,7 @@ export default function LifeOfMuhammadTimeline() {
           y2={y2}
           stroke="black"
           strokeWidth={strokeWidth}
-          strokeOpacity={isNearCursor ? 0.6 : 0.25}
+          strokeOpacity={isNearCursor ? 0.25 + 0.35 * bulgeScale : 0.25}
           strokeLinecap="round"
         />
       );
