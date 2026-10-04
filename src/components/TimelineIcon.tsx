@@ -10,38 +10,49 @@ interface TimelineIconProps {
 export default function TimelineIcon({
   size = 20,
   className,
-  strokeWidth = 2.2,
 }: TimelineIconProps) {
+  const maskId = React.useId();
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox="0 0 512 512"
       fill="none"
-      stroke="currentColor"
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       className={clsx("shrink-0", className)}
     >
-      {/* Top track */}
-      <line x1="6.5" y1="5" x2="16.5" y2="5" />
-      {/* Top right turn downwards into middle track */}
-      <path d="M16.5 5 A 4 4 0 0 1 16.5 13" />
-      {/* Middle track */}
-      <line x1="7.5" y1="13" x2="16.5" y2="13" />
-      {/* Middle left turn downwards into bottom track */}
-      <path d="M7.5 13 A 4 4 0 0 1 7.5 21" />
-      {/* Bottom track */}
-      <line x1="7.5" y1="21" x2="17.5" y2="21" />
+      <defs>
+        <mask id={maskId}>
+          {/* Include all graphic elements */}
+          <rect width="512" height="512" fill="white" />
+          {/* Punch out hollow centers of circles */}
+          <circle cx="154" cy="116" r="16" fill="black" />
+          <circle cx="358" cy="116" r="16" fill="black" />
+          <circle cx="154" cy="260" r="16" fill="black" />
+          <circle cx="358" cy="260" r="16" fill="black" />
+          <circle cx="154" cy="404" r="16" fill="black" />
+          <circle cx="358" cy="404" r="16" fill="black" />
+        </mask>
+      </defs>
 
-      {/* Nodes / circles at milestones */}
-      <circle cx="5" cy="5" r="1.75" />
-      <circle cx="16.5" cy="5" r="1.75" />
-      <circle cx="16.5" cy="13" r="1.75" />
-      <circle cx="7.5" cy="13" r="1.75" />
-      <circle cx="7.5" cy="21" r="1.75" />
-      <circle cx="19" cy="21" r="1.75" />
+      <g mask={`url(#${maskId})`}>
+        {/* Connecting Track Lines */}
+        <path
+          d="M 154 116 H 358 A 72 72 0 0 1 358 260 H 154 A 72 72 0 0 0 154 404 H 358"
+          stroke="currentColor"
+          strokeWidth="32"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Node Rings */}
+        <circle cx="154" cy="116" r="32" fill="currentColor" />
+        <circle cx="358" cy="116" r="32" fill="currentColor" />
+        <circle cx="154" cy="260" r="32" fill="currentColor" />
+        <circle cx="358" cy="260" r="32" fill="currentColor" />
+        <circle cx="154" cy="404" r="32" fill="currentColor" />
+        <circle cx="358" cy="404" r="32" fill="currentColor" />
+      </g>
     </svg>
   );
 }
