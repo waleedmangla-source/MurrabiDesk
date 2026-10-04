@@ -78,10 +78,10 @@ export default function LifeOfMuhammadTimeline() {
       // Velocity in px/ms
       const v = dx / dt;
       velocityRef.current = v;
-      // Target skew in direction of travel (max ~35px pull)
-      const targetSkew = Math.max(-35, Math.min(35, v * 28));
-      // Smooth lerp into the direction of pull
-      currentSkew = currentSkew + (targetSkew - currentSkew) * 0.45;
+      // Target skew in direction of travel (increased intensity from 35px to 55px, responsive gain)
+      const targetSkew = Math.max(-55, Math.min(55, v * 45));
+      // Snappy, organic response to directional movement
+      currentSkew = currentSkew + (targetSkew - currentSkew) * 0.55;
     }
     lastMousePosRef.current = { x, time: now };
 
@@ -116,7 +116,7 @@ export default function LifeOfMuhammadTimeline() {
       const decaySkew = () => {
         setBulgeSkew(prev => {
           if (Math.abs(prev) < 0.2) return 0;
-          const next = prev * 0.88;
+          const next = prev * 0.85;
           skewSpringRef.current = requestAnimationFrame(decaySkew);
           return next;
         });
