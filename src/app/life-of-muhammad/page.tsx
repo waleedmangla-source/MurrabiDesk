@@ -30,7 +30,6 @@ export default function LifeOfMuhammadTimeline() {
   const [containerWidth, setContainerWidth] = useState(0);
   const [bulgeScale, setBulgeScale] = useState(0);
   const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
-  const [motionBlurX, setMotionBlurX] = useState(0); // Dynamic horizontal motion blur (px)
   const lastMousePosRef = useRef<{ x: number; time: number } | null>(null);
   const velocityRef = useRef<number>(0);
   const currentPosRef = useRef<number | null>(null);
@@ -90,7 +89,6 @@ export default function LifeOfMuhammadTimeline() {
         setBulgeScale(1);
         setHoverX(curX);
         setBulgeSkew(prev => prev + (targetSkew - prev) * 0.20);
-        setMotionBlurX(prev => prev + (targetBlur - prev) * 0.35);
 
         // Update active index based on the speed-limited position
         if (containerWidth > 0) {
@@ -164,12 +162,10 @@ export default function LifeOfMuhammadTimeline() {
       if (progress < 1) {
         setBulgeScale(currentScale);
         setBulgeSkew(currentSkew);
-        setMotionBlurX(prev => prev * (1 - progress));
         collapseAnimRef.current = requestAnimationFrame(animateCollapse);
       } else {
         setBulgeScale(0);
         setBulgeSkew(0);
-        setMotionBlurX(0);
         setHoverX(null);
         currentPosRef.current = null;
         collapseAnimRef.current = null;
@@ -296,7 +292,6 @@ export default function LifeOfMuhammadTimeline() {
           strokeWidth={strokeWidth}
           strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.3}
           strokeLinecap="butt" // Hardcut flat ends clipped flush at the bulge perimeter
-          filter={isNearCursor && motionBlurX > 0.05 ? "url(#dash-motion-blur)" : undefined}
         />
       );
     }
@@ -357,10 +352,6 @@ export default function LifeOfMuhammadTimeline() {
                 <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
                   <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
                   <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
-                </filter>
-                {/* Directional Motion Blur Filter for Dashes along the Scrub Axis */}
-                <filter id="dash-motion-blur" x="-50%" y="0%" width="200%" height="100%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation={`${Math.max(0, motionBlurX)} 0`} />
                 </filter>
                 {/* Gradual white radial gradient / glow towards the center of the bulge */}
                 {hoverX !== null && (
