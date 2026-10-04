@@ -69,25 +69,25 @@ export default function LifeOfMuhammadTimeline() {
 
         const dx = targetPosRef.current - currentPosRef.current;
         
-        // Speed cap: Maximum allowed speed is ~1.1 px/ms (~1100 px/sec), preventing too fast scrubbing
-        const maxStep = 1.1 * dt; 
-        let step = dx * 0.15; // Smooth damped easing
+        // Speed cap: Maximum allowed speed is ~1.2 px/ms (~1200 px/sec), preventing jarring skips
+        const maxStep = 1.2 * dt; 
+        let step = dx * 0.18; // Smooth natural follow
 
         if (Math.abs(step) > maxStep) {
           step = Math.sign(step) * maxStep;
         }
 
-        // Velocity for directional skew pull
+        // Subtler, more balanced directional skew pull
         const v = step / dt; // px/ms
         velocityRef.current = v;
-        const targetSkew = Math.max(-55, Math.min(55, v * 45));
+        const targetSkew = Math.max(-25, Math.min(25, v * 22));
 
         currentPosRef.current += step;
         const curX = currentPosRef.current;
 
         setBulgeScale(1);
         setHoverX(curX);
-        setBulgeSkew(prev => prev + (targetSkew - prev) * 0.25);
+        setBulgeSkew(prev => prev + (targetSkew - prev) * 0.20);
 
         // Update active index based on the speed-limited position
         if (containerWidth > 0) {
