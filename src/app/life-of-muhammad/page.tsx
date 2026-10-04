@@ -158,6 +158,24 @@ export default function LifeOfMuhammadTimeline() {
     return path;
   };
 
+  // SVG Bulge only path for isolated shadow/glow
+  const getBulgeOnlyPath = () => {
+    if (hoverX === null || containerWidth === 0 || bulgeScale === 0) return "";
+    const hx = hoverX;
+    const currentMaxH = maxH * bulgeScale;
+    const leftX = Math.max(0, hx - r);
+    const rightX = Math.min(containerWidth, hx + r);
+
+    let path = `M ${leftX},${cy - baseThickness} `;
+    path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - currentMaxH} ${hx},${cy - baseThickness - currentMaxH} `;
+    path += `C ${hx + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2},${cy - baseThickness} ${rightX},${cy - baseThickness} `;
+    path += `L ${rightX},${cy + baseThickness} `;
+    path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + currentMaxH} ${hx},${cy + baseThickness + currentMaxH} `;
+    path += `C ${hx - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2},${cy + baseThickness} ${leftX},${cy + baseThickness} `;
+    path += `Z`;
+    return path;
+  };
+
   // Vertical dashes that bulge in both height and thickness with the line
   const renderVerticalDashes = () => {
     if (containerWidth <= 0) return null;
@@ -244,7 +262,7 @@ export default function LifeOfMuhammadTimeline() {
             <svg 
               width="100%" 
               height="150" 
-              className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md"
+              className="absolute top-0 left-0 overflow-visible text-accent-main"
               style={{
                 WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
                 maskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
@@ -254,9 +272,24 @@ export default function LifeOfMuhammadTimeline() {
                 <clipPath id="timeline-track-clip">
                   <path d={getTimelinePath()} />
                 </clipPath>
+                {/* Clean, elegant drop shadow for the bulge */}
+                <filter id="bulge-shadow" x="-50%" y="-100%" width="200%" height="300%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="rgba(0,0,0,0.3)" />
+                  <feDropShadow dx="0" dy="12" stdDeviation="24" floodColor="var(--accent-glow, rgba(16,185,129,0.35))" />
+                </filter>
               </defs>
 
-              {/* Outer Bulging Path */}
+              {/* Bulge Drop Shadow & Glow (rendered behind the track so edges stay crisp) */}
+              {hoverX !== null && bulgeScale > 0 && (
+                <path 
+                  d={getBulgeOnlyPath()} 
+                  fill="currentColor" 
+                  filter="url(#bulge-shadow)"
+                  opacity={bulgeScale}
+                />
+              )}
+
+              {/* Base Timeline Track */}
               <path 
                 d={getTimelinePath()} 
                 fill="currentColor" 
