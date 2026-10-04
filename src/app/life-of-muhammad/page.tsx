@@ -242,17 +242,27 @@ export default function LifeOfMuhammadTimeline() {
     const apexX = hoverX !== null ? hoverX + bulgeSkew : 0;
 
     for (let i = 1; i < count; i++) {
-      const x = i * dashSpacing;
+      const origX = i * dashSpacing;
+      let x = origX;
       let halfHeight = baseThickness;
       let strokeWidth = 2;
       let isNearCursor = false;
 
       if (hoverX !== null && bulgeScale > 0) {
-        const dist = Math.abs(x - apexX);
-        if (dist < r) {
+        const origDist = Math.abs(origX - apexX);
+        if (origDist < r) {
           isNearCursor = true;
+          
+          // Non-linear expansion: push dashes away from the center proportional to sin/cosine curve
+          // This causes the spacing between adjacent dashes to widen gradually towards the apex
+          const normDist = origDist / r; // 0 at center, 1 at edge
+          // Expansion push factor that peaks at mid-radius and reaches 0 at center & boundary
+          const push = Math.sin(normDist * Math.PI) * 16 * bulgeScale;
+          x = origX + (origX > apexX ? push : -push);
+
           // Smooth cosine curve matching the bulge profile
-          const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
+          const dist = Math.abs(x - apexX);
+          const factor = 0.5 * (1 + Math.cos(Math.min(1, dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
           // Physically bulge thickness from 2px up to 5px
           strokeWidth = 2 + 3 * bulgeScale * factor;
