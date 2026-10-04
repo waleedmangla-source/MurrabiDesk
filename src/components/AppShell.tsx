@@ -66,6 +66,7 @@ export const researchNavLinks = [
   { icon: Search, label: "Research", href: "/research" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
+  { icon: BookOpen, label: "Timelines", href: "/life-of-muhammad" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 
