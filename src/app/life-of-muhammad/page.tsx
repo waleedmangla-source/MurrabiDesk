@@ -28,6 +28,7 @@ export default function LifeOfMuhammadTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -37,7 +38,10 @@ export default function LifeOfMuhammadTimeline() {
     };
     updateWidth();
     window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+    return () => {
+      window.removeEventListener('resize', updateWidth);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
@@ -53,24 +57,32 @@ export default function LifeOfMuhammadTimeline() {
     }
 
     let x = clientX - rect.left - padding;
+    const currentWidth = containerWidth;
     
     if (x < 0) x = 0;
-    if (x > containerWidth) x = containerWidth;
+    if (x > currentWidth) x = currentWidth;
 
-    setHoverX(x);
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-    if (containerWidth > 0) {
-      const step = containerWidth / (events.length - 1);
-      let newIndex = Math.round(x / step);
-      if (newIndex < 0) newIndex = 0;
-      if (newIndex >= events.length) newIndex = events.length - 1;
-      if (newIndex !== activeIndex) {
+    rafRef.current = requestAnimationFrame(() => {
+      setHoverX(x);
+
+      if (currentWidth > 0) {
+        const step = currentWidth / (events.length - 1);
+        let newIndex = Math.round(x / step);
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex >= events.length) newIndex = events.length - 1;
         setActiveIndex(newIndex);
       }
-    }
+    });
   };
 
   const handleMouseLeave = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
     setHoverX(null);
   };
 
@@ -111,17 +123,30 @@ export default function LifeOfMuhammadTimeline() {
     return path;
   };
 
-  // Vertical dashes that bulge with the line width/thickness
+  // Vertical dashes that bulge in both height and thickness with the line
   const renderVerticalDashes = () => {
     if (containerWidth <= 0) return null;
-    const dashSpacing = 7;
+    const dashSpacing = 15; // Halved the number of vertical dashes for clean spacing
     const count = Math.floor(containerWidth / dashSpacing);
     const dashes = [];
 
     for (let i = 1; i < count; i++) {
       const x = i * dashSpacing;
-      const halfHeight = getBulgeHalfHeight(x);
-      const isNearCursor = hoverX !== null && Math.abs(x - hoverX) < r;
+      let halfHeight = baseThickness;
+      let strokeWidth = 1.5;
+      let isNearCursor = false;
+
+      if (hoverX !== null) {
+        const dist = Math.abs(x - hoverX);
+        if (dist < r) {
+          isNearCursor = true;
+          // Smooth cosine curve matching the bulge profile
+          const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
+          halfHeight = baseThickness + maxH * factor;
+          // Physically bulge thickness from 1.5px up to 5px
+          strokeWidth = 1.5 + 3.5 * factor;
+        }
+      }
 
       const inset = 2;
       const y1 = cy - halfHeight + inset;
@@ -135,10 +160,9 @@ export default function LifeOfMuhammadTimeline() {
           x2={x}
           y2={y2}
           stroke="black"
-          strokeWidth="1.5"
-          strokeOpacity={isNearCursor ? 0.5 : 0.25}
+          strokeWidth={strokeWidth}
+          strokeOpacity={isNearCursor ? 0.6 : 0.25}
           strokeLinecap="round"
-          className="transition-all duration-75"
         />
       );
     }
@@ -193,7 +217,6 @@ export default function LifeOfMuhammadTimeline() {
               <path 
                 d={getTimelinePath()} 
                 fill="currentColor" 
-                className="transition-all duration-75"
               />
 
               {/* Vertical Dashes Bulging Across the Width of the Line */}
@@ -211,7 +234,7 @@ export default function LifeOfMuhammadTimeline() {
               return (
                 <div 
                   key={`top-${idx}`}
-                  className="absolute flex items-center pointer-events-none transition-all duration-75 z-10"
+                  className="absolute flex items-center pointer-events-none z-10"
                   style={{ 
                     left: `${x}px`,
                     top: `${cy - halfH}px`,
@@ -244,7 +267,7 @@ export default function LifeOfMuhammadTimeline() {
               return (
                 <div 
                   key={`bottom-${idx}`}
-                  className="absolute flex items-center pointer-events-none transition-all duration-75 z-10"
+                  className="absolute flex items-center pointer-events-none z-10"
                   style={{ 
                     left: `${x}px`,
                     top: `${cy + halfH}px`,
