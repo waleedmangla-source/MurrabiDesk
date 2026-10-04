@@ -29,6 +29,7 @@ export default function LifeOfMuhammadTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [progressWidth, setProgressWidth] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [hoverX, setHoverX] = useState<number | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!containerRef.current) return;
@@ -49,6 +50,7 @@ export default function LifeOfMuhammadTimeline() {
     if (x > containerWidth) x = containerWidth;
 
     setProgressWidth(x);
+    setHoverX(x);
 
     const step = containerWidth / (events.length - 1);
     let newIndex = Math.round(x / step);
@@ -59,6 +61,11 @@ export default function LifeOfMuhammadTimeline() {
     if (newIndex !== activeIndex) {
       setActiveIndex(newIndex);
     }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setHoverX(null);
   };
 
   return (
@@ -78,38 +85,83 @@ export default function LifeOfMuhammadTimeline() {
       {/* Timeline Scrub Area */}
       <nav 
         aria-label="Timeline navigation"
-        className="relative h-28 flex items-center px-[50px] cursor-ew-resize select-none overflow-visible shrink-0"
+        className="relative h-32 flex items-center px-[50px] cursor-ew-resize select-none overflow-visible shrink-0 group/track"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseLeave={handleMouseLeave}
       >
-        {/* Base Line */}
-        <span className="absolute left-[50px] right-[50px] h-0.5 bg-black/10 dark:bg-white/10 rounded-full" />
+        {/* Base Track (Thicker, 6px) */}
+        <span className="absolute left-[50px] right-[50px] h-1.5 bg-black/10 dark:bg-white/10 rounded-full" />
         
-        {/* Progress Line */}
+        {/* Active Progress Track (Thicker, 6px) */}
         <span 
-          className="absolute left-[50px] h-0.5 bg-accent-main rounded-full transition-all duration-100 ease-out"
+          className="absolute left-[50px] h-1.5 bg-accent-main rounded-full transition-all duration-150 ease-out shadow-sm"
           style={{ width: `${progressWidth}px` }}
+        />
+
+        {/* Dynamic Smooth Bulge Wave Following Cursor */}
+        <span 
+          className={clsx(
+            "absolute top-1/2 -translate-y-1/2 h-3.5 rounded-full pointer-events-none transition-opacity duration-300 ease-out blur-[1px]",
+            isHovering ? "opacity-100" : "opacity-0"
+          )}
+          style={{
+            left: `calc(50px + ${hoverX ?? 0}px - 45px)`,
+            width: "90px",
+            background: "radial-gradient(ellipse at center, var(--accent-main) 0%, rgba(var(--accent-rgb), 0.6) 40%, transparent 80%)",
+            transform: "translateY(-50%)",
+            transitionProperty: "opacity, transform, width",
+          }}
+        />
+
+        {/* Bulge Glow Aura */}
+        <span 
+          className={clsx(
+            "absolute top-1/2 -translate-y-1/2 w-28 h-7 -ml-14 rounded-full pointer-events-none transition-all duration-300 ease-out blur-md",
+            isHovering ? "opacity-40 bg-[var(--accent-main)]" : "opacity-0"
+          )}
+          style={{
+            left: `calc(50px + ${hoverX ?? 0}px)`,
+          }}
         />
 
         {/* Nodes */}
         {events.map((ev, idx) => {
           const isActive = idx === activeIndex;
+          
+          // Calculate distance from cursor for smooth proximity bulging
+          let proximityScale = 1;
+          if (hoverX !== null && containerRef.current) {
+            const containerWidth = containerRef.current.clientWidth - 100;
+            const nodeX = (idx / (events.length - 1)) * containerWidth;
+            const dist = Math.abs(hoverX - nodeX);
+            const maxDist = 90;
+            if (dist < maxDist) {
+              const factor = (1 - dist / maxDist);
+              proximityScale = 1 + factor * 0.9;
+            }
+          }
+
           return (
             <span 
               key={idx} 
               className={clsx(
-                "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-all duration-200 pointer-events-none z-10",
-                isActive ? "bg-accent-main border-accent-main scale-[2.2] shadow-accent-glow" : "bg-white dark:bg-v4-ink border-black/20 dark:border-white/20"
+                "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition-transform duration-200 ease-out pointer-events-none z-10",
+                isActive 
+                  ? "w-4 h-4 bg-accent-main border-white dark:border-slate-900 shadow-accent-glow" 
+                  : "w-3 h-3 bg-white dark:bg-v4-ink border-black/30 dark:border-white/30"
               )}
-              style={{ left: `calc(50px + calc(100% - 100px) * ${idx / (events.length - 1)})` }}
+              style={{ 
+                left: `calc(50px + calc(100% - 100px) * ${idx / (events.length - 1)})`,
+                transform: `translate(-50%, -50%) scale(${isActive ? Math.max(1.8, proximityScale * 1.4) : proximityScale})`,
+              }}
             >
               <span className={clsx(
-                "absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-all duration-200",
+                "absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ease-out",
                 isActive || (!isHovering && idx % 2 === 0) ? "opacity-100" : "opacity-0",
-                isActive ? "text-accent-main font-black" : "text-muted"
+                isActive ? "text-accent-main font-black scale-110" : "text-muted"
               )}>
                 {ev.year}
               </span>
