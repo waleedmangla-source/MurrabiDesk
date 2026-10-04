@@ -253,12 +253,14 @@ export default function LifeOfMuhammadTimeline() {
         if (origDist < r) {
           isNearCursor = true;
           
-          // Non-linear expansion: push dashes away from the center proportional to sin/cosine curve
-          // This causes the spacing between adjacent dashes to widen gradually towards the apex
-          const normDist = origDist / r; // 0 at center, 1 at edge
-          // Expansion push factor that peaks at mid-radius and reaches 0 at center & boundary
-          const push = Math.sin(normDist * Math.PI) * 16 * bulgeScale;
-          x = origX + (origX > apexX ? push : -push);
+          // Non-linear coordinate transformation:
+          // We stretch the coordinate space outwards from the center so that 
+          // dashes are spaced progressively further apart the closer they are to the apex (u -> 0)
+          const u = origDist / r; // 0 at center, 1 at boundary
+          // Power curve p < 1 stretches values near 0 outward, expanding center spacing
+          const warpedU = Math.pow(u, 0.58);
+          const effectiveDist = (1 - bulgeScale) * origDist + bulgeScale * (warpedU * r);
+          x = origX > apexX ? apexX + effectiveDist : apexX - effectiveDist;
 
           // Smooth cosine curve matching the bulge profile
           const dist = Math.abs(x - apexX);
