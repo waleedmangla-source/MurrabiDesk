@@ -77,9 +77,10 @@ export default function LifeOfMuhammadTimeline() {
       setHoverX(x);
 
       if (currentWidth > 0) {
-        const eventMargin = 90;
-        const eventTrackWidth = Math.max(10, currentWidth - eventMargin * 2);
-        let newIndex = Math.round(((x - eventMargin) / eventTrackWidth) * (events.length - 1));
+        const marginLeft = 40;
+        const marginRight = 160;
+        const eventTrackWidth = Math.max(10, currentWidth - marginLeft - marginRight);
+        let newIndex = Math.round(((x - marginLeft) / eventTrackWidth) * (events.length - 1));
         if (newIndex < 0) newIndex = 0;
         if (newIndex >= events.length) newIndex = events.length - 1;
         setActiveIndex(newIndex);
@@ -269,9 +270,10 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* Top Slanted Topic Titles (slanting up-right) */}
             {containerWidth > 0 && events.map((ev, idx) => {
-              const eventMargin = 90;
-              const eventTrackWidth = Math.max(10, containerWidth - eventMargin * 2);
-              const x = eventMargin + (idx / (events.length - 1)) * eventTrackWidth;
+              const marginLeft = 40;
+              const marginRight = 160;
+              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+              const x = marginLeft + (idx / (events.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
@@ -304,9 +306,10 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* Bottom Slanted Dates (slanting down-right) */}
             {containerWidth > 0 && events.map((ev, idx) => {
-              const eventMargin = 90;
-              const eventTrackWidth = Math.max(10, containerWidth - eventMargin * 2);
-              const x = eventMargin + (idx / (events.length - 1)) * eventTrackWidth;
+              const marginLeft = 40;
+              const marginRight = 160;
+              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+              const x = marginLeft + (idx / (events.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
 
