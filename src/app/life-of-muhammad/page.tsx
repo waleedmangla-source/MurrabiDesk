@@ -270,9 +270,9 @@ export default function LifeOfMuhammadTimeline() {
           y1={y1}
           x2={x}
           y2={y2}
-          stroke="black"
+          stroke="#064e3b" // Deep dark emerald (#064e3b - darker version of theme color)
           strokeWidth={strokeWidth}
-          strokeOpacity={isNearCursor ? 0.25 + 0.35 * bulgeScale : 0.25}
+          strokeOpacity={isNearCursor ? 0.35 + 0.45 * bulgeScale : 0.3}
           strokeLinecap="round"
         />
       );
