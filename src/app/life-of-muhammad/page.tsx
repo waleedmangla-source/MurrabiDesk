@@ -251,15 +251,21 @@ export default function LifeOfMuhammadTimeline() {
         const dist = Math.abs(x - apexX);
         if (dist < r) {
           isNearCursor = true;
-          // Thin out dashes in the bulge: skip every alternate line so the bulge has fewer lines
-          if (i % 2 !== 0) {
-            continue;
-          }
           // Smooth cosine curve matching the bulge profile
           const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
           // Physically bulge thickness from 2px up to 5px
           strokeWidth = 2 + 3 * bulgeScale * factor;
+        } else {
+          // Outside the bulge: fewer lines on the rest of the track
+          if (i % 2 !== 0) {
+            continue;
+          }
+        }
+      } else {
+        // Default resting state: fewer lines across the line
+        if (i % 2 !== 0) {
+          continue;
         }
       }
 
