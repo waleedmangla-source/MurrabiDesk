@@ -106,10 +106,20 @@ export default function LifeOfMuhammadTimeline() {
   return (
     <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-700">
       
+      {/* Page Header */}
+      <header className="pt-6 lg:pt-8 px-6 text-center shrink-0 z-20">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black italic tracking-tight text-main uppercase">
+          The Life of The Holy Prophet <span className="text-accent-main font-bold normal-case tracking-normal">(PBUH)</span>
+        </h1>
+        <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-accent-main opacity-80 mt-1">
+          Chronological Timeline
+        </p>
+      </header>
+
       {/* Top Title Section */}
-      <section className="flex-1 flex flex-col justify-end items-center pb-8 lg:pb-12 px-4 relative z-10">
-         <div className="glass px-8 py-5 rounded-3xl relative min-w-[300px] text-center shadow-sm">
-            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-main uppercase">
+      <section className="flex-1 flex flex-col justify-end items-center pb-6 lg:pb-8 px-4 relative z-10">
+         <div className="glass px-8 py-4 lg:py-5 rounded-3xl relative min-w-[300px] text-center shadow-sm">
+            <h2 className="text-2xl md:text-4xl font-black italic tracking-tighter text-main uppercase">
                {activeEvent.title}
             </h2>
             {/* Speech bubble tail */}
