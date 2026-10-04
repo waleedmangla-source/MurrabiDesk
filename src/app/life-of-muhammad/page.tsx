@@ -80,8 +80,7 @@ export default function LifeOfMuhammadTimeline() {
         // Subtler, more balanced directional skew pull
         const v = step / dt; // px/ms
         velocityRef.current = v;
-        // Dynamic motion blur amount strictly along horizontal scrubbing axis (max ~4.5px blur during fast scrub)
-        const targetBlur = Math.min(4.5, Math.abs(v) * 3.8);
+        const targetSkew = Math.max(-25, Math.min(25, v * 22));
 
         currentPosRef.current += step;
         const curX = currentPosRef.current;
