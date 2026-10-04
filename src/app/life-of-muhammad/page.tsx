@@ -268,16 +268,6 @@ export default function LifeOfMuhammadTimeline() {
           halfHeight = baseThickness + maxH * bulgeScale * factor;
           // Physically bulge thickness from 2px up to 5px
           strokeWidth = 2 + 3 * bulgeScale * factor;
-        } else {
-          // Outside the bulge: fewer lines on the rest of the track
-          if (i % 2 !== 0) {
-            continue;
-          }
-        }
-      } else {
-        // Default resting state: fewer lines across the line
-        if (i % 2 !== 0) {
-          continue;
         }
       }
 
