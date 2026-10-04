@@ -78,8 +78,8 @@ export default function LifeOfMuhammadTimeline() {
   const getTimelinePath = () => {
     const cy = 20; // center of SVG height
     const baseThickness = 4;
-    const r = 60; // bulge width radius
-    const maxH = 14; // bulge height
+    const r = 70; // bulge width radius (increased for bigger bulge)
+    const maxH = 22; // bulge height (increased for bigger bulge)
 
     let path = "";
     if (hoverX === null || containerWidth === 0) {
@@ -159,10 +159,18 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* SVG Track - we place it slightly overlapping so the slanted lines look like they come out of it */}
             <svg width="100%" height="40" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
+              {/* Outer Bulging Path */}
               <path 
                 d={getTimelinePath()} 
                 fill="currentColor" 
                 className="transition-all duration-75"
+              />
+              {/* Inner Dashed Line */}
+              <line 
+                x1="0" y1="20" x2="100%" y2="20" 
+                stroke="black" strokeWidth="2" strokeDasharray="8 6" 
+                opacity="0.25" 
+                className="pointer-events-none"
               />
             </svg>
           </div>
