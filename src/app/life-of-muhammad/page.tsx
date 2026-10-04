@@ -74,11 +74,20 @@ export default function LifeOfMuhammadTimeline() {
     setHoverX(null);
   };
 
-  // SVG Bulge parameters
-  const cy = 20;
-  const baseThickness = 5;
-  const r = 80;
-  const maxH = 26;
+  // SVG Bulge parameters (3x bigger bulge)
+  const cy = 75;
+  const baseThickness = 6;
+  const r = 140;
+  const maxH = 68;
+
+  // Helper to get half-height at coordinate x
+  const getBulgeHalfHeight = (x: number) => {
+    if (hoverX === null) return baseThickness;
+    const dist = Math.abs(x - hoverX);
+    if (dist >= r) return baseThickness;
+    const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
+    return baseThickness + maxH * factor;
+  };
 
   // SVG Bulge generation
   const getTimelinePath = () => {
@@ -105,26 +114,16 @@ export default function LifeOfMuhammadTimeline() {
   // Vertical dashes that bulge with the line width/thickness
   const renderVerticalDashes = () => {
     if (containerWidth <= 0) return null;
-    const dashSpacing = 8;
+    const dashSpacing = 7;
     const count = Math.floor(containerWidth / dashSpacing);
     const dashes = [];
 
     for (let i = 1; i < count; i++) {
       const x = i * dashSpacing;
-      let halfHeight = baseThickness;
-      let isNearCursor = false;
+      const halfHeight = getBulgeHalfHeight(x);
+      const isNearCursor = hoverX !== null && Math.abs(x - hoverX) < r;
 
-      if (hoverX !== null) {
-        const dist = Math.abs(x - hoverX);
-        if (dist < r) {
-          isNearCursor = true;
-          // Smooth cosine curve matching the bulge profile
-          const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
-          halfHeight = baseThickness + maxH * factor;
-        }
-      }
-
-      const inset = 1.5;
+      const inset = 2;
       const y1 = cy - halfHeight + inset;
       const y2 = cy + halfHeight - inset;
 
@@ -137,7 +136,7 @@ export default function LifeOfMuhammadTimeline() {
           y2={y2}
           stroke="black"
           strokeWidth="1.5"
-          strokeOpacity={isNearCursor ? 0.5 : 0.28}
+          strokeOpacity={isNearCursor ? 0.5 : 0.25}
           strokeLinecap="round"
           className="transition-all duration-75"
         />
@@ -180,18 +179,42 @@ export default function LifeOfMuhammadTimeline() {
         onTouchMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 px-[50px] flex items-center mt-12">
-          <div className="relative w-full h-[40px]">
+        <div className="absolute inset-0 px-[50px] flex items-center">
+          <div className="relative w-full h-[150px]">
+            {/* SVG Track */}
+            <svg width="100%" height="150" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
+              <defs>
+                <clipPath id="timeline-track-clip">
+                  <path d={getTimelinePath()} />
+                </clipPath>
+              </defs>
+
+              {/* Outer Bulging Path */}
+              <path 
+                d={getTimelinePath()} 
+                fill="currentColor" 
+                className="transition-all duration-75"
+              />
+
+              {/* Vertical Dashes Bulging Across the Width of the Line */}
+              <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
+                {renderVerticalDashes()}
+              </g>
+            </svg>
+
             {/* The Slanted Labels Container */}
             {containerWidth > 0 && events.map((ev, idx) => {
               const x = (idx / (events.length - 1)) * containerWidth;
               const isActive = idx === activeIndex;
+              const halfH = getBulgeHalfHeight(x);
+
               return (
                 <div 
                   key={idx}
-                  className="absolute top-[20px] flex items-center pointer-events-none transition-all duration-300"
+                  className="absolute flex items-center pointer-events-none transition-all duration-75 z-10"
                   style={{ 
                     left: `${x}px`,
+                    top: `${cy - halfH}px`,
                     transform: `translate(0, -50%) rotate(-45deg)`,
                     transformOrigin: '0 50%'
                   }}
@@ -211,27 +234,6 @@ export default function LifeOfMuhammadTimeline() {
                 </div>
               );
             })}
-
-            {/* SVG Track - we place it slightly overlapping so the slanted lines look like they come out of it */}
-            <svg width="100%" height="40" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
-              <defs>
-                <clipPath id="timeline-track-clip">
-                  <path d={getTimelinePath()} />
-                </clipPath>
-              </defs>
-
-              {/* Outer Bulging Path */}
-              <path 
-                d={getTimelinePath()} 
-                fill="currentColor" 
-                className="transition-all duration-75"
-              />
-
-              {/* Vertical Dashes Bulging Across the Width of the Line */}
-              <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
-                {renderVerticalDashes()}
-              </g>
-            </svg>
           </div>
         </div>
       </section>
