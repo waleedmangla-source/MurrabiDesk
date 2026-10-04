@@ -121,7 +121,7 @@ export default function LifeOfMuhammadTimeline() {
   };
 
   // SVG Bulge parameters (3x bigger bulge)
-  const cy = 75;
+  const cy = 120;
   const baseThickness = 6;
   const r = 140;
   const maxH = 68;
@@ -257,11 +257,11 @@ export default function LifeOfMuhammadTimeline() {
         onMouseLeave={handleMouseLeave}
       >
         <div className="absolute inset-0 flex items-center">
-          <div className="relative w-full h-[150px]">
+          <div className="relative w-full h-[240px]">
             {/* SVG Track spanning edge to edge with fade out near the edges */}
             <svg 
               width="100%" 
-              height="150" 
+              height="240" 
               className="absolute top-0 left-0 overflow-visible text-accent-main"
               style={{
                 WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 90px, black calc(100% - 90px), transparent 100%)',
@@ -272,10 +272,10 @@ export default function LifeOfMuhammadTimeline() {
                 <clipPath id="timeline-track-clip">
                   <path d={getTimelinePath()} />
                 </clipPath>
-                {/* Clean, elegant drop shadow for the bulge */}
-                <filter id="bulge-shadow" x="-50%" y="-100%" width="200%" height="300%">
-                  <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="rgba(0,0,0,0.3)" />
-                  <feDropShadow dx="0" dy="12" stdDeviation="24" floodColor="var(--accent-glow, rgba(16,185,129,0.35))" />
+                {/* Generous filter region with soft shadow and glow */}
+                <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
+                  <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
                 </filter>
               </defs>
 
