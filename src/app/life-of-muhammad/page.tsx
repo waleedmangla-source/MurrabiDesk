@@ -347,22 +347,20 @@ export default function LifeOfMuhammadTimeline() {
                   <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
                   <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
                 </filter>
-                {/* Gradual horizontal white gradient towards the center of the bulge */}
+                {/* Gradual white radial gradient / glow towards the center of the bulge */}
                 {hoverX !== null && (
-                  <linearGradient 
+                  <radialGradient 
                     id="bulge-white-gradient" 
-                    x1={(hoverX + bulgeSkew) - r} 
-                    y1="0" 
-                    x2={(hoverX + bulgeSkew) + r} 
-                    y2="0" 
+                    cx={hoverX + bulgeSkew} 
+                    cy={cy} 
+                    r={r} 
                     gradientUnits="userSpaceOnUse"
                   >
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.0" />
-                    <stop offset="25%" stopColor="#ffffff" stopOpacity="0.15" />
-                    <stop offset="50%" stopColor="#ffffff" stopOpacity="0.45" />
-                    <stop offset="75%" stopColor="#ffffff" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
-                  </linearGradient>
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+                    <stop offset="45%" stopColor="#ffffff" stopOpacity="0.2" />
+                    <stop offset="85%" stopColor="#ffffff" stopOpacity="0.0" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                  </radialGradient>
                 )}
               </defs>
 
