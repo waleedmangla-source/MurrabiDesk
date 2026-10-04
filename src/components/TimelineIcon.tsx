@@ -17,14 +17,14 @@ export default function TimelineIcon({
     <svg
       width={size}
       height={size}
-      viewBox="0 0 512 512"
+      viewBox="70 30 372 452"
       fill="none"
       className={clsx("shrink-0", className)}
     >
       <defs>
         <mask id={maskId}>
           {/* Include all graphic elements */}
-          <rect width="512" height="512" fill="white" />
+          <rect x="0" y="0" width="100%" height="100%" fill="white" />
           {/* Punch out hollow centers of circles */}
           <circle cx="154" cy="116" r="16" fill="black" />
           <circle cx="358" cy="116" r="16" fill="black" />
