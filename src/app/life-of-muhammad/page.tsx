@@ -74,13 +74,14 @@ export default function LifeOfMuhammadTimeline() {
     setHoverX(null);
   };
 
+  // SVG Bulge parameters
+  const cy = 20;
+  const baseThickness = 5;
+  const r = 80;
+  const maxH = 26;
+
   // SVG Bulge generation
   const getTimelinePath = () => {
-    const cy = 20; // center of SVG height
-    const baseThickness = 4;
-    const r = 70; // bulge width radius (increased for bigger bulge)
-    const maxH = 22; // bulge height (increased for bigger bulge)
-
     let path = "";
     if (hoverX === null || containerWidth === 0) {
       path = `M 0,${cy - baseThickness} L ${containerWidth},${cy - baseThickness} L ${containerWidth},${cy + baseThickness} L 0,${cy + baseThickness} Z`;
@@ -99,6 +100,50 @@ export default function LifeOfMuhammadTimeline() {
       path += `L 0,${cy + baseThickness} Z`;
     }
     return path;
+  };
+
+  // Vertical dashes that bulge with the line width/thickness
+  const renderVerticalDashes = () => {
+    if (containerWidth <= 0) return null;
+    const dashSpacing = 8;
+    const count = Math.floor(containerWidth / dashSpacing);
+    const dashes = [];
+
+    for (let i = 1; i < count; i++) {
+      const x = i * dashSpacing;
+      let halfHeight = baseThickness;
+      let isNearCursor = false;
+
+      if (hoverX !== null) {
+        const dist = Math.abs(x - hoverX);
+        if (dist < r) {
+          isNearCursor = true;
+          // Smooth cosine curve matching the bulge profile
+          const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
+          halfHeight = baseThickness + maxH * factor;
+        }
+      }
+
+      const inset = 1.5;
+      const y1 = cy - halfHeight + inset;
+      const y2 = cy + halfHeight - inset;
+
+      dashes.push(
+        <line
+          key={i}
+          x1={x}
+          y1={y1}
+          x2={x}
+          y2={y2}
+          stroke="black"
+          strokeWidth="1.5"
+          strokeOpacity={isNearCursor ? 0.5 : 0.28}
+          strokeLinecap="round"
+          className="transition-all duration-75"
+        />
+      );
+    }
+    return dashes;
   };
 
   const activeEvent = events[activeIndex] || events[0];
@@ -169,19 +214,23 @@ export default function LifeOfMuhammadTimeline() {
 
             {/* SVG Track - we place it slightly overlapping so the slanted lines look like they come out of it */}
             <svg width="100%" height="40" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
+              <defs>
+                <clipPath id="timeline-track-clip">
+                  <path d={getTimelinePath()} />
+                </clipPath>
+              </defs>
+
               {/* Outer Bulging Path */}
               <path 
                 d={getTimelinePath()} 
                 fill="currentColor" 
                 className="transition-all duration-75"
               />
-              {/* Inner Dashed Line */}
-              <line 
-                x1="0" y1="20" x2="100%" y2="20" 
-                stroke="black" strokeWidth="2" strokeDasharray="8 6" 
-                opacity="0.25" 
-                className="pointer-events-none"
-              />
+
+              {/* Vertical Dashes Bulging Across the Width of the Line */}
+              <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
+                {renderVerticalDashes()}
+              </g>
             </svg>
           </div>
         </div>
