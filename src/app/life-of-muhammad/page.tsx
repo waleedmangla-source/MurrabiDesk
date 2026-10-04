@@ -335,6 +335,21 @@ export default function LifeOfMuhammadTimeline() {
                   <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
                   <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
                 </filter>
+                {/* Gradual white gradient towards the center of the bulge */}
+                {hoverX !== null && (
+                  <radialGradient 
+                    id="bulge-white-gradient" 
+                    cx={hoverX + bulgeSkew} 
+                    cy={cy} 
+                    r={r} 
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+                    <stop offset="45%" stopColor="#ffffff" stopOpacity="0.2" />
+                    <stop offset="85%" stopColor="#ffffff" stopOpacity="0.0" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                  </radialGradient>
+                )}
               </defs>
 
               {/* Bulge Drop Shadow & Glow (rendered behind the track so edges stay crisp) */}
@@ -352,6 +367,16 @@ export default function LifeOfMuhammadTimeline() {
                 d={getTimelinePath()} 
                 fill="currentColor" 
               />
+
+              {/* Gradual White Gradient Towards the Bulge Center */}
+              {hoverX !== null && bulgeScale > 0 && (
+                <path 
+                  d={getBulgeOnlyPath()} 
+                  fill="url(#bulge-white-gradient)" 
+                  opacity={bulgeScale}
+                  className="pointer-events-none"
+                />
+              )}
 
               {/* Vertical Dashes Bulging Across the Width of the Line */}
               <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
