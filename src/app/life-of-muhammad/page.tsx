@@ -219,7 +219,7 @@ export default function LifeOfMuhammadTimeline() {
       </header>
 
       {/* Top Title Section */}
-      <section className="flex-[0.75] flex flex-col justify-end items-center pb-4 lg:pb-5 px-4 relative z-10">
+      <section className="flex-[0.25] flex flex-col justify-end items-center pb-3 lg:pb-4 px-4 relative z-10">
          <div className="glass px-8 py-3.5 lg:py-4 rounded-2xl relative min-w-[280px] max-w-xl text-center shadow-sm">
             <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-main uppercase">
                {activeEvent.title}
@@ -341,7 +341,7 @@ export default function LifeOfMuhammadTimeline() {
       </section>
 
       {/* Bottom Information Section */}
-      <section className="flex-1 flex flex-col justify-start items-center pt-4 lg:pt-6 px-4 z-10">
+      <section className="flex-1 flex flex-col justify-start items-center pt-12 lg:pt-14 px-4 z-10">
         <article className="glass p-8 rounded-3xl max-w-3xl text-center border border-[var(--glass-border)] shadow-sm min-h-[160px] flex items-center justify-center">
           <p className="text-lg md:text-xl text-muted leading-relaxed font-normal">
             {activeEvent.desc}
