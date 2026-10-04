@@ -33,6 +33,7 @@ import SidebarDrawer from "@/components/SidebarDrawer";
 import { GoogleSyncService } from "@/lib/google-sync-service";
 import ScreensaverModal from "@/components/ScreensaverModal";
 import AIBlobIcon from "@/components/AIBlobIcon";
+import TimelineIcon from "@/components/TimelineIcon";
 import { useEmails } from "@/context/EmailContext";
 
 const ACCENT_COLORS: Record<
@@ -66,7 +67,7 @@ export const researchNavLinks = [
   { icon: Search, label: "Research", href: "/research" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
-  { icon: BookOpen, label: "Timelines", href: "/life-of-muhammad" },
+  { icon: TimelineIcon, label: "Timelines", href: "/life-of-muhammad" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
 ];
 
