@@ -29,8 +29,12 @@ export default function LifeOfMuhammadTimeline() {
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [bulgeScale, setBulgeScale] = useState(0);
+  const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
+  const lastMousePosRef = useRef<{ x: number; time: number } | null>(null);
+  const velocityRef = useRef<number>(0);
   const rafRef = useRef<number | null>(null);
   const collapseAnimRef = useRef<number | null>(null);
+  const skewSpringRef = useRef<number | null>(null);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -44,6 +48,7 @@ export default function LifeOfMuhammadTimeline() {
       window.removeEventListener('resize', updateWidth);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (collapseAnimRef.current) cancelAnimationFrame(collapseAnimRef.current);
+      if (skewSpringRef.current) cancelAnimationFrame(skewSpringRef.current);
     };
   }, []);
 
@@ -64,6 +69,22 @@ export default function LifeOfMuhammadTimeline() {
     if (x < 0) x = 0;
     if (x > currentWidth) x = currentWidth;
 
+    const now = performance.now();
+    let currentSkew = bulgeSkew;
+
+    if (lastMousePosRef.current) {
+      const dt = Math.max(1, now - lastMousePosRef.current.time);
+      const dx = x - lastMousePosRef.current.x;
+      // Velocity in px/ms
+      const v = dx / dt;
+      velocityRef.current = v;
+      // Target skew in direction of travel (max ~35px pull)
+      const targetSkew = Math.max(-35, Math.min(35, v * 28));
+      // Smooth lerp into the direction of pull
+      currentSkew = currentSkew + (targetSkew - currentSkew) * 0.45;
+    }
+    lastMousePosRef.current = { x, time: now };
+
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
@@ -71,9 +92,14 @@ export default function LifeOfMuhammadTimeline() {
       cancelAnimationFrame(collapseAnimRef.current);
       collapseAnimRef.current = null;
     }
+    if (skewSpringRef.current) {
+      cancelAnimationFrame(skewSpringRef.current);
+      skewSpringRef.current = null;
+    }
 
     rafRef.current = requestAnimationFrame(() => {
       setBulgeScale(1);
+      setBulgeSkew(currentSkew);
       setHoverX(x);
 
       if (currentWidth > 0) {
@@ -85,13 +111,30 @@ export default function LifeOfMuhammadTimeline() {
         if (newIndex >= events.length) newIndex = events.length - 1;
         setActiveIndex(newIndex);
       }
+
+      // Smoothly return skew towards 0 when scrub slows down or holds still
+      const decaySkew = () => {
+        setBulgeSkew(prev => {
+          if (Math.abs(prev) < 0.2) return 0;
+          const next = prev * 0.88;
+          skewSpringRef.current = requestAnimationFrame(decaySkew);
+          return next;
+        });
+      };
+      skewSpringRef.current = requestAnimationFrame(decaySkew);
     });
   };
 
   const handleMouseLeave = () => {
+    lastMousePosRef.current = null;
+    velocityRef.current = 0;
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
+    }
+    if (skewSpringRef.current) {
+      cancelAnimationFrame(skewSpringRef.current);
+      skewSpringRef.current = null;
     }
     if (collapseAnimRef.current) {
       cancelAnimationFrame(collapseAnimRef.current);
@@ -100,18 +143,22 @@ export default function LifeOfMuhammadTimeline() {
     const duration = 380; // Faster, snappier duration
     const startTime = performance.now();
     const startScale = bulgeScale > 0 ? bulgeScale : 1;
+    const startSkew = bulgeSkew;
 
     const animateCollapse = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
       // Pronounced ease-out curve (quartic-style): shrinks swiftly then cushions softly into straight line
       const currentScale = startScale * Math.pow(1 - progress, 3.5);
+      const currentSkew = startSkew * Math.pow(1 - progress, 3.5);
 
       if (progress < 1) {
         setBulgeScale(currentScale);
+        setBulgeSkew(currentSkew);
         collapseAnimRef.current = requestAnimationFrame(animateCollapse);
       } else {
         setBulgeScale(0);
+        setBulgeSkew(0);
         setHoverX(null);
         collapseAnimRef.current = null;
       }
@@ -126,33 +173,35 @@ export default function LifeOfMuhammadTimeline() {
   const r = 140;
   const maxH = 68;
 
-  // Helper to get half-height at coordinate x
+  // Helper to get half-height at coordinate x (incorporating dynamic directional pull)
   const getBulgeHalfHeight = (x: number) => {
     if (hoverX === null || bulgeScale === 0) return baseThickness;
-    const dist = Math.abs(x - hoverX);
+    const apexX = hoverX + bulgeSkew;
+    const dist = Math.abs(x - apexX);
     if (dist >= r) return baseThickness;
     const factor = 0.5 * (1 + Math.cos((dist / r) * Math.PI));
     return baseThickness + maxH * bulgeScale * factor;
   };
 
-  // SVG Bulge generation
+  // SVG Bulge generation with directional pull skew
   const getTimelinePath = () => {
     let path = "";
     if (hoverX === null || containerWidth === 0 || bulgeScale === 0) {
       path = `M 0,${cy - baseThickness} L ${containerWidth},${cy - baseThickness} L ${containerWidth},${cy + baseThickness} L 0,${cy + baseThickness} Z`;
     } else {
       const hx = hoverX;
+      const apexX = hx + bulgeSkew;
       const currentMaxH = maxH * bulgeScale;
       path += `M 0,${cy - baseThickness} `;
       path += `L ${Math.max(0, hx - r)},${cy - baseThickness} `;
-      path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - currentMaxH} ${hx},${cy - baseThickness - currentMaxH} `;
-      path += `C ${hx + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2},${cy - baseThickness} ${Math.min(containerWidth, hx + r)},${cy - baseThickness} `;
+      path += `C ${hx - r/2 + bulgeSkew * 0.4},${cy - baseThickness} ${apexX - r/2},${cy - baseThickness - currentMaxH} ${apexX},${cy - baseThickness - currentMaxH} `;
+      path += `C ${apexX + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2 + bulgeSkew * 0.4},${cy - baseThickness} ${Math.min(containerWidth, hx + r)},${cy - baseThickness} `;
       path += `L ${containerWidth},${cy - baseThickness} `;
       
       path += `L ${containerWidth},${cy + baseThickness} `;
       path += `L ${Math.min(containerWidth, hx + r)},${cy + baseThickness} `;
-      path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + currentMaxH} ${hx},${cy + baseThickness + currentMaxH} `;
-      path += `C ${hx - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2},${cy + baseThickness} ${Math.max(0, hx - r)},${cy + baseThickness} `;
+      path += `C ${hx + r/2 + bulgeSkew * 0.4},${cy + baseThickness} ${apexX + r/2},${cy + baseThickness + currentMaxH} ${apexX},${cy + baseThickness + currentMaxH} `;
+      path += `C ${apexX - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2 + bulgeSkew * 0.4},${cy + baseThickness} ${Math.max(0, hx - r)},${cy + baseThickness} `;
       path += `L 0,${cy + baseThickness} Z`;
     }
     return path;
@@ -162,16 +211,17 @@ export default function LifeOfMuhammadTimeline() {
   const getBulgeOnlyPath = () => {
     if (hoverX === null || containerWidth === 0 || bulgeScale === 0) return "";
     const hx = hoverX;
+    const apexX = hx + bulgeSkew;
     const currentMaxH = maxH * bulgeScale;
     const leftX = Math.max(0, hx - r);
     const rightX = Math.min(containerWidth, hx + r);
 
     let path = `M ${leftX},${cy - baseThickness} `;
-    path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - currentMaxH} ${hx},${cy - baseThickness - currentMaxH} `;
-    path += `C ${hx + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2},${cy - baseThickness} ${rightX},${cy - baseThickness} `;
+    path += `C ${hx - r/2 + bulgeSkew * 0.4},${cy - baseThickness} ${apexX - r/2},${cy - baseThickness - currentMaxH} ${apexX},${cy - baseThickness - currentMaxH} `;
+    path += `C ${apexX + r/2},${cy - baseThickness - currentMaxH} ${hx + r/2 + bulgeSkew * 0.4},${cy - baseThickness} ${rightX},${cy - baseThickness} `;
     path += `L ${rightX},${cy + baseThickness} `;
-    path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + currentMaxH} ${hx},${cy + baseThickness + currentMaxH} `;
-    path += `C ${hx - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2},${cy + baseThickness} ${leftX},${cy + baseThickness} `;
+    path += `C ${hx + r/2 + bulgeSkew * 0.4},${cy + baseThickness} ${apexX + r/2},${cy + baseThickness + currentMaxH} ${apexX},${cy + baseThickness + currentMaxH} `;
+    path += `C ${apexX - r/2},${cy + baseThickness + currentMaxH} ${hx - r/2 + bulgeSkew * 0.4},${cy + baseThickness} ${leftX},${cy + baseThickness} `;
     path += `Z`;
     return path;
   };
@@ -182,6 +232,7 @@ export default function LifeOfMuhammadTimeline() {
     const dashSpacing = 15; // Halved the number of vertical dashes for clean spacing
     const count = Math.floor(containerWidth / dashSpacing);
     const dashes = [];
+    const apexX = hoverX !== null ? hoverX + bulgeSkew : 0;
 
     for (let i = 1; i < count; i++) {
       const x = i * dashSpacing;
@@ -190,7 +241,7 @@ export default function LifeOfMuhammadTimeline() {
       let isNearCursor = false;
 
       if (hoverX !== null && bulgeScale > 0) {
-        const dist = Math.abs(x - hoverX);
+        const dist = Math.abs(x - apexX);
         if (dist < r) {
           isNearCursor = true;
           // Smooth cosine curve matching the bulge profile
@@ -250,7 +301,7 @@ export default function LifeOfMuhammadTimeline() {
 
       {/* Middle Timeline Track Section */}
       <section 
-        className="relative h-72 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20 mt-8 lg:mt-10"
+        className="relative h-72 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-8 lg:mt-10"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
