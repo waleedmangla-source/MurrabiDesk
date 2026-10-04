@@ -173,7 +173,7 @@ export default function LifeOfMuhammadTimeline() {
 
       {/* Middle Timeline Track Section */}
       <section 
-        className="relative h-64 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20"
+        className="relative h-72 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
@@ -202,7 +202,7 @@ export default function LifeOfMuhammadTimeline() {
               </g>
             </svg>
 
-            {/* The Slanted Labels Container */}
+            {/* Top Slanted Topic Titles (slanting up-right) */}
             {containerWidth > 0 && events.map((ev, idx) => {
               const x = (idx / (events.length - 1)) * containerWidth;
               const isActive = idx === activeIndex;
@@ -210,7 +210,7 @@ export default function LifeOfMuhammadTimeline() {
 
               return (
                 <div 
-                  key={idx}
+                  key={`top-${idx}`}
                   className="absolute flex items-center pointer-events-none transition-all duration-75 z-10"
                   style={{ 
                     left: `${x}px`,
@@ -219,15 +219,48 @@ export default function LifeOfMuhammadTimeline() {
                     transformOrigin: '0 50%'
                   }}
                 >
-                   {/* The white slanted line */}
+                   {/* The slanted tick */}
                    <div className={clsx(
-                     "h-[3px] transition-all duration-300 rounded-full", 
-                     isActive ? "w-16 bg-accent-main" : "w-12 bg-main opacity-20 dark:opacity-40"
+                     "h-[2.5px] transition-all duration-300 rounded-full", 
+                     isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-10 bg-main opacity-25 dark:opacity-40"
                    )} />
-                   {/* The label */}
+                   {/* The topic title */}
                    <span className={clsx(
-                     "ml-3 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                     isActive ? "text-accent-main scale-110" : "text-muted"
+                     "ml-2.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
+                     isActive ? "text-accent-main scale-110 drop-shadow-sm opacity-100" : "text-muted opacity-60"
+                   )}>
+                     {ev.title}
+                   </span>
+                </div>
+              );
+            })}
+
+            {/* Bottom Slanted Dates (slanting down-right) */}
+            {containerWidth > 0 && events.map((ev, idx) => {
+              const x = (idx / (events.length - 1)) * containerWidth;
+              const isActive = idx === activeIndex;
+              const halfH = getBulgeHalfHeight(x);
+
+              return (
+                <div 
+                  key={`bottom-${idx}`}
+                  className="absolute flex items-center pointer-events-none transition-all duration-75 z-10"
+                  style={{ 
+                    left: `${x}px`,
+                    top: `${cy + halfH}px`,
+                    transform: `translate(0, -50%) rotate(45deg)`,
+                    transformOrigin: '0 50%'
+                  }}
+                >
+                   {/* The slanted tick */}
+                   <div className={clsx(
+                     "h-[2.5px] transition-all duration-300 rounded-full", 
+                     isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-10 bg-main opacity-25 dark:opacity-40"
+                   )} />
+                   {/* The date label */}
+                   <span className={clsx(
+                     "ml-2.5 text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                     isActive ? "text-accent-main font-black scale-110 drop-shadow-sm opacity-100" : "text-muted opacity-60"
                    )}>
                      {ev.year}
                    </span>
@@ -239,7 +272,7 @@ export default function LifeOfMuhammadTimeline() {
       </section>
 
       {/* Bottom Information Section */}
-      <section className="flex-1 flex flex-col justify-start items-center pt-8 lg:pt-12 px-4 z-10">
+      <section className="flex-1 flex flex-col justify-start items-center pt-4 lg:pt-6 px-4 z-10">
         <article className="glass p-8 rounded-3xl max-w-3xl text-center border border-[var(--glass-border)] shadow-sm min-h-[160px] flex items-center justify-center">
           <p className="text-lg md:text-xl text-muted leading-relaxed font-normal">
             {activeEvent.desc}
