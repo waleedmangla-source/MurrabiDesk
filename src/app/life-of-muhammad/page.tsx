@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { clsx } from "clsx";
-import { Clock } from "lucide-react";
 
 const events = [
   { year: "570 A.D.", title: "Birth in Mecca", desc: "The Prophet (sa) was born in Mecca in August 570 A.D. He was given the name Muhammad, which means 'The Praised One'." },
@@ -25,11 +24,21 @@ const events = [
 ];
 
 export default function LifeOfMuhammadTimeline() {
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [progressWidth, setProgressWidth] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
   const [hoverX, setHoverX] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth - 100); // 50px padding on each side
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!containerRef.current) return;
@@ -44,155 +53,131 @@ export default function LifeOfMuhammadTimeline() {
     }
 
     let x = clientX - rect.left - padding;
-    const containerWidth = rect.width - (padding * 2);
     
     if (x < 0) x = 0;
     if (x > containerWidth) x = containerWidth;
 
-    setProgressWidth(x);
     setHoverX(x);
 
-    const step = containerWidth / (events.length - 1);
-    let newIndex = Math.round(x / step);
-    
-    if (newIndex < 0) newIndex = 0;
-    if (newIndex >= events.length) newIndex = events.length - 1;
-
-    if (newIndex !== activeIndex) {
-      setActiveIndex(newIndex);
+    if (containerWidth > 0) {
+      const step = containerWidth / (events.length - 1);
+      let newIndex = Math.round(x / step);
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= events.length) newIndex = events.length - 1;
+      if (newIndex !== activeIndex) {
+        setActiveIndex(newIndex);
+      }
     }
   };
 
   const handleMouseLeave = () => {
-    setIsHovering(false);
     setHoverX(null);
   };
 
-  return (
-    <main className="main-content flex flex-col gap-6 lg:gap-8 pb-8 lg:pb-12 animate-in fade-in duration-700 lg:h-screen lg:overflow-hidden">
-      {/* Header */}
-      <header className="flex items-end justify-between mb-1 lg:mb-2">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-main uppercase">
-            Life of Muhammad <span className="text-xl text-accent-main">(sa)</span>
-          </h1>
-          <p className="text-sm font-bold uppercase tracking-widest text-accent-main opacity-80 mt-1">
-            Interactive Timeline
-          </p>
-        </div>
-      </header>
+  // SVG Bulge generation
+  const getTimelinePath = () => {
+    const cy = 20; // center of SVG height
+    const baseThickness = 4;
+    const r = 60; // bulge width radius
+    const maxH = 14; // bulge height
 
-      {/* Timeline Scrub Area */}
-      <nav 
-        aria-label="Timeline navigation"
-        className="relative h-32 flex items-center px-[50px] cursor-ew-resize select-none overflow-visible shrink-0 group/track"
+    let path = "";
+    if (hoverX === null || containerWidth === 0) {
+      path = `M 0,${cy - baseThickness} L ${containerWidth},${cy - baseThickness} L ${containerWidth},${cy + baseThickness} L 0,${cy + baseThickness} Z`;
+    } else {
+      const hx = hoverX;
+      path += `M 0,${cy - baseThickness} `;
+      path += `L ${Math.max(0, hx - r)},${cy - baseThickness} `;
+      path += `C ${hx - r/2},${cy - baseThickness} ${hx - r/2},${cy - baseThickness - maxH} ${hx},${cy - baseThickness - maxH} `;
+      path += `C ${hx + r/2},${cy - baseThickness - maxH} ${hx + r/2},${cy - baseThickness} ${Math.min(containerWidth, hx + r)},${cy - baseThickness} `;
+      path += `L ${containerWidth},${cy - baseThickness} `;
+      
+      path += `L ${containerWidth},${cy + baseThickness} `;
+      path += `L ${Math.min(containerWidth, hx + r)},${cy + baseThickness} `;
+      path += `C ${hx + r/2},${cy + baseThickness} ${hx + r/2},${cy + baseThickness + maxH} ${hx},${cy + baseThickness + maxH} `;
+      path += `C ${hx - r/2},${cy + baseThickness + maxH} ${hx - r/2},${cy + baseThickness} ${Math.max(0, hx - r)},${cy + baseThickness} `;
+      path += `L 0,${cy + baseThickness} Z`;
+    }
+    return path;
+  };
+
+  const activeEvent = events[activeIndex] || events[0];
+
+  return (
+    <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-700">
+      
+      {/* Top Title Section */}
+      <section className="flex-1 flex flex-col justify-end items-center pb-8 lg:pb-12 px-4 relative z-10">
+         <div className="glass px-8 py-5 rounded-3xl relative min-w-[300px] text-center shadow-sm">
+            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-main uppercase">
+               {activeEvent.title}
+            </h2>
+            {/* Speech bubble tail */}
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
+         </div>
+      </section>
+
+      {/* Middle Timeline Track Section */}
+      <section 
+        className="relative h-64 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
-        onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
       >
-        {/* Base Track (Thicker, 6px) */}
-        <span className="absolute left-[50px] right-[50px] h-1.5 bg-black/10 dark:bg-white/10 rounded-full" />
-        
-        {/* Active Progress Track (Thicker, 6px) */}
-        <span 
-          className="absolute left-[50px] h-1.5 bg-accent-main rounded-full transition-all duration-150 ease-out shadow-sm"
-          style={{ width: `${progressWidth}px` }}
-        />
+        <div className="absolute inset-0 px-[50px] flex items-center mt-12">
+          <div className="relative w-full h-[40px]">
+            {/* The Slanted Labels Container */}
+            {containerWidth > 0 && events.map((ev, idx) => {
+              const x = (idx / (events.length - 1)) * containerWidth;
+              const isActive = idx === activeIndex;
+              return (
+                <div 
+                  key={idx}
+                  className="absolute top-[20px] flex items-center pointer-events-none transition-all duration-300"
+                  style={{ 
+                    left: `${x}px`,
+                    transform: `translate(0, -50%) rotate(-45deg)`,
+                    transformOrigin: '0 50%'
+                  }}
+                >
+                   {/* The white slanted line */}
+                   <div className={clsx(
+                     "h-[3px] transition-all duration-300 rounded-full", 
+                     isActive ? "w-16 bg-accent-main" : "w-12 bg-main opacity-20 dark:opacity-40"
+                   )} />
+                   {/* The label */}
+                   <span className={clsx(
+                     "ml-3 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                     isActive ? "text-accent-main scale-110" : "text-muted"
+                   )}>
+                     {ev.year}
+                   </span>
+                </div>
+              );
+            })}
 
-        {/* Dynamic Smooth Bulge Wave Following Cursor */}
-        <span 
-          className={clsx(
-            "absolute top-1/2 -translate-y-1/2 h-3.5 rounded-full pointer-events-none transition-opacity duration-300 ease-out blur-[1px]",
-            isHovering ? "opacity-100" : "opacity-0"
-          )}
-          style={{
-            left: `calc(50px + ${hoverX ?? 0}px - 45px)`,
-            width: "90px",
-            background: "radial-gradient(ellipse at center, var(--accent-main) 0%, rgba(var(--accent-rgb), 0.6) 40%, transparent 80%)",
-            transform: "translateY(-50%)",
-            transitionProperty: "opacity, transform, width",
-          }}
-        />
-
-        {/* Bulge Glow Aura */}
-        <span 
-          className={clsx(
-            "absolute top-1/2 -translate-y-1/2 w-28 h-7 -ml-14 rounded-full pointer-events-none transition-all duration-300 ease-out blur-md",
-            isHovering ? "opacity-40 bg-[var(--accent-main)]" : "opacity-0"
-          )}
-          style={{
-            left: `calc(50px + ${hoverX ?? 0}px)`,
-          }}
-        />
-
-        {/* Nodes */}
-        {events.map((ev, idx) => {
-          const isActive = idx === activeIndex;
-          
-          // Calculate distance from cursor for smooth proximity bulging
-          let proximityScale = 1;
-          if (hoverX !== null && containerRef.current) {
-            const containerWidth = containerRef.current.clientWidth - 100;
-            const nodeX = (idx / (events.length - 1)) * containerWidth;
-            const dist = Math.abs(hoverX - nodeX);
-            const maxDist = 90;
-            if (dist < maxDist) {
-              const factor = (1 - dist / maxDist);
-              proximityScale = 1 + factor * 0.9;
-            }
-          }
-
-          return (
-            <span 
-              key={idx} 
-              className={clsx(
-                "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition-transform duration-200 ease-out pointer-events-none z-10",
-                isActive 
-                  ? "w-4 h-4 bg-accent-main border-white dark:border-slate-900 shadow-accent-glow" 
-                  : "w-3 h-3 bg-white dark:bg-v4-ink border-black/30 dark:border-white/30"
-              )}
-              style={{ 
-                left: `calc(50px + calc(100% - 100px) * ${idx / (events.length - 1)})`,
-                transform: `translate(-50%, -50%) scale(${isActive ? Math.max(1.8, proximityScale * 1.4) : proximityScale})`,
-              }}
-            >
-              <span className={clsx(
-                "absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ease-out",
-                isActive || (!isHovering && idx % 2 === 0) ? "opacity-100" : "opacity-0",
-                isActive ? "text-accent-main font-black scale-110" : "text-muted"
-              )}>
-                {ev.year}
-              </span>
-            </span>
-          );
-        })}
-      </nav>
-
-      {/* Content Area */}
-      <section className="flex-1 flex flex-col justify-center items-center p-4 lg:p-8 relative overflow-hidden">
-        {activeIndex === -1 ? (
-          <div className="flex flex-col items-center gap-4 text-center max-w-xl text-muted">
-            <Clock size={40} className="text-accent-main opacity-70 animate-pulse" />
-            <h2 className="text-2xl font-black italic tracking-tighter uppercase text-main">Scrub the timeline above</h2>
-            <p className="text-sm font-medium text-muted">Move your cursor or touch along the timeline to read through the historical incidents in chronological order.</p>
+            {/* SVG Track - we place it slightly overlapping so the slanted lines look like they come out of it */}
+            <svg width="100%" height="40" className="absolute top-0 left-0 overflow-visible text-accent-main drop-shadow-md">
+              <path 
+                d={getTimelinePath()} 
+                fill="currentColor" 
+                className="transition-all duration-75"
+              />
+            </svg>
           </div>
-        ) : (
-          <article className="flex flex-col items-center text-center max-w-3xl animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <span className="text-xs font-black uppercase tracking-widest text-accent-main px-4 py-1.5 rounded-full bg-accent-soft border border-accent-glow mb-5 inline-block">
-              {events[activeIndex].year}
-            </span>
-            <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-main uppercase mb-5 leading-tight">
-              {events[activeIndex].title}
-            </h2>
-            <hr className="w-16 h-1 border-0 bg-accent-main rounded-full mb-6 opacity-60" />
-            <p className="text-lg md:text-xl text-muted leading-relaxed max-w-2xl font-normal">
-              {events[activeIndex].desc}
-            </p>
-          </article>
-        )}
+        </div>
       </section>
+
+      {/* Bottom Information Section */}
+      <section className="flex-1 flex flex-col justify-start items-center pt-8 lg:pt-12 px-4 z-10">
+        <article className="glass p-8 rounded-3xl max-w-3xl text-center border border-[var(--glass-border)] shadow-sm min-h-[160px] flex items-center justify-center">
+          <p className="text-lg md:text-xl text-muted leading-relaxed font-normal">
+            {activeEvent.desc}
+          </p>
+        </article>
+      </section>
+
     </main>
   );
 }
