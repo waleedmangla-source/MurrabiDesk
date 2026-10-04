@@ -232,7 +232,7 @@ export default function LifeOfMuhammadTimeline() {
 
       {/* Middle Timeline Track Section */}
       <section 
-        className="relative h-72 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20 mt-4 lg:mt-5"
+        className="relative h-72 flex-shrink-0 cursor-ew-resize select-none overflow-visible w-full group/track z-20 mt-8 lg:mt-10"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
