@@ -58,6 +58,7 @@ import {
 } from '@/lib/research-sources';
 import ArticleReaderModal from './ArticleReaderModal';
 import QuranCommentaryModal from './QuranCommentaryModal';
+import HadithReaderModal from './HadithReaderModal';
 import MalfuzatPdfModal from './MalfuzatPdfModal';
 import TadhkirahPdfModal from './TadhkirahPdfModal';
 import EssencePdfModal from './EssencePdfModal';
@@ -81,6 +82,65 @@ function getPaginationRange(current: number, total: number): (number | string)[]
     return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
   }
   return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+/**
+ * Extracts a concise excerpt from a long Hadith translation focusing on matching query terms.
+ */
+function getHadithExcerpt(text: string, query: string, maxLen = 280): { snippet: string; isTruncated: boolean } {
+  if (!text) return { snippet: '', isTruncated: false };
+  if (text.length <= maxLen) return { snippet: text, isTruncated: false };
+
+  // Clean words from query
+  const queryTerms = (query || '')
+    .toLowerCase()
+    .split(/\s+/)
+    .map(w => w.replace(/[^a-zA-Z0-9]/g, ''))
+    .filter(w => w.length > 2);
+
+  let matchIndex = -1;
+  const lowerText = text.toLowerCase();
+
+  // Find earliest occurrence of any search term
+  for (const term of queryTerms) {
+    const idx = lowerText.indexOf(term);
+    if (idx !== -1 && (matchIndex === -1 || idx < matchIndex)) {
+      matchIndex = idx;
+    }
+  }
+
+  // If no match found or match is near the beginning, take the beginning
+  if (matchIndex === -1 || matchIndex <= 60) {
+    let cutoff = text.lastIndexOf(' ', maxLen);
+    if (cutoff === -1 || cutoff < maxLen * 0.7) cutoff = maxLen;
+    return {
+      snippet: text.slice(0, cutoff).trim() + '...',
+      isTruncated: true
+    };
+  }
+
+  // Otherwise center around the matching term
+  const half = Math.floor(maxLen / 2);
+  let start = Math.max(0, matchIndex - half);
+  let end = Math.min(text.length, matchIndex + half);
+
+  // Adjust to word boundaries
+  const wordStart = text.indexOf(' ', start);
+  if (wordStart !== -1 && wordStart < matchIndex) {
+    start = wordStart + 1;
+  }
+  const wordEnd = text.lastIndexOf(' ', end);
+  if (wordEnd !== -1 && wordEnd > matchIndex) {
+    end = wordEnd;
+  }
+
+  const prefix = start > 0 ? '...' : '';
+  const suffix = end < text.length ? '...' : '';
+
+  return {
+    snippet: `${prefix}${text.slice(start, end).trim()}${suffix}`,
+    isTruncated: true
+  };
 }
 
 export default function ResearchEngine() {
@@ -126,6 +186,8 @@ export default function ResearchEngine() {
     englishText?: string;
     urduText?: string;
   } | null>(null);
+
+  const [activeHadith, setActiveHadith] = useState<HadithResult | null>(null);
 
   const [activeMalfuzatPdf, setActiveMalfuzatPdf] = useState<{
     volume: number;
@@ -1262,9 +1324,12 @@ export default function ResearchEngine() {
                   {displayedAhadith.map((h, idx) => {
                     const hadithKey = `hadith-${h.id || idx}`;
                     const citationText = `[Sunnah.com: ${h.book}${h.chapter ? `, ${h.chapter}` : ''}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.narrator ? ` — Narrated by ${h.narrator}` : ''}]\n"${h.arabicText ? `${h.arabicText}\n` : ''}${h.englishTranslation}"\nSource: ${h.url || 'https://sunnah.com'}`;
+                    const hadithTitle = `${h.book}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.chapter ? ` — ${h.chapter}` : ''}`;
+                    const excerpt = getHadithExcerpt(h.englishTranslation, submittedQuery || query, 260);
+
                     return (
                       <div key={hadithKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
-                        {/* Header */}
+                        {/* Header Breadcrumb */}
                         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
@@ -1307,6 +1372,23 @@ export default function ResearchEngine() {
                           </div>
                         </div>
 
+                        {/* Clickable Hadith Title (Opens Full Hadith Modal) */}
+                        <div className="pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setActiveHadith(h)}
+                            className="text-left group/title flex items-center gap-2 text-base md:text-lg font-bold text-[var(--foreground)] hover:text-amber-400 transition-colors cursor-pointer"
+                            title="Click to read the complete Hadith with full text"
+                          >
+                            <span className="group-hover/title:underline decoration-amber-400/60 underline-offset-4">
+                              {hadithTitle}
+                            </span>
+                            <span className="opacity-0 group-hover/title:opacity-100 transition-opacity text-amber-400 text-xs font-semibold shrink-0">
+                              (Read Full Hadith ↗)
+                            </span>
+                          </button>
+                        </div>
+
                         {/* Narrator if available */}
                         {h.narrator && (
                           <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
@@ -1314,26 +1396,37 @@ export default function ResearchEngine() {
                           </div>
                         )}
 
-                        {/* Arabic Text if available */}
+                        {/* Arabic Text if available (truncated if long) */}
                         {h.arabicText && (
                           <div
                             dir="rtl"
-                            className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal"
+                            className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal line-clamp-3"
                           >
                             {h.arabicText}
                           </div>
                         )}
 
-                        {/* English Translation */}
-                        <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-amber-500/40 pl-3">
-                          "{h.englishTranslation}"
-                        </p>
+                        {/* English Translation Excerpt */}
+                        <div className="space-y-1.5">
+                          <p className="text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed font-medium italic border-l-2 border-amber-500/40 pl-3">
+                            "{excerpt.snippet}"
+                          </p>
+                          {excerpt.isTruncated && (
+                            <button
+                              type="button"
+                              onClick={() => setActiveHadith(h)}
+                              className="text-xs font-bold text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 pl-3 transition-colors cursor-pointer"
+                            >
+                              <span>Read entire Hadith...</span>
+                            </button>
+                          )}
+                        </div>
 
                         {/* Urdu Translation if available */}
                         {h.urduTranslation && (
                           <div
                             dir="rtl"
-                            className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right"
+                            className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right line-clamp-3"
                           >
                             {h.urduTranslation}
                           </div>
@@ -1349,22 +1442,29 @@ export default function ResearchEngine() {
 
                         {/* Bottom Actions */}
                         <div className="flex items-center justify-between pt-1 text-xs">
-                          {h.url ? (
-                            <a
-                              href={h.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors"
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setActiveHadith(h)}
+                              className="px-3 py-1.5 rounded-[10px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/20 font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
-                              <Globe size={13} />
-                              View on Sunnah.com
-                              <ExternalLink size={11} className="opacity-60" />
-                            </a>
-                          ) : (
-                            <span className="text-xs text-[var(--text-muted)] font-semibold">
-                              {h.book}
-                            </span>
-                          )}
+                              <Scroll size={13} />
+                              Read Full Hadith
+                            </button>
+
+                            {h.url && (
+                              <a
+                                href={h.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--foreground)] border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
+                              >
+                                <Globe size={13} />
+                                <span className="hidden sm:inline">Sunnah.com</span>
+                                <ExternalLink size={11} className="opacity-60" />
+                              </a>
+                            )}
+                          </div>
 
                           <button
                             onClick={() => copyToClipboard(citationText, hadithKey)}
@@ -2801,6 +2901,14 @@ export default function ResearchEngine() {
           initialEnglishText={activeCommentaryVerse.englishText}
           initialUrduText={activeCommentaryVerse.urduText}
           onClose={() => setActiveCommentaryVerse(null)}
+        />
+      )}
+
+      {/* ── IN-DESK AUTHENTIC HADITH READER MODAL ── */}
+      {activeHadith && (
+        <HadithReaderModal
+          hadith={activeHadith}
+          onClose={() => setActiveHadith(null)}
         />
       )}
 
