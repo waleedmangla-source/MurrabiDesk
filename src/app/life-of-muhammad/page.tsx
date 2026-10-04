@@ -62,9 +62,9 @@ export default function LifeOfMuhammadTimeline() {
   };
 
   return (
-    <div className="main-content flex flex-col gap-6 lg:gap-8 pb-8 lg:pb-12 animate-in fade-in duration-700 lg:h-screen lg:overflow-hidden">
+    <main className="main-content flex flex-col gap-6 lg:gap-8 pb-8 lg:pb-12 animate-in fade-in duration-700 lg:h-screen lg:overflow-hidden">
       {/* Header */}
-      <div className="flex items-end justify-between mb-1 lg:mb-2">
+      <header className="flex items-end justify-between mb-1 lg:mb-2">
         <div>
           <h1 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-main uppercase">
             Life of Muhammad <span className="text-xl text-accent-main">(sa)</span>
@@ -73,85 +73,74 @@ export default function LifeOfMuhammadTimeline() {
             Interactive Timeline
           </p>
         </div>
-      </div>
+      </header>
 
-      <div className="glass-card flex-1 flex flex-col gap-8 relative overflow-hidden h-full">
+      {/* Timeline Scrub Area */}
+      <nav 
+        aria-label="Timeline navigation"
+        className="relative h-28 flex items-center px-[50px] cursor-ew-resize select-none overflow-visible shrink-0"
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onTouchMove={handleMouseMove}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        {/* Base Line */}
+        <span className="absolute left-[50px] right-[50px] h-0.5 bg-black/10 dark:bg-white/10 rounded-full" />
         
-        {/* Timeline Scrub Area */}
-        <div 
-          className="relative h-32 flex items-center px-[50px] cursor-ew-resize rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 select-none overflow-visible shrink-0"
-          ref={containerRef}
-          onMouseMove={handleMouseMove}
-          onTouchMove={handleMouseMove}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          {/* Base Line */}
-          <div className="absolute left-[50px] right-[50px] h-1 bg-black/10 dark:bg-white/10 rounded-full"></div>
-          
-          {/* Progress Line */}
-          <div 
-            className="absolute left-[50px] h-1 bg-accent-main rounded-full transition-all duration-100 ease-out"
-            style={{ width: `${progressWidth}px` }}
-          ></div>
+        {/* Progress Line */}
+        <span 
+          className="absolute left-[50px] h-0.5 bg-accent-main rounded-full transition-all duration-100 ease-out"
+          style={{ width: `${progressWidth}px` }}
+        />
 
-          {/* Nodes */}
-          {events.map((ev, idx) => {
-            const isActive = idx === activeIndex;
-            return (
-              <div 
-                key={idx} 
-                className={clsx(
-                  "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-all duration-200 pointer-events-none z-10",
-                  isActive ? "bg-accent-main border-accent-main scale-[2.5] shadow-accent-glow" : "bg-white dark:bg-v4-ink border-black/20 dark:border-white/20"
-                )}
-                style={{ left: `calc(50px + calc(100% - 100px) * ${idx / (events.length - 1)})` }}
-              >
-                <div className={clsx(
-                  "absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-all duration-200",
-                  isActive || (!isHovering && idx % 2 === 0) ? "opacity-100" : "opacity-0",
-                  isActive ? "text-accent-main" : "text-muted"
-                )}>
-                  {ev.year}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Nodes */}
+        {events.map((ev, idx) => {
+          const isActive = idx === activeIndex;
+          return (
+            <span 
+              key={idx} 
+              className={clsx(
+                "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-all duration-200 pointer-events-none z-10",
+                isActive ? "bg-accent-main border-accent-main scale-[2.2] shadow-accent-glow" : "bg-white dark:bg-v4-ink border-black/20 dark:border-white/20"
+              )}
+              style={{ left: `calc(50px + calc(100% - 100px) * ${idx / (events.length - 1)})` }}
+            >
+              <span className={clsx(
+                "absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-all duration-200",
+                isActive || (!isHovering && idx % 2 === 0) ? "opacity-100" : "opacity-0",
+                isActive ? "text-accent-main font-black" : "text-muted"
+              )}>
+                {ev.year}
+              </span>
+            </span>
+          );
+        })}
+      </nav>
 
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col justify-center items-center p-8 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 dark:to-white/5 pointer-events-none"></div>
-          
-          <div className="text-center max-w-3xl z-10 w-full">
-            {activeIndex === -1 ? (
-              <div className="flex flex-col items-center gap-6 text-muted">
-                <div className="p-6 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 animate-pulse">
-                  <Clock size={48} className="text-accent-main opacity-80" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black italic tracking-tighter uppercase text-main">Scrub the timeline above</h2>
-                  <p className="text-sm font-medium mt-2 max-w-sm mx-auto">Move your cursor or drag across the timeline bar to explore the chronological events from the life of the Holy Prophet (sa).</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <span className="text-xs font-black uppercase tracking-widest text-accent-main px-4 py-1.5 rounded-full bg-accent-soft border border-accent-glow mb-6 inline-block">
-                  {events[activeIndex].year}
-                </span>
-                <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-main uppercase mb-6 leading-tight">
-                  {events[activeIndex].title}
-                </h2>
-                <div className="w-16 h-1 bg-accent-main rounded-full mb-6 mx-auto opacity-50"></div>
-                <p className="text-lg md:text-xl text-muted leading-relaxed max-w-2xl mx-auto">
-                  {events[activeIndex].desc}
-                </p>
-              </div>
-            )}
+      {/* Content Area */}
+      <section className="flex-1 flex flex-col justify-center items-center p-4 lg:p-8 relative overflow-hidden">
+        {activeIndex === -1 ? (
+          <div className="flex flex-col items-center gap-4 text-center max-w-xl text-muted">
+            <Clock size={40} className="text-accent-main opacity-70 animate-pulse" />
+            <h2 className="text-2xl font-black italic tracking-tighter uppercase text-main">Scrub the timeline above</h2>
+            <p className="text-sm font-medium text-muted">Move your cursor or touch along the timeline to read through the historical incidents in chronological order.</p>
           </div>
-        </div>
-
-      </div>
-    </div>
+        ) : (
+          <article className="flex flex-col items-center text-center max-w-3xl animate-in fade-in slide-in-from-bottom-3 duration-300">
+            <span className="text-xs font-black uppercase tracking-widest text-accent-main px-4 py-1.5 rounded-full bg-accent-soft border border-accent-glow mb-5 inline-block">
+              {events[activeIndex].year}
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-main uppercase mb-5 leading-tight">
+              {events[activeIndex].title}
+            </h2>
+            <hr className="w-16 h-1 border-0 bg-accent-main rounded-full mb-6 opacity-60" />
+            <p className="text-lg md:text-xl text-muted leading-relaxed max-w-2xl font-normal">
+              {events[activeIndex].desc}
+            </p>
+          </article>
+        )}
+      </section>
+    </main>
   );
 }
