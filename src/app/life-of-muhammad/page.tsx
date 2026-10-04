@@ -209,23 +209,23 @@ export default function LifeOfMuhammadTimeline() {
     <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-700">
       
       {/* Page Header */}
-      <header className="pt-6 lg:pt-8 px-6 text-center shrink-0 z-20">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black italic tracking-tight text-main uppercase">
+      <header className="pt-4 lg:pt-6 pb-2 px-6 text-center shrink-0 z-20">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-black italic tracking-tight text-main uppercase">
           The Life of The Holy Prophet <span className="text-accent-main font-bold normal-case tracking-normal">(PBUH)</span>
         </h1>
-        <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-accent-main opacity-80 mt-1">
+        <p className="text-[11px] md:text-xs font-bold uppercase tracking-widest text-accent-main opacity-80 mt-0.5">
           Chronological Timeline
         </p>
       </header>
 
       {/* Top Title Section */}
-      <section className="flex-1 flex flex-col justify-end items-center pb-6 lg:pb-8 px-4 relative z-10">
-         <div className="glass px-8 py-4 lg:py-5 rounded-3xl relative min-w-[300px] text-center shadow-sm">
-            <h2 className="text-2xl md:text-4xl font-black italic tracking-tighter text-main uppercase">
+      <section className="flex-none flex flex-col justify-end items-center pt-1 pb-2 lg:pb-3 px-4 relative z-10">
+         <div className="glass px-7 py-3 lg:py-3.5 rounded-2xl relative min-w-[280px] text-center shadow-sm">
+            <h2 className="text-xl md:text-3xl font-black italic tracking-tighter text-main uppercase">
                {activeEvent.title}
             </h2>
             {/* Speech bubble tail */}
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
+            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
          </div>
       </section>
 
