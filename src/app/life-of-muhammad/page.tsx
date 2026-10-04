@@ -266,14 +266,14 @@ export default function LifeOfMuhammadTimeline() {
           const dist = Math.abs(x - apexX);
           const factor = 0.5 * (1 + Math.cos(Math.min(1, dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
-          // Substantially bulge stroke thickness from 2px on the baseline up to 7px at the center
-          strokeWidth = 2 + 5 * bulgeScale * factor;
+          // Substantially bulge stroke thickness from 2px on the baseline up to 10px at the center
+          strokeWidth = 2 + 8 * bulgeScale * factor;
         }
       }
 
-      const inset = 2;
-      const y1 = cy - halfHeight + inset;
-      const y2 = cy + halfHeight - inset;
+      // Hardcut on top and bottom without rounded caps or inset gaps
+      const y1 = cy - halfHeight;
+      const y2 = cy + halfHeight;
 
       dashes.push(
         <line
@@ -284,8 +284,8 @@ export default function LifeOfMuhammadTimeline() {
           y2={y2}
           stroke="#064e3b" // Deep dark emerald (#064e3b - darker version of theme color)
           strokeWidth={strokeWidth}
-          strokeOpacity={isNearCursor ? 0.35 + 0.45 * bulgeScale : 0.3}
-          strokeLinecap="round"
+          strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.3}
+          strokeLinecap="butt" // Hardcut flat ends instead of rounded curves
         />
       );
     }
