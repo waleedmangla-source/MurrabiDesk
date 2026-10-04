@@ -266,8 +266,11 @@ export default function LifeOfMuhammadTimeline() {
           const dist = Math.abs(x - apexX);
           const factor = 0.5 * (1 + Math.cos(Math.min(1, dist / r) * Math.PI));
           halfHeight = baseThickness + maxH * bulgeScale * factor;
-          // Substantially bulge stroke thickness from 2px on the baseline up to 10px at the center
-          strokeWidth = 2 + 8 * bulgeScale * factor;
+
+          // Distinct peaked profile so the single closest dash to the center is prominently the thickest
+          // factor^1.8 creates a sharp crest where the exact center dash reaches up to 13px - 14px
+          const peakFactor = Math.pow(factor, 1.8);
+          strokeWidth = 2 + 11.5 * bulgeScale * peakFactor;
         }
       }
 
