@@ -143,6 +143,22 @@ function getHadithExcerpt(text: string, query: string, maxLen = 280): { snippet:
   };
 }
 
+/**
+ * Shortens Arabic / RTL text smoothly at a word boundary with an ellipsis (...)
+ * to avoid abrupt CSS line-clamp vertical clipping.
+ */
+function shortenRtlText(text: string, maxLen = 220): { snippet: string; isTruncated: boolean } {
+  if (!text) return { snippet: '', isTruncated: false };
+  if (text.length <= maxLen) return { snippet: text, isTruncated: false };
+
+  let cutoff = text.lastIndexOf(' ', maxLen);
+  if (cutoff === -1 || cutoff < maxLen * 0.7) cutoff = maxLen;
+  return {
+    snippet: text.slice(0, cutoff).trim() + '...',
+    isTruncated: true
+  };
+}
+
 export default function ResearchEngine() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -1326,6 +1342,8 @@ export default function ResearchEngine() {
                     const citationText = `[Sunnah.com: ${h.book}${h.chapter ? `, ${h.chapter}` : ''}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.narrator ? ` — Narrated by ${h.narrator}` : ''}]\n"${h.arabicText ? `${h.arabicText}\n` : ''}${h.englishTranslation}"\nSource: ${h.url || 'https://sunnah.com'}`;
                     const hadithTitle = `${h.book}${h.hadithNumber ? ` (Hadith #${h.hadithNumber})` : ''}${h.chapter ? ` — ${h.chapter}` : ''}`;
                     const excerpt = getHadithExcerpt(h.englishTranslation, submittedQuery || query, 260);
+                    const arabicSnippet = h.arabicText ? shortenRtlText(h.arabicText, 240) : null;
+                    const urduSnippet = h.urduTranslation ? shortenRtlText(h.urduTranslation, 240) : null;
 
                     return (
                       <div key={hadithKey} className="space-y-3 group pb-6 border-b border-black/10 dark:border-white/10 last:border-b-0">
@@ -1396,13 +1414,13 @@ export default function ResearchEngine() {
                           </div>
                         )}
 
-                        {/* Arabic Text if available (truncated if long) */}
-                        {h.arabicText && (
+                        {/* Arabic Text if available (shortened smoothly with '...' at word boundary) */}
+                        {arabicSnippet && (
                           <div
                             dir="rtl"
-                            className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal line-clamp-3"
+                            className="text-right font-arabic text-xl md:text-2xl text-[var(--foreground)] leading-loose py-2 tracking-wide font-normal select-text"
                           >
-                            {h.arabicText}
+                            {arabicSnippet.snippet}
                           </div>
                         )}
 
@@ -1422,13 +1440,13 @@ export default function ResearchEngine() {
                           )}
                         </div>
 
-                        {/* Urdu Translation if available */}
-                        {h.urduTranslation && (
+                        {/* Urdu Translation if available (shortened smoothly with '...') */}
+                        {urduSnippet && (
                           <div
                             dir="rtl"
-                            className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right line-clamp-3"
+                            className="p-3 rounded-[12px] glass bg-white/[0.02] border border-white/5 text-sm md:text-base leading-loose font-urdu text-[var(--foreground)] text-right"
                           >
-                            {h.urduTranslation}
+                            {urduSnippet.snippet}
                           </div>
                         )}
 
