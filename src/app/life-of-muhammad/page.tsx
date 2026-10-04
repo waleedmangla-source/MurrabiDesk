@@ -32,9 +32,10 @@ export default function LifeOfMuhammadTimeline() {
   const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
   const lastMousePosRef = useRef<{ x: number; time: number } | null>(null);
   const velocityRef = useRef<number>(0);
-  const rafRef = useRef<number | null>(null);
+  const currentPosRef = useRef<number | null>(null);
+  const targetPosRef = useRef<number | null>(null);
+  const loopRef = useRef<number | null>(null);
   const collapseAnimRef = useRef<number | null>(null);
-  const skewSpringRef = useRef<number | null>(null);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -46,11 +47,67 @@ export default function LifeOfMuhammadTimeline() {
     window.addEventListener('resize', updateWidth);
     return () => {
       window.removeEventListener('resize', updateWidth);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (loopRef.current) cancelAnimationFrame(loopRef.current);
       if (collapseAnimRef.current) cancelAnimationFrame(collapseAnimRef.current);
-      if (skewSpringRef.current) cancelAnimationFrame(skewSpringRef.current);
     };
   }, []);
+
+  // Continuous animation loop that bounds scrub speed
+  const startTrackingLoop = () => {
+    if (loopRef.current) return;
+
+    let lastLoopTime = performance.now();
+
+    const loop = (now: number) => {
+      const dt = Math.max(1, now - lastLoopTime);
+      lastLoopTime = now;
+
+      if (targetPosRef.current !== null) {
+        if (currentPosRef.current === null) {
+          currentPosRef.current = targetPosRef.current;
+        }
+
+        const dx = targetPosRef.current - currentPosRef.current;
+        
+        // Speed cap: Maximum allowed speed is ~1.1 px/ms (~1100 px/sec), preventing too fast scrubbing
+        const maxStep = 1.1 * dt; 
+        let step = dx * 0.15; // Smooth damped easing
+
+        if (Math.abs(step) > maxStep) {
+          step = Math.sign(step) * maxStep;
+        }
+
+        // Velocity for directional skew pull
+        const v = step / dt; // px/ms
+        velocityRef.current = v;
+        const targetSkew = Math.max(-55, Math.min(55, v * 45));
+
+        currentPosRef.current += step;
+        const curX = currentPosRef.current;
+
+        setBulgeScale(1);
+        setHoverX(curX);
+        setBulgeSkew(prev => prev + (targetSkew - prev) * 0.25);
+
+        // Update active index based on the speed-limited position
+        if (containerWidth > 0) {
+          const marginLeft = 40;
+          const marginRight = 160;
+          const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+          let newIndex = Math.round(((curX - marginLeft) / eventTrackWidth) * (events.length - 1));
+          if (newIndex < 0) newIndex = 0;
+          if (newIndex >= events.length) newIndex = events.length - 1;
+          setActiveIndex(newIndex);
+        }
+
+        loopRef.current = requestAnimationFrame(loop);
+      } else {
+        loopRef.current = null;
+      }
+    };
+
+    loopRef.current = requestAnimationFrame(loop);
+  };
 
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!containerRef.current) return;
@@ -69,78 +126,27 @@ export default function LifeOfMuhammadTimeline() {
     if (x < 0) x = 0;
     if (x > currentWidth) x = currentWidth;
 
-    const now = performance.now();
-    let currentSkew = bulgeSkew;
+    targetPosRef.current = x;
 
-    if (lastMousePosRef.current) {
-      const dt = Math.max(1, now - lastMousePosRef.current.time);
-      const dx = x - lastMousePosRef.current.x;
-      // Velocity in px/ms
-      const v = dx / dt;
-      velocityRef.current = v;
-      // Target skew in direction of travel (increased intensity from 35px to 55px, responsive gain)
-      const targetSkew = Math.max(-55, Math.min(55, v * 45));
-      // Snappy, organic response to directional movement
-      currentSkew = currentSkew + (targetSkew - currentSkew) * 0.55;
-    }
-    lastMousePosRef.current = { x, time: now };
-
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-    }
     if (collapseAnimRef.current) {
       cancelAnimationFrame(collapseAnimRef.current);
       collapseAnimRef.current = null;
     }
-    if (skewSpringRef.current) {
-      cancelAnimationFrame(skewSpringRef.current);
-      skewSpringRef.current = null;
-    }
 
-    rafRef.current = requestAnimationFrame(() => {
-      setBulgeScale(1);
-      setBulgeSkew(currentSkew);
-      setHoverX(x);
-
-      if (currentWidth > 0) {
-        const marginLeft = 40;
-        const marginRight = 160;
-        const eventTrackWidth = Math.max(10, currentWidth - marginLeft - marginRight);
-        let newIndex = Math.round(((x - marginLeft) / eventTrackWidth) * (events.length - 1));
-        if (newIndex < 0) newIndex = 0;
-        if (newIndex >= events.length) newIndex = events.length - 1;
-        setActiveIndex(newIndex);
-      }
-
-      // Smoothly return skew towards 0 when scrub slows down or holds still
-      const decaySkew = () => {
-        setBulgeSkew(prev => {
-          if (Math.abs(prev) < 0.2) return 0;
-          const next = prev * 0.85;
-          skewSpringRef.current = requestAnimationFrame(decaySkew);
-          return next;
-        });
-      };
-      skewSpringRef.current = requestAnimationFrame(decaySkew);
-    });
+    startTrackingLoop();
   };
 
   const handleMouseLeave = () => {
-    lastMousePosRef.current = null;
-    velocityRef.current = 0;
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    if (skewSpringRef.current) {
-      cancelAnimationFrame(skewSpringRef.current);
-      skewSpringRef.current = null;
+    targetPosRef.current = null;
+    if (loopRef.current) {
+      cancelAnimationFrame(loopRef.current);
+      loopRef.current = null;
     }
     if (collapseAnimRef.current) {
       cancelAnimationFrame(collapseAnimRef.current);
     }
 
-    const duration = 380; // Faster, snappier duration
+    const duration = 380; // Snappy ease-out collapse
     const startTime = performance.now();
     const startScale = bulgeScale > 0 ? bulgeScale : 1;
     const startSkew = bulgeSkew;
@@ -160,6 +166,7 @@ export default function LifeOfMuhammadTimeline() {
         setBulgeScale(0);
         setBulgeSkew(0);
         setHoverX(null);
+        currentPosRef.current = null;
         collapseAnimRef.current = null;
       }
     };
