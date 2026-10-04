@@ -347,21 +347,21 @@ export default function LifeOfMuhammadTimeline() {
                   <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
                   <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
                 </filter>
-                {/* Gradual white gradient towards the center of the bulge */}
-                {hoverX !== null && (
-                  <radialGradient 
-                    id="bulge-white-gradient" 
-                    cx={hoverX + bulgeSkew} 
-                    cy={cy} 
-                    r={r} 
-                    gradientUnits="userSpaceOnUse"
-                  >
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
-                    <stop offset="45%" stopColor="#ffffff" stopOpacity="0.2" />
-                    <stop offset="85%" stopColor="#ffffff" stopOpacity="0.0" />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                  </radialGradient>
-                )}
+                {/* Gradual vertical white gradient towards the horizontal center of the bulge */}
+                <linearGradient 
+                  id="bulge-white-gradient" 
+                  x1="0" 
+                  y1={cy - maxH} 
+                  x2="0" 
+                  y2={cy + maxH} 
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.0" />
+                  <stop offset="25%" stopColor="#ffffff" stopOpacity="0.15" />
+                  <stop offset="50%" stopColor="#ffffff" stopOpacity="0.45" />
+                  <stop offset="75%" stopColor="#ffffff" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
+                </linearGradient>
               </defs>
 
               {/* Bulge Drop Shadow & Glow (rendered behind the track so edges stay crisp) */}
