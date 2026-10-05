@@ -498,8 +498,8 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title Speech Box */}
-      <section className="flex-[0.16] flex flex-col justify-end items-center pb-2 px-4 relative z-10 shrink-0">
+      {/* Top Active Title Speech Box (flex-1 to center the timeline track vertically) */}
+      <section className="flex-1 flex flex-col justify-end items-center pb-3 px-4 relative z-10 min-h-0">
         {activeEvent ? (
           <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -529,9 +529,9 @@ export default function LifeOfMuhammadTimeline() {
         )}
       </section>
 
-      {/* Middle Interactive Bulging Timeline Track */}
+      {/* Middle Interactive Bulging Timeline Track (Centered in the screen) */}
       <section 
-        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-1"
+        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 my-auto"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
@@ -539,11 +539,125 @@ export default function LifeOfMuhammadTimeline() {
       >
         <div className="absolute inset-0 flex items-center">
           <div className="relative w-full h-[210px]">
-            {/* SVG Track spanning edge to edge with fade out near the ends */}
+            {/* Top Slanted Topic Titles (slanting up-right) - Rendered BEHIND the bulge */}
+            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
+              const marginLeft = 60;
+              const marginRight = 80;
+              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
+              const isActive = idx === activeIndex;
+              const evEra = getEventEra(ev);
+              const cfg = ERA_CONFIGS[evEra];
+
+              const distFromActive = Math.abs(idx - activeIndex);
+              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
+
+              return (
+                <div 
+                  key={`top-${ev.id}`}
+                  className="absolute flex items-center pointer-events-none z-0 transition-opacity duration-200"
+                  style={{ 
+                    left: `${x}px`,
+                    top: `${cy - baseThickness}px`,
+                    transform: `translate(0, -50%) rotate(-45deg)`,
+                    transformOrigin: '0 50%'
+                  }}
+                >
+                  {/* The slanted tick mark */}
+                  <div 
+                    className={clsx(
+                      "h-[2.5px] transition-all duration-300 rounded-full", 
+                      isActive ? "w-14" : "w-8"
+                    )} 
+                    style={{
+                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
+                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
+                      opacity: isActive ? 1 : 0.65
+                    }}
+                  />
+                  {/* The title label */}
+                  {shouldShowLabel && (
+                    <span 
+                      className={clsx(
+                        "ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
+                        isActive 
+                          ? "scale-110 drop-shadow-sm opacity-100 font-extrabold" 
+                          : distFromActive === 1
+                            ? "opacity-85 text-main"
+                            : "opacity-50 text-muted"
+                      )}
+                      style={{
+                        color: isActive ? cfg.accent : undefined
+                      }}
+                    >
+                      {ev.title}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Bottom Slanted Dates (slanting down-right) - Rendered BEHIND the bulge */}
+            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
+              const marginLeft = 60;
+              const marginRight = 80;
+              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
+              const isActive = idx === activeIndex;
+              const evEra = getEventEra(ev);
+              const cfg = ERA_CONFIGS[evEra];
+
+              const distFromActive = Math.abs(idx - activeIndex);
+              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
+
+              return (
+                <div 
+                  key={`bottom-${ev.id}`}
+                  className="absolute flex items-center pointer-events-none z-0 transition-opacity duration-200"
+                  style={{ 
+                    left: `${x}px`,
+                    top: `${cy + baseThickness}px`,
+                    transform: `translate(0, -50%) rotate(45deg)`,
+                    transformOrigin: '0 50%'
+                  }}
+                >
+                  {/* The slanted tick mark */}
+                  <div 
+                    className={clsx(
+                      "h-[2.5px] transition-all duration-300 rounded-full", 
+                      isActive ? "w-14" : "w-8"
+                    )} 
+                    style={{
+                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
+                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
+                      opacity: isActive ? 1 : 0.65
+                    }}
+                  />
+                  {/* The date label */}
+                  {shouldShowLabel && (
+                    <span 
+                      className={clsx(
+                        "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                        isActive 
+                          ? "font-black scale-110 drop-shadow-sm opacity-100" 
+                          : "opacity-60 text-muted"
+                      )}
+                      style={{
+                        color: isActive ? cfg.accent : undefined
+                      }}
+                    >
+                      {ev.year}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* SVG Track spanning edge to edge - Rendered IN FRONT OF the slanted text (z-10) */}
             <svg 
               width="100%" 
               height="210" 
-              className="absolute top-0 left-0 overflow-visible text-accent-main"
+              className="absolute top-0 left-0 overflow-visible text-accent-main pointer-events-none z-10"
               style={{
                 WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%)',
                 maskImage: 'linear-gradient(to right, transparent 0%, black 80px, black calc(100% - 80px), transparent 100%)',
@@ -610,128 +724,12 @@ export default function LifeOfMuhammadTimeline() {
                 {renderVerticalDashes()}
               </g>
             </svg>
-
-            {/* Top Slanted Topic Titles (slanting up-right) */}
-            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
-              const marginLeft = 60;
-              const marginRight = 80;
-              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
-              const isActive = idx === activeIndex;
-              const halfH = getBulgeHalfHeight(x);
-              const evEra = getEventEra(ev);
-              const cfg = ERA_CONFIGS[evEra];
-
-              const distFromActive = Math.abs(idx - activeIndex);
-              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
-
-              return (
-                <div 
-                  key={`top-${ev.id}`}
-                  className="absolute flex items-center pointer-events-none z-10 transition-transform duration-200"
-                  style={{ 
-                    left: `${x}px`,
-                    top: `${cy - halfH}px`,
-                    transform: `translate(0, -50%) rotate(-45deg)`,
-                    transformOrigin: '0 50%'
-                  }}
-                >
-                  {/* The slanted tick mark */}
-                  <div 
-                    className={clsx(
-                      "h-[2.5px] transition-all duration-300 rounded-full", 
-                      isActive ? "w-14" : "w-8"
-                    )} 
-                    style={{
-                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
-                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
-                      opacity: isActive ? 1 : 0.65
-                    }}
-                  />
-                  {/* The title label */}
-                  {shouldShowLabel && (
-                    <span 
-                      className={clsx(
-                        "ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
-                        isActive 
-                          ? "scale-110 drop-shadow-sm opacity-100 font-extrabold" 
-                          : distFromActive === 1
-                            ? "opacity-85 text-main"
-                            : "opacity-50 text-muted"
-                      )}
-                      style={{
-                        color: isActive ? cfg.accent : undefined
-                      }}
-                    >
-                      {ev.title}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Bottom Slanted Dates (slanting down-right) */}
-            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
-              const marginLeft = 60;
-              const marginRight = 80;
-              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
-              const isActive = idx === activeIndex;
-              const halfH = getBulgeHalfHeight(x);
-              const evEra = getEventEra(ev);
-              const cfg = ERA_CONFIGS[evEra];
-
-              const distFromActive = Math.abs(idx - activeIndex);
-              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
-
-              return (
-                <div 
-                  key={`bottom-${ev.id}`}
-                  className="absolute flex items-center pointer-events-none z-10 transition-transform duration-200"
-                  style={{ 
-                    left: `${x}px`,
-                    top: `${cy + halfH}px`,
-                    transform: `translate(0, -50%) rotate(45deg)`,
-                    transformOrigin: '0 50%'
-                  }}
-                >
-                  {/* The slanted tick mark */}
-                  <div 
-                    className={clsx(
-                      "h-[2.5px] transition-all duration-300 rounded-full", 
-                      isActive ? "w-14" : "w-8"
-                    )} 
-                    style={{
-                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
-                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
-                      opacity: isActive ? 1 : 0.65
-                    }}
-                  />
-                  {/* The date label */}
-                  {shouldShowLabel && (
-                    <span 
-                      className={clsx(
-                        "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                        isActive 
-                          ? "font-black scale-110 drop-shadow-sm opacity-100" 
-                          : "opacity-60 text-muted"
-                      )}
-                      style={{
-                        color: isActive ? cfg.accent : undefined
-                      }}
-                    >
-                      {ev.year}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
 
-      {/* Bottom Comprehensive Detail Section */}
-      <section className="flex-1 flex flex-col justify-start items-center pt-6 lg:pt-8 px-4 pb-6 z-10 overflow-y-auto">
+      {/* Bottom Comprehensive Detail Section (flex-1 with scroll) */}
+      <section className="flex-1 flex flex-col justify-start items-center pt-3 lg:pt-4 px-4 pb-6 z-10 overflow-y-auto min-h-0">
         {activeEvent && (
           <article className="glass p-6 md:p-8 rounded-3xl max-w-4xl w-full border border-[var(--glass-border)] shadow-xl relative animate-in fade-in slide-in-from-bottom-3 duration-300">
             
