@@ -1,3 +1,119 @@
+export type TimelineEra = 'pre-birth' | 'early-childhood' | 'mecca-revelation' | 'medina' | 'after-fatah-mecca';
+
+export interface EraColorConfig {
+  id: TimelineEra;
+  name: string;
+  pastel: string;        // Light pastel color for SVG line
+  accent: string;        // Deeper pastel tone for active state / border
+  glow: string;          // Drop shadow glow
+  bgChip: string;        // Tailwind classes for period badge
+  textClass: string;     // Text color class
+  dotColor: string;
+}
+
+export const ERA_CONFIGS: Record<TimelineEra, EraColorConfig> = {
+  'pre-birth': {
+    id: 'pre-birth',
+    name: 'Pre-Birth (Year of the Elephant)',
+    pastel: '#cbd5e1',     // Soft light pastel grey (Slate 300)
+    accent: '#94a3b8',     // Slate 400
+    glow: 'rgba(148, 163, 184, 0.45)',
+    bgChip: 'bg-slate-200/80 text-slate-700 dark:bg-slate-800/80 dark:text-slate-300 border-slate-300 dark:border-slate-700',
+    textClass: 'text-slate-500 dark:text-slate-400',
+    dotColor: '#94a3b8'
+  },
+  'early-childhood': {
+    id: 'early-childhood',
+    name: 'Childhood & Youth (Birth to Age 40)',
+    pastel: '#fca5a5',     // Soft light pastel red / rose (Red 300)
+    accent: '#f87171',     // Red 400
+    glow: 'rgba(248, 113, 113, 0.45)',
+    bgChip: 'bg-rose-100/90 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border-rose-300/60 dark:border-rose-800/60',
+    textClass: 'text-rose-600 dark:text-rose-400',
+    dotColor: '#f87171'
+  },
+  'mecca-revelation': {
+    id: 'mecca-revelation',
+    name: 'Makkan Ministry (Revelation to Hijrah)',
+    pastel: '#d8b4fe',     // Soft light pastel purple / lavender (Purple 300)
+    accent: '#c084fc',     // Purple 400
+    glow: 'rgba(192, 132, 252, 0.45)',
+    bgChip: 'bg-purple-100/90 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300 border-purple-300/60 dark:border-purple-800/60',
+    textClass: 'text-purple-600 dark:text-purple-400',
+    dotColor: '#c084fc'
+  },
+  'medina': {
+    id: 'medina',
+    name: 'Medina Era (1–8 A.H.)',
+    pastel: '#86efac',     // Soft light pastel green / mint (Green 300)
+    accent: '#4ade80',     // Green 400
+    glow: 'rgba(74, 222, 128, 0.45)',
+    bgChip: 'bg-emerald-100/90 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-300/60 dark:border-emerald-800/60',
+    textClass: 'text-emerald-600 dark:text-emerald-400',
+    dotColor: '#4ade80'
+  },
+  'after-fatah-mecca': {
+    id: 'after-fatah-mecca',
+    name: 'Post-Fatah Makkah (8–11 A.H.)',
+    pastel: '#fdba74',     // Soft light pastel orange / peach (Orange 300)
+    accent: '#fb923c',     // Orange 400
+    glow: 'rgba(251, 146, 60, 0.45)',
+    bgChip: 'bg-amber-100/90 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300/60 dark:border-amber-800/60',
+    textClass: 'text-amber-600 dark:text-amber-400',
+    dotColor: '#fb923c'
+  }
+};
+
+export const getEventEra = (event: TimelineEvent): TimelineEra => {
+  if (event.id === 'ashabul-fil') return 'pre-birth';
+  
+  const earlyChildhoodIds = [
+    'birth-prophet',
+    'fosterage-halimah',
+    'demise-aminah',
+    'demise-abdul-muttalib',
+    'bahira-monk',
+    'harb-e-fijar',
+    'hilful-fudul',
+    'marriage-khadijah',
+    'arbitration-black-stone'
+  ];
+  if (earlyChildhoodIds.includes(event.id)) return 'early-childhood';
+  
+  const meccaRevelationIds = [
+    'first-revelation',
+    'first-believers',
+    'dar-e-arqam',
+    'persecution-slaves',
+    'migration-abyssinia-1',
+    'migration-abyssinia-2',
+    'conversion-hamzah',
+    'conversion-umar',
+    'shib-abi-talib-boycott',
+    'shaqqul-qamar',
+    'year-of-grief',
+    'journey-taif',
+    'miraj-isra',
+    'first-pledge-aqabah',
+    'second-pledge-aqabah',
+    'darun-nadwah-conspiracy',
+    'suraqah-pursuit'
+  ];
+  if (meccaRevelationIds.includes(event.id)) return 'mecca-revelation';
+  
+  const postFatahIds = [
+    'conquest-of-makkah',
+    'battle-of-hunain',
+    'expedition-of-tabuk',
+    'year-of-delegations',
+    'farewell-pilgrimage',
+    'demise-holy-prophet'
+  ];
+  if (postFatahIds.includes(event.id)) return 'after-fatah-mecca';
+  
+  return 'medina';
+};
+
 export interface LinkedKhutba {
   id: string;
   title: string;
@@ -2336,6 +2452,154 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "Dn7Z-6q1DBk",
         "thumbnailUrl": "https://img.youtube.com/vi/Dn7Z-6q1DBk/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mention of the Battle of Yamamah which took place during the time of Hazrat Abu Bakr(ra)."
+      }
+    ]
+  },
+  {
+    "id": "conquest-of-makkah",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "8 A.H. / 630 A.D.",
+    "date": "20 Ramadan 8 A.H. (11 Jan 630 A.D.)",
+    "title": "The Peaceful Conquest of Makkah (Fatah Makkah)",
+    "category": "Milestone",
+    "desc": "Following the Quraysh's breach of the Treaty of Hudaibiyyah by assisting Banu Bakr against Banu Khuza'ah, the Holy Prophet (sa) advanced with 10,000 saintly companions. Entering his birthplace with head bowed so low in humility upon his mount that his beard touched the saddle, he granted universal amnesty to his bitterest persecutors: 'No retribution shall be upon you this day; go, for you are all free!' Purifying the Ka'bah of 360 idols, he recited: 'Truth has come and falsehood has vanished.'",
+    "source": "Life of Muhammad by Hadrat Mirza Bashir-ud-Din Mahmud Ahmad (ra), pp. 156–165; Bukhari & Muslim",
+    "tags": [
+      "Conquest",
+      "Makkah",
+      "Fatah Makkah",
+      "Ka'bah",
+      "Amnesty",
+      "Idols"
+    ],
+    "khutbas": [
+      {
+        "id": "2023-07-28",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jul 28, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-07-28.html",
+        "youtubeId": "s_KkZl3L9h8",
+        "thumbnailUrl": "https://img.youtube.com/vi/s_KkZl3L9h8/hqdefault.jpg",
+        "summary": "His Holiness, Hazrat Mirza Masroor Ahmad (aba) expounded upon the unparalleled moral grandeur and sublime mercy of the Holy Prophet (sa) during the Conquest of Makkah, granting forgiveness to those who had brutally persecuted the Muslims for decades."
+      }
+    ]
+  },
+  {
+    "id": "battle-of-hunain",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "8 A.H. / 630 A.D.",
+    "date": "Shawwal 8 A.H. / Feb 630 A.D.",
+    "title": "The Battle of Hunain & Siege of Ta’if",
+    "category": "Battle / Expedition",
+    "desc": "The warlike confederacy of Hawazin and Thaqif ambushed the Muslim army in the narrow defiles of Hunain. As the vanguard recoiled, the Holy Prophet (sa) advanced intrepidly on his white mule, proclaiming: 'I am the Prophet without falsehood; I am the son of Abdul-Muttalib!' Rallied by Hadrat Abbas's thunderous call, the Muslims turned the tide and secured a decisive victory, followed by the siege of Ta'if and generous restitution of captives.",
+    "source": "Life of Muhammad, pp. 166–172; Sirat Khatam-un-Nabiyyin",
+    "tags": [
+      "Hunain",
+      "Hawazin",
+      "Taif",
+      "Abbas",
+      "Bravery"
+    ],
+    "khutbas": []
+  },
+  {
+    "id": "expedition-of-tabuk",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "9 A.H. / 630 A.D.",
+    "date": "Rajab 9 A.H. / Oct 630 A.D.",
+    "title": "The Expedition of Tabuk (Jaishul-‘Usrah)",
+    "category": "Battle / Expedition",
+    "desc": "In intense summer heat, the Holy Prophet (sa) led 30,000 Muslims on a 500-kilometer march to the Syrian border against Byzantine mobilization. Hadrat Uthman (ra) outfitted a third of the army with immense wealth, and Hadrat Abu Bakr (ra) donated everything he possessed. Awed by Muslim resolve, Byzantine forces retreated northward without engagement, firmly securing the northern Arabian borders.",
+    "source": "Life of Muhammad, pp. 176–184; Bukhari",
+    "tags": [
+      "Tabuk",
+      "Byzantine",
+      "Jaishul-Usrah",
+      "Abu Bakr",
+      "Uthman"
+    ],
+    "khutbas": []
+  },
+  {
+    "id": "year-of-delegations",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "9–10 A.H. / 630–631 A.D.",
+    "date": "9–10 A.H. (Year of Delegations)",
+    "title": "The Year of Delegations (‘Amul-Wufud)",
+    "category": "Treaty & Diplomatic",
+    "desc": "Tribal delegations and kings from every corner of the Arabian Peninsula journeyed to Medina to embrace Islam and pledge loyalty to the Holy Prophet (sa). Over seventy embassies, including the Christians of Najran, were received with gracious hospitality in the Prophet's Mosque, establishing universal peace and ending tribal blood feuds across the peninsula.",
+    "source": "Life of Muhammad, pp. 185–192; Sirat Khatam-un-Nabiyyin",
+    "tags": [
+      "Delegations",
+      "Amul-Wufud",
+      "Arabia",
+      "Najran",
+      "Peace"
+    ],
+    "khutbas": []
+  },
+  {
+    "id": "farewell-pilgrimage",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "10 A.H. / 632 A.D.",
+    "date": "9 Dhul-Hijjah 10 A.H. (6 March 632 A.D.)",
+    "title": "The Farewell Pilgrimage & Sermon of Mount ‘Arafat",
+    "category": "Milestone",
+    "desc": "Before 124,000 companions, the Holy Prophet (sa) performed his sole Hajj and delivered the historic Sermon on the Mount of Mercy (Jabal ar-Rahmah) in 'Arafat: proclaiming complete racial equality ('an Arab has no superiority over a non-Arab'), the sanctity of life and property, the elimination of usury, and the fundamental rights of women. Here God revealed: 'This day have I perfected your religion for you and completed My favour upon you and have chosen for you Islam as religion' (5:4).",
+    "source": "Life of Muhammad, pp. 193–204; Muslim & Tirmidhi",
+    "tags": [
+      "Farewell Hajj",
+      "Hajjat-ul-Wada",
+      "Arafat",
+      "Human Rights",
+      "Equality"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-03-08",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Mar 8, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-03-08.html",
+        "youtubeId": "zF0J_hH3e1Y",
+        "thumbnailUrl": "https://img.youtube.com/vi/zF0J_hH3e1Y/hqdefault.jpg",
+        "summary": "His Holiness, Hazrat Mirza Masroor Ahmad (aba) expounded on the universal Charter of Human Rights delivered by the Holy Prophet (sa) during the Farewell Pilgrimage, emphasizing absolute racial equality and universal justice."
+      }
+    ]
+  },
+  {
+    "id": "demise-holy-prophet",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "11 A.H. / 632 A.D.",
+    "date": "12 Rabi‘ul-Awwal 11 A.H. (8 June 632 A.D.)",
+    "title": "Demise of the Holy Prophet (sa) to the Supreme Companion",
+    "category": "Milestone",
+    "desc": "After a brief fever, the Holy Prophet (sa) passed away in the apartment of Hadrat 'A'ishah (ra), his final whispered words being: 'Bal ar-Rafiq al-A‘la' (Nay, rather with the Supreme Companion on High). As anguish enveloped Medina, Hadrat Abu Bakr (ra) delivered his famous consoling address: 'O people! Whosoever worshipped Muhammad, let him know Muhammad is dead; but whosoever worships Allah, Allah is alive and never dies.' Hadrat Abu Bakr was unanimously elected as the first Rightly Guided Caliph (Khalifatul-Masih).",
+    "source": "Life of Muhammad, pp. 205–218; Bukhari & Sirat Khatam-un-Nabiyyin",
+    "tags": [
+      "Demise",
+      "Wafat",
+      "Abu Bakr",
+      "Aishah",
+      "Khilafat-e-Rashidah"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-12-10",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Dec 10, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-10.html",
+        "youtubeId": "u8u95vj6V2o",
+        "thumbnailUrl": "https://img.youtube.com/vi/u8u95vj6V2o/hqdefault.jpg",
+        "summary": "His Holiness (aba) narrated the momentous events surrounding the demise of the Holy Prophet (sa) and the steadfast leadership displayed by Hazrat Abu Bakr (ra) in anchoring the believers and guiding the Muslim Ummah."
       }
     ]
   }

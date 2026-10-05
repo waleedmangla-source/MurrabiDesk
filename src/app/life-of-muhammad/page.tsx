@@ -12,7 +12,13 @@ import {
   ExternalLink,
   Tv
 } from "lucide-react";
-import { TIMELINE_EVENTS, TimelineEvent } from "@/data/timelineData";
+import { 
+  TIMELINE_EVENTS, 
+  TimelineEvent, 
+  TimelineEra, 
+  ERA_CONFIGS, 
+  getEventEra 
+} from "@/data/timelineData";
 
 export default function LifeOfMuhammadTimeline() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -298,6 +304,16 @@ export default function LifeOfMuhammadTimeline() {
       const y1 = cy - halfHeight - overshoot;
       const y2 = cy + halfHeight + overshoot;
 
+      // Determine era color for this dash based on x position
+      const marginLeft = 60;
+      const marginRight = 80;
+      const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+      let approxIdx = Math.round(((x - marginLeft) / eventTrackWidth) * (filteredEvents.length - 1));
+      approxIdx = Math.max(0, Math.min(filteredEvents.length - 1, approxIdx));
+      const dashEvent = filteredEvents[approxIdx];
+      const dashEra = dashEvent ? getEventEra(dashEvent) : 'medina';
+      const dashConfig = ERA_CONFIGS[dashEra];
+
       dashes.push(
         <line
           key={i}
@@ -305,9 +321,9 @@ export default function LifeOfMuhammadTimeline() {
           y1={y1}
           x2={x}
           y2={y2}
-          stroke="#064e3b"
+          stroke={dashConfig.accent}
           strokeWidth={strokeWidth}
-          strokeOpacity={isNearCursor ? 0.4 + 0.45 * bulgeScale : 0.25}
+          strokeOpacity={isNearCursor ? 0.65 + 0.3 * bulgeScale : 0.35}
           strokeLinecap="butt"
         />
       );
@@ -316,6 +332,34 @@ export default function LifeOfMuhammadTimeline() {
   };
 
   const activeEvent: TimelineEvent | undefined = filteredEvents[activeIndex] || filteredEvents[0];
+  const activeEra: TimelineEra = activeEvent ? getEventEra(activeEvent) : 'medina';
+  const activeEraConfig = ERA_CONFIGS[activeEra];
+
+  // Dynamic SVG Gradient stops based on event positions along the track
+  const gradientStops = useMemo(() => {
+    if (filteredEvents.length === 0 || containerWidth <= 0) return [];
+    const stops: { offset: string; color: string }[] = [];
+    const marginLeft = 60;
+    const marginRight = 80;
+    const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+
+    filteredEvents.forEach((ev, idx) => {
+      const era = getEventEra(ev);
+      const config = ERA_CONFIGS[era];
+      const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
+      const pct = Math.max(0, Math.min(100, (x / containerWidth) * 100));
+
+      if (idx === 0) {
+        stops.push({ offset: '0%', color: config.pastel });
+      }
+      stops.push({ offset: `${pct.toFixed(2)}%`, color: config.pastel });
+      if (idx === filteredEvents.length - 1) {
+        stops.push({ offset: '100%', color: config.pastel });
+      }
+    });
+
+    return stops;
+  }, [filteredEvents, containerWidth]);
 
   const categories = [
     { id: 'all', label: 'All Categories' },
@@ -422,6 +466,36 @@ export default function LifeOfMuhammadTimeline() {
             </div>
           </div>
         </div>
+
+        {/* 5-Era Pastel Color Legend */}
+        <div className="w-full max-w-7xl flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-1.5 border-t border-border/10 text-[10px]">
+          <span className="font-extrabold uppercase tracking-wider text-muted text-[9px]">Eras:</span>
+          {Object.values(ERA_CONFIGS).map((era) => {
+            const isEraActive = activeEra === era.id;
+            return (
+              <div 
+                key={era.id} 
+                className={clsx(
+                  "flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all duration-200",
+                  isEraActive ? "bg-white/10 dark:bg-white/5 ring-1 ring-white/20 font-bold" : "opacity-75 hover:opacity-100"
+                )}
+              >
+                <span 
+                  className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm transition-transform" 
+                  style={{ 
+                    backgroundColor: era.pastel, 
+                    border: `1.5px solid ${era.accent}`,
+                    boxShadow: isEraActive ? `0 0 8px ${era.glow}` : undefined,
+                    transform: isEraActive ? 'scale(1.25)' : 'scale(1)'
+                  }} 
+                />
+                <span className={clsx("whitespace-nowrap tracking-wide", isEraActive ? "text-main font-extrabold" : "text-muted")}>
+                  {era.name}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </header>
 
       {/* Top Active Title Speech Box */}
@@ -429,11 +503,16 @@ export default function LifeOfMuhammadTimeline() {
         {activeEvent ? (
           <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-accent-main/15 text-accent-main border border-accent-main/20">
-                {activeEvent.period}
+              <span 
+                className={clsx("px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md border", activeEraConfig.bgChip)}
+              >
+                {activeEraConfig.name}
               </span>
               <span className="text-xs text-muted">•</span>
-              <span className="text-[11px] font-bold text-accent-main tracking-wider uppercase">
+              <span 
+                className="text-[11px] font-bold tracking-wider uppercase"
+                style={{ color: activeEraConfig.accent }}
+              >
                 {activeEvent.year}
               </span>
             </div>
@@ -474,9 +553,15 @@ export default function LifeOfMuhammadTimeline() {
                 <clipPath id="timeline-track-clip">
                   <path d={getTimelinePath()} />
                 </clipPath>
+                {/* 5-Era Pastel Linear Gradient along the entire track */}
+                <linearGradient id="timeline-era-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  {gradientStops.map((stop, idx) => (
+                    <stop key={idx} offset={stop.offset} stopColor={stop.color} />
+                  ))}
+                </linearGradient>
                 <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
-                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.35)" />
-                  <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor="rgba(16,185,129,0.3)" />
+                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.25)" />
+                  <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor={activeEraConfig.glow} />
                 </filter>
                 {hoverX !== null && (
                   <radialGradient 
@@ -498,16 +583,16 @@ export default function LifeOfMuhammadTimeline() {
               {hoverX !== null && bulgeScale > 0 && (
                 <path 
                   d={getBulgeOnlyPath()} 
-                  fill="currentColor" 
+                  fill="url(#timeline-era-gradient)" 
                   filter="url(#bulge-shadow)"
                   opacity={bulgeScale}
                 />
               )}
 
-              {/* Base Timeline Track */}
+              {/* Base Timeline Track with 5-Era Pastel Gradient */}
               <path 
                 d={getTimelinePath()} 
-                fill="currentColor" 
+                fill="url(#timeline-era-gradient)" 
               />
 
               {/* Gradual White Glow Towards Bulge Center */}
@@ -534,6 +619,8 @@ export default function LifeOfMuhammadTimeline() {
               const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
+              const evEra = getEventEra(ev);
+              const cfg = ERA_CONFIGS[evEra];
 
               const distFromActive = Math.abs(idx - activeIndex);
               const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
@@ -550,20 +637,32 @@ export default function LifeOfMuhammadTimeline() {
                   }}
                 >
                   {/* The slanted tick mark */}
-                  <div className={clsx(
-                    "h-[2.5px] transition-all duration-300 rounded-full", 
-                    isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-8 bg-main opacity-25 dark:opacity-40"
-                  )} />
+                  <div 
+                    className={clsx(
+                      "h-[2.5px] transition-all duration-300 rounded-full", 
+                      isActive ? "w-14" : "w-8"
+                    )} 
+                    style={{
+                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
+                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
+                      opacity: isActive ? 1 : 0.65
+                    }}
+                  />
                   {/* The title label */}
                   {shouldShowLabel && (
-                    <span className={clsx(
-                      "ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
-                      isActive 
-                        ? "text-accent-main scale-110 drop-shadow-sm opacity-100 font-extrabold" 
-                        : distFromActive === 1
-                          ? "text-main opacity-70"
-                          : "text-muted opacity-45"
-                    )}>
+                    <span 
+                      className={clsx(
+                        "ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
+                        isActive 
+                          ? "scale-110 drop-shadow-sm opacity-100 font-extrabold" 
+                          : distFromActive === 1
+                            ? "opacity-85 text-main"
+                            : "opacity-50 text-muted"
+                      )}
+                      style={{
+                        color: isActive ? cfg.accent : undefined
+                      }}
+                    >
                       {ev.title}
                     </span>
                   )}
@@ -579,6 +678,8 @@ export default function LifeOfMuhammadTimeline() {
               const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
               const isActive = idx === activeIndex;
               const halfH = getBulgeHalfHeight(x);
+              const evEra = getEventEra(ev);
+              const cfg = ERA_CONFIGS[evEra];
 
               const distFromActive = Math.abs(idx - activeIndex);
               const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
@@ -595,18 +696,30 @@ export default function LifeOfMuhammadTimeline() {
                   }}
                 >
                   {/* The slanted tick mark */}
-                  <div className={clsx(
-                    "h-[2.5px] transition-all duration-300 rounded-full", 
-                    isActive ? "w-14 bg-accent-main shadow-accent-glow" : "w-8 bg-main opacity-25 dark:opacity-40"
-                  )} />
+                  <div 
+                    className={clsx(
+                      "h-[2.5px] transition-all duration-300 rounded-full", 
+                      isActive ? "w-14" : "w-8"
+                    )} 
+                    style={{
+                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
+                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
+                      opacity: isActive ? 1 : 0.65
+                    }}
+                  />
                   {/* The date label */}
                   {shouldShowLabel && (
-                    <span className={clsx(
-                      "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                      isActive 
-                        ? "text-accent-main font-black scale-110 drop-shadow-sm opacity-100" 
-                        : "text-muted opacity-50"
-                    )}>
+                    <span 
+                      className={clsx(
+                        "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                        isActive 
+                          ? "font-black scale-110 drop-shadow-sm opacity-100" 
+                          : "opacity-60 text-muted"
+                      )}
+                      style={{
+                        color: isActive ? cfg.accent : undefined
+                      }}
+                    >
                       {ev.year}
                     </span>
                   )}
@@ -625,8 +738,10 @@ export default function LifeOfMuhammadTimeline() {
             {/* Metadata Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-border/30">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-emerald-500/15 text-emerald-500 border border-emerald-500/25">
-                  Vol. {activeEvent.vol}: {activeEvent.period}
+                <span 
+                  className={clsx("px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg border", activeEraConfig.bgChip)}
+                >
+                  Vol. {activeEvent.vol}: {activeEraConfig.name}
                 </span>
                 <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-blue-500/15 text-blue-500 border border-blue-500/25">
                   {activeEvent.category}
@@ -635,7 +750,7 @@ export default function LifeOfMuhammadTimeline() {
 
               {/* Exact Date */}
               <div className="flex items-center gap-1.5 text-xs font-bold text-muted">
-                <Calendar size={14} className="text-accent-main" />
+                <Calendar size={14} style={{ color: activeEraConfig.accent }} />
                 <span>{activeEvent.date}</span>
               </div>
             </div>
