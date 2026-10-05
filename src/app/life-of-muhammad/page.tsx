@@ -15,14 +15,12 @@ import {
 import { TIMELINE_EVENTS, TimelineEvent } from "@/data/timelineData";
 
 export default function LifeOfMuhammadTimeline() {
-  const [selectedVol, setSelectedVol] = useState<number | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>('all');
   
-  // Filter events based on volume, category, and search query
+  // Filter events based on category and search query (all volumes always displayed)
   const filteredEvents = useMemo(() => {
     return TIMELINE_EVENTS.filter((ev) => {
-      if (selectedVol !== 'all' && ev.vol !== selectedVol) return false;
       if (activeCategory !== 'all' && ev.category !== activeCategory) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -34,7 +32,7 @@ export default function LifeOfMuhammadTimeline() {
       }
       return true;
     });
-  }, [selectedVol, activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery]);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -350,52 +348,11 @@ export default function LifeOfMuhammadTimeline() {
             </p>
           </div>
 
-          {/* Volume Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-800/60 rounded-2xl border border-slate-300/40 dark:border-white/10 text-xs font-bold">
-            <button
-              onClick={() => setSelectedVol('all')}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
-                selectedVol === 'all' 
-                  ? "bg-accent-main text-white shadow-sm font-black" 
-                  : "text-muted hover:text-main"
-              )}
-            >
-              All Volumes ({TIMELINE_EVENTS.length})
-            </button>
-            <button
-              onClick={() => setSelectedVol(1)}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
-                selectedVol === 1 
-                  ? "bg-accent-main text-white shadow-sm font-black" 
-                  : "text-muted hover:text-main"
-              )}
-            >
-              Vol. 1: Makkan Era
-            </button>
-            <button
-              onClick={() => setSelectedVol(2)}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
-                selectedVol === 2 
-                  ? "bg-accent-main text-white shadow-sm font-black" 
-                  : "text-muted hover:text-main"
-              )}
-            >
-              Vol. 2: Early Medina (1–5 A.H.)
-            </button>
-            <button
-              onClick={() => setSelectedVol(3)}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-xl transition-all duration-200",
-                selectedVol === 3 
-                  ? "bg-accent-main text-white shadow-sm font-black" 
-                  : "text-muted hover:text-main"
-              )}
-            >
-              Vol. 3: Treaties & Envoys (6 A.H.+)
-            </button>
+          {/* Complete Chronology Indicator Badge */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-200/60 dark:bg-slate-800/60 rounded-2xl border border-slate-300/40 dark:border-white/10 text-xs font-bold text-muted shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-main font-extrabold tracking-wide">All Volumes (I–III)</span>
+            <span className="text-[11px] font-mono text-accent-main">({TIMELINE_EVENTS.length} Events)</span>
           </div>
         </div>
 
