@@ -1,3 +1,14 @@
+export interface LinkedKhutba {
+  id: string;
+  title: string;
+  date: string;
+  year: number;
+  url: string;
+  youtubeId?: string;
+  thumbnailUrl: string;
+  summary: string;
+}
+
 export interface TimelineEvent {
   id: string;
   vol: 1 | 2 | 3;
@@ -9,6 +20,7 @@ export interface TimelineEvent {
   desc: string;
   source: string;
   tags: string[];
+  khutbas?: LinkedKhutba[];
 }
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -28,7 +40,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Elephant",
       "Miracle",
       "Al-Fil"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "birth-prophet",
@@ -46,6 +59,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdul-Muttalib",
       "Muhammad",
       "Makkah"
+    ],
+    "khutbas": [
+      {
+        "id": "2023-07-07",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jul 7, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-07-07.html",
+        "youtubeId": "m3ShYvhQ8Pw",
+        "thumbnailUrl": "https://img.youtube.com/vi/m3ShYvhQ8Pw/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad (aba) said that in the previous sermon, he had been mentioning the awe that the Muslims had over the disbelievers of Makkah, in the course of which he mentioned the dispute between Abu Jahl and Utbah."
+      },
+      {
+        "id": "2023-06-16",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 16, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-06-16.html",
+        "youtubeId": "w89XyrboFKU",
+        "thumbnailUrl": "https://img.youtube.com/vi/w89XyrboFKU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that the he would continue mentioning the preparations that were undertaken in preparation for battle with the disbelievers of Makkah."
+      }
     ]
   },
   {
@@ -63,7 +98,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Banu Sa‘d",
       "Fosterage",
       "Childhood"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "demise-aminah",
@@ -80,7 +116,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abwa",
       "Orphan",
       "Umm Ayman"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "demise-abdul-muttalib",
@@ -96,7 +133,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdul-Muttalib",
       "Abu Talib",
       "Guardianship"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "bahira-monk",
@@ -114,7 +152,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Syria",
       "Abu Talib",
       "Prophecy"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "harb-e-fijar",
@@ -131,7 +170,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Tribal War",
       "Hawazin",
       "Kinana"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "hilful-fudul",
@@ -148,7 +188,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Justice",
       "Alliance",
       "Human Rights"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "marriage-khadijah",
@@ -165,7 +206,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Marriage",
       "Al-Amin",
       "Maisarah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "arbitration-black-stone",
@@ -183,7 +225,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Hajar-e-Aswad",
       "Arbitration",
       "Al-Amin"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "first-revelation",
@@ -201,7 +244,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Gabriel",
       "Iqra",
       "Khadijah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "first-believers",
@@ -220,6 +264,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Zaid",
       "Uthman",
       "Pioneers"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-06-03",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jun 3, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-06-03.html",
+        "youtubeId": "UNaiBLqekLE",
+        "thumbnailUrl": "https://img.youtube.com/vi/UNaiBLqekLE/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and his battles with the hypocrites after the demise of the Holy Prophet(sa)."
+      }
     ]
   },
   {
@@ -237,7 +293,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Mount Safa",
       "Safa",
       "Preaching"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "persecution-slaves",
@@ -256,6 +313,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Khabbab",
       "Persecution",
       "Martyrs"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-08-26",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Aug 26, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-08-26.html",
+        "youtubeId": "-3jDw2JNudg",
+        "thumbnailUrl": "https://img.youtube.com/vi/-3jDw2JNudg/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and the armies he sent towards Syria in order to stop the enemy."
+      },
+      {
+        "id": "2021-09-24",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Sep 24, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-09-24.html",
+        "youtubeId": "VgtJi6fNUUM",
+        "thumbnailUrl": "https://img.youtube.com/vi/VgtJi6fNUUM/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2020-09-25",
+        "title": "Men of Excellence : Hazrat Bilal (ra)",
+        "date": "Sep 25, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-09-25.html",
+        "youtubeId": "tP-HyA6wp4U",
+        "thumbnailUrl": "https://img.youtube.com/vi/tP-HyA6wp4U/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said he would continue highlighting the life of Hazrat Bilal bin Rabah(ra)."
+      },
+      {
+        "id": "2020-09-18",
+        "title": "Men of Excellence : Hazrat Bilal (ra)",
+        "date": "Sep 18, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-09-18.html",
+        "youtubeId": "_DuykOWoGuQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/_DuykOWoGuQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Bilal bin Rabah(ra)."
+      }
     ]
   },
   {
@@ -275,6 +374,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Migration",
       "Uthman",
       "Ruqayyah"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-01-22",
+        "title": "Men of Excellence : Hazrat Uthman Ibn Affan (ra)",
+        "date": "Jan 22, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-01-22.html",
+        "youtubeId": "X8-HWx91i3g",
+        "thumbnailUrl": "https://img.youtube.com/vi/X8-HWx91i3g/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin highlighting incidents from the life of Hazrat Uthman(ra)."
+      },
+      {
+        "id": "2021-12-17",
+        "title": "Men of Excellence : Hazrat Abu Bakr (ra)",
+        "date": "Dec 17, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-17.html",
+        "youtubeId": "mJT64jjqgBU",
+        "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
     ]
   },
   {
@@ -293,6 +414,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Najashi",
       "Surah Maryam",
       "Amr bin al-As"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-12-17",
+        "title": "Men of Excellence : Hazrat Abu Bakr (ra)",
+        "date": "Dec 17, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-17.html",
+        "youtubeId": "mJT64jjqgBU",
+        "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2021-01-22",
+        "title": "Men of Excellence : Hazrat Uthman Ibn Affan (ra)",
+        "date": "Jan 22, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-01-22.html",
+        "youtubeId": "X8-HWx91i3g",
+        "thumbnailUrl": "https://img.youtube.com/vi/X8-HWx91i3g/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin highlighting incidents from the life of Hazrat Uthman(ra)."
+      }
     ]
   },
   {
@@ -310,6 +453,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abu Jahl",
       "Conversion",
       "Safa"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-12-30",
+        "title": "Men of Excellence: Hazrat Hamza (ra)",
+        "date": "Dec 30, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-12-30.html",
+        "youtubeId": "_Op_L74dQzg",
+        "thumbnailUrl": "https://img.youtube.com/vi/_Op_L74dQzg/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that after completing mention of the life of Hazrat Abu Bakr(ra), he mentioned that there were some Companions regarding whom there were further details that would be added once the series of sermons was published. However, His Holiness(aba) "
+      }
     ]
   },
   {
@@ -328,6 +483,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Dar-e-Arqam",
       "Conversion",
       "Kaaba"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-04-23",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Apr 23, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-04-23.html",
+        "youtubeId": "-KFTmChKsjY",
+        "thumbnailUrl": "https://img.youtube.com/vi/-KFTmChKsjY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would highlight incidents from the life of Hazrat Umar bin al-Khattab(ra)."
+      }
     ]
   },
   {
@@ -346,7 +513,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Parchment",
       "Abu Talib",
       "Persecution"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "shaqqul-qamar",
@@ -363,7 +531,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Shaqqul-Qamar",
       "Miracle",
       "Surah Al-Qamar"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "year-of-grief",
@@ -382,7 +551,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Saudah",
       "Aisha",
       "Grief"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "journey-taif",
@@ -400,7 +570,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Zaid",
       "Forgiveness",
       "Supplication"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "miraj-isra",
@@ -419,6 +590,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Prayers",
       "Salat",
       "As-Siddiq"
+    ],
+    "khutbas": [
+      {
+        "id": "2023-10-13",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Oct 13, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-10-13.html",
+        "youtubeId": "EN-Rv-DKqZI",
+        "thumbnailUrl": "https://img.youtube.com/vi/EN-Rv-DKqZI/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been narrating incidents from the life of the Holy Prophet(sa) relating to the Battle of Badr or events that took place thereafter."
+      }
     ]
   },
   {
@@ -437,7 +620,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Pledge",
       "Musab bin Umair",
       "Medina"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "second-pledge-aqabah",
@@ -456,7 +640,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Pledge",
       "Abbas",
       "Hijrah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "darun-nadwah-conspiracy",
@@ -475,6 +660,38 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abu Bakr",
       "Ali",
       "Conspiracy"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-01-14",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra) ; Suraqa bin Malik and the Bracelets of Khusrow",
+        "date": "Jan 14, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-01-14.html",
+        "youtubeId": "5MCQlXm5KPY",
+        "thumbnailUrl": "https://img.youtube.com/vi/5MCQlXm5KPY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2021-12-24",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Dec 24, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-24.html",
+        "youtubeId": "C2HyLTTkcq4",
+        "thumbnailUrl": "https://img.youtube.com/vi/C2HyLTTkcq4/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad (aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr (ra)."
+      },
+      {
+        "id": "2021-12-17",
+        "title": "Men of Excellence : Hazrat Abu Bakr (ra)",
+        "date": "Dec 17, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-17.html",
+        "youtubeId": "mJT64jjqgBU",
+        "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
     ]
   },
   {
@@ -493,6 +710,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Bracelets",
       "Prophecy",
       "Pursuit"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-01-14",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra) ; Suraqa bin Malik and the Bracelets of Khusrow",
+        "date": "Jan 14, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-01-14.html",
+        "youtubeId": "5MCQlXm5KPY",
+        "thumbnailUrl": "https://img.youtube.com/vi/5MCQlXm5KPY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
     ]
   },
   {
@@ -511,6 +740,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Ali",
       "Taqwa",
       "Arrival"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-01-14",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra) ; Suraqa bin Malik and the Bracelets of Khusrow",
+        "date": "Jan 14, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-01-14.html",
+        "youtubeId": "5MCQlXm5KPY",
+        "thumbnailUrl": "https://img.youtube.com/vi/5MCQlXm5KPY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
     ]
   },
   {
@@ -529,6 +770,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Talaal-Badru",
       "Qaswa",
       "Abu Ayyub"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-11-20",
+        "title": "Men of Excellence : `Auf bin Harith (ra); Abu Ayyub Ansari (ra)",
+        "date": "Nov 20, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-20.html",
+        "youtubeId": "7Q3dW5iirBY",
+        "thumbnailUrl": "https://img.youtube.com/vi/7Q3dW5iirBY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would be highlighting incident from the life of Hazrat ‘Auf bin Harith bin Rifa‘ah Ansari, a companion who took part in the Battle of Badr."
+      }
     ]
   },
   {
@@ -546,7 +799,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Suffah",
       "Abu Hurairah",
       "Ashabus-Suffah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "commencement-adhan",
@@ -564,6 +818,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdullah bin Zaid",
       "Umar",
       "Call to Prayer"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-09-24",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Sep 24, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-09-24.html",
+        "youtubeId": "VgtJi6fNUUM",
+        "thumbnailUrl": "https://img.youtube.com/vi/VgtJi6fNUUM/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2021-05-07",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "May 7, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-05-07.html",
+        "youtubeId": "98Gtvk4AADg",
+        "thumbnailUrl": "https://img.youtube.com/vi/98Gtvk4AADg/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2022-08-26",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Aug 26, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-08-26.html",
+        "youtubeId": "-3jDw2JNudg",
+        "thumbnailUrl": "https://img.youtube.com/vi/-3jDw2JNudg/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and the armies he sent towards Syria in order to stop the enemy."
+      },
+      {
+        "id": "2020-09-25",
+        "title": "Men of Excellence : Hazrat Bilal (ra)",
+        "date": "Sep 25, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-09-25.html",
+        "youtubeId": "tP-HyA6wp4U",
+        "thumbnailUrl": "https://img.youtube.com/vi/tP-HyA6wp4U/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said he would continue highlighting the life of Hazrat Bilal bin Rabah(ra)."
+      }
     ]
   },
   {
@@ -582,6 +878,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Ansar",
       "Muhajirin",
       "Abdur-Rahman bin Auf"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-01-21",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jan 21, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-01-21.html",
+        "youtubeId": "lhZfPdbAuHc",
+        "thumbnailUrl": "https://img.youtube.com/vi/lhZfPdbAuHc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2020-11-20",
+        "title": "Men of Excellence : `Auf bin Harith (ra); Abu Ayyub Ansari (ra)",
+        "date": "Nov 20, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-20.html",
+        "youtubeId": "7Q3dW5iirBY",
+        "thumbnailUrl": "https://img.youtube.com/vi/7Q3dW5iirBY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would be highlighting incident from the life of Hazrat ‘Auf bin Harith bin Rifa‘ah Ansari, a companion who took part in the Battle of Badr."
+      }
     ]
   },
   {
@@ -600,7 +918,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Constitution",
       "Jews",
       "Alliance"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "permission-jihad",
@@ -617,7 +936,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Defense",
       "Surah Al-Hajj",
       "Religious Freedom"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "early-patrols-waddan",
@@ -635,7 +955,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Banu Damrah",
       "Treaty",
       "Patrol"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "sariyyah-nakhlah",
@@ -652,7 +973,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdullah bin Jahsh",
       "Sacred Months",
       "Surah Al-Baqarah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "alteration-qiblah",
@@ -670,7 +992,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Kaaba",
       "Jerusalem",
       "Baqarah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "fasting-ramadan-zakat",
@@ -688,7 +1011,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Zakat",
       "Sadaqatul-Fitr",
       "Pillars"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "battle-of-badr",
@@ -707,6 +1031,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Angels",
       "313",
       "Miracle"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-11-20",
+        "title": "Men of Excellence : `Auf bin Harith (ra); Abu Ayyub Ansari (ra)",
+        "date": "Nov 20, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-20.html",
+        "youtubeId": "7Q3dW5iirBY",
+        "thumbnailUrl": "https://img.youtube.com/vi/7Q3dW5iirBY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would be highlighting incident from the life of Hazrat ‘Auf bin Harith bin Rifa‘ah Ansari, a companion who took part in the Battle of Badr."
+      },
+      {
+        "id": "2023-07-07",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jul 7, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-07-07.html",
+        "youtubeId": "m3ShYvhQ8Pw",
+        "thumbnailUrl": "https://img.youtube.com/vi/m3ShYvhQ8Pw/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad (aba) said that in the previous sermon, he had been mentioning the awe that the Muslims had over the disbelievers of Makkah, in the course of which he mentioned the dispute between Abu Jahl and Utbah."
+      },
+      {
+        "id": "2020-11-13",
+        "title": "Men of Excellence : Abdullah bin Amr (ra); Abu Dujana (ra)",
+        "date": "Nov 13, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-13.html",
+        "youtubeId": "UCAB4W9koh4",
+        "thumbnailUrl": "https://img.youtube.com/vi/UCAB4W9koh4/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would highlight incidents from the lives of Companions of the Holy Prophet(sa) who took part in the battle of Badr."
+      },
+      {
+        "id": "2023-11-10",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Nov 10, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-11-10.html",
+        "youtubeId": "jMDrH3KjxX8",
+        "thumbnailUrl": "https://img.youtube.com/vi/jMDrH3KjxX8/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning incidents from the life of the Holy Prophet(sa) which took place after the Battle of Badr."
+      }
     ]
   },
   {
@@ -725,6 +1091,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Literacy",
       "Education",
       "Mercy"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-11-20",
+        "title": "Men of Excellence : `Auf bin Harith (ra); Abu Ayyub Ansari (ra)",
+        "date": "Nov 20, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-20.html",
+        "youtubeId": "7Q3dW5iirBY",
+        "thumbnailUrl": "https://img.youtube.com/vi/7Q3dW5iirBY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would be highlighting incident from the life of Hazrat ‘Auf bin Harith bin Rifa‘ah Ansari, a companion who took part in the Battle of Badr."
+      },
+      {
+        "id": "2021-05-21",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "May 21, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-05-21.html",
+        "youtubeId": "v1rWtw867W0",
+        "thumbnailUrl": "https://img.youtube.com/vi/v1rWtw867W0/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting the life of Hazrat Umar(ra) and the battles and expeditions which he took part in."
+      }
     ]
   },
   {
@@ -742,6 +1130,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Fatimah",
       "Marriage",
       "Ahle Bait"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-12-04",
+        "title": "Men of Excellence : Hazrat Ali (ra)",
+        "date": "Dec 4, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-12-04.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said he would continue highlighting incidents from the life of Hazrat Ali(ra)."
+      },
+      {
+        "id": "2021-05-21",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "May 21, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-05-21.html",
+        "youtubeId": "v1rWtw867W0",
+        "thumbnailUrl": "https://img.youtube.com/vi/v1rWtw867W0/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting the life of Hazrat Umar(ra) and the battles and expeditions which he took part in."
+      }
     ]
   },
   {
@@ -759,7 +1169,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Siege",
       "Exile",
       "Treaty Breach"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "execution-kab-ashraf",
@@ -776,7 +1187,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Treason",
       "Muhammad bin Maslamah",
       "National Security"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "battle-of-uhud",
@@ -796,6 +1208,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Khalid bin Walid",
       "Talhah",
       "Martyrs"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-04-19",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Apr 19, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-04-19.html",
+        "youtubeId": "3LDrA8FsNGc",
+        "thumbnailUrl": "https://img.youtube.com/vi/3LDrA8FsNGc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning incidents from the Battle of Uhud, which further highlight the beautiful aspects of the life of the Holy Prophet(sa)."
+      },
+      {
+        "id": "2024-03-08",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Mar 8, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-03-08.html",
+        "youtubeId": "xcbUYk7G0YY",
+        "thumbnailUrl": "https://img.youtube.com/vi/xcbUYk7G0YY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that there is an incident from the Battle of Uhud in which the Holy Prophet(sa) prayed for the Hazrat Sa’d’s(ra) prayers to be accepted."
+      },
+      {
+        "id": "2024-03-01",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Mar 1, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-03-01.html",
+        "youtubeId": "vSTxwMxO1fc",
+        "thumbnailUrl": "https://img.youtube.com/vi/vSTxwMxO1fc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued narrating incidents from the Battle of Uhud."
+      },
+      {
+        "id": "2024-02-16",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Feb 16, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-02-16.html",
+        "youtubeId": "wCVjhUBKcFw",
+        "thumbnailUrl": "https://img.youtube.com/vi/wCVjhUBKcFw/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the life of the Holy Prophet(sa) and the companions’ love and devotion for the Holy Prophet(sa) with reference to the Battle of Uhud."
+      }
     ]
   },
   {
@@ -813,6 +1267,38 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Pursuit",
       "Abu Sufyan",
       "Morale"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-05-03",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "May 3, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-05-03.html",
+        "youtubeId": "mILTkmjmBT4",
+        "thumbnailUrl": "https://img.youtube.com/vi/mILTkmjmBT4/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning the Expedition of Hamra’ al-Asad."
+      },
+      {
+        "id": "2024-04-26",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Apr 26, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-04-26.html",
+        "youtubeId": "SeWu4x3WV3E",
+        "thumbnailUrl": "https://img.youtube.com/vi/SeWu4x3WV3E/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had mentioned the background and reasons leading to the expedition of Hamra’ al-Asad in the previous sermon."
+      },
+      {
+        "id": "2021-06-04",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jun 4, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-06-04.html",
+        "youtubeId": "ZJWSexwIs-M",
+        "thumbnailUrl": "https://img.youtube.com/vi/ZJWSexwIs-M/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      }
     ]
   },
   {
@@ -831,7 +1317,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Gambling",
       "Surah Al-Maidah",
       "Law"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "tragedy-raji",
@@ -849,6 +1336,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Martyrdom",
       "Banu Lihyan",
       "Betrayal"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-05-17",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "May 17, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-05-17.html",
+        "youtubeId": "hV2OTZPMmTQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/hV2OTZPMmTQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning the expedition of Raji’."
+      }
     ]
   },
   {
@@ -867,7 +1366,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Suffah",
       "Massacre",
       "Qunut Nazilah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "exile-banu-nadir",
@@ -885,6 +1385,38 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Surah Al-Hashr",
       "Khaibar",
       "Millstone"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-06-28",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 28, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-06-28.html",
+        "youtubeId": "KtBqfgr9pYM",
+        "thumbnailUrl": "https://img.youtube.com/vi/KtBqfgr9pYM/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the expedition of Banu Nadir."
+      },
+      {
+        "id": "2024-06-21",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 21, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-06-21.html",
+        "youtubeId": "wgc6BAyrX5U",
+        "thumbnailUrl": "https://img.youtube.com/vi/wgc6BAyrX5U/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue narrating incidents regarding the Jewish tribe of Banu Nadir and their plot to kill the Holy Prophet(sa)."
+      },
+      {
+        "id": "2024-06-14",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 14, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-06-14.html",
+        "youtubeId": "zCcRkVsaZjA",
+        "thumbnailUrl": "https://img.youtube.com/vi/zCcRkVsaZjA/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would mention details regarding the Expedition of Banu Nadir."
+      }
     ]
   },
   {
@@ -902,6 +1434,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Muraisi",
       "Juwairiyah",
       "Marriage"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-07-12",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jul 12, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-07-12.html",
+        "youtubeId": "sT1F6R6C59A",
+        "thumbnailUrl": "https://img.youtube.com/vi/sT1F6R6C59A/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would mention the Expedition of Banu Mustaliq, also known as the Expedition of Muraisi’."
+      },
+      {
+        "id": "2024-08-16",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 16, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-16.html",
+        "youtubeId": "O2EwFpnWkS0",
+        "thumbnailUrl": "https://img.youtube.com/vi/O2EwFpnWkS0/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the Expedition of Banu Mustaliq."
+      },
+      {
+        "id": "2024-08-09",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 9, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-09.html",
+        "youtubeId": "PkMlREKnMog",
+        "thumbnailUrl": "https://img.youtube.com/vi/PkMlREKnMog/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that prior to the Jalsa, he had been mentioning the expedition of Muraisi’, and it had been mentioned that Abdullah bin Ubayy said unbecoming things about the Holy Prophet(sa) and adopted hypocritical ways."
+      },
+      {
+        "id": "2024-07-19",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jul 19, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-07-19.html",
+        "youtubeId": "3fvx6jONBh8",
+        "thumbnailUrl": "https://img.youtube.com/vi/3fvx6jONBh8/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the Expedition of Banu Mustaliq."
+      }
     ]
   },
   {
@@ -920,6 +1494,38 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdullah bin Ubayy",
       "Surah An-Nur",
       "Chastity"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-08-30",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 30, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-30.html",
+        "youtubeId": "jTVnBvZBGjs",
+        "thumbnailUrl": "https://img.youtube.com/vi/jTVnBvZBGjs/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that with reference to the life of the Holy Prophet(sa) he would continue narrating the incident of the Great Calumny against Hazrat A’ishah(ra)."
+      },
+      {
+        "id": "2022-11-18",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Nov 18, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-11-18.html",
+        "youtubeId": "HQC7Fko_q60",
+        "thumbnailUrl": "https://img.youtube.com/vi/HQC7Fko_q60/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2022-01-28",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jan 28, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-01-28.html",
+        "youtubeId": "D359Km444Xo",
+        "thumbnailUrl": "https://img.youtube.com/vi/D359Km444Xo/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
     ]
   },
   {
@@ -939,6 +1545,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Salman al-Farsi",
       "Trench",
       "Miracle"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-09-06",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 6, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-06.html",
+        "youtubeId": "Ms9uAz5qLvc",
+        "thumbnailUrl": "https://img.youtube.com/vi/Ms9uAz5qLvc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would mention the Battle of Khandaq, also known as the Battle of Ahzab (Battle of the Trench). This battle took place in 5 AH, or February/March 627 AD."
+      },
+      {
+        "id": "2024-09-27",
+        "title": "Muhammad (sa): The Great Examplar",
+        "date": "Sep 27, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-27.html",
+        "youtubeId": "DaTvyfjQQCo",
+        "thumbnailUrl": "https://img.youtube.com/vi/DaTvyfjQQCo/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue narrating incidents from the Battle of Ahzab."
+      },
+      {
+        "id": "2024-09-20",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 20, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-20.html",
+        "youtubeId": "j50pghx5Gxo",
+        "thumbnailUrl": "https://img.youtube.com/vi/j50pghx5Gxo/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he was mentioning the Battle of Ahzab with reference to the life of the Holy Prophet(sa)."
+      },
+      {
+        "id": "2024-09-13",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 13, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-13.html",
+        "youtubeId": "il7s4t2Smxk",
+        "thumbnailUrl": "https://img.youtube.com/vi/il7s4t2Smxk/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, T‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning details about the Battle of Ahzab and how the the treachery of the Jews of Khaibar led to the formation of an army of the disbelievers intending to attack and eliminate the Muslims."
+      }
     ]
   },
   {
@@ -957,6 +1605,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Treason",
       "Deuteronomy",
       "Judgment"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-11-01",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Nov 1, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-01.html",
+        "youtubeId": "_lfRB9LyIlQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/_lfRB9LyIlQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the Expedition of Banu Quraizah."
+      },
+      {
+        "id": "2024-10-25",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Oct 25, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-10-25.html",
+        "youtubeId": "s3YTE_Hlots",
+        "thumbnailUrl": "https://img.youtube.com/vi/s3YTE_Hlots/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the siege of the Banu Quraizah after the Battle of the Confederates, due to their treachery."
+      },
+      {
+        "id": "2022-02-04",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Feb 4, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-02-04.html",
+        "youtubeId": "pay7J-DhUZU",
+        "thumbnailUrl": "https://img.youtube.com/vi/pay7J-DhUZU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2020-07-10",
+        "title": "Men of Excellence",
+        "date": "Jul 10, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-07-10.html",
+        "youtubeId": "vN6XktJgc60",
+        "thumbnailUrl": "https://img.youtube.com/vi/vN6XktJgc60/hqdefault.jpg",
+        "summary": "In today’s Friday Sermon, His Holiness(aba) continued to narrate accounts from the life of Hazrat Sa`d bin Mu’adh. His Holiness(aba) stated that as mentioned in the previous Sermon, after the Battle of Ahzab, the Holy Prophet(sa) was given the Divine command to head towards the Banu Quraizah and deal with their treachery."
+      }
     ]
   },
   {
@@ -975,6 +1665,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Masjid-e-Nabawi",
       "Forgiveness",
       "Grain Embargo"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-12-13",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Dec 13, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-12-13.html",
+        "youtubeId": "Qyi3u-nl67A",
+        "thumbnailUrl": "https://img.youtube.com/vi/Qyi3u-nl67A/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would mention another expedition from the life of the Holy Prophet(sa), called the Expedition of Qurta."
+      }
     ]
   },
   {
@@ -992,6 +1694,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abul-As",
       "Zainab",
       "Patrols"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-12-20",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Dec 20, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-12-20.html",
+        "youtubeId": "CZTetQQMXIk",
+        "thumbnailUrl": "https://img.youtube.com/vi/CZTetQQMXIk/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he has been mentioning the various battles and expeditions from the life of the Holy Prophet(sa). In this regard, His Holiness(aba) said we also find mention of the Expedition of Ukashah bin Mihsan."
+      }
     ]
   },
   {
@@ -1009,6 +1723,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Raji",
       "Expedition",
       "Justice"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-05-17",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "May 17, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-05-17.html",
+        "youtubeId": "hV2OTZPMmTQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/hV2OTZPMmTQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning the expedition of Raji’."
+      }
     ]
   },
   {
@@ -1026,7 +1752,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Fadak",
       "Khaibar",
       "Preemptive Defense"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "killing-abu-rafi",
@@ -1043,6 +1770,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abdullah bin Atik",
       "Khaibar",
       "Ahzab"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-09-13",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 13, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-13.html",
+        "youtubeId": "il7s4t2Smxk",
+        "thumbnailUrl": "https://img.youtube.com/vi/il7s4t2Smxk/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, T‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning details about the Battle of Ahzab and how the the treachery of the Jews of Khaibar led to the formation of an army of the disbelievers intending to attack and eliminate the Muslims."
+      }
     ]
   },
   {
@@ -1061,7 +1800,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Rain",
       "Prayer",
       "Miracle"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "journey-hudaibiyyah",
@@ -1079,7 +1819,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Ihram",
       "Vision",
       "Peace"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "miracle-water-hudaibiyyah",
@@ -1097,7 +1838,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Water",
       "Thirst",
       "Well"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "baiat-e-ridwan",
@@ -1115,6 +1857,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Uthman",
       "Pledge",
       "Surah Al-Fath"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-08-19",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Aug 19, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-08-19.html",
+        "youtubeId": "36CaCNY_sbo",
+        "thumbnailUrl": "https://img.youtube.com/vi/36CaCNY_sbo/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning incidents from the life of Hazrat Abu Bakr(ra), particularly regarding advancements towards Syria."
+      },
+      {
+        "id": "2022-03-04",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Mar 4, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-03-04.html",
+        "youtubeId": "R3xzDYRlLpU",
+        "thumbnailUrl": "https://img.youtube.com/vi/R3xzDYRlLpU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2021-06-11",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jun 11, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-06-11.html",
+        "youtubeId": "3C-qMIX1E1M",
+        "thumbnailUrl": "https://img.youtube.com/vi/3C-qMIX1E1M/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2021-01-29",
+        "title": "Men of Excellence : Hazrat Uthman Ibn Affan (ra)",
+        "date": "Jan 29, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-01-29.html",
+        "youtubeId": "zH8FrvU2Tq4",
+        "thumbnailUrl": "https://img.youtube.com/vi/zH8FrvU2Tq4/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Uthman(ra) and the battles in which he took part."
+      }
     ]
   },
   {
@@ -1133,6 +1917,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Sulh",
       "Suhail bin Amr",
       "Armistice"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-11-22",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Nov 22, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-22.html",
+        "youtubeId": "FPwVVb-pkvA",
+        "thumbnailUrl": "https://img.youtube.com/vi/FPwVVb-pkvA/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue to mention about the Treaty of Hudaibiyyah."
+      },
+      {
+        "id": "2024-11-15",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Nov 15, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-15.html",
+        "youtubeId": "glSnTs8_0qc",
+        "thumbnailUrl": "https://img.youtube.com/vi/glSnTs8_0qc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin mention of the Treaty of Hudaibiyyah."
+      },
+      {
+        "id": "2024-12-06",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Dec 6, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-12-06.html",
+        "youtubeId": "TKvSQVaeskc",
+        "thumbnailUrl": "https://img.youtube.com/vi/TKvSQVaeskc/hqdefault.jpg",
+        "summary": "His Holiness(aba) quoted Hazrat Mirza Bashir Ahmad(ra) who writes:"
+      },
+      {
+        "id": "2024-11-29",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Nov 29, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-29.html",
+        "youtubeId": "PPzjXwMUwyQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/PPzjXwMUwyQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awuuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning details regarding the Treaty of Hudaibiyah."
+      }
     ]
   },
   {
@@ -1151,6 +1977,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Umar",
       "Victory",
       "Peace"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-06-04",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jun 4, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-06-04.html",
+        "youtubeId": "ZJWSexwIs-M",
+        "thumbnailUrl": "https://img.youtube.com/vi/ZJWSexwIs-M/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2021-10-15",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Oct 15, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-10-15.html",
+        "youtubeId": "gUTJqwf4cDw",
+        "thumbnailUrl": "https://img.youtube.com/vi/gUTJqwf4cDw/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2021-08-27",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Aug 27, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-08-27.html",
+        "youtubeId": "DONMyvDslXI",
+        "thumbnailUrl": "https://img.youtube.com/vi/DONMyvDslXI/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      },
+      {
+        "id": "2021-07-30",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jul 30, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-07-30.html",
+        "youtubeId": "l6c8EYi8hOM",
+        "thumbnailUrl": "https://img.youtube.com/vi/l6c8EYi8hOM/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      }
     ]
   },
   {
@@ -1169,6 +2037,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Extradition",
       "Caravan Route",
       "Treaty"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-12-06",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Dec 6, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-12-06.html",
+        "youtubeId": "TKvSQVaeskc",
+        "thumbnailUrl": "https://img.youtube.com/vi/TKvSQVaeskc/hqdefault.jpg",
+        "summary": "His Holiness(aba) quoted Hazrat Mirza Bashir Ahmad(ra) who writes:"
+      },
+      {
+        "id": "2024-11-29",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Nov 29, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-29.html",
+        "youtubeId": "PPzjXwMUwyQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/PPzjXwMUwyQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awuuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning details regarding the Treaty of Hudaibiyah."
+      },
+      {
+        "id": "2024-11-22",
+        "title": "Muhammad (sa): The Great Exemplar; Treaty of Hudaibiyah",
+        "date": "Nov 22, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-22.html",
+        "youtubeId": "FPwVVb-pkvA",
+        "thumbnailUrl": "https://img.youtube.com/vi/FPwVVb-pkvA/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue to mention about the Treaty of Hudaibiyyah."
+      },
+      {
+        "id": "2024-11-15",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Nov 15, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-11-15.html",
+        "youtubeId": "glSnTs8_0qc",
+        "thumbnailUrl": "https://img.youtube.com/vi/glSnTs8_0qc/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin mention of the Treaty of Hudaibiyyah."
+      }
     ]
   },
   {
@@ -1187,7 +2097,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Silver",
       "Diplomacy",
       "Rasulullah"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "letter-caesar-heraclius",
@@ -1206,6 +2117,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Rome",
       "Dihyah al-Kalbi",
       "Abu Sufyan"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-09-02",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Sep 2, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-09-02.html",
+        "youtubeId": "a2P2VOjqOSI",
+        "thumbnailUrl": "https://img.youtube.com/vi/a2P2VOjqOSI/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting the life of Hazrat Abu Bakr(ra) and the battles that took part during his era. His Holiness(aba) said that today he would mention the Conquest of Damascus, which was the last battle that took place during h"
+      },
+      {
+        "id": "2022-08-26",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Aug 26, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-08-26.html",
+        "youtubeId": "-3jDw2JNudg",
+        "thumbnailUrl": "https://img.youtube.com/vi/-3jDw2JNudg/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and the armies he sent towards Syria in order to stop the enemy."
+      }
     ]
   },
   {
@@ -1225,6 +2158,38 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Sasanian",
       "Prophecy",
       "Abdullah bin Hudhafah"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-07-22",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jul 22, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-07-22.html",
+        "youtubeId": "JafHCkANoAM",
+        "thumbnailUrl": "https://img.youtube.com/vi/JafHCkANoAM/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad (aba) said that as he mentioned in the previous sermon, he would highlight the expeditions against the Persian Empire during the era of Hazrat Abu Bakr (ra)."
+      },
+      {
+        "id": "2022-07-08",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jul 8, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-07-08.html",
+        "youtubeId": "XIaYLOqfeLY",
+        "thumbnailUrl": "https://img.youtube.com/vi/XIaYLOqfeLY/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting the life of Hazrat Abu Bakr(ra) and the expeditions during his era against the rebels."
+      },
+      {
+        "id": "2021-07-23",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jul 23, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-07-23.html",
+        "youtubeId": "FpVHIcz6nBk",
+        "thumbnailUrl": "https://img.youtube.com/vi/FpVHIcz6nBk/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz, and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Umar(ra)."
+      }
     ]
   },
   {
@@ -1243,6 +2208,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Hatib bin Abi Baltaah",
       "Mariyah al-Qibtiyyah",
       "Duldul"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-10-01",
+        "title": "Men of Excellence : Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Oct 1, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-10-01.html",
+        "youtubeId": "g7v43PUnMF8",
+        "thumbnailUrl": "https://img.youtube.com/vi/g7v43PUnMF8/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that once, the Second Caliph(ra) said in a sermon regarding Hazrat Umar(ra) that often, in the battles that took place after the demise of the Holy Prophet(sa), there would be a shortage of Muslims in the army."
+      }
     ]
   },
   {
@@ -1261,6 +2238,28 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abyssinia",
       "Amr bin Umayyah",
       "Jafar"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-12-17",
+        "title": "Men of Excellence : Hazrat Abu Bakr (ra)",
+        "date": "Dec 17, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-12-17.html",
+        "youtubeId": "mJT64jjqgBU",
+        "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      },
+      {
+        "id": "2021-01-22",
+        "title": "Men of Excellence : Hazrat Uthman Ibn Affan (ra)",
+        "date": "Jan 22, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-01-22.html",
+        "youtubeId": "X8-HWx91i3g",
+        "thumbnailUrl": "https://img.youtube.com/vi/X8-HWx91i3g/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin highlighting incidents from the life of Hazrat Uthman(ra)."
+      }
     ]
   },
   {
@@ -1278,7 +2277,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Damascus",
       "Shuja bin Wahb",
       "Diplomacy"
-    ]
+    ],
+    "khutbas": []
   },
   {
     "id": "letter-chief-yamamah",
@@ -1295,6 +2295,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Haudhah",
       "Sulait bin Amr",
       "Diplomacy"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-06-17",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jun 17, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-06-17.html",
+        "youtubeId": "xHPyWK2Ejz8",
+        "thumbnailUrl": "https://img.youtube.com/vi/xHPyWK2Ejz8/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that in the previous sermon, he stated that the incidents regarding the Battle of Yamamah and Musailimah and his followers were complete. There were also ten other expeditions to combat the rebellion raised by the hypocrites."
+      },
+      {
+        "id": "2022-06-10",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jun 10, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-06-10.html",
+        "youtubeId": "5msf9gr-3wQ",
+        "thumbnailUrl": "https://img.youtube.com/vi/5msf9gr-3wQ/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue narrating incidents from the life of Hazrat Abu Bakr(ra) pertaining to the Battle of Yamamah."
+      },
+      {
+        "id": "2022-06-03",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "Jun 3, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-06-03.html",
+        "youtubeId": "UNaiBLqekLE",
+        "thumbnailUrl": "https://img.youtube.com/vi/UNaiBLqekLE/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and his battles with the hypocrites after the demise of the Holy Prophet(sa)."
+      },
+      {
+        "id": "2022-05-20",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "May 20, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-05-20.html",
+        "youtubeId": "Dn7Z-6q1DBk",
+        "thumbnailUrl": "https://img.youtube.com/vi/Dn7Z-6q1DBk/hqdefault.jpg",
+        "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mention of the Battle of Yamamah which took place during the time of Hazrat Abu Bakr(ra)."
+      }
     ]
   }
 ];

@@ -7,7 +7,10 @@ import {
   ChevronRight, 
   Search, 
   Bookmark, 
-  Calendar
+  Calendar,
+  Play,
+  ExternalLink,
+  Tv
 } from "lucide-react";
 import { TIMELINE_EVENTS, TimelineEvent } from "@/data/timelineData";
 
@@ -685,8 +688,75 @@ export default function LifeOfMuhammadTimeline() {
               {activeEvent.desc}
             </p>
 
+            {/* Linked Friday Sermons Section */}
+            {activeEvent.khutbas && activeEvent.khutbas.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border/40">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded-md bg-accent-main/15 text-accent-main">
+                      <Tv size={15} />
+                    </span>
+                    <h3 className="text-xs md:text-sm font-black uppercase tracking-wider text-main">
+                      Friday Sermons of Huzoor (aba) on this Incident
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-bold text-accent-main px-2 py-0.5 rounded-full bg-accent-main/10 border border-accent-main/20">
+                    {activeEvent.khutbas.length} {activeEvent.khutbas.length === 1 ? 'Sermon' : 'Sermons'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {activeEvent.khutbas.map((kh) => (
+                    <a
+                      key={kh.id}
+                      href={kh.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group/khutba flex flex-col rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 hover:border-accent-main/60 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                    >
+                      {/* Video Thumbnail */}
+                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
+                        <img
+                          src={kh.thumbnailUrl}
+                          alt={kh.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/khutba:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/30 group-hover/khutba:bg-black/10 transition-colors flex items-center justify-center">
+                          <span className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 text-accent-main flex items-center justify-center shadow-md transform group-hover/khutba:scale-110 transition-transform">
+                            <Play size={18} className="ml-0.5 fill-current" />
+                          </span>
+                        </div>
+                        <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-sm text-[10px] font-bold text-white tracking-wide">
+                          {kh.date}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3.5 flex flex-col flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="text-xs font-bold text-main line-clamp-2 leading-snug group-hover/khutba:text-accent-main transition-colors">
+                            {kh.title}
+                          </h4>
+                          <ExternalLink size={13} className="text-muted shrink-0 group-hover/khutba:text-accent-main transition-colors mt-0.5" />
+                        </div>
+                        {kh.summary && (
+                          <p className="mt-2 text-[11px] text-muted line-clamp-2 leading-relaxed font-normal">
+                            {kh.summary}
+                          </p>
+                        )}
+                        <div className="mt-auto pt-2.5 flex items-center text-[10px] font-bold text-accent-main">
+                          Watch on Al Islam &rarr;
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Tags & Source Citation Footer */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/30 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 mt-6 border-t border-border/30 text-xs">
               
               {/* Tags */}
               <div className="flex flex-wrap items-center gap-1.5">
