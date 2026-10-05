@@ -774,41 +774,35 @@ export default function LifeOfMuhammadTimeline() {
                       strokeWidth={strokeW}
                       strokeLinecap="round"
                     />
-
-                    {/* Year badge pill listed directly underneath the bulge / line */}
-                    <g 
-                      transform={`translate(${apexX}, ${cy + lineHalfHeight + 14}) scale(${0.85 + 0.15 * bulgeScale})`}
-                      opacity={0.75 + 0.25 * bulgeScale}
-                    >
-                      {/* Pill background */}
-                      <rect
-                        x="-38"
-                        y="-12"
-                        width="76"
-                        height="24"
-                        rx="12"
-                        fill="#000000"
-                        stroke="rgba(255, 255, 255, 0.25)"
-                        strokeWidth="1.5"
-                      />
-                      {/* Year text */}
-                      <text
-                        x="0"
-                        y="4"
-                        textAnchor="middle"
-                        fill="#ffffff"
-                        fontSize="11"
-                        fontWeight="900"
-                        letterSpacing="0.08em"
-                        fontFamily="inherit"
-                      >
-                        {activeEvent.year}
-                      </text>
-                    </g>
                   </g>
                 );
               })()}
             </svg>
+
+            {/* Year Badge Pill (HTML Layer - completely immune to SVG masks/clipping) */}
+            {containerWidth > 0 && activeEvent && (() => {
+              const apexX = hoverX !== null ? hoverX + bulgeSkew : titleCardCoords.targetBulgeX;
+              const lineHalfHeight = 24 + 72 * bulgeScale;
+              const pillY = cy + lineHalfHeight + 14;
+
+              return (
+                <div 
+                  className="absolute pointer-events-none z-30 transition-[left,opacity,transform] duration-75 ease-out select-none"
+                  style={{
+                    left: `${apexX}px`,
+                    top: `${pillY}px`,
+                    transform: `translateX(-50%) scale(${0.85 + 0.15 * bulgeScale})`,
+                    opacity: 0.9 + 0.1 * bulgeScale,
+                  }}
+                >
+                  <div className="flex items-center justify-center px-3.5 py-1 rounded-full bg-black/90 dark:bg-black/95 text-white border border-white/30 shadow-lg backdrop-blur-md">
+                    <span className="text-[11px] md:text-xs font-black tracking-wider uppercase whitespace-nowrap">
+                      {activeEvent.year}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
