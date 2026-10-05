@@ -598,18 +598,22 @@ export default function LifeOfMuhammadTimeline() {
               );
             })()}
 
-            {/* Bottom Slanted Date (Active Event Only - all extra slanted lines removed) */}
-            {containerWidth > 0 && activeEvent && (() => {
+            {/* Bottom Slanted Dates (slanting down-right) - Rendered BEHIND the bulge */}
+            {containerWidth > 0 && filteredEvents.map((ev, idx) => {
               const marginLeft = 60;
               const marginRight = 80;
               const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (activeIndex / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
-              const evEra = getEventEra(activeEvent);
+              const x = marginLeft + (idx / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
+              const isActive = idx === activeIndex;
+              const evEra = getEventEra(ev);
               const cfg = ERA_CONFIGS[evEra];
+
+              const distFromActive = Math.abs(idx - activeIndex);
+              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
 
               return (
                 <div 
-                  key={`bottom-${activeEvent.id}`}
+                  key={`bottom-${ev.id}`}
                   className="absolute flex items-center pointer-events-none z-0 transition-opacity duration-200"
                   style={{ 
                     left: `${x}px`,
@@ -620,25 +624,35 @@ export default function LifeOfMuhammadTimeline() {
                 >
                   {/* The slanted tick mark */}
                   <div 
-                    className="h-[2.5px] w-14 transition-all duration-300 rounded-full" 
+                    className={clsx(
+                      "h-[2.5px] transition-all duration-300 rounded-full", 
+                      isActive ? "w-14" : "w-8"
+                    )} 
                     style={{
-                      backgroundColor: cfg.accent,
-                      boxShadow: `0 0 10px ${cfg.glow}`,
-                      opacity: 1
+                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
+                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
+                      opacity: isActive ? 1 : 0.65
                     }}
                   />
                   {/* The date label */}
-                  <span 
-                    className="ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 font-black scale-110 drop-shadow-sm opacity-100"
-                    style={{
-                      color: cfg.accent
-                    }}
-                  >
-                    {activeEvent.year}
-                  </span>
+                  {shouldShowLabel && (
+                    <span 
+                      className={clsx(
+                        "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+                        isActive 
+                          ? "font-black scale-110 drop-shadow-sm opacity-100" 
+                          : "opacity-60 text-muted"
+                      )}
+                      style={{
+                        color: isActive ? cfg.accent : undefined
+                      }}
+                    >
+                      {ev.year}
+                    </span>
+                  )}
                 </div>
               );
-            })()}
+            })}
 
             {/* SVG Track spanning edge to edge - Rendered IN FRONT OF the slanted text (z-10) */}
             <svg 
