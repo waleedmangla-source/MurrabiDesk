@@ -763,25 +763,24 @@ export default function LifeOfMuhammadTimeline() {
                 const lineHalfHeight = 96; // 192px total height, significantly longer than max bulge height (144px)
                 return (
                   <g className="pointer-events-none select-none transition-opacity duration-150" opacity={bulgeScale > 0 ? 1 : 0.8}>
-                    {/* Subtle outer halo/glow for dark backgrounds */}
                     {/* Subtle outer halo for contrast against dark backgrounds */}
                     <line
                       x1={apexX}
                       y1={cy - lineHalfHeight}
                       x2={apexX}
                       y2={cy + lineHalfHeight}
-                      stroke="rgba(255, 255, 255, 0.4)"
-                      strokeWidth={7}
+                      stroke="rgba(255, 255, 255, 0.45)"
+                      strokeWidth={12}
                       strokeLinecap="round"
                     />
-                    {/* Main thick black vertical indicator line */}
+                    {/* Main prominent black vertical indicator line */}
                     <line
                       x1={apexX}
                       y1={cy - lineHalfHeight}
                       x2={apexX}
                       y2={cy + lineHalfHeight}
                       stroke="#000000"
-                      strokeWidth={4.5}
+                      strokeWidth={8}
                       strokeLinecap="round"
                     />
                   </g>
