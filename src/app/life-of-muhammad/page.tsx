@@ -514,7 +514,7 @@ export default function LifeOfMuhammadTimeline() {
       </header>
 
       {/* Top Active Title Speech Box */}
-      <section className="w-full flex flex-col items-center pt-6 pb-2 px-4 relative z-30">
+      <section className="w-full flex flex-col items-center pt-8 pb-6 md:pb-8 px-4 relative z-30">
         {activeEvent ? (
           <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -544,9 +544,9 @@ export default function LifeOfMuhammadTimeline() {
         )}
       </section>
 
-      {/* Middle Interactive Bulging Timeline Track */}
+      {/* Middle Interactive Bulging Timeline Track (Generous room above & below) */}
       <section 
-        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 my-4"
+        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-6 mb-12 md:mt-10 md:mb-16"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
@@ -715,8 +715,8 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </section>
 
-      {/* Bottom Comprehensive Detail Section (unconstrained natural page flow) */}
-      <section className="w-full flex flex-col items-center pt-6 px-4 pb-24 z-10">
+      {/* Bottom Comprehensive Detail Section (unconstrained natural page flow with generous spacing) */}
+      <section className="w-full flex flex-col items-center pt-8 md:pt-14 px-4 pb-28 z-10">
         {activeEvent && (
           <article className="glass p-6 md:p-8 rounded-3xl max-w-4xl w-full border border-[var(--glass-border)] shadow-xl relative animate-in fade-in slide-in-from-bottom-3 duration-300">
             
