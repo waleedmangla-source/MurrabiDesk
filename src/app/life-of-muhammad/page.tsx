@@ -707,8 +707,8 @@ export default function LifeOfMuhammadTimeline() {
                   ))}
                 </linearGradient>
                 <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
-                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.25)" />
-                  <feDropShadow dx="0" dy="14" stdDeviation="28" floodColor={activeEraConfig.glow} />
+                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.4)" />
+                  <feDropShadow dx="0" dy="16" stdDeviation="28" floodColor="rgba(0,0,0,0.3)" />
                 </filter>
                 {hoverX !== null && (
                   <radialGradient 
