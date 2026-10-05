@@ -706,9 +706,9 @@ export default function LifeOfMuhammadTimeline() {
                     <stop key={idx} offset={stop.offset} stopColor={stop.color} />
                   ))}
                 </linearGradient>
-                <filter id="bulge-shadow" x="-50%" y="-150%" width="200%" height="400%">
-                  <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="rgba(0,0,0,0.4)" />
-                  <feDropShadow dx="0" dy="16" stdDeviation="28" floodColor="rgba(0,0,0,0.3)" />
+                <filter id="bulge-shadow" x="-100%" y="-200%" width="300%" height="500%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="22" floodColor="rgba(0,0,0,0.22)" />
+                  <feDropShadow dx="0" dy="20" stdDeviation="38" floodColor="rgba(0,0,0,0.14)" />
                 </filter>
                 {hoverX !== null && (
                   <radialGradient 
@@ -726,13 +726,13 @@ export default function LifeOfMuhammadTimeline() {
                 )}
               </defs>
 
-              {/* Bulge Drop Shadow & Glow */}
+              {/* Bulge Drop Shadow (Lowered opacity, expanded spread) */}
               {hoverX !== null && bulgeScale > 0 && (
                 <path 
                   d={getBulgeOnlyPath()} 
                   fill="url(#timeline-era-gradient)" 
                   filter="url(#bulge-shadow)"
-                  opacity={bulgeScale}
+                  opacity={bulgeScale * 0.65}
                 />
               )}
 
