@@ -744,12 +744,16 @@ export default function LifeOfMuhammadTimeline() {
                 {renderVerticalDashes()}
               </g>
 
-              {/* Vertical Indicator Line & Year Pill at the Center/Apex of the Bulge */}
-              {(hoverX !== null || isHeld) && containerWidth > 0 && activeEvent && (() => {
+              {/* Vertical Indicator Line & Year Pill at the Center/Apex of the Bulge (Scales down gracefully when idle instead of disappearing) */}
+              {containerWidth > 0 && activeEvent && (() => {
                 const apexX = hoverX !== null ? hoverX + bulgeSkew : titleCardCoords.targetBulgeX;
-                const lineHalfHeight = 96; // 192px total height, significantly longer than max bulge height (144px)
+                // Full expanded half-height is 96 (longer than bulge: 144px total height). Idle half-height scales down to 24px (crossing the 16px baseline track)
+                const lineHalfHeight = 24 + 72 * bulgeScale;
+                const strokeW = 4 + 4 * bulgeScale; // 4px when idle, 8px when hovering/held
+                const haloW = 6 + 6 * bulgeScale; // 6px when idle, 12px when hovering/held
+
                 return (
-                  <g className="pointer-events-none select-none transition-opacity duration-150" opacity={bulgeScale > 0 ? 1 : 0.8}>
+                  <g className="pointer-events-none select-none transition-[opacity] duration-150">
                     {/* Subtle outer halo for contrast against dark backgrounds */}
                     <line
                       x1={apexX}
@@ -757,7 +761,7 @@ export default function LifeOfMuhammadTimeline() {
                       x2={apexX}
                       y2={cy + lineHalfHeight}
                       stroke="rgba(255, 255, 255, 0.45)"
-                      strokeWidth={12}
+                      strokeWidth={haloW}
                       strokeLinecap="round"
                     />
                     {/* Main prominent black vertical indicator line */}
@@ -767,12 +771,15 @@ export default function LifeOfMuhammadTimeline() {
                       x2={apexX}
                       y2={cy + lineHalfHeight}
                       stroke="#000000"
-                      strokeWidth={8}
+                      strokeWidth={strokeW}
                       strokeLinecap="round"
                     />
 
                     {/* Year badge pill listed directly underneath the bulge / line */}
-                    <g transform={`translate(${apexX}, ${cy + lineHalfHeight + 14})`}>
+                    <g 
+                      transform={`translate(${apexX}, ${cy + lineHalfHeight + 14}) scale(${0.85 + 0.15 * bulgeScale})`}
+                      opacity={0.75 + 0.25 * bulgeScale}
+                    >
                       {/* Pill background */}
                       <rect
                         x="-38"
