@@ -212,6 +212,26 @@ export default function LifeOfMuhammadTimeline() {
     collapseAnimRef.current = requestAnimationFrame(animateCollapse);
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    // If user is scrolling horizontally, pan through the timeline events
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
+      const step = e.deltaX * 0.6;
+      const curX = currentPosRef.current ?? (containerWidth / 2);
+      const nextX = Math.max(0, Math.min(containerWidth, curX + step));
+      currentPosRef.current = nextX;
+      setHoverX(nextX);
+      setBulgeScale(1);
+      if (containerWidth > 0 && filteredEvents.length > 0) {
+        const marginLeft = 60;
+        const marginRight = 80;
+        const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+        let newIndex = Math.round(((nextX - marginLeft) / eventTrackWidth) * (filteredEvents.length - 1));
+        newIndex = Math.max(0, Math.min(filteredEvents.length - 1, newIndex));
+        setActiveIndex(newIndex);
+      }
+    }
+  };
+
   // SVG Bulge parameters
   const cy = 110;
   const baseThickness = 8;
@@ -371,10 +391,10 @@ export default function LifeOfMuhammadTimeline() {
   ];
 
   return (
-    <main className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden animate-in fade-in duration-500 bg-background text-main">
+    <main className="flex flex-col min-h-screen animate-in fade-in duration-500 bg-background text-main">
       
       {/* Top Header & Multi-Volume Controls */}
-      <header className="pt-4 pb-2 px-6 shrink-0 z-30 flex flex-col items-center border-b border-border/40 bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 pt-3 pb-2 px-6 shrink-0 z-40 flex flex-col items-center border-b border-border/40 bg-background/85 backdrop-blur-md shadow-sm">
         <div className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* Main Title & Subtitle */}
@@ -493,8 +513,8 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title Speech Box (Moved higher with justify-start and z-30) */}
-      <section className="flex-1 flex flex-col justify-start pt-2 md:pt-3 items-center px-4 relative z-30 min-h-0">
+      {/* Top Active Title Speech Box */}
+      <section className="w-full flex flex-col items-center pt-6 pb-2 px-4 relative z-30">
         {activeEvent ? (
           <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -524,13 +544,15 @@ export default function LifeOfMuhammadTimeline() {
         )}
       </section>
 
-      {/* Middle Interactive Bulging Timeline Track (Centered in the screen) */}
+      {/* Middle Interactive Bulging Timeline Track */}
       <section 
-        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 my-auto"
+        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 my-4"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={handleMouseMove}
+        onWheel={handleWheel}
       >
         <div className="absolute inset-0 flex items-center">
           <div className="relative w-full h-[210px]">
@@ -693,8 +715,8 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </section>
 
-      {/* Bottom Comprehensive Detail Section (flex-1 with scroll) */}
-      <section className="flex-1 flex flex-col justify-start items-center pt-3 lg:pt-4 px-4 pb-6 z-10 overflow-y-auto min-h-0">
+      {/* Bottom Comprehensive Detail Section (unconstrained natural page flow) */}
+      <section className="w-full flex flex-col items-center pt-6 px-4 pb-24 z-10">
         {activeEvent && (
           <article className="glass p-6 md:p-8 rounded-3xl max-w-4xl w-full border border-[var(--glass-border)] shadow-xl relative animate-in fade-in slide-in-from-bottom-3 duration-300">
             
