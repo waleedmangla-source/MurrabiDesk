@@ -391,7 +391,7 @@ export default function LifeOfMuhammadTimeline() {
   ];
 
   return (
-    <main className="flex flex-col min-h-screen animate-in fade-in duration-500 bg-background text-main">
+    <div className="h-full w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col bg-background text-main custom-scrollbar">
       
       {/* Top Header & Multi-Volume Controls */}
       <header className="sticky top-0 pt-3 pb-2 px-6 shrink-0 z-40 flex flex-col items-center border-b border-border/40 bg-background/85 backdrop-blur-md shadow-sm">
@@ -841,6 +841,6 @@ export default function LifeOfMuhammadTimeline() {
         )}
       </section>
 
-    </main>
+    </div>
   );
 }
