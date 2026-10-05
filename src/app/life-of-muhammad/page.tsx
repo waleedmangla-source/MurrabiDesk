@@ -10,7 +10,9 @@ import {
   Calendar,
   Play,
   ExternalLink,
-  Tv
+  Tv,
+  Lock,
+  Unlock
 } from "lucide-react";
 import { 
   TIMELINE_EVENTS, 
@@ -54,11 +56,18 @@ export default function LifeOfMuhammadTimeline() {
   const [containerWidth, setContainerWidth] = useState(0);
   const [bulgeScale, setBulgeScale] = useState(0);
   const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
+  const [isHeld, setIsHeld] = useState(false); // Click-to-hold state
+  const isHeldRef = useRef(false);
   const velocityRef = useRef<number>(0);
   const currentPosRef = useRef<number | null>(null);
   const targetPosRef = useRef<number | null>(null);
   const loopRef = useRef<number | null>(null);
   const collapseAnimRef = useRef<number | null>(null);
+
+  // Keep isHeldRef in sync with state
+  useEffect(() => {
+    isHeldRef.current = isHeld;
+  }, [isHeld]);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -148,7 +157,45 @@ export default function LifeOfMuhammadTimeline() {
     loopRef.current = requestAnimationFrame(loop);
   };
 
+  const handleTrackClick = (e: React.MouseEvent) => {
+    if (isHeld) {
+      // Toggle off hold position
+      setIsHeld(false);
+      // Immediately allow following cursor if still over track
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        x = Math.max(0, Math.min(containerWidth, x));
+        targetPosRef.current = x;
+        startTrackingLoop();
+      }
+    } else {
+      // Lock into hold position at current hover location (or clicked position)
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        x = Math.max(0, Math.min(containerWidth, x));
+        currentPosRef.current = x;
+        targetPosRef.current = x;
+        setHoverX(x);
+        setBulgeScale(1);
+        setBulgeSkew(0);
+        
+        if (containerWidth > 0 && filteredEvents.length > 0) {
+          const marginLeft = 60;
+          const marginRight = 80;
+          const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+          let newIndex = Math.round(((x - marginLeft) / eventTrackWidth) * (filteredEvents.length - 1));
+          newIndex = Math.max(0, Math.min(filteredEvents.length - 1, newIndex));
+          setActiveIndex(newIndex);
+        }
+      }
+      setIsHeld(true);
+    }
+  };
+
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isHeldRef.current) return; // Locked in hold position
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     
@@ -176,6 +223,7 @@ export default function LifeOfMuhammadTimeline() {
   };
 
   const handleMouseLeave = () => {
+    if (isHeldRef.current) return; // Keep locked bulge visible when in hold position
     targetPosRef.current = null;
     if (loopRef.current) {
       cancelAnimationFrame(loopRef.current);
@@ -213,6 +261,7 @@ export default function LifeOfMuhammadTimeline() {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
+    if (isHeldRef.current) return; // Locked in hold position
     // If user is scrolling horizontally, pan through the timeline events
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
       const step = e.deltaX * 0.6;
@@ -557,6 +606,15 @@ export default function LifeOfMuhammadTimeline() {
               >
                 {activeEvent.year}
               </span>
+              {isHeld && (
+                <>
+                  <span className="text-xs text-muted">•</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
+                    <Lock size={10} />
+                    Hold
+                  </span>
+                </>
+              )}
             </div>
             <h2 className="text-lg md:text-2xl font-black italic tracking-tight text-main uppercase truncate max-w-full">
               {activeEvent.title}
@@ -581,12 +639,15 @@ export default function LifeOfMuhammadTimeline() {
 
       {/* Middle Interactive Bulging Timeline Track (Generous room above & below) */}
       <section 
-        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-1 mb-12 md:mt-2 md:mb-16"
+        className={clsx(
+          "relative h-56 flex-shrink-0 select-none overflow-visible w-full group/track z-20 mt-1 mb-12 md:mt-2 md:mb-16",
+          isHeld ? "cursor-pointer" : "cursor-none"
+        )}
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onClick={handleMouseMove}
+        onClick={handleTrackClick}
         onWheel={handleWheel}
       >
         <div className="absolute inset-0 flex items-center">
@@ -718,6 +779,54 @@ export default function LifeOfMuhammadTimeline() {
               <g clipPath="url(#timeline-track-clip)" className="pointer-events-none">
                 {renderVerticalDashes()}
               </g>
+
+              {/* Vertical Indicator Line at the Center/Apex of the Bulge (Longer than bulge itself) */}
+              {(hoverX !== null || isHeld) && containerWidth > 0 && (() => {
+                const apexX = hoverX !== null ? hoverX + bulgeSkew : titleCardCoords.targetBulgeX;
+                const lineHalfHeight = 96; // 192px total height, significantly longer than max bulge height (144px)
+                return (
+                  <g className="pointer-events-none select-none transition-opacity duration-150" opacity={bulgeScale > 0 ? 1 : 0.8}>
+                    {/* Subtle outer halo/glow for dark backgrounds */}
+                    <line
+                      x1={apexX}
+                      y1={cy - lineHalfHeight}
+                      x2={apexX}
+                      y2={cy + lineHalfHeight}
+                      stroke="rgba(255, 255, 255, 0.45)"
+                      strokeWidth={4.5}
+                      strokeLinecap="round"
+                    />
+                    {/* Main crisp black vertical indicator line */}
+                    <line
+                      x1={apexX}
+                      y1={cy - lineHalfHeight}
+                      x2={apexX}
+                      y2={cy + lineHalfHeight}
+                      stroke="#000000"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                    />
+                    {/* Top indicator pip */}
+                    <circle
+                      cx={apexX}
+                      cy={cy - lineHalfHeight}
+                      r={3.5}
+                      fill="#000000"
+                      stroke="rgba(255, 255, 255, 0.8)"
+                      strokeWidth={1.5}
+                    />
+                    {/* Bottom indicator pip */}
+                    <circle
+                      cx={apexX}
+                      cy={cy + lineHalfHeight}
+                      r={3.5}
+                      fill="#000000"
+                      stroke="rgba(255, 255, 255, 0.8)"
+                      strokeWidth={1.5}
+                    />
+                  </g>
+                );
+              })()}
             </svg>
           </div>
         </div>
