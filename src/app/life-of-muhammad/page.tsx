@@ -640,8 +640,7 @@ export default function LifeOfMuhammadTimeline() {
               const evEra = getEventEra(ev);
               const cfg = ERA_CONFIGS[evEra];
 
-              const distFromActive = Math.abs(idx - activeIndex);
-              const shouldShowLabel = isActive || distFromActive === 1 || (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 22) === 0);
+              const shouldShowLabel = (filteredEvents.length <= 25) || (idx % Math.ceil(filteredEvents.length / 20) === 0);
 
               return (
                 <div 
@@ -656,28 +655,16 @@ export default function LifeOfMuhammadTimeline() {
                 >
                   {/* The slanted tick mark */}
                   <div 
-                    className={clsx(
-                      "h-[2.5px] transition-all duration-300 rounded-full", 
-                      isActive ? "w-14" : "w-8"
-                    )} 
+                    className="h-[2.5px] w-8 transition-all duration-300 rounded-full" 
                     style={{
-                      backgroundColor: isActive ? cfg.accent : cfg.pastel,
-                      boxShadow: isActive ? `0 0 10px ${cfg.glow}` : undefined,
-                      opacity: isActive ? 1 : 0.65
+                      backgroundColor: cfg.pastel,
+                      opacity: 0.65
                     }}
                   />
-                  {/* The date label */}
+                  {/* The date label (fixed ruler labels, no dynamic crowding on hover) */}
                   {shouldShowLabel && (
                     <span 
-                      className={clsx(
-                        "ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300",
-                        isActive 
-                          ? "font-black scale-110 drop-shadow-sm opacity-100" 
-                          : "opacity-60 text-muted"
-                      )}
-                      style={{
-                        color: isActive ? cfg.accent : undefined
-                      }}
+                      className="ml-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 opacity-60 text-muted"
                     >
                       {ev.year}
                     </span>
