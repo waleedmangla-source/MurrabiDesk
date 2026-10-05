@@ -779,24 +779,32 @@ export default function LifeOfMuhammadTimeline() {
               })()}
             </svg>
 
-            {/* Year Badge Pill (HTML Layer - completely immune to SVG masks/clipping) */}
+            {/* Year Badge Pill (Glass Speech Bubble directly underneath the bulge) */}
             {containerWidth > 0 && activeEvent && (() => {
               const apexX = hoverX !== null ? hoverX + bulgeSkew : titleCardCoords.targetBulgeX;
-              const lineHalfHeight = 24 + 72 * bulgeScale;
-              const pillY = cy + lineHalfHeight + 14;
+              // Bottom edge of the bulge at the apex
+              const currentMaxH = maxH * bulgeScale;
+              const bulgeBottomY = cy + baseThickness + currentMaxH;
+              const pillY = bulgeBottomY + 12;
 
               return (
                 <div 
-                  className="absolute pointer-events-none z-30 transition-[left,opacity,transform] duration-75 ease-out select-none"
+                  className="absolute pointer-events-none z-30 transition-[left,top] duration-75 ease-out select-none"
                   style={{
                     left: `${apexX}px`,
                     top: `${pillY}px`,
-                    transform: `translateX(-50%) scale(${0.85 + 0.15 * bulgeScale})`,
-                    opacity: 0.9 + 0.1 * bulgeScale,
+                    transform: 'translateX(-50%)',
                   }}
                 >
-                  <div className="flex items-center justify-center px-3.5 py-1 rounded-full bg-black/90 dark:bg-black/95 text-white border border-white/30 shadow-lg backdrop-blur-md">
-                    <span className="text-[11px] md:text-xs font-black tracking-wider uppercase whitespace-nowrap">
+                  <div className="glass px-4 md:px-5 py-1.5 rounded-xl text-center shadow-md border border-[var(--glass-border)] relative animate-in fade-in zoom-in-95 duration-200">
+                    {/* Upward pointing speech bubble tail pointing directly up into the bulge apex */}
+                    <div 
+                      className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--glass-bg)] border-l border-t border-[var(--glass-border)] rotate-45"
+                    />
+                    <span 
+                      className="text-xs md:text-sm font-black italic tracking-wider uppercase whitespace-nowrap text-main drop-shadow-sm"
+                      style={{ color: activeEraConfig.accent }}
+                    >
                       {activeEvent.year}
                     </span>
                   </div>
