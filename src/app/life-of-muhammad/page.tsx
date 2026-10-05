@@ -534,11 +534,11 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title Speech Box (Follows the bulge wherever it goes) */}
-      <section className="w-full relative h-28 shrink-0 z-30 pt-3 overflow-visible">
+      {/* Top Active Title Speech Box (Follows the bulge wherever it goes, lowered closer to track) */}
+      <section className="w-full relative h-20 shrink-0 z-30 pt-1 overflow-visible">
         {activeEvent ? (
           <div 
-            className="absolute top-3 glass px-5 md:px-8 py-2.5 rounded-2xl min-w-[240px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
+            className="absolute top-1 glass px-5 md:px-8 py-2.5 rounded-2xl min-w-[240px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
             style={{
               left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
               transform: 'translateX(-50%)',
@@ -571,7 +571,7 @@ export default function LifeOfMuhammadTimeline() {
             />
           </div>
         ) : (
-          <div className="w-full flex justify-center pt-3">
+          <div className="w-full flex justify-center pt-1">
             <div className="glass px-6 py-3 rounded-2xl text-center text-muted text-sm">
               No events match your search criteria.
             </div>
@@ -581,7 +581,7 @@ export default function LifeOfMuhammadTimeline() {
 
       {/* Middle Interactive Bulging Timeline Track (Generous room above & below) */}
       <section 
-        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-6 mb-12 md:mt-10 md:mb-16"
+        className="relative h-56 flex-shrink-0 cursor-none select-none overflow-visible w-full group/track z-20 mt-1 mb-12 md:mt-2 md:mb-16"
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
@@ -591,47 +591,6 @@ export default function LifeOfMuhammadTimeline() {
       >
         <div className="absolute inset-0 flex items-center">
           <div className="relative w-full h-[210px]">
-            {/* Top Slanted Topic Title (Active Event Only - all extra slanted lines removed) */}
-            {containerWidth > 0 && activeEvent && (() => {
-              const marginLeft = 60;
-              const marginRight = 80;
-              const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
-              const x = marginLeft + (activeIndex / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
-              const evEra = getEventEra(activeEvent);
-              const cfg = ERA_CONFIGS[evEra];
-
-              return (
-                <div 
-                  key={`top-${activeEvent.id}`}
-                  className="absolute flex items-center pointer-events-none z-0 transition-opacity duration-200"
-                  style={{ 
-                    left: `${x}px`,
-                    top: `${cy - baseThickness}px`,
-                    transform: `translate(0, -50%) rotate(-45deg)`,
-                    transformOrigin: '0 50%'
-                  }}
-                >
-                  {/* The slanted tick mark */}
-                  <div 
-                    className="h-[2.5px] w-14 transition-all duration-300 rounded-full" 
-                    style={{
-                      backgroundColor: cfg.accent,
-                      boxShadow: `0 0 10px ${cfg.glow}`,
-                      opacity: 1
-                    }}
-                  />
-                  {/* The title label */}
-                  <span 
-                    className="ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 scale-110 drop-shadow-sm opacity-100 font-extrabold max-w-[240px] truncate"
-                    style={{
-                      color: cfg.accent
-                    }}
-                  >
-                    {activeEvent.title}
-                  </span>
-                </div>
-              );
-            })()}
 
             {/* Bottom Slanted Dates (slanting down-right) - Rendered BEHIND the bulge */}
             {containerWidth > 0 && filteredEvents.map((ev, idx) => {
