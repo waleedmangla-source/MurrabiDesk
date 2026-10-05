@@ -381,6 +381,27 @@ export default function LifeOfMuhammadTimeline() {
     return stops;
   }, [filteredEvents, containerWidth]);
 
+  // Coordinates for the active title card speech bubble to follow the bulge
+  const titleCardCoords = useMemo(() => {
+    if (containerWidth <= 0 || filteredEvents.length === 0) {
+      return { clampedCardX: 0, targetBulgeX: 0, tailOffset: 0 };
+    }
+    const marginLeft = 60;
+    const marginRight = 80;
+    const eventTrackWidth = Math.max(10, containerWidth - marginLeft - marginRight);
+    const activeEventX = marginLeft + (activeIndex / Math.max(1, filteredEvents.length - 1)) * eventTrackWidth;
+
+    // The apex of the bulge is at hoverX + bulgeSkew when hovering, or the active milestone when idle
+    const targetBulgeX = hoverX !== null ? hoverX + bulgeSkew : activeEventX;
+
+    // Approximate half width of speech bubble card for boundary clamping
+    const bubbleHalfWidth = containerWidth > 640 ? 190 : 140;
+    const clampedCardX = Math.max(bubbleHalfWidth + 12, Math.min(containerWidth - bubbleHalfWidth - 12, targetBulgeX));
+    const tailOffset = Math.max(-80, Math.min(80, targetBulgeX - clampedCardX));
+
+    return { clampedCardX, targetBulgeX, tailOffset };
+  }, [containerWidth, filteredEvents.length, activeIndex, hoverX, bulgeSkew]);
+
   const categories = [
     { id: 'all', label: 'All Categories' },
     { id: 'Milestone', label: 'Milestones' },
@@ -513,10 +534,16 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title Speech Box */}
-      <section className="w-full flex flex-col items-center pt-8 pb-6 md:pb-8 px-4 relative z-30">
+      {/* Top Active Title Speech Box (Follows the bulge wherever it goes) */}
+      <section className="w-full relative h-28 shrink-0 z-30 pt-3 overflow-visible">
         {activeEvent ? (
-          <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
+          <div 
+            className="absolute top-3 glass px-5 md:px-8 py-2.5 rounded-2xl min-w-[240px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
+            style={{
+              left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
+              transform: 'translateX(-50%)',
+            }}
+          >
             <div className="flex items-center justify-center gap-2 mb-1">
               <span 
                 className={clsx("px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md border", activeEraConfig.bgChip)}
@@ -531,15 +558,23 @@ export default function LifeOfMuhammadTimeline() {
                 {activeEvent.year}
               </span>
             </div>
-            <h2 className="text-xl md:text-2xl font-black italic tracking-tight text-main uppercase">
+            <h2 className="text-lg md:text-2xl font-black italic tracking-tight text-main uppercase truncate max-w-full">
               {activeEvent.title}
             </h2>
-            {/* Speech bubble tail */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[var(--glass-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
+            {/* Speech bubble tail pointing towards the bulge apex */}
+            <div 
+              className="absolute -bottom-2 w-4 h-4 bg-[var(--glass-bg)] border-r border-b border-[var(--glass-border)] transition-[left] ease-out duration-75"
+              style={{
+                left: `calc(50% + ${titleCardCoords.tailOffset}px)`,
+                transform: 'translateX(-50%) rotate(45deg)'
+              }}
+            />
           </div>
         ) : (
-          <div className="glass px-6 py-3 rounded-2xl text-center text-muted text-sm">
-            No events match your search criteria.
+          <div className="w-full flex justify-center pt-3">
+            <div className="glass px-6 py-3 rounded-2xl text-center text-muted text-sm">
+              No events match your search criteria.
+            </div>
           </div>
         )}
       </section>
