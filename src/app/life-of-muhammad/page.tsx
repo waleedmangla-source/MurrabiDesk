@@ -584,38 +584,15 @@ export default function LifeOfMuhammadTimeline() {
       </header>
 
       {/* Top Active Title Speech Box (Follows the bulge wherever it goes, lowered closer to track) */}
-      <section className="w-full relative h-20 shrink-0 z-30 pt-1 overflow-visible">
+      <section className="w-full relative h-16 shrink-0 z-30 pt-1 overflow-visible">
         {activeEvent ? (
           <div 
-            className="absolute top-1 glass px-5 md:px-8 py-2.5 rounded-2xl min-w-[240px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
+            className="absolute top-1 glass px-6 md:px-8 py-3 rounded-2xl min-w-[220px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
             style={{
               left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <span 
-                className={clsx("px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md border", activeEraConfig.bgChip)}
-              >
-                {activeEraConfig.name}
-              </span>
-              <span className="text-xs text-muted">•</span>
-              <span 
-                className="text-[11px] font-bold tracking-wider uppercase"
-                style={{ color: activeEraConfig.accent }}
-              >
-                {activeEvent.year}
-              </span>
-              {isHeld && (
-                <>
-                  <span className="text-xs text-muted">•</span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
-                    <Lock size={10} />
-                    Hold
-                  </span>
-                </>
-              )}
-            </div>
             <h2 className="text-lg md:text-2xl font-black italic tracking-tight text-main uppercase truncate max-w-full">
               {activeEvent.title}
             </h2>
