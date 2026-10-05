@@ -392,12 +392,7 @@ export default function LifeOfMuhammadTimeline() {
             </p>
           </div>
 
-          {/* Complete Chronology Indicator Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-200/60 dark:bg-slate-800/60 rounded-2xl border border-slate-300/40 dark:border-white/10 text-xs font-bold text-muted shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-main font-extrabold tracking-wide">All Volumes (I–III)</span>
-            <span className="text-[11px] font-mono text-accent-main">({TIMELINE_EVENTS.length} Events)</span>
-          </div>
+
         </div>
 
         {/* Search & Filter Bar */}
