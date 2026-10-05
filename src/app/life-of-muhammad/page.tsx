@@ -584,7 +584,7 @@ export default function LifeOfMuhammadTimeline() {
       </header>
 
       {/* Top Active Title Speech Box (Follows the bulge wherever it goes, slightly lowered) */}
-      <section className="w-full relative h-16 shrink-0 z-30 pt-1 mt-4 md:mt-6 overflow-visible">
+      <section className="w-full relative h-16 shrink-0 z-30 pt-1 mt-7 md:mt-9 overflow-visible">
         {activeEvent ? (
           <div 
             className="absolute top-1 glass px-6 md:px-8 py-3 rounded-2xl min-w-[220px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
@@ -617,7 +617,7 @@ export default function LifeOfMuhammadTimeline() {
       {/* Middle Interactive Bulging Timeline Track (Slightly lowered) */}
       <section 
         className={clsx(
-          "relative h-56 flex-shrink-0 select-none overflow-visible w-full group/track z-20 mt-3 mb-12 md:mt-4 md:mb-16",
+          "relative h-56 flex-shrink-0 select-none overflow-visible w-full group/track z-20 mt-5 mb-12 md:mt-6 md:mb-16",
           isHeld ? "cursor-pointer" : "cursor-none"
         )}
         ref={containerRef}
