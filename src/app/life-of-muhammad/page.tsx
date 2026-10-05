@@ -493,8 +493,8 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title Speech Box (flex-1 to center the timeline track vertically) */}
-      <section className="flex-1 flex flex-col justify-end items-center pb-3 px-4 relative z-10 min-h-0">
+      {/* Top Active Title Speech Box (Moved higher with justify-start and z-30) */}
+      <section className="flex-1 flex flex-col justify-start pt-2 md:pt-3 items-center px-4 relative z-30 min-h-0">
         {activeEvent ? (
           <div className="glass px-8 py-2.5 rounded-2xl relative min-w-[280px] max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -565,7 +565,7 @@ export default function LifeOfMuhammadTimeline() {
                   />
                   {/* The title label */}
                   <span 
-                    className="ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 scale-110 drop-shadow-sm opacity-100 font-extrabold"
+                    className="ml-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 scale-110 drop-shadow-sm opacity-100 font-extrabold max-w-[240px] truncate"
                     style={{
                       color: cfg.accent
                     }}
