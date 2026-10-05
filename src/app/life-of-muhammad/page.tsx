@@ -757,8 +757,8 @@ export default function LifeOfMuhammadTimeline() {
                 {renderVerticalDashes()}
               </g>
 
-              {/* Vertical Indicator Line at the Center/Apex of the Bulge (Longer than bulge itself) */}
-              {(hoverX !== null || isHeld) && containerWidth > 0 && (() => {
+              {/* Vertical Indicator Line & Year Pill at the Center/Apex of the Bulge */}
+              {(hoverX !== null || isHeld) && containerWidth > 0 && activeEvent && (() => {
                 const apexX = hoverX !== null ? hoverX + bulgeSkew : titleCardCoords.targetBulgeX;
                 const lineHalfHeight = 96; // 192px total height, significantly longer than max bulge height (144px)
                 return (
@@ -783,6 +783,34 @@ export default function LifeOfMuhammadTimeline() {
                       strokeWidth={8}
                       strokeLinecap="round"
                     />
+
+                    {/* Year badge pill listed directly underneath the bulge / line */}
+                    <g transform={`translate(${apexX}, ${cy + lineHalfHeight + 14})`}>
+                      {/* Pill background */}
+                      <rect
+                        x="-38"
+                        y="-12"
+                        width="76"
+                        height="24"
+                        rx="12"
+                        fill="#000000"
+                        stroke="rgba(255, 255, 255, 0.25)"
+                        strokeWidth="1.5"
+                      />
+                      {/* Year text */}
+                      <text
+                        x="0"
+                        y="4"
+                        textAnchor="middle"
+                        fill="#ffffff"
+                        fontSize="11"
+                        fontWeight="900"
+                        letterSpacing="0.08em"
+                        fontFamily="inherit"
+                      >
+                        {activeEvent.year}
+                      </text>
+                    </g>
                   </g>
                 );
               })()}
