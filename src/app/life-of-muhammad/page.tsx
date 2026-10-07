@@ -693,9 +693,9 @@ export default function LifeOfMuhammadTimeline() {
                     <stop key={idx} offset={stop.offset} stopColor={stop.color} />
                   ))}
                 </linearGradient>
-                <filter id="bulge-shadow" x="-100%" y="-200%" width="300%" height="500%">
-                  <feDropShadow dx="0" dy="10" stdDeviation="22" floodColor="rgba(0,0,0,0.22)" />
-                  <feDropShadow dx="0" dy="20" stdDeviation="38" floodColor="rgba(0,0,0,0.14)" />
+                <filter id="bulge-shadow" x="-50%" y="-100%" width="200%" height="300%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="rgba(0,0,0,0.25)" />
+                  <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor="rgba(0,0,0,0.15)" />
                 </filter>
                 {hoverX !== null && (
                   <radialGradient 
