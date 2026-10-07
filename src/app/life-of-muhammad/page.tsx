@@ -443,10 +443,10 @@ export default function LifeOfMuhammadTimeline() {
     // The apex of the bulge is at hoverX + bulgeSkew when hovering, or the active milestone when idle
     const targetBulgeX = hoverX !== null ? hoverX + bulgeSkew : activeEventX;
 
-    // Approximate half width of speech bubble card for boundary clamping
-    const bubbleHalfWidth = containerWidth > 640 ? 190 : 140;
-    const clampedCardX = Math.max(bubbleHalfWidth + 12, Math.min(containerWidth - bubbleHalfWidth - 12, targetBulgeX));
-    const tailOffset = Math.max(-80, Math.min(80, targetBulgeX - clampedCardX));
+    // Half width of speech bubble card for boundary clamping (expanded to accommodate long titles)
+    const bubbleHalfWidth = containerWidth > 768 ? 280 : 160;
+    const clampedCardX = Math.max(bubbleHalfWidth + 16, Math.min(containerWidth - bubbleHalfWidth - 16, targetBulgeX));
+    const tailOffset = Math.max(-140, Math.min(140, targetBulgeX - clampedCardX));
 
     return { clampedCardX, targetBulgeX, tailOffset };
   }, [containerWidth, filteredEvents.length, activeIndex, hoverX, bulgeSkew]);
@@ -584,16 +584,16 @@ export default function LifeOfMuhammadTimeline() {
       </header>
 
       {/* Top Active Title Speech Box (Follows the bulge wherever it goes, slightly lowered) */}
-      <section className="w-full relative h-16 shrink-0 z-30 pt-1 mt-7 md:mt-9 overflow-visible">
+      <section className="w-full relative min-h-[4.5rem] shrink-0 z-30 pt-1 mt-7 md:mt-9 overflow-visible">
         {activeEvent ? (
           <div 
-            className="absolute top-1 glass px-6 md:px-8 py-3 rounded-2xl min-w-[220px] max-w-[90vw] md:max-w-xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
+            className="absolute top-1 glass px-6 md:px-8 py-2.5 md:py-3 rounded-2xl min-w-[220px] max-w-[94vw] md:max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
             style={{
               left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
               transform: 'translateX(-50%)',
             }}
           >
-            <h2 className="text-lg md:text-2xl font-black italic tracking-tight text-main uppercase truncate max-w-full">
+            <h2 className="text-base sm:text-lg md:text-xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-snug">
               {activeEvent.title}
             </h2>
             {/* Speech bubble tail pointing towards the bulge apex */}
