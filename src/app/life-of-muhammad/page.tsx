@@ -13,7 +13,9 @@ import {
   Tv,
   Lock,
   Unlock,
-  ScrollText
+  ScrollText,
+  Newspaper,
+  FileText
 } from "lucide-react";
 import { 
   TIMELINE_EVENTS, 
@@ -588,7 +590,7 @@ export default function LifeOfMuhammadTimeline() {
       <section className="w-full relative min-h-[4.5rem] shrink-0 z-30 pt-1 mt-7 md:mt-9 overflow-visible">
         {activeEvent ? (
           <div 
-            className="absolute top-1 glass px-6 md:px-8 py-2.5 md:py-3 rounded-2xl min-w-[220px] max-w-[94vw] md:max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200 transition-[left] ease-out duration-75"
+            className="absolute top-1 glass px-6 md:px-8 py-2.5 md:py-3 rounded-2xl min-w-[220px] max-w-[94vw] md:max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200"
             style={{
               left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
               transform: 'translateX(-50%)',
@@ -599,7 +601,7 @@ export default function LifeOfMuhammadTimeline() {
             </h2>
             {/* Speech bubble tail pointing towards the bulge apex */}
             <div 
-              className="absolute -bottom-2 w-4 h-4 bg-[var(--glass-bg)] border-r border-b border-[var(--glass-border)] transition-[left] ease-out duration-75"
+              className="absolute -bottom-2 w-4 h-4 bg-[var(--glass-bg)] border-r border-b border-[var(--glass-border)]"
               style={{
                 left: `calc(50% + ${titleCardCoords.tailOffset}px)`,
                 transform: 'translateX(-50%) rotate(45deg)'
@@ -790,7 +792,7 @@ export default function LifeOfMuhammadTimeline() {
 
               return (
                 <div 
-                  className="absolute pointer-events-none z-30 transition-[left,top] duration-75 ease-out select-none"
+                  className="absolute pointer-events-none z-30 select-none"
                   style={{
                     left: `${apexX}px`,
                     top: `${pillY}px`,
@@ -958,6 +960,81 @@ export default function LifeOfMuhammadTimeline() {
                       </div>
                     </a>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Articles & Scholarly Analysis Section */}
+            {activeEvent.articles && activeEvent.articles.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border/40">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded-md bg-teal-500/15 text-teal-600 dark:text-teal-400">
+                      <Newspaper size={15} />
+                    </span>
+                    <h3 className="text-xs md:text-sm font-black uppercase tracking-wider text-main">
+                      Articles & Scholarly Analysis
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-bold text-teal-600 dark:text-teal-400 px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20">
+                    {activeEvent.articles.length} {activeEvent.articles.length === 1 ? 'Article' : 'Articles'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {activeEvent.articles.map((article) => {
+                    const sourceBadgeClass = 
+                      article.source === 'Review of Religions'
+                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                        : article.source === 'Al Hakam'
+                        ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+
+                    return (
+                      <a
+                        key={article.id}
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group/article flex flex-col p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 hover:border-teal-500/50 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 relative justify-between"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={clsx(
+                              "text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wide uppercase",
+                              sourceBadgeClass
+                            )}>
+                              {article.source}
+                            </span>
+                            {article.dateOrIssue && (
+                              <span className="text-[10px] text-muted font-medium">
+                                {article.dateOrIssue}
+                              </span>
+                            )}
+                          </div>
+
+                          <h4 className="text-xs sm:text-sm font-bold text-main line-clamp-2 leading-snug group-hover/article:text-teal-600 dark:group-hover/article:text-teal-400 transition-colors mt-1">
+                            {article.title}
+                          </h4>
+
+                          {article.author && (
+                            <p className="text-[11px] font-medium text-muted">
+                              By {article.author}
+                            </p>
+                          )}
+
+                          <p className="text-[11px] text-muted line-clamp-3 leading-relaxed font-normal mt-1">
+                            {article.summary}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[11px] font-bold text-teal-600 dark:text-teal-400">
+                          <span>Read on {article.source}</span>
+                          <ExternalLink size={12} className="group-hover/article:translate-x-0.5 transition-transform" />
+                        </div>
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             )}

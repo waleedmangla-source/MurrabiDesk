@@ -134,6 +134,16 @@ export interface LinkedHadith {
   url: string;
 }
 
+export interface LinkedArticle {
+  id: string;
+  source: 'Review of Religions' | 'Al Hakam' | 'Al Islam';
+  title: string;
+  author?: string;
+  url: string;
+  summary: string;
+  dateOrIssue?: string;
+}
+
 export interface TimelineEvent {
   id: string;
   vol: 1 | 2 | 3;
@@ -147,6 +157,7 @@ export interface TimelineEvent {
   tags: string[];
   khutbas?: LinkedKhutba[];
   hadiths?: LinkedHadith[];
+  articles?: LinkedArticle[];
 }
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -167,7 +178,27 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Miracle",
       "Al-Fil"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "ror-ashabul-fil-abrahah",
+        "source": "Review of Religions",
+        "title": "The Year of the Elephant: Abrahah's Expedition and Archaeological Corroboration",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Historical analysis of South Arabian epigraphic inscriptions, the campaign of Abrahah al-Ashram, and the divine intervention delivering the Ka'bah right before the Prophet's (sa) birth.",
+        "dateOrIssue": "Historical Studies"
+      },
+      {
+        "id": "alhakam-surah-fil-commentary",
+        "source": "Al Hakam",
+        "title": "Surah Al-Fil: The Destruction of the People of the Elephant",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "Theological exposition and historical context of the miraculous destruction of the invading Axumite army and its significance for the advent of Islam.",
+        "dateOrIssue": "Quranic Exegesis"
+      }
+    ]
   },
   {
     "id": "birth-prophet",
@@ -207,6 +238,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/w89XyrboFKU/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that the he would continue mentioning the preparations that were undertaken in preparation for battle with the disbelievers of Makkah."
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-prophet-birth-prophecies",
+        "source": "Review of Religions",
+        "title": "The Auspicious Birth of the Holy Prophet Muhammad (sa) and Prophecies in World Scriptures",
+        "author": "Maulana Muhammad Din",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "How ancient prophetic traditions across Biblical, Zoroastrian, and Hindu scriptures converged on the auspicious dawn in the Valley of Banu Hashim in 570/571 AD.",
+        "dateOrIssue": "Seerat-un-Nabi Special"
+      },
+      {
+        "id": "alislam-life-of-muhammad-intro",
+        "source": "Al Islam",
+        "title": "Life of Muhammad: The Dawn of Prophethood and Early Life",
+        "author": "Hazrat Mirza Bashiruddin Mahmud Ahmad (ra)",
+        "url": "https://www.alislam.org/book/life-of-muhammad/",
+        "summary": "Detailed monograph chronicling the lineage, auspicious naming, and divine signs accompanying the birth of the Holy Prophet (sa) in Makkah.",
+        "dateOrIssue": "Classic Biography"
+      }
     ]
   },
   {
@@ -225,7 +276,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Fosterage",
       "Childhood"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "alhakam-halimah-saadiyyah",
+        "source": "Al Hakam",
+        "title": "Hazrat Halimah Sa'diyyah: Fosterage of the Holy Prophet (sa) in the Desert",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "A review of the pure dialect, moral upbringing, and the abundant divine blessings manifested in the household of Banu Sa'd during the Prophet's (sa) infancy.",
+        "dateOrIssue": "Seerat Series"
+      }
+    ]
   },
   {
     "id": "demise-aminah",
@@ -252,6 +314,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated Abu Huraira",
         "textSnippet": "The Apostle of Allah (sa) visited the grave of his mother and he wept, and moved others around him to tears...",
         "url": "https://sunnah.com/muslim:976"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-the-orphan-prophet",
+        "source": "Review of Religions",
+        "title": "The Orphan of Makkah: Spiritual Lessons from the Prophet's (sa) Early Losses",
+        "author": "Dr. Ijaz Ahmad",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Exploring the profound wisdom behind the Prophet (sa) losing both parents and grandfather in tender childhood, cultivated solely under direct Divine guardianship.",
+        "dateOrIssue": "Historical Analysis"
       }
     ]
   },
@@ -299,6 +372,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "Abu Talib departed to Ash-Sham, and the Prophet (sa) left with him... The monk said, 'This is the master of the worlds... Allah will send him as a mercy to the worlds.'",
         "url": "https://sunnah.com/tirmidhi:3620"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-bahira-monk-rebuttal",
+        "source": "Review of Religions",
+        "title": "Bahira the Christian Monk: Rebutting Orientalist Myths of Christian Borrowing",
+        "author": "Syed Mir Mahmood Ahmad Nasir",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Rigorous scholastic analysis refuting Western claims that a brief childhood meeting with monk Bahira at Busra was the genesis of Islamic monotheism.",
+        "dateOrIssue": "Scholarly Research"
+      },
+      {
+        "id": "alhakam-syria-caravan-bahira",
+        "source": "Al Hakam",
+        "title": "The Trade Journey to Syria and the Testimonies of Bahira",
+        "author": "Al Hakam History Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "How Bahira identified biblical marks of prophethood and counselled Abu Talib to shield the young Muhammad (sa) from malevolent factions.",
+        "dateOrIssue": "Historical Archive"
+      }
     ]
   },
   {
@@ -335,7 +428,27 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Alliance",
       "Human Rights"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "ror-hilful-fudul-human-rights",
+        "source": "Review of Religions",
+        "title": "Hilful-Fudul (League of the Virtuous): The First Human Rights Coalition in Arabia",
+        "author": "Asif M. Basit",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "How the Holy Prophet's (sa) participation in Hilful-Fudul established the Islamic archetype of defending all oppressed individuals regardless of race, status, or religion.",
+        "dateOrIssue": "Ethics & Governance"
+      },
+      {
+        "id": "alhakam-league-of-virtuous",
+        "source": "Al Hakam",
+        "title": "The League of the Virtuous: Early Foundations of Islamic Civic Justice",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "An examination of the Holy Prophet's affirmation in Medina: 'If summoned to such a pact in Islam, I would respond without hesitation.'",
+        "dateOrIssue": "Jurisprudence & History"
+      }
+    ]
   },
   {
     "id": "marriage-khadijah",
@@ -362,6 +475,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated 'Aisha",
         "textSnippet": "I did not feel jealous of any of the wives of the Prophet (sa) as much as I did of Khadija though I did not see her, but the Prophet (sa) used to mention her very often...",
         "url": "https://sunnah.com/bukhari:3820"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-hazrat-khadijah-paragon",
+        "source": "Review of Religions",
+        "title": "Hazrat Khadijat-ul-Kubra (ra): The First Believer and Fortress of Devotion",
+        "author": "Amatul Hadi Ahmad",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "A deep psychological and spiritual study of the 25-year matrimonial bond between the Holy Prophet (sa) and Hadrat Khadijah (ra), embodying absolute fidelity and mutual elevation.",
+        "dateOrIssue": "Women in Islam"
+      },
+      {
+        "id": "alhakam-khadijah-business-nobility",
+        "source": "Al Hakam",
+        "title": "Al-Amin and the Caravan of Khadijah: Honesty That Won a Queen of Quraysh",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "How spotless integrity (Al-Amin) in managing the commercial caravans to Busra became the spiritual foundation for Islam's earliest home.",
+        "dateOrIssue": "Historical Studies"
       }
     ]
   },
@@ -392,6 +525,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "...The Quraysh said: 'Let the first man to enter through the gate be our judge.' The Messenger of Allah (sa) was the first to enter. They said: 'This is the trustworthy one (Al-Amin).' ...",
         "url": "https://sunnah.com/ahmad/70"
       }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-rebuilding-kabah-arbitration",
+        "source": "Al Hakam",
+        "title": "Rebuilding of the Holy Ka'bah and the Prophet's (sa) Masterclass in Dispute Resolution",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "How the 35-year-old Muhammad (sa) averted an imminent tribal civil war by laying the Black Stone on his mantle and uniting all four Makkan confederations.",
+        "dateOrIssue": "Diplomacy & Conflict Resolution"
+      }
     ]
   },
   {
@@ -420,6 +564,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated 'Aisha",
         "textSnippet": "The commencement of the Divine Inspiration to Allah's Messenger (sa) was in the form of good dreams which came true like bright daylight, and then the love of seclusion was bestowed upon him.",
         "url": "https://sunnah.com/bukhari:3"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-mount-hira-psychology-revelation",
+        "source": "Review of Religions",
+        "title": "Mount Hira and the Psychology of Prophetic Revelation: Demystifying Gabriel's Descent",
+        "author": "Hazrat Mirza Tahir Ahmad (rh)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "The reality of 'Iqra' in the Cave of Hira, answering modern naturalistic critiques and examining Hazrat Khadijah's monumental historical testimony.",
+        "dateOrIssue": "Theological Studies"
+      },
+      {
+        "id": "alhakam-first-revelation-hira",
+        "source": "Al Hakam",
+        "title": "The Solitude of Mount Hira: The Commencement of Divine Inspiration",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "Chronicle of Ramadan 610 AD, the trembling of the mortal vessel under divine weight, and the eternal solace: 'By God, Allah will never humiliate you.'",
+        "dateOrIssue": "Revelation & Prophethood"
       }
     ]
   },
@@ -452,6 +616,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/UNaiBLqekLE/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Abu Bakr(ra) and his battles with the hypocrites after the demise of the Holy Prophet(sa)."
       }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-pioneers-dar-e-arqam",
+        "source": "Al Hakam",
+        "title": "Al-Sabiqun Al-Awwalun: The Undaunted Faith of Islam's First Converts",
+        "author": "Al Hakam History Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "Profiles of Hazrat Abu Bakr, Hazrat Khadijah, Hazrat Ali, and Hazrat Zaid bin Harithah (ra), and their immediate acceptance without questioning.",
+        "dateOrIssue": "Companions of the Prophet"
+      }
     ]
   },
   {
@@ -470,7 +645,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Safa",
       "Preaching"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "ror-dar-e-arqam-academy",
+        "source": "Review of Religions",
+        "title": "Dar-e-Arqam: The Secluded Nursery of the Islamic World",
+        "author": "M. A. Saqi",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "How the private home of a young believer beneath Mount Safa functioned as the world's most transformative secret academy of moral reformation.",
+        "dateOrIssue": "Education & History"
+      }
+    ]
   },
   {
     "id": "persecution-slaves",
@@ -541,6 +727,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "We complained to Allah's Messenger (sa) (of the persecution inflicted on us by the infidels) while he was sitting in the shade of the Ka'ba... He said, 'Among those who were before you a (believer) used to be seized... but that would not make him give up his religion.'",
         "url": "https://sunnah.com/bukhari:3856"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-bilal-martyrs-makkah",
+        "source": "Review of Religions",
+        "title": "Ahad, Ahad: Hazrat Bilal and the Enslaved Martyrs under Makkan Torture",
+        "author": "Review of Religions Research Desk",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Documenting the excruciating trials of Hazrat Bilal, Sumayyah, Yasir, and Khabbab (ra) and how unyielding monotheism shattered the bondage of Makkan aristocracy.",
+        "dateOrIssue": "Martyrs & Steadfastness"
+      },
+      {
+        "id": "alhakam-abu-bakr-manumission",
+        "source": "Al Hakam",
+        "title": "The Emancipator: How Hazrat Abu Bakr (ra) Purchased Freedom for Slaves",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "An exposition on Islamic abolitionism in 7th century Arabia, where wealth was liquidized purely to liberate suffering believers from torture.",
+        "dateOrIssue": "Human Liberty"
+      }
     ]
   },
   {
@@ -581,6 +787,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "mJT64jjqgBU",
         "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-first-hijra-abyssinia",
+        "source": "Al Hakam",
+        "title": "The First Hijrah: Crossing the Red Sea to the Christian Realm of Abyssinia",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "The journey of the initial 15 Muslim refugees led by Hazrat Uthman and Ruqayyah (ra) and the righteous protection offered by the Negus.",
+        "dateOrIssue": "Historical Chronicles"
       }
     ]
   },
@@ -632,6 +849,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "Ja'far bin Abi Talib said to the Negus, 'We were a people of ignorance... until Allah sent to us a Messenger from among ourselves... He commanded us to speak the truth, fulfill the trust, maintain ties of kinship, and be good to neighbors.'",
         "url": "https://sunnah.com/ahmad:1740"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-jafar-negus-defense",
+        "source": "Review of Religions",
+        "title": "The Royal Court of Axum: Hazrat Ja'far bin Abi Talib's Defense of Islam",
+        "author": "Syed Ataul Wahid",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "A timeless diplomatic masterpiece: How reciting Surah Maryam brought tears to the Negus' eyes, bridging true Christianity and Islam against Quraysh diplomacy.",
+        "dateOrIssue": "Comparative Religion"
+      },
+      {
+        "id": "alhakam-negus-king-asylum",
+        "source": "Al Hakam",
+        "title": "King Najashi of Abyssinia: The Just Monarch Who Embraced Truth",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "An exploration of the Holy Prophet's (sa) absentee funeral prayer (Salat al-Gha'ib) for the Negus upon his demise.",
+        "dateOrIssue": "Christian-Muslim Relations"
+      }
     ]
   },
   {
@@ -660,6 +897,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "_Op_L74dQzg",
         "thumbnailUrl": "https://img.youtube.com/vi/_Op_L74dQzg/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta`awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that after completing mention of the life of Hazrat Abu Bakr(ra), he mentioned that there were some Companions regarding whom there were further details that would be added once the series of sermons was published. However, His Holiness(aba) "
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-lion-of-god-hamzah",
+        "source": "Al Hakam",
+        "title": "The Lion of Allah: The Dramatic Conversion of Hazrat Hamzah (ra)",
+        "author": "Al Hakam History Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "How a bold response to Abu Jahl's insolence transformed Hamzah from a neutral huntsman into the fiercest shield of early Islam.",
+        "dateOrIssue": "Men of Excellence"
       }
     ]
   },
@@ -701,6 +949,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "We have been powerful since 'Umar embraced Islam.",
         "url": "https://sunnah.com/bukhari:3863"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-conversion-hazrat-umar",
+        "source": "Review of Religions",
+        "title": "From Assassin to Ameer-ul-Mu'mineen: The Miraculous Transformation of Hazrat Umar (ra)",
+        "author": "Maulana Dost Muhammad Shahid",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "The recitation of Surah Ta-Ha, the tears of remorse in Fatima bint al-Khattab's home, and the seismic shift allowing public prayer at the Ka'bah.",
+        "dateOrIssue": "Historical Treatise"
+      },
+      {
+        "id": "alhakam-umar-farooc-conversion",
+        "source": "Al Hakam",
+        "title": "The Prayer of the Prophet (sa) Answered: Hazrat Umar Embraces Islam",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "The fulfillment of the Holy Prophet's supplication: 'O Allah, strengthen Islam with whichever of the two men is more beloved to You, Abu Jahl or Umar ibn al-Khattab.'",
+        "dateOrIssue": "Biographical Review"
+      }
     ]
   },
   {
@@ -730,6 +998,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "The Prophet (sa) said, 'Tomorrow our encampment will be at Khaif Bani Kinana where the Quraish took an oath of Kufr (i.e. boycotting Banu Hashim).' ",
         "url": "https://sunnah.com/bukhari:1590"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-ravine-shib-abi-talib",
+        "source": "Review of Religions",
+        "title": "Three Years in the Valley of Death: The Boycott of Banu Hashim in Shi'b Abi Talib",
+        "author": "Fazal Ahmad",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "The agonizing economic blockade, the crying of starving infants, eating dry tree leaves, and the miraculous termite sign eating the parchment in the Ka'bah.",
+        "dateOrIssue": "Historical Trials"
+      }
     ]
   },
   {
@@ -757,6 +1036,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated Anas bin Malik",
         "textSnippet": "The people of Mecca asked Allah's Messenger (sa) to show them a miracle. So he showed them the moon split in two halves between which they saw the Hiram mountain.",
         "url": "https://sunnah.com/bukhari:3868"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-splitting-of-moon-miracle",
+        "source": "Review of Religions",
+        "title": "The Splitting of the Moon: Literal Miracle or Visionary Sign?",
+        "author": "Hazrat Mirza Ghulam Ahmad (as)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "A profound theological and astronomical exposition from the Promised Messiah (as) reconciling Surah Al-Qamar with historical records and optics.",
+        "dateOrIssue": "Theological Classic"
+      },
+      {
+        "id": "alhakam-shaqqul-qamar-prophecy",
+        "source": "Al Hakam",
+        "title": "Shaqqul-Qamar: Fulfilling the Grand Prophecy of the Hour",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "The Quranic declaration 'The Hour has drawn nigh and the moon is rent asunder' and its historical witnesses in 7th century Arabia.",
+        "dateOrIssue": "Miracles & Prophecies"
       }
     ]
   },
@@ -788,6 +1087,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "When Abu Talib was on his deathbed, the Prophet (sa) went to him and said, 'O uncle! Say: None has the right to be worshipped but Allah, a sentence with which I shall be a witness for you before Allah.'",
         "url": "https://sunnah.com/bukhari:1360"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-amul-huzn-year-of-grief",
+        "source": "Review of Religions",
+        "title": "The Year of Grief ('Amul-Huzn): Navigating Bereavement at the Zenith of Persecution",
+        "author": "Sarah Waseem",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "How the dual departures of Abu Talib and Hazrat Khadijah (ra) left the Prophet (sa) completely defenseless humanly, paving the way for divine celestial elevation.",
+        "dateOrIssue": "Spiritual Resilience"
+      }
     ]
   },
   {
@@ -816,6 +1126,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated 'Aisha",
         "textSnippet": "I asked the Prophet, 'Have you encountered a day harder than the day of Uhud?' He replied, 'Your tribes have troubled me a lot, and the worse trouble was the trouble on the day of 'Aqaba when I presented myself to Ibn 'Abd-Yalail bin 'Abd-Kulal and he did not respond to my demand.'",
         "url": "https://sunnah.com/bukhari:3231"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-taif-sublime-forgiveness",
+        "source": "Review of Religions",
+        "title": "The Bloodied Shoes of Ta'if: The Apex of Prophetic Mercy and Forgiveness",
+        "author": "Hazrat Mirza Bashiruddin Mahmud Ahmad (ra)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Refusing the Angel of the Mountains and praying for the progeny of his persecutors: the unforgettable spiritual standard set at the orchard of Utbah.",
+        "dateOrIssue": "Seerat-un-Nabi Special"
+      },
+      {
+        "id": "alhakam-taif-mercy-to-mankind",
+        "source": "Al Hakam",
+        "title": "The Journey to Ta'if: When Mercy Conquered Wrath",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "An inspiring study of the prayer: 'O Allah, unto Thee do I complain of my weakness, helplessness and insignificance before men.'",
+        "dateOrIssue": "Prophetic Character"
       }
     ]
   },
@@ -858,6 +1188,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "textSnippet": "The Prophet (sa) said, 'While I was at the House in a state midway between sleep and wakefulness, (an angel recognized me) ... Then a white animal which was smaller than a mule and bigger than a donkey was brought to me.'",
         "url": "https://sunnah.com/bukhari:3207"
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-isra-miraj-spiritual-ascension",
+        "source": "Review of Religions",
+        "title": "Al-Isra and Al-Mi'raj: The Spiritual Reality of the Heavenly Ascent",
+        "author": "Hazrat Mirza Tahir Ahmad (rh)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Why the journey to Jerusalem and the ascent to Sidratul-Muntaha was a supreme spiritual vision ('Ru'ya') and the eternal gift of the five daily prayers.",
+        "dateOrIssue": "Theology & Philosophy"
+      },
+      {
+        "id": "alhakam-miraj-gift-of-salat",
+        "source": "Al Hakam",
+        "title": "The Ascent to Sidratul-Muntaha and the Five Daily Prayers",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "The celestial encounters with Abraham, Moses, and Jesus, and how Salat became the personal Mi'raj of every believing Muslim.",
+        "dateOrIssue": "Spiritual Practices"
+      }
     ]
   },
   {
@@ -886,6 +1236,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated 'Ubada bin As-Samit",
         "textSnippet": "I gave the pledge of allegiance to the Prophet (sa) with a group of people, and he said, 'I take your pledge that you will not worship anything besides Allah, will not steal, will not commit illegal sexual intercourse...'",
         "url": "https://sunnah.com/bukhari:3892"
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-first-aqabah-yathrib",
+        "source": "Al Hakam",
+        "title": "The First Pledge of 'Aqabah: The Seeds of Islam Planted in Yathrib",
+        "author": "Al Hakam History Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "The covenant of the 12 emissaries renouncing idolatry, theft, and bloodshed, and the pioneering mission of Hazrat Mus'ab bin Umair (ra).",
+        "dateOrIssue": "Historical Diplomacy"
       }
     ]
   },
@@ -916,6 +1277,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated Jabir bin 'Abdullah",
         "textSnippet": "The Prophet (sa) said (at 'Aqaba), 'Will you pledge allegiance to me?' We said, 'Yes, O Messenger of Allah!' So we pledged our allegiance to him.",
         "url": "https://sunnah.com/bukhari:3889"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-second-pledge-aqabah-state",
+        "source": "Review of Religions",
+        "title": "The Second Pledge of 'Aqabah: The Foundation Stone of the Medina Commonwealth",
+        "author": "Shahzad Ahmed",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Seventy-five Ansaris pledging their lives and families at dead of night, instituting the 12 Naqibs (representatives) that birthed the Islamic state.",
+        "dateOrIssue": "Political Theology"
       }
     ]
   },
@@ -977,6 +1349,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "narrator": "Narrated 'Aisha",
         "textSnippet": "The Prophet (sa) said to Muslims, 'I have been shown the place of your emigration.' ... Abu Bakr went to the Prophet and they left together and hid in the cave of Thaur for three nights.",
         "url": "https://sunnah.com/bukhari:3905"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-cave-thaur-divine-deliverance",
+        "source": "Review of Religions",
+        "title": "The Cave of Thaur: 'Grieve Not, For Allah Is With Us'",
+        "author": "Maulana Ataul Mujeeb Rashed",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "The Quraysh conspiracy at Darun-Nadwah, Hazrat Ali in the Prophet's bed, the three nights in the cave, and the miracle of Surah At-Taubah (9:40).",
+        "dateOrIssue": "Spiritual Deliverance"
+      },
+      {
+        "id": "alhakam-suraqah-pursuit-bracelets",
+        "source": "Al Hakam",
+        "title": "Suraqah bin Malik: The Royal Bracelets of Chosroes Prophecy",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "How a lone bounty hunter's horse sank in desert sands and was promised the golden bracelets of the Persian Emperor by a hunted refugee.",
+        "dateOrIssue": "Fulfilled Prophecies"
       }
     ]
   },
@@ -1205,7 +1597,27 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Jews",
       "Alliance"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "ror-charter-medina-constitution",
+        "source": "Review of Religions",
+        "title": "The Constitution of Medina: The World's First Pluralistic Democratic Charter",
+        "author": "Farhan Iqbal",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Exhaustive legal and sociological study of the treaty uniting Muslims, Jewish tribes, and pagans under equal civic rights, religious freedom, and common defense.",
+        "dateOrIssue": "Governance & Law"
+      },
+      {
+        "id": "alhakam-charter-medina-pluralism",
+        "source": "Al Hakam",
+        "title": "Religious Freedom and Civic Harmony in the Charter of Medina",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "A contemporary defense showing how the Prophet (sa) guaranteed complete autonomy to Jewish tribes according to their own religious law.",
+        "dateOrIssue": "Human Rights"
+      }
+    ]
   },
   {
     "id": "permission-jihad",
@@ -1358,6 +1770,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "jMDrH3KjxX8",
         "thumbnailUrl": "https://img.youtube.com/vi/jMDrH3KjxX8/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been mentioning incidents from the life of the Holy Prophet(sa) which took place after the Battle of Badr."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-battle-badr-day-of-criterion",
+        "source": "Review of Religions",
+        "title": "The Battle of Badr (Yaum-ul-Furqan): The Day of Criterion That Altered World History",
+        "author": "Hazrat Mirza Bashir Ahmad (ra)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Three hundred and thirteen ill-equipped believers confronting a thousand heavily armed Makkan warriors, the night-long prayers of the Prophet (sa), and divine fulfillment.",
+        "dateOrIssue": "Military History"
+      },
+      {
+        "id": "alhakam-badr-pow-treatment",
+        "source": "Al Hakam",
+        "title": "Unprecedented Mercy: The Treatment of Prisoners of War at Badr",
+        "author": "Al Hakam Research Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "Feeding prisoners fresh bread while Muslims ate dates, teaching literate captives to gain freedom by instructing Muslim children.",
+        "dateOrIssue": "Rules of War"
       }
     ]
   },
@@ -1535,6 +1967,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "wCVjhUBKcFw",
         "thumbnailUrl": "https://img.youtube.com/vi/wCVjhUBKcFw/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning the life of the Holy Prophet(sa) and the companions’ love and devotion for the Holy Prophet(sa) with reference to the Battle of Uhud."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-battle-uhud-martyrs-lessons",
+        "source": "Review of Religions",
+        "title": "The Slopes of Mount Uhud: Discipline, Sacrifice, and the Martyrdom of Hazrat Hamzah",
+        "author": "Fazal Ahmad",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Analyzing the archers' departure from the pass, Khalid bin Walid's flank attack, the human wall protecting the wounded Prophet, and eternal lessons in obedience.",
+        "dateOrIssue": "Military Ethics"
       }
     ]
   },
@@ -2245,6 +2688,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/PPzjXwMUwyQ/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awuuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue mentioning details regarding the Treaty of Hudaibiyah."
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-hudaibiyyah-clear-victory",
+        "source": "Review of Religions",
+        "title": "The Treaty of Hudaibiyyah: The Apparent Defeat That Became Islam's Greatest Victory",
+        "author": "Hazrat Mirza Bashiruddin Mahmud Ahmad (ra)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Masterclass in strategic peace: Agreeing to ostensibly one-sided terms to establish a decade of non-violence that allowed Islam to quadruple in numbers.",
+        "dateOrIssue": "Peace & Diplomacy"
+      },
+      {
+        "id": "alhakam-fathum-mubin-hudaibiyyah",
+        "source": "Al Hakam",
+        "title": "'Inna Fatahna Laka Fatham Mubeena': When Peace Was Called the Greatest Victory",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "Why the Holy Quran hailed a peace pact rather than a military conquest as the 'Fath-e-Mubin' (Manifest Victory).",
+        "dateOrIssue": "Quranic Studies"
+      }
     ]
   },
   {
@@ -2654,6 +3117,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/s_KkZl3L9h8/hqdefault.jpg",
         "summary": "His Holiness, Hazrat Mirza Masroor Ahmad (aba) expounded upon the unparalleled moral grandeur and sublime mercy of the Holy Prophet (sa) during the Conquest of Makkah, granting forgiveness to those who had brutally persecuted the Muslims for decades."
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-conquest-makkah-general-amnesty",
+        "source": "Review of Religions",
+        "title": "The Bloodless Conquest of Makkah: General Amnesty to a City of Persecutors",
+        "author": "Dr. Ijaz Ahmad",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "Entering with head bowed touching the camel's saddle, declaring 'No blame shall lie upon you today' to those who had murdered and expelled Muslims for two decades.",
+        "dateOrIssue": "Ethics of Victory"
+      },
+      {
+        "id": "alhakam-fatah-makkah-idols-removed",
+        "source": "Al Hakam",
+        "title": "Purification of the Ka'bah: Truth Has Arrived and Falsehood Has Vanished",
+        "author": "Al Hakam History Desk",
+        "url": "https://www.alhakam.org/",
+        "summary": "The dismantling of 360 idols without vengeance or retribution, establishing eternal monotheism in the Arabian peninsula.",
+        "dateOrIssue": "Historical Milestones"
+      }
     ]
   },
   {
@@ -2741,6 +3224,26 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/zF0J_hH3e1Y/hqdefault.jpg",
         "summary": "His Holiness, Hazrat Mirza Masroor Ahmad (aba) expounded on the universal Charter of Human Rights delivered by the Holy Prophet (sa) during the Farewell Pilgrimage, emphasizing absolute racial equality and universal justice."
       }
+    ],
+    "articles": [
+      {
+        "id": "ror-farewell-address-human-rights",
+        "source": "Review of Religions",
+        "title": "The Farewell Sermon at Arafat: The Universal Manifesto of Human Rights and Equality",
+        "author": "Hazrat Mirza Tahir Ahmad (rh)",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "'No Arab has superiority over a non-Arab... nor white over black': The eternal declaration dismantling racism, usury, and the subjugation of women.",
+        "dateOrIssue": "Human Dignity"
+      },
+      {
+        "id": "alhakam-hajjat-ul-wada-summary",
+        "source": "Al Hakam",
+        "title": "Hajjat-ul-Wada: The Perfection of Faith on the Plains of Mount Arafat",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/",
+        "summary": "The revelation of 'Al-Yauma akmaltu lakum deenakum' and the final testament left to the Muslim Ummah.",
+        "dateOrIssue": "Final Testaments"
+      }
     ]
   },
   {
@@ -2770,6 +3273,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "u8u95vj6V2o",
         "thumbnailUrl": "https://img.youtube.com/vi/u8u95vj6V2o/hqdefault.jpg",
         "summary": "His Holiness (aba) narrated the momentous events surrounding the demise of the Holy Prophet (sa) and the steadfast leadership displayed by Hazrat Abu Bakr (ra) in anchoring the believers and guiding the Muslim Ummah."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-demise-highest-companion",
+        "source": "Review of Religions",
+        "title": "To the Highest Companion: The Demise of the Holy Prophet (sa) and Abu Bakr's Leadership",
+        "author": "Maulana Dost Muhammad Shahid",
+        "url": "https://www.reviewofreligions.org/",
+        "summary": "The historic address: 'Whoso worshipped Muhammad, let him know that Muhammad is dead; but whoso worshipped Allah, Allah is alive and never dies.'",
+        "dateOrIssue": "Final Hours & Succession"
       }
     ]
   }
