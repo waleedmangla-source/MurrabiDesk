@@ -125,6 +125,15 @@ export interface LinkedKhutba {
   summary: string;
 }
 
+export interface LinkedHadith {
+  id: string;
+  collection: string;
+  reference: string;
+  narrator: string;
+  textSnippet: string;
+  url: string;
+}
+
 export interface TimelineEvent {
   id: string;
   vol: 1 | 2 | 3;
@@ -137,6 +146,7 @@ export interface TimelineEvent {
   source: string;
   tags: string[];
   khutbas?: LinkedKhutba[];
+  hadiths?: LinkedHadith[];
 }
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -233,7 +243,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Orphan",
       "Umm Ayman"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "muslim-976",
+        "collection": "Sahih Muslim",
+        "reference": "Book 11, Hadith 135",
+        "narrator": "Narrated Abu Huraira",
+        "textSnippet": "The Apostle of Allah (sa) visited the grave of his mother and he wept, and moved others around him to tears...",
+        "url": "https://sunnah.com/muslim:976"
+      }
+    ]
   },
   {
     "id": "demise-abdul-muttalib",
@@ -269,7 +289,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abu Talib",
       "Prophecy"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "tirmidhi-3620",
+        "collection": "Jami' at-Tirmidhi",
+        "reference": "Vol. 1, Book 46, Hadith 3620",
+        "narrator": "Narrated Abu Musa al-Ash'ari",
+        "textSnippet": "Abu Talib departed to Ash-Sham, and the Prophet (sa) left with him... The monk said, 'This is the master of the worlds... Allah will send him as a mercy to the worlds.'",
+        "url": "https://sunnah.com/tirmidhi:3620"
+      }
+    ]
   },
   {
     "id": "harb-e-fijar",
@@ -323,7 +353,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Al-Amin",
       "Maisarah"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3820",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 46",
+        "narrator": "Narrated 'Aisha",
+        "textSnippet": "I did not feel jealous of any of the wives of the Prophet (sa) as much as I did of Khadija though I did not see her, but the Prophet (sa) used to mention her very often...",
+        "url": "https://sunnah.com/bukhari:3820"
+      }
+    ]
   },
   {
     "id": "arbitration-black-stone",
@@ -342,7 +382,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Arbitration",
       "Al-Amin"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "musnad-ahmad-15504",
+        "collection": "Musnad Ahmad",
+        "reference": "Hadith 15504",
+        "narrator": "Narrated Ibn Abbas",
+        "textSnippet": "...The Quraysh said: 'Let the first man to enter through the gate be our judge.' The Messenger of Allah (sa) was the first to enter. They said: 'This is the trustworthy one (Al-Amin).' ...",
+        "url": "https://sunnah.com/ahmad/70"
+      }
+    ]
   },
   {
     "id": "first-revelation",
@@ -361,7 +411,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Iqra",
       "Khadijah"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 1, Hadith 3",
+        "narrator": "Narrated 'Aisha",
+        "textSnippet": "The commencement of the Divine Inspiration to Allah's Messenger (sa) was in the form of good dreams which came true like bright daylight, and then the love of seclusion was bestowed upon him.",
+        "url": "https://sunnah.com/bukhari:3"
+      }
+    ]
   },
   {
     "id": "first-believers",
@@ -471,6 +531,16 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/_DuykOWoGuQ/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta’awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would continue highlighting incidents from the life of Hazrat Bilal bin Rabah(ra)."
       }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-3856",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 82",
+        "narrator": "Narrated Khabbab bin Al-Aratt",
+        "textSnippet": "We complained to Allah's Messenger (sa) (of the persecution inflicted on us by the infidels) while he was sitting in the shade of the Ka'ba... He said, 'Among those who were before you a (believer) used to be seized... but that would not make him give up his religion.'",
+        "url": "https://sunnah.com/bukhari:3856"
+      }
     ]
   },
   {
@@ -552,6 +622,16 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/X8-HWx91i3g/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would begin highlighting incidents from the life of Hazrat Uthman(ra)."
       }
+    ],
+    "hadiths": [
+      {
+        "id": "musnad-ahmad-1740",
+        "collection": "Musnad Ahmad",
+        "reference": "Hadith 1740",
+        "narrator": "Narrated Umm Salama",
+        "textSnippet": "Ja'far bin Abi Talib said to the Negus, 'We were a people of ignorance... until Allah sent to us a Messenger from among ourselves... He commanded us to speak the truth, fulfill the trust, maintain ties of kinship, and be good to neighbors.'",
+        "url": "https://sunnah.com/ahmad:1740"
+      }
     ]
   },
   {
@@ -611,6 +691,16 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "thumbnailUrl": "https://img.youtube.com/vi/-KFTmChKsjY/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would highlight incidents from the life of Hazrat Umar bin al-Khattab(ra)."
       }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-3863",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 89",
+        "narrator": "Narrated 'Abdullah bin Mas'ud",
+        "textSnippet": "We have been powerful since 'Umar embraced Islam.",
+        "url": "https://sunnah.com/bukhari:3863"
+      }
     ]
   },
   {
@@ -630,7 +720,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abu Talib",
       "Persecution"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-1590",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 25, Hadith 76",
+        "narrator": "Narrated Abu Huraira",
+        "textSnippet": "The Prophet (sa) said, 'Tomorrow our encampment will be at Khaif Bani Kinana where the Quraish took an oath of Kufr (i.e. boycotting Banu Hashim).' ",
+        "url": "https://sunnah.com/bukhari:1590"
+      }
+    ]
   },
   {
     "id": "shaqqul-qamar",
@@ -648,7 +748,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Miracle",
       "Surah Al-Qamar"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3868",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 94",
+        "narrator": "Narrated Anas bin Malik",
+        "textSnippet": "The people of Mecca asked Allah's Messenger (sa) to show them a miracle. So he showed them the moon split in two halves between which they saw the Hiram mountain.",
+        "url": "https://sunnah.com/bukhari:3868"
+      }
+    ]
   },
   {
     "id": "year-of-grief",
@@ -668,7 +778,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Aisha",
       "Grief"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-1360",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 23, Hadith 119",
+        "narrator": "Narrated Al-Musaiyab",
+        "textSnippet": "When Abu Talib was on his deathbed, the Prophet (sa) went to him and said, 'O uncle! Say: None has the right to be worshipped but Allah, a sentence with which I shall be a witness for you before Allah.'",
+        "url": "https://sunnah.com/bukhari:1360"
+      }
+    ]
   },
   {
     "id": "journey-taif",
@@ -687,7 +807,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Forgiveness",
       "Supplication"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3231",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 59, Hadith 42",
+        "narrator": "Narrated 'Aisha",
+        "textSnippet": "I asked the Prophet, 'Have you encountered a day harder than the day of Uhud?' He replied, 'Your tribes have troubled me a lot, and the worse trouble was the trouble on the day of 'Aqaba when I presented myself to Ibn 'Abd-Yalail bin 'Abd-Kulal and he did not respond to my demand.'",
+        "url": "https://sunnah.com/bukhari:3231"
+      }
+    ]
   },
   {
     "id": "miraj-isra",
@@ -716,7 +846,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.alislam.org/friday-sermon/2023-10-13.html",
         "youtubeId": "EN-Rv-DKqZI",
         "thumbnailUrl": "https://img.youtube.com/vi/EN-Rv-DKqZI/hqdefault.jpg",
-        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been narrating incidents from the life of the Holy Prophet(sa) relating to the Battle of Badr or events that took place thereafter."
+        "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he had been narrating incidents from the life of the Holy Prophet(sa) relating to the Battle of Badr or events that took place thereafter."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-3207",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 59, Hadith 18",
+        "narrator": "Narrated Malik bin Sasaa",
+        "textSnippet": "The Prophet (sa) said, 'While I was at the House in a state midway between sleep and wakefulness, (an angel recognized me) ... Then a white animal which was smaller than a mule and bigger than a donkey was brought to me.'",
+        "url": "https://sunnah.com/bukhari:3207"
       }
     ]
   },
@@ -737,7 +877,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Musab bin Umair",
       "Medina"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3892",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 118",
+        "narrator": "Narrated 'Ubada bin As-Samit",
+        "textSnippet": "I gave the pledge of allegiance to the Prophet (sa) with a group of people, and he said, 'I take your pledge that you will not worship anything besides Allah, will not steal, will not commit illegal sexual intercourse...'",
+        "url": "https://sunnah.com/bukhari:3892"
+      }
+    ]
   },
   {
     "id": "second-pledge-aqabah",
@@ -757,7 +907,17 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Abbas",
       "Hijrah"
     ],
-    "khutbas": []
+    "khutbas": [],
+    "hadiths": [
+      {
+        "id": "bukhari-3889",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 115",
+        "narrator": "Narrated Jabir bin 'Abdullah",
+        "textSnippet": "The Prophet (sa) said (at 'Aqaba), 'Will you pledge allegiance to me?' We said, 'Yes, O Messenger of Allah!' So we pledged our allegiance to him.",
+        "url": "https://sunnah.com/bukhari:3889"
+      }
+    ]
   },
   {
     "id": "darun-nadwah-conspiracy",
@@ -807,6 +967,16 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "mJT64jjqgBU",
         "thumbnailUrl": "https://img.youtube.com/vi/mJT64jjqgBU/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) continued highlighting incidents from the life of Hazrat Abu Bakr(ra)."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-3905",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 131",
+        "narrator": "Narrated 'Aisha",
+        "textSnippet": "The Prophet (sa) said to Muslims, 'I have been shown the place of your emigration.' ... Abu Bakr went to the Prophet and they left together and hid in the cave of Thaur for three nights.",
+        "url": "https://sunnah.com/bukhari:3905"
       }
     ]
   },

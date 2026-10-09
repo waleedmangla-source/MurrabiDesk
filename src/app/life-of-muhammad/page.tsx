@@ -12,7 +12,8 @@ import {
   ExternalLink,
   Tv,
   Lock,
-  Unlock
+  Unlock,
+  ScrollText
 } from "lucide-react";
 import { 
   TIMELINE_EVENTS, 
@@ -904,6 +905,55 @@ export default function LifeOfMuhammadTimeline() {
                         )}
                         <div className="mt-auto pt-2.5 flex items-center text-[10px] font-bold text-accent-main">
                           Watch on Al Islam &rarr;
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Ahadith Section */}
+            {activeEvent.hadiths && activeEvent.hadiths.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border/40">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                      <ScrollText size={15} />
+                    </span>
+                    <h3 className="text-xs md:text-sm font-black uppercase tracking-wider text-main">
+                      Ahadith
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                    {activeEvent.hadiths.length} {activeEvent.hadiths.length === 1 ? 'Reference' : 'References'}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {activeEvent.hadiths.map((hadith) => (
+                    <a
+                      key={hadith.id}
+                      href={hadith.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group/hadith flex flex-col p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 hover:border-amber-500/50 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 relative"
+                    >
+                      <div className="absolute top-4 right-4 text-slate-300 dark:text-slate-700 opacity-50 group-hover/hadith:text-amber-500/30 transition-colors">
+                        <ScrollText size={32} strokeWidth={1} />
+                      </div>
+                      <div className="relative z-10 flex flex-col gap-2">
+                        <p className="text-sm font-medium text-main italic leading-relaxed pr-8">
+                          "{hadith.textSnippet}"
+                        </p>
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                          <div>
+                            <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">{hadith.narrator}</p>
+                            <p className="text-[10px] text-muted">{hadith.collection} — {hadith.reference}</p>
+                          </div>
+                          <div className="flex items-center text-[10px] font-bold text-amber-600 dark:text-amber-400 group-hover/hadith:underline">
+                            Read Full <ExternalLink size={10} className="ml-1" />
+                          </div>
                         </div>
                       </div>
                     </a>
