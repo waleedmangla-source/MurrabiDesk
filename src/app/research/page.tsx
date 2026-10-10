@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 
 export default function ResearchPage() {
   return (
-    <div
-      id="research-scroll-container"
-      className="h-full flex-1 min-h-0 w-full custom-scrollbar overflow-y-auto"
-    >
+    <div className="h-full flex-1 min-h-0 w-full overflow-hidden">
       <ResearchEngine />
     </div>
   );

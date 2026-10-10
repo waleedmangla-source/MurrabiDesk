@@ -296,7 +296,7 @@ export default function ResearchEngine() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Research Sidebar & Drive Sync States
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
   const [bookmarks, setBookmarks] = useState<ResearchBookmarkItem[]>([]);
   const [isSyncingDrive, setIsSyncingDrive] = useState(false);
@@ -930,29 +930,76 @@ export default function ResearchEngine() {
 
   const hasSearched = !!results || loading;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MURABBI DESK UI: INITIAL STATE (Google Structure + Murabbi OS Design System)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (!hasSearched) {
-    return (
-      <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 select-none relative w-full">
-        {/* Top Header Bar for Landing View */}
-        <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
-          {/* Secondary Sidebar Trigger: History & Bookmarks */}
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            className="px-3.5 py-2 rounded-full text-xs font-bold glass bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-            title="Open Research History & Bookmarks"
-          >
-            <BookmarkCheck size={14} className="text-emerald-400" />
-            <span className="hidden sm:inline">Hub</span>
-            {bookmarks.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-[var(--accent-main)] text-white text-[10px] font-black">
-                {bookmarks.length}
-              </span>
-            )}
-          </button>
+  return (
+    <div className="flex h-full w-full overflow-hidden bg-transparent relative">
+      {/* ── SECONDARY RESEARCH SIDEBAR (HISTORY & BOOKMARKS) — EXACTLY LIKE MAIL TAB ── */}
+      <ResearchSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        history={searchHistory}
+        bookmarks={bookmarks}
+        isSyncing={isSyncingDrive}
+        isDriveConnected={isDriveConnected}
+        onSelectHistory={(entry) => {
+          setQuery(entry.query);
+          if (entry.filters) {
+            setFilters(entry.filters);
+          }
+          performSearch(entry.query, entry.searchMode, entry.filters);
+        }}
+        onRemoveBookmark={(bookmarkId) => removeBookmarkById(bookmarkId)}
+        onClearHistory={() => clearHistory()}
+        onOpenItemModal={(bookmark) => {
+          if (!bookmark.metadata) return;
+          const cat = bookmark.category;
+          if (cat === 'quran') {
+            setActiveCommentaryVerse(bookmark.metadata as any);
+          } else if (cat === 'ahadith') {
+            setActiveHadith(bookmark.metadata as any);
+          } else if (cat === 'malfuzat') {
+            setActiveMalfuzatPdf(bookmark.metadata as any);
+          } else if (cat === 'tazkirah') {
+            setActiveTadhkirahPdf(bookmark.metadata as any);
+          } else if (cat === 'essence') {
+            setActiveEssencePdf(bookmark.metadata as any);
+          } else if (cat === 'articles' || cat === 'books') {
+            setActiveReadingArticle(bookmark.metadata as any);
+          }
+        }}
+      />
+
+      {/* ── MAIN RESEARCH CONTENT SCROLL CONTAINER ── */}
+      <div
+        id="research-scroll-container"
+        className="flex-1 min-h-0 h-full overflow-y-auto custom-scrollbar relative flex flex-col"
+      >
+        {!hasSearched ? (
+          <div className="min-h-full flex-1 flex flex-col items-center justify-center px-4 py-12 select-none relative w-full">
+            {/* Top Header Bar for Landing View */}
+            <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
+              {/* Secondary Sidebar Trigger: History & Bookmarks */}
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(prev => !prev)}
+                className={clsx(
+                  "px-3.5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 active:scale-95 shadow-sm border",
+                  isSidebarOpen
+                    ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]"
+                    : "glass bg-white/5 hover:bg-white/10 border-white/10 text-white/90 hover:text-white"
+                )}
+                title={isSidebarOpen ? "Collapse Research Hub" : "Open Research Hub"}
+              >
+                <BookmarkCheck size={14} className={isSidebarOpen ? "text-white" : "text-emerald-400"} />
+                <span className="hidden sm:inline">Hub</span>
+                {bookmarks.length > 0 && (
+                  <span className={clsx(
+                    "px-1.5 py-0.2 rounded-full text-[10px] font-black",
+                    isSidebarOpen ? "bg-white/20 text-white" : "bg-[var(--accent-main)] text-white"
+                  )}>
+                    {bookmarks.length}
+                  </span>
+                )}
+              </button>
 
           {isUserLoggedIn ? (
             <Link
@@ -1095,14 +1142,11 @@ export default function ResearchEngine() {
           </div>
         </div>
       </div>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MURABBI DESK UI: RESULTS STATE (Google Structure + Murabbi OS Aesthetics)
-  // ═══════════════════════════════════════════════════════════════════════════
-  return (
-    <div className="w-full flex flex-col h-screen overflow-hidden">
+    ) : (
+      /* ═════════════════════════════════════════════════════════════════════ */
+      /* MURABBI DESK UI: RESULTS STATE                                      */
+      /* ═════════════════════════════════════════════════════════════════════ */
+      <div className="min-h-full flex-1 flex flex-col relative w-full">
       {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 py-3 md:py-3.5 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1264,14 +1308,22 @@ export default function ResearchEngine() {
           <div className="flex items-center justify-end gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/10 dark:hover:bg-white/5 border border-white/10 transition-all active:scale-95 shadow-sm"
-              title="Open Research History & Bookmarks"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className={clsx(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 shadow-sm border",
+                isSidebarOpen
+                  ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/10 dark:hover:bg-white/5 border-white/10"
+              )}
+              title={isSidebarOpen ? "Collapse Research Hub" : "Open Research Hub"}
             >
-              <BookmarkCheck size={14} className="text-emerald-400" />
+              <BookmarkCheck size={14} className={isSidebarOpen ? "text-white" : "text-emerald-400"} />
               <span className="hidden lg:inline">Hub</span>
               {bookmarks.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-[var(--accent-main)] text-white text-[10px] font-black">
+                <span className={clsx(
+                  "px-1.5 py-0.2 rounded-full text-[10px] font-black",
+                  isSidebarOpen ? "bg-white/20 text-white" : "bg-[var(--accent-main)] text-white"
+                )}>
                   {bookmarks.length}
                 </span>
               )}
@@ -1291,7 +1343,7 @@ export default function ResearchEngine() {
       </div>
 
       {/* ── RESULTS BODY (Centered) ──────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1 overflow-y-auto pb-24 custom-scrollbar">
+      <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex-1 pb-24">
         {/* Search Statistics & Verbatim Equivalents Bar */}
         {results && !loading && (
           <div className="space-y-3 mb-6 max-w-5xl mx-auto">
@@ -3451,6 +3503,9 @@ export default function ResearchEngine() {
           </div>
         )}
       </div>
+    </div>
+  )}
+</div>
 
       {/* ── IN-DESK ARTICLE READER MODAL ── */}
       {activeReadingArticle && (
@@ -3532,42 +3587,6 @@ export default function ResearchEngine() {
           onClose={() => setActiveEssencePdf(null)}
         />
       )}
-
-      {/* ── SECONDARY RESEARCH SIDEBAR (HISTORY & BOOKMARKS) ── */}
-      <ResearchSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        history={searchHistory}
-        bookmarks={bookmarks}
-        isSyncing={isSyncingDrive}
-        isDriveConnected={isDriveConnected}
-        onSelectHistory={(entry) => {
-          setQuery(entry.query);
-          if (entry.filters) {
-            setFilters(entry.filters);
-          }
-          performSearch(entry.query, entry.searchMode, entry.filters);
-        }}
-        onRemoveBookmark={(bookmarkId) => removeBookmarkById(bookmarkId)}
-        onClearHistory={() => clearHistory()}
-        onOpenItemModal={(bookmark) => {
-          if (!bookmark.metadata) return;
-          const cat = bookmark.category;
-          if (cat === 'quran') {
-            setActiveCommentaryVerse(bookmark.metadata as any);
-          } else if (cat === 'ahadith') {
-            setActiveHadith(bookmark.metadata as any);
-          } else if (cat === 'malfuzat') {
-            setActiveMalfuzatPdf(bookmark.metadata as any);
-          } else if (cat === 'tazkirah') {
-            setActiveTadhkirahPdf(bookmark.metadata as any);
-          } else if (cat === 'essence') {
-            setActiveEssencePdf(bookmark.metadata as any);
-          } else if (cat === 'articles' || cat === 'books') {
-            setActiveReadingArticle(bookmark.metadata as any);
-          }
-        }}
-      />
     </div>
   );
 }
