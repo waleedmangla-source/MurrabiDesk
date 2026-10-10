@@ -87,6 +87,7 @@ export function createNewProject(payload: {
   occasion?: string;
   callToAction?: string;
   generatedPrompt?: string;
+  customPrompt?: string;
   bookmarks?: ResearchBookmarkItem[];
   aiPlan?: ProjectAIPlan | null;
   aiDraft?: string | null;
@@ -105,6 +106,7 @@ export function createNewProject(payload: {
     occasion: payload.occasion || '',
     callToAction: payload.callToAction || '',
     generatedPrompt: payload.generatedPrompt || '',
+    customPrompt: payload.customPrompt,
     bookmarks: payload.bookmarks || [],
     aiPlan: payload.aiPlan || null,
     aiDraft: payload.aiDraft || null,

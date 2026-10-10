@@ -37,6 +37,7 @@ interface TaleefSidebarProps {
   onSelectFilter: (filter: TaleefFilter) => void;
   onNewWork: () => void;
   onStartWithBookmarks?: (bookmarks: ResearchBookmarkItem[]) => void;
+  isCreating?: boolean;
   isDriveConnected?: boolean;
   isSyncing?: boolean;
 }
@@ -50,6 +51,7 @@ export default function TaleefSidebar({
   onSelectFilter,
   onNewWork,
   onStartWithBookmarks,
+  isCreating = false,
   isDriveConnected = false,
   isSyncing = false
 }: TaleefSidebarProps) {
@@ -207,7 +209,12 @@ export default function TaleefSidebar({
                   onNewWork();
                   if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
                 }}
-                className="w-full btn-ruby py-2 rounded-xl text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[var(--accent-glow)] transition-all hover:scale-[1.01]"
+                className={clsx(
+                  "w-full py-2.5 rounded-xl text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]",
+                  isCreating
+                    ? "bg-[var(--accent-main)] ring-2 ring-white/20 shadow-lg shadow-[var(--accent-glow)] font-black"
+                    : "btn-ruby shadow-md shadow-[var(--accent-glow)]"
+                )}
               >
                 <Plus size={13} />
                 <span>New Work</span>
@@ -218,7 +225,7 @@ export default function TaleefSidebar({
             <nav className="py-2 space-y-px flex-1">
               {WORK_FOLDERS.map(f => {
                 const Icon = f.icon;
-                const active = activeFilter === f.id;
+                const active = !isCreating && activeFilter === f.id;
                 return (
                   <button
                     key={f.id}

@@ -20,6 +20,7 @@ import {
   Filter,
   RefreshCw,
   ArrowRight,
+  ArrowLeft,
   Feather,
   Menu,
   X,
@@ -40,7 +41,7 @@ import {
   getLocalResearchBookmarks,
   syncResearchFromDrive
 } from '@/lib/research-storage';
-import CreateProjectModal from './CreateProjectModal';
+import CreateProjectForm from './CreateProjectForm';
 import ProjectWorkspaceModal from './ProjectWorkspaceModal';
 import TaleefSidebar, { TaleefFilter } from './TaleefSidebar';
 
@@ -51,8 +52,9 @@ export default function ProjectsManager() {
   const [activeFilter, setActiveFilter] = useState<TaleefFilter>('all');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Modals & Active Project
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // In-tab view state: 'library' vs 'create'
+  const [view, setView] = useState<'library' | 'create'>('library');
+  const [createInitialType, setCreateInitialType] = useState<ProjectType>('speech');
   const [preSelectedBookmarks, setPreSelectedBookmarks] = useState<ResearchBookmarkItem[]>([]);
   const [activeProject, setActiveProject] = useState<MurabbiProject | null>(null);
   const [autoTriggerGenerateOnOpen, setAutoTriggerGenerateOnOpen] = useState(false);
@@ -206,15 +208,21 @@ export default function ProjectsManager() {
         projects={projects}
         bookmarks={bookmarks}
         activeFilter={activeFilter}
-        onSelectFilter={setActiveFilter}
+        onSelectFilter={(filter) => {
+          setActiveFilter(filter);
+          setView('library');
+        }}
         onNewWork={() => {
           setPreSelectedBookmarks([]);
-          setIsCreateModalOpen(true);
+          setCreateInitialType('speech');
+          setView('create');
         }}
         onStartWithBookmarks={(selected) => {
           setPreSelectedBookmarks(selected);
-          setIsCreateModalOpen(true);
+          setCreateInitialType('speech');
+          setView('create');
         }}
+        isCreating={view === 'create'}
         isDriveConnected={isDriveConnected}
         isSyncing={isSyncing}
       />
@@ -243,150 +251,185 @@ export default function ProjectsManager() {
                   </span>
                   <span className="text-white/20">•</span>
                   <span className="text-[10px] font-mono text-white/40 capitalize">
-                    {activeFilter === 'all' ? 'All Works' : activeFilter === 'drafted' ? 'Manuscripts' : activeFilter}
+                    {view === 'create'
+                      ? 'Questionnaire'
+                      : (activeFilter === 'all' ? 'All Works' : activeFilter === 'drafted' ? 'Manuscripts' : activeFilter)}
                   </span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-black italic tracking-tighter text-white">
-                  {activeFilter === 'all' ? 'Taleef Library' :
-                   activeFilter === 'speech' ? 'Speeches & Khutbat' :
-                   activeFilter === 'dars' ? 'Dars Classes' :
-                   activeFilter === 'article' ? 'Articles & Treatises' :
-                   activeFilter === 'drafted' ? 'Manuscripts Ready' : 'Completed Works'}
+                  {view === 'create'
+                    ? 'New Composition Form'
+                    : (activeFilter === 'all' ? 'Taleef Library' :
+                       activeFilter === 'speech' ? 'Speeches & Khutbat' :
+                       activeFilter === 'dars' ? 'Dars Classes' :
+                       activeFilter === 'ijlas' ? 'Ijlas & Meetings' :
+                       activeFilter === 'announcement' ? 'Announcements & Appeals' :
+                       activeFilter === 'article' ? 'Articles & Treatises' :
+                       activeFilter === 'drafted' ? 'Manuscripts Ready' : 'Completed Works')}
                 </h1>
               </div>
             </div>
 
-            {/* Top Right: Search and New Work Action */}
-            <div className="flex items-center gap-3">
-              {/* Search input */}
-              <div className="relative w-full sm:w-64">
-                <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search works..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/10 focus:border-[var(--accent-main)] focus:outline-none text-white text-xs placeholder:text-white/30"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
-                  >
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
+            {/* Top Right: Search & New Work or Back to Library */}
+            {view === 'library' ? (
+              <div className="flex items-center gap-3">
+                {/* Search input */}
+                <div className="relative w-full sm:w-64">
+                  <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search works..."
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/10 focus:border-[var(--accent-main)] focus:outline-none text-white text-xs placeholder:text-white/30"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
 
-              {/* New Work Button */}
-              <button
-                onClick={() => {
-                  setPreSelectedBookmarks([]);
-                  setIsCreateModalOpen(true);
-                }}
-                className="btn-ruby px-4 py-2 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] shrink-0 transition-all hover:scale-[1.02]"
-              >
-                <Plus size={14} />
-                <span>New Work</span>
-              </button>
-            </div>
+                {/* New Work Button */}
+                <button
+                  onClick={() => {
+                    setPreSelectedBookmarks([]);
+                    setCreateInitialType('speech');
+                    setView('create');
+                  }}
+                  className="btn-ruby px-4 py-2 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] shrink-0 transition-all hover:scale-[1.02]"
+                >
+                  <Plus size={14} />
+                  <span>New Work</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setView('library')}
+                  className="px-4 py-2 rounded-xl glass border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <ArrowLeft size={14} />
+                  <span>Back to Library</span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Works Grid Content */}
-        <main className="flex-1 overflow-y-auto p-6 sm:p-8">
-          {projects.length === 0 ? (
-            /* Empty State: Guide & Quick-starters */
-            <div className="max-w-3xl mx-auto py-12 text-center space-y-8 animate-in fade-in duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 flex items-center justify-center mx-auto shadow-2xl shadow-[var(--accent-glow)]">
-                <Feather size={32} />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white">
-                  No Taleef Works Initialized Yet
-                </h2>
-                <p className="text-sm text-white/60 max-w-lg mx-auto">
-                  Taleef enables you to assemble your saved Quran, Hadith, and Ruhani Khazain research bookmarks into structured speeches, dars lessons, and scholarly articles with AI-crafted drafts.
-                </p>
-              </div>
-
-              {/* Quick Starter Templates */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
-                <button
-                  onClick={() => {
-                    setPreSelectedBookmarks([]);
-                    setIsCreateModalOpen(true);
-                  }}
-                  className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-red-500/40 hover:bg-red-500/[0.02] transition-all group space-y-3"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center">
-                    <Mic size={18} />
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
+          {view === 'create' ? (
+            <CreateProjectForm
+              onCancel={() => setView('library')}
+              onProjectCreated={(newProj, shouldGenerateAI) => {
+                handleProjectCreated(newProj, shouldGenerateAI);
+                setView('library');
+              }}
+              initialSelectedBookmarks={preSelectedBookmarks}
+              initialType={createInitialType}
+            />
+          ) : (
+            <div className="p-6 sm:p-8">
+              {projects.length === 0 ? (
+                /* Empty State: Guide & Quick-starters */
+                <div className="max-w-3xl mx-auto py-12 text-center space-y-8 animate-in fade-in duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 flex items-center justify-center mx-auto shadow-2xl shadow-[var(--accent-glow)]">
+                    <Feather size={32} />
                   </div>
-                  <div>
-                    <h4 className="font-black text-sm text-white group-hover:text-red-400 transition-colors">
-                      Start a Speech / Taqreer
-                    </h4>
-                    <p className="text-[11px] text-white/50 mt-1 leading-snug">
-                      Draft a Friday sermon or Jalsa speech with Hamd-o-Sana, rhetorical arcs, and time pacing.
+
+                  <div className="space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white">
+                      No Taleef Works Initialized Yet
+                    </h2>
+                    <p className="text-sm text-white/60 max-w-lg mx-auto">
+                      Taleef enables you to assemble your saved Quran, Hadith, and Ruhani Khazain research bookmarks into structured speeches, dars lessons, and scholarly articles with AI-crafted drafts.
                     </p>
                   </div>
-                  <div className="text-[11px] font-bold text-red-400 flex items-center gap-1 pt-1">
-                    <span>Create Speech</span>
-                    <ArrowRight size={12} />
-                  </div>
-                </button>
 
-                <button
-                  onClick={() => {
-                    setPreSelectedBookmarks([]);
-                    setIsCreateModalOpen(true);
-                  }}
-                  className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/[0.02] transition-all group space-y-3"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
-                    <GraduationCap size={18} />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-sm text-white group-hover:text-emerald-400 transition-colors">
-                      Start a Dars Class
-                    </h4>
-                    <p className="text-[11px] text-white/50 mt-1 leading-snug">
-                      Build an interactive study circle with verse recitation, linguistic nuances & discussion questions.
-                    </p>
-                  </div>
-                  <div className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 pt-1">
-                    <span>Create Dars</span>
-                    <ArrowRight size={12} />
-                  </div>
-                </button>
+                  {/* Quick Starter Templates */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
+                    <button
+                      onClick={() => {
+                        setPreSelectedBookmarks([]);
+                        setCreateInitialType('speech');
+                        setView('create');
+                      }}
+                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-red-500/40 hover:bg-red-500/[0.02] transition-all group space-y-3"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center">
+                        <Mic size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-sm text-white group-hover:text-red-400 transition-colors">
+                          Start a Speech / Taqreer
+                        </h4>
+                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                          Draft a Friday sermon or Jalsa speech with Hamd-o-Sana, rhetorical arcs, and time pacing.
+                        </p>
+                      </div>
+                      <div className="text-[11px] font-bold text-red-400 flex items-center gap-1 pt-1">
+                        <span>Create Speech</span>
+                        <ArrowRight size={12} />
+                      </div>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setPreSelectedBookmarks([]);
-                    setIsCreateModalOpen(true);
-                  }}
-                  className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-blue-500/40 hover:bg-blue-500/[0.02] transition-all group space-y-3"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
-                    <FileText size={18} />
+                    <button
+                      onClick={() => {
+                        setPreSelectedBookmarks([]);
+                        setCreateInitialType('dars');
+                        setView('create');
+                      }}
+                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/[0.02] transition-all group space-y-3"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                        <GraduationCap size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-sm text-white group-hover:text-emerald-400 transition-colors">
+                          Start a Dars Class
+                        </h4>
+                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                          Build an interactive study circle with verse recitation, linguistic nuances & discussion questions.
+                        </p>
+                      </div>
+                      <div className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 pt-1">
+                        <span>Create Dars</span>
+                        <ArrowRight size={12} />
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setPreSelectedBookmarks([]);
+                        setCreateInitialType('article');
+                        setView('create');
+                      }}
+                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-blue-500/40 hover:bg-blue-500/[0.02] transition-all group space-y-3"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
+                        <FileText size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-sm text-white group-hover:text-blue-400 transition-colors">
+                          Write an Article
+                        </h4>
+                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                          Compose an academic theological paper with systematic proofs and academic citations.
+                        </p>
+                      </div>
+                      <div className="text-[11px] font-bold text-blue-400 flex items-center gap-1 pt-1">
+                        <span>Create Article</span>
+                        <ArrowRight size={12} />
+                      </div>
+                    </button>
                   </div>
-                  <div>
-                    <h4 className="font-black text-sm text-white group-hover:text-blue-400 transition-colors">
-                      Write an Article
-                    </h4>
-                    <p className="text-[11px] text-white/50 mt-1 leading-snug">
-                      Compose an academic theological paper with systematic proofs and academic citations.
-                    </p>
-                  </div>
-                  <div className="text-[11px] font-bold text-blue-400 flex items-center gap-1 pt-1">
-                    <span>Create Article</span>
-                    <ArrowRight size={12} />
-                  </div>
-                </button>
-              </div>
-            </div>
-          ) : filteredProjects.length === 0 ? (
+                </div>
+              ) : filteredProjects.length === 0 ? (
             <div className="text-center py-20 text-white/40 text-xs">
               No works match your active filter or search query.
             </div>
@@ -494,16 +537,10 @@ export default function ProjectsManager() {
               })}
             </div>
           )}
-        </main>
+          </div>
+        )}
+      </main>
       </div>
-
-      {/* ──────── CREATE WORK MODAL ──────── */}
-      <CreateProjectModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onProjectCreated={handleProjectCreated}
-        initialSelectedBookmarks={preSelectedBookmarks}
-      />
 
       {/* ──────── PROJECT WORKSPACE MODAL ──────── */}
       {activeProject && (
