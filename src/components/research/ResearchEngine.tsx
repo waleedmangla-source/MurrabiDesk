@@ -1149,24 +1149,9 @@ export default function ResearchEngine() {
       /* MURABBI DESK UI: RESULTS STATE                                      */
       /* ═════════════════════════════════════════════════════════════════════ */
       <div className="min-h-full flex-1 flex flex-col relative w-full">
-      {/* ── TOP HEADER (Murabbi Desk Logo + Centered Search Bar) ───────────── */}
+      {/* ── TOP HEADER (Centered Search Bar + Tabs + Actions) ───────────── */}
       <div className="sticky top-0 z-30 glass bg-black/25 dark:bg-[#020310]/90 backdrop-blur-xl border-b border-white/5 py-3 md:py-3.5 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Left Wing: Navbar text logo (Bigger & centered from top to bottom within header div) */}
-          <div className="flex items-center justify-center md:justify-start shrink-0">
-            <div
-              onClick={resetToHome}
-              className="flex items-center cursor-pointer shrink-0 select-none group active:scale-95 transition-transform"
-              title="Murabbi Desk"
-            >
-              <img
-                src="/text-logo.png"
-                alt="Murabbi Desk"
-                className="h-12 md:h-14 lg:h-16 w-auto object-contain brightness-0 dark:brightness-100 transition-all select-none"
-              />
-            </div>
-          </div>
-
           {/* Center Column: Search Pill Bar (top) + Tabs (bottom) */}
           <div className="flex-1 flex flex-col items-center min-w-0">
             {/* Search Pill Bar + Toggle + Search Magnifying Glass */}
