@@ -22,8 +22,10 @@ import {
   TimelineEvent, 
   TimelineEra, 
   ERA_CONFIGS, 
-  getEventEra 
+  getEventEra,
+  LinkedArticle
 } from "@/data/timelineData";
+import ArticleReaderModal from "@/components/research/ArticleReaderModal";
 
 export default function LifeOfMuhammadTimeline() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,6 +62,7 @@ export default function LifeOfMuhammadTimeline() {
   const [bulgeScale, setBulgeScale] = useState(0);
   const [bulgeSkew, setBulgeSkew] = useState(0); // Dynamic directional pull offset (px)
   const [isHeld, setIsHeld] = useState(false); // Click-to-hold state
+  const [readingArticle, setReadingArticle] = useState<LinkedArticle | null>(null);
   const isHeldRef = useRef(false);
   const velocityRef = useRef<number>(0);
   const currentPosRef = useRef<number | null>(null);
@@ -554,63 +557,19 @@ export default function LifeOfMuhammadTimeline() {
             </div>
           </div>
         </div>
-
-        {/* 5-Era Pastel Color Legend */}
-        <div className="w-full max-w-7xl flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-1.5 border-t border-border/10 text-[10px]">
-          <span className="font-extrabold uppercase tracking-wider text-muted text-[9px]">Eras:</span>
-          {Object.values(ERA_CONFIGS).map((era) => {
-            const isEraActive = activeEra === era.id;
-            return (
-              <div 
-                key={era.id} 
-                className={clsx(
-                  "flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all duration-200",
-                  isEraActive ? "bg-white/10 dark:bg-white/5 ring-1 ring-white/20 font-bold" : "opacity-75 hover:opacity-100"
-                )}
-              >
-                <span 
-                  className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm transition-transform" 
-                  style={{ 
-                    backgroundColor: era.pastel, 
-                    border: `1.5px solid ${era.accent}`,
-                    boxShadow: isEraActive ? `0 0 8px ${era.glow}` : undefined,
-                    transform: isEraActive ? 'scale(1.25)' : 'scale(1)'
-                  }} 
-                />
-                <span className={clsx("whitespace-nowrap tracking-wide", isEraActive ? "text-main font-extrabold" : "text-muted")}>
-                  {era.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
       </header>
 
-      {/* Top Active Title Speech Box (Follows the bulge wherever it goes, slightly lowered) */}
-      <section className="w-full relative min-h-[4.5rem] shrink-0 z-30 pt-1 mt-7 md:mt-9 overflow-visible">
+      {/* Top Active Title (Centered at all times, no bubble, prominent typography) */}
+      <section className="w-full shrink-0 z-30 mt-6 md:mt-8 px-4 flex flex-col items-center justify-center text-center min-h-[4.5rem]">
         {activeEvent ? (
-          <div 
-            className="absolute top-1 glass px-6 md:px-8 py-2.5 md:py-3 rounded-2xl min-w-[220px] max-w-[94vw] md:max-w-2xl text-center shadow-md border border-[var(--glass-border)] animate-in fade-in zoom-in-95 duration-200"
-            style={{
-              left: containerWidth > 0 ? `${titleCardCoords.clampedCardX}px` : '50%',
-              transform: 'translateX(-50%)',
-            }}
-          >
-            <h2 className="text-base sm:text-lg md:text-xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-snug">
+          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-tight drop-shadow-sm transition-all duration-150">
               {activeEvent.title}
             </h2>
-            {/* Speech bubble tail pointing towards the bulge apex */}
-            <div 
-              className="absolute -bottom-2 w-4 h-4 bg-[var(--glass-bg)] border-r border-b border-[var(--glass-border)]"
-              style={{
-                left: `calc(50% + ${titleCardCoords.tailOffset}px)`,
-                transform: 'translateX(-50%) rotate(45deg)'
-              }}
-            />
           </div>
         ) : (
-          <div className="w-full flex justify-center pt-1">
-            <div className="glass px-6 py-3 rounded-2xl text-center text-muted text-sm">
+          <div className="w-full flex justify-center py-2">
+            <div className="text-center text-muted text-sm sm:text-base">
               No events match your search criteria.
             </div>
           </div>
@@ -823,15 +782,33 @@ export default function LifeOfMuhammadTimeline() {
         {activeEvent && (
           <article className="glass p-6 md:p-8 rounded-3xl max-w-4xl w-full border border-[var(--glass-border)] shadow-xl relative animate-in fade-in slide-in-from-bottom-3 duration-300">
             
-            {/* Metadata Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-border/30">
+            {/* Metadata Bar with Corresponding Era Pill */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-4 border-b border-border/30">
               <div className="flex flex-wrap items-center gap-2">
-                <span 
-                  className={clsx("px-2.5 py-1 text-xs font-black uppercase tracking-wider rounded-lg border", activeEraConfig.bgChip)}
+                {/* Corresponding Era Pill */}
+                <div 
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border shadow-sm transition-all duration-200",
+                    activeEraConfig.bgChip
+                  )}
                 >
-                  Vol. {activeEvent.vol}: {activeEraConfig.name}
+                  <span 
+                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" 
+                    style={{ 
+                      backgroundColor: activeEraConfig.pastel, 
+                      border: `1.5px solid ${activeEraConfig.accent}`,
+                      boxShadow: `0 0 8px ${activeEraConfig.glow}`
+                    }} 
+                  />
+                  <span className="tracking-wide">
+                    {activeEraConfig.name}
+                  </span>
+                </div>
+
+                <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-slate-200/50 dark:bg-slate-800/50 text-muted border border-border/40">
+                  Vol. {activeEvent.vol}
                 </span>
-                <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-blue-500/15 text-blue-500 border border-blue-500/25">
+                <span className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                   {activeEvent.category}
                 </span>
               </div>
@@ -991,12 +968,10 @@ export default function LifeOfMuhammadTimeline() {
                         : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
 
                     return (
-                      <a
+                      <div
                         key={article.id}
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group/article flex flex-col p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 hover:border-teal-500/50 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 relative justify-between"
+                        onClick={() => setReadingArticle(article)}
+                        className="group/article flex flex-col p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 hover:border-teal-500/50 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 relative justify-between cursor-pointer"
                       >
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center justify-between gap-2">
@@ -1028,11 +1003,24 @@ export default function LifeOfMuhammadTimeline() {
                           </p>
                         </div>
 
-                        <div className="mt-4 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[11px] font-bold text-teal-600 dark:text-teal-400">
-                          <span>Read on {article.source}</span>
-                          <ExternalLink size={12} className="group-hover/article:translate-x-0.5 transition-transform" />
+                        <div className="mt-4 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-teal-600 dark:text-teal-400 group-hover/article:underline flex items-center gap-1.5">
+                            <BookOpen size={13} />
+                            Read Article
+                          </span>
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 text-muted hover:text-teal-600 dark:hover:text-teal-400 transition-colors p-1 -m-1"
+                            title={`Open on ${article.source}`}
+                          >
+                            <span>Open on {article.source}</span>
+                            <ExternalLink size={12} className="group-hover/article:translate-x-0.5 transition-transform" />
+                          </a>
                         </div>
-                      </a>
+                      </div>
                     );
                   })}
                 </div>
@@ -1067,6 +1055,18 @@ export default function LifeOfMuhammadTimeline() {
           </article>
         )}
       </section>
+
+      {/* In-Desk Article Reader Modal */}
+      {readingArticle && (
+        <ArticleReaderModal
+          url={readingArticle.url}
+          initialTitle={readingArticle.title}
+          source={readingArticle.source}
+          author={readingArticle.author}
+          summary={readingArticle.summary}
+          onClose={() => setReadingArticle(null)}
+        />
+      )}
 
     </div>
   );

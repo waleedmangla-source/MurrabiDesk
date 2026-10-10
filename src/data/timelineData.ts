@@ -107,6 +107,7 @@ export const getEventEra = (event: TimelineEvent): TimelineEra => {
     'expedition-of-tabuk',
     'year-of-delegations',
     'farewell-pilgrimage',
+    'expedition-of-usamah',
     'demise-holy-prophet'
   ];
   if (postFatahIds.includes(event.id)) return 'after-fatah-mecca';
@@ -1891,6 +1892,47 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     "khutbas": []
   },
   {
+    "id": "ghazwah-sawiq",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "2 A.H.",
+    "date": "Dhu’l-Hijjah 2 A.H. / June–July 624 A.D.",
+    "title": "Ghazwah As-Sawiq (The Expedition of the Parched Barley)",
+    "category": "Battle / Expedition",
+    "desc": "Humiliated by the defeat at Badr, Abu Sufyan vowed not to bathe until he struck Medina. Under cover of night, he led 200 cavalrymen to the outskirts of Medina (Al-‘Uraid), murdered an innocent Ansari farmer named Ma‘bad bin ‘Amr and his laborer, and torched date-palm orchards. When the Holy Prophet (sa) was alerted, he immediately led a Muslim force in pursuit. To lighten their load and flee at frantic speed, the Meccans abandoned sacks of parched barley meal (Sawiq), which the Muslims gathered upon their return. Thus, this pursuit was named Ghazwah As-Sawiq.",
+    "source": "Seal of the Prophets Vol. II, Ch. VII, pp. 315–317",
+    "tags": [
+      "Sawiq",
+      "Abu Sufyan",
+      "Pursuit",
+      "Medina",
+      "Expedition"
+    ],
+    "khutbas": [
+      {
+        "id": "2023-10-27",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Oct 27, 2023",
+        "year": 2023,
+        "url": "https://www.alislam.org/friday-sermon/2023-10-27.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) recounted details of Ghazwah As-Sawiq and Abu Sufyan’s covert raid on the outskirts of Medina."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-ghazwah-sawiq-pursuit",
+        "source": "Review of Religions",
+        "title": "Ghazwah As-Sawiq: The Vow of Abu Sufyan and the Pursuit by the Holy Prophet (sa)",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Ghazwah+Sawiq",
+        "summary": "Analysis of the aftermath of Badr, Abu Sufyan’s nocturnal raid on the orchards of Medina, and the swift tactical pursuit by the Muslims.",
+        "dateOrIssue": "Historical Studies"
+      }
+    ]
+  },
+  {
     "id": "execution-kab-ashraf",
     "vol": 2,
     "period": "Early Medina",
@@ -2145,6 +2187,98 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "zCcRkVsaZjA",
         "thumbnailUrl": "https://img.youtube.com/vi/zCcRkVsaZjA/hqdefault.jpg",
         "summary": "After reciting Tashahhud, Ta‘awwuz and Surah al-Fatihah, His Holiness, Hazrat Mirza Masroor Ahmad(aba) said that he would mention details regarding the Expedition of Banu Nadir."
+      }
+    ]
+  },
+  {
+    "id": "ghazwah-dhatur-riqa",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "4 A.H.",
+    "date": "Jumada al-Ula 4 A.H. / October 625 A.D.",
+    "title": "Ghazwah Dhatur-Riqa‘ (Expedition of the Patched Garments) & Salat-ul-Khauf",
+    "category": "Battle / Expedition",
+    "desc": "Following intelligence that Bedouin tribes of Najd (Banu Muharib and Banu Tha‘labah) were massing to raid Medina, the Prophet (sa) led 400 companions through rugged mountainous terrain. The terrain was so merciless that the companions’ feet bled and they wrapped rags and patches of cloth around their feet, giving the expedition its name. Here, the Fear Prayer (Salat-ul-Khauf) was first instituted so Muslims prayed in alternating shifts under arms. During this journey, a bedouin warrior named Ghaurath bin al-Harith approached the Prophet while he rested alone under a tree, unsheathed a sword, and asked: 'Who will save you from me?' The Prophet calmly answered: 'Allah!' Stricken with awe, the sword fell from the assailant’s hand, and the Prophet magnanimously spared him, leading to his transformation.",
+    "source": "Seal of the Prophets Vol. II, Ch. IX, pp. 410–415; Sahih Bukhari 4136, 4139",
+    "tags": [
+      "Dhatur-Riqa",
+      "Salat-ul-Khauf",
+      "Ghaurath bin al-Harith",
+      "Najd",
+      "Forgiveness"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-08-09",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 9, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-09.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) narrated the inspiring incident of Ghaurath bin al-Harith under the tree during Ghazwah Dhatur-Riqa‘ and the Prophet’s unshakeable trust in Allah."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-dhatur-riqa-tree",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 181 (Hadith 4136)",
+        "narrator": "Jabir bin ‘Abdullah (ra)",
+        "textSnippet": "...We accompanied the Prophet (sa) in the campaign of Dhat-ur-Riqa‘. The Prophet rested under a shady acacia tree and hung his sword on it. A polytheist took the sword while the Prophet slept and said: 'Are you afraid of me?' He replied, 'No.' The man said, 'Who will save you from me?' He said, 'Allah!' The sword dropped from his hand...",
+        "url": "https://sunnah.com/bukhari:4136"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-ghazwah-dhatur-riqa",
+        "source": "Review of Religions",
+        "title": "Ghazwah Dhatur-Riqa‘: Divine Reliance and the Exemplary Mercy of Prophet Muhammad (sa)",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Dhatur-Riqa",
+        "summary": "The extraordinary circumstances of Dhatur-Riqa‘, the institutionalization of Salat-ul-Khauf, and the forbearance shown to the would-be assassin Ghaurath.",
+        "dateOrIssue": "Historical Analysis"
+      }
+    ]
+  },
+  {
+    "id": "badr-al-mawid",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "4 A.H.",
+    "date": "Sha‘ban 4 A.H. / January 626 A.D.",
+    "title": "Ghazwah Badr al-Maw‘id (The Promised Badr)",
+    "category": "Battle / Expedition",
+    "desc": "At the conclusion of the Battle of Uhud, Abu Sufyan had publicly shouted a challenge to the Muslims: 'Our appointment with you is next year at Badr!' When the appointed month of Sha‘ban arrived, the Holy Prophet (sa) resolved to fulfill the pledge and marched out of Medina with 1,500 companions and 10 horses, camping at Badr for eight days while engaging in peaceful annual trade. Abu Sufyan assembled 2,000 Meccans and 50 cavalry, but gripped by demoralizing fear, halted at Marr az-Zahran and retreated under the pretext of drought. The bloodless expedition restored complete Muslim prestige across the Arabian Peninsula and shattered the illusion of Meccan supremacy.",
+    "source": "Seal of the Prophets Vol. II, Ch. IX, pp. 415–418; Sirat Ibn Hisham Vol. 2",
+    "tags": [
+      "Badr al-Mawid",
+      "Second Badr",
+      "Abu Sufyan",
+      "Pledge",
+      "Moral Victory"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-08-16",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 16, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-16.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the expedition of Badr al-Maw‘id, Abu Sufyan’s retreat, and the profound strategic and moral impact on Arabia."
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-badr-al-mawid",
+        "source": "Al Hakam",
+        "title": "Badr al-Maw‘id: Fulfilling the Challenge and Establishing Moral Superiority",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Badr+al-Mawid",
+        "summary": "How the Holy Prophet’s steadfast adherence to his promise at Badr al-Maw‘id revealed the psychological triumph of faith over fear.",
+        "dateOrIssue": "Historical Studies"
       }
     ]
   },
@@ -3089,6 +3223,311 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "conquest-of-khaibar",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "7 A.H. / 628 A.D.",
+    "date": "Muharram–Safar 7 A.H. / May–June 628 A.D.",
+    "title": "The Conquest of Khaibar (Ghazwah Khaibar) & Valour of Hadrat ‘Ali (ra)",
+    "category": "Battle / Expedition",
+    "desc": "Khaibar was the heavily fortified bastion of northern Jewish tribes, serving as the central hub of political conspiracies and financial backing for the confederate siege against Medina. Following Hudaibiyyah, the Prophet (sa) marched with 1,400 companions to eliminate this existential threat. After reducing several fortresses, the formidable Citadel of Qamus resisted repeated assaults. The Prophet (sa) famously proclaimed: 'Tomorrow I shall give the banner to a man who loves Allah and His Messenger, and whom Allah and His Messenger love; through his hands Allah will grant victory.' The next morning he summoned Hadrat ‘Ali (ra), treated his eye infection with blessed saliva, and handed him the banner. ‘Ali slew the giant Jewish champion Marhab in single combat and breached the citadel gates. Khaibar was conquered, and its agricultural lands were left in Jewish custody under a fair 50% harvest-sharing agreement.",
+    "source": "Seal of the Prophets Vol. III, Ch. VII, pp. 289–318; Sahih Bukhari 3701, Sahih Muslim 1807",
+    "tags": [
+      "Khaibar",
+      "Ali",
+      "Marhab",
+      "Qamus",
+      "Citadel",
+      "Jewish Fortresses"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-12-11",
+        "title": "Men of Excellence: Hazrat Ali (ra)",
+        "date": "Dec 11, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-12-11.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the conquest of Khaibar, Hadrat ‘Ali’s heroic duel with Marhab, and the Prophet’s profound spiritual endorsement of him."
+      },
+      {
+        "id": "2024-08-23",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 23, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-23.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Detailed account of the expedition of Khaibar, the siege of Qamus fortress, and the compassionate terms granted to the people of Khaibar."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-khaibar-ali-flag",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 243 (Hadith 3701)",
+        "narrator": "Sahl bin Sa‘d (ra)",
+        "textSnippet": "...The Prophet (sa) said: 'Tomorrow I will give the flag to somebody by whose hands Allah will grant victory, and who loves Allah and His Messenger, and whom Allah and His Messenger love.' People spent the night wondering who would be given the flag... In the morning, he called ‘Ali bin Abi Talib...",
+        "url": "https://sunnah.com/bukhari:3701"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-conquest-of-khaibar",
+        "source": "Review of Religions",
+        "title": "The Siege and Conquest of Khaibar: Defusing the Northern Threat to Islam",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Conquest+of+Khaibar",
+        "summary": "A deep historical and strategic examination of the battle of Khaibar, defensive warfare principles, and the agricultural treaty instituted by Prophet Muhammad (sa).",
+        "dateOrIssue": "Historical Warfare"
+      },
+      {
+        "id": "alhakam-ali-khaibar-marhab",
+        "source": "Al Hakam",
+        "title": "Hazrat Ali (ra) at Khaibar: The Unlocking of Al-Qamus",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Hazrat+Ali+Khaibar+Marhab",
+        "summary": "The legendary single combat between Hadrat Ali and Marhab, and the spiritual secrets behind the Prophet’s entrustment of the standard.",
+        "dateOrIssue": "Companions of the Prophet"
+      }
+    ]
+  },
+  {
+    "id": "return-jafar-abyssinia",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "7 A.H. / 628 A.D.",
+    "date": "Safar 7 A.H. / June 628 A.D.",
+    "title": "Return of Ja‘far bin Abi Talib (ra) & the Abyssinian Emigrants",
+    "category": "Milestone",
+    "desc": "While the Holy Prophet (sa) was concluding the affairs of Khaibar, Hadrat Ja‘far bin Abi Talib (ra) and the remaining emigrants who had resided in Abyssinia since the fifth year of Nabawi arrived, accompanied by Abu Musa al-Ash‘ari and his companions who had sailed across the Red Sea. Overwhelmed with joy upon seeing his beloved cousin Ja‘far after fifteen years of exile, the Holy Prophet kissed him between the eyes and embraced him warmly, uttering the legendary words: 'I do not know what delights me more: the conquest of Khaibar or the arrival of Ja‘far!' This reunion marked the emotional closure of the earliest phase of Makkan persecution.",
+    "source": "Seal of the Prophets Vol. III, Ch. VII, pp. 318–322; Sunan Tirmidhi 2732; Sirat Ibn Hisham Vol. 2",
+    "tags": [
+      "Jafar bin Abi Talib",
+      "Abyssinia",
+      "Return",
+      "Reunion",
+      "Abu Musa al-Ashari"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-11-06",
+        "title": "Men of Excellence: Hazrat Jafar bin Abi Talib (ra)",
+        "date": "Nov 6, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-06.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on the character of Hadrat Ja‘far bin Abi Talib, his leadership in Abyssinia, and the emotional reunion at Khaibar."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "tirmidhi-jafar-return",
+        "collection": "Jami‘ at-Tirmidhi",
+        "reference": "Book 42, Hadith 2732",
+        "narrator": "Jabir bin ‘Abdullah / ‘A’ishah (ra)",
+        "textSnippet": "...When Ja‘far arrived from Abyssinia, the Messenger of Allah (sa) embraced him and kissed him between his eyes, saying: 'I know not whether I am more rejoiced with the conquest of Khaibar or with the arrival of Ja‘far.'...",
+        "url": "https://sunnah.com/tirmidhi:2732"
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-jafar-abyssinia-reunion",
+        "source": "Al Hakam",
+        "title": "Hazrat Ja‘far bin Abi Talib: The Winged Emigrant and the Envoy to the Negus",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Jafar+bin+Abi+Talib+Abyssinia",
+        "summary": "The story of Hadrat Ja‘far’s diplomatic eloquence before Negus, his steadfast 15-year exile in Abyssinia, and his triumphant reunion with the Holy Prophet (sa).",
+        "dateOrIssue": "Historical Biographies"
+      }
+    ]
+  },
+  {
+    "id": "umratul-qada",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "7 A.H. / 629 A.D.",
+    "date": "Dhu’l-Qa‘dah 7 A.H. / March 629 A.D.",
+    "title": "Umratul-Qada (The Fulfilled / Compensatory ‘Umrah)",
+    "category": "Milestone",
+    "desc": "Exactly one year after the Treaty of Hudaibiyyah, the Holy Prophet (sa) and 2,000 companions who had attended Hudaibiyyah set out for Makkah to perform the compensatory pilgrimage. In accordance with the treaty, the Muslims entered bearing only sheathed swords, while the Quraysh evacuated the city and watched in awe from Mount Abu Qubais. The Muslims performed Tawaf, Sa‘y, and offered the Adhan atop the Ka‘bah through Bilal (ra). The awe-inspiring spiritual dignity, radiant unity, and moral discipline of the Muslims profoundly impressed the onlookers. During this pilgrimage, the Prophet married Hadrat Maimunah bint al-Harith (ra), further cementing ties with prominent Makkan clans.",
+    "source": "Seal of the Prophets Vol. III, Ch. VII, pp. 325–334; Sahih Bukhari 4251, Sahih Muslim 1780",
+    "tags": [
+      "Umratul-Qada",
+      "Hudaibiyyah",
+      "Maimunah",
+      "Bilal",
+      "Tawaf",
+      "Fulfilled Promise"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-09-20",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 20, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-20.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the events of Umratul-Qada, the emotional entry of the Muslims into the sacred sanctuary, and its impact on the Quraysh."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-umratul-qada-treaty",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 289 (Hadith 4251)",
+        "narrator": "Al-Bara’ bin ‘Azib (ra)",
+        "textSnippet": "...When the Prophet (sa) entered Makkah in Dhul-Qa‘dah for ‘Umrah, he remained for three days. When the third day ended, the Meccans told ‘Ali: 'Tell your companion to leave our city, for the time has passed.' And the Prophet departed without hesitation...",
+        "url": "https://sunnah.com/bukhari:4251"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-umratul-qada-fulfillment",
+        "source": "Review of Religions",
+        "title": "Umratul-Qada: The Triumph of Peaceful Adherence and Divine Fulfillment",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Umratul-Qada",
+        "summary": "How the rigorous peaceful execution of Umratul-Qada exposed the moral bankruptcy of pagan Makkah and prepared the psychological grounds for Fatah Makkah.",
+        "dateOrIssue": "Prophetic Character"
+      }
+    ]
+  },
+  {
+    "id": "conversion-khalid-amr",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "7–8 A.H. / 629 A.D.",
+    "date": "Safar 8 A.H. / May–June 629 A.D.",
+    "title": "Acceptance of Islam by Khalid bin al-Walid & ‘Amr bin al-‘As",
+    "category": "Milestone",
+    "desc": "Directly influenced by the sublime majesty witnessed during Umratul-Qada, Makkah’s two greatest military masterminds and statesmen made the momentous decision to embrace Islam. Khalid bin al-Walid (the military genius behind Uhud) and ‘Amr bin al-‘As (the master diplomat who had pursued the emigrants to Abyssinia), along with ‘Uthman bin Talhah (keeper of the Ka‘bah keys), rode together to Medina. When the Holy Prophet (sa) saw them approaching, his face lit up with radiant joy and he remarked to his companions: 'Makkah has cast to you the innermost treasures of its heart (the pieces of its liver)!' Khalid pledged allegiance, asking forgiveness for his past warfare against Muslims, to which the Prophet replied: 'Islam obliterates whatever sins preceded it.'",
+    "source": "Seal of the Prophets Vol. III, Ch. VII, pp. 335–340; Sirat Ibn Hisham Vol. 2; Al-Bidayah wan-Nihayah",
+    "tags": [
+      "Khalid bin Walid",
+      "Amr bin al-As",
+      "Conversion",
+      "Sword of Allah",
+      "Makkah"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-09-27",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 27, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-27.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on the acceptance of Islam by Khalid bin al-Walid and ‘Amr bin al-‘As, and the Holy Prophet’s immense joy and grace."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "muslim-amr-conversion",
+        "collection": "Sahih Muslim",
+        "reference": "Book 1, Hadith 220 (Hadith 121)",
+        "narrator": "‘Amr bin al-‘As (ra)",
+        "textSnippet": "...When Allah placed the love of Islam in my heart, I came to the Prophet (sa) and said: 'Stretch out your right hand so I may pledge allegiance.'... He said: 'Did you not know that Islam obliterates whatever sins preceded it, and Hijrah obliterates whatever came before it?'...",
+        "url": "https://sunnah.com/muslim:121"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-conversion-khalid-amr",
+        "source": "Review of Religions",
+        "title": "From Bitter Adversaries to Champions of Islam: The Conversion of Khalid bin Walid and Amr bin al-As",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Khalid+bin+Walid+conversion",
+        "summary": "Historical transformation of Arabia’s most formidable generals into stalwarts of the faith, and how their conversion signaled the inevitable collapse of pagan resistance.",
+        "dateOrIssue": "Historical Transformation"
+      }
+    ]
+  },
+  {
+    "id": "battle-of-mutah",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "8 A.H. / 629 A.D.",
+    "date": "Jumada al-Ula 8 A.H. / September 629 A.D.",
+    "title": "The Battle of Mu’tah & Martyrdom of the Three Commanders",
+    "category": "Battle / Expedition",
+    "desc": "When the Prophet’s envoy Harith bin ‘Umair al-Azdi was brutally murdered by the Ghassanid Christian governor Shurahbil bin ‘Amr—a flagrant violation of international diplomatic immunity—the Prophet dispatched an army of 3,000 men to the Syrian borders. The Muslims found themselves facing a colossal force of over 100,000 Byzantine imperial soldiers and Arab Christian auxiliaries. In fierce combat at Mu’tah, the designated commanders fell one after another: first Zaid bin Harithah, then Ja‘far bin Abi Talib (who fought until both his arms were severed, earning the title Ja‘far at-Tayyar 'The Two-Winged'), and then ‘Abdullah bin Rawahah. With the ranks destabilized, Khalid bin al-Walid took the standard, broke nine swords in furious combat, reorganized the formations overnight using psychological tactics, and executed a masterful defensive withdrawal, preserving the Muslim army. The Prophet wept in Medina as he divinely witnessed the battle, proclaiming Khalid as 'A Sword from among the Swords of Allah' (Saifullah).",
+    "source": "Seal of the Prophets Vol. III, Ch. VIII, pp. 341–356; Sahih Bukhari 4261, 4262",
+    "tags": [
+      "Mutah",
+      "Zaid bin Harithah",
+      "Jafar at-Tayyar",
+      "Abdullah bin Rawahah",
+      "Khalid bin Walid",
+      "Saifullah",
+      "Martyrs"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-10-11",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Oct 11, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-10-11.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) narrated the heart-rending events of the Battle of Mu’tah, the martyrdoms of Zaid, Ja‘far, and Ibn Rawahah, and Khalid’s tactical genius."
+      },
+      {
+        "id": "2020-11-06-mutah",
+        "title": "Men of Excellence: Hazrat Jafar bin Abi Talib (ra)",
+        "date": "Nov 6, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-06.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) described the supreme sacrifice of Hadrat Ja‘far bin Abi Talib at the Battle of Mu’tah and his heavenly station as Ja‘far at-Tayyar."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-mutah-commanders",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 298 (Hadith 4261)",
+        "narrator": "Anas bin Malik (ra)",
+        "textSnippet": "...The Prophet (sa) announced the deaths of Zaid, Ja‘far, and Ibn Rawahah before the news had reached them, saying while tears flowed from his eyes: 'Zaid took the flag and was martyred, then Ja‘far took it and was martyred, then Ibn Rawahah took it and was martyred... until one of Allah’s swords took it, until Allah granted them victory.'...",
+        "url": "https://sunnah.com/bukhari:4261"
+      },
+      {
+        "id": "bukhari-mutah-nine-swords",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 300 (Hadith 4265)",
+        "narrator": "Khalid bin al-Walid (ra)",
+        "textSnippet": "...On the day of Mu’tah, nine swords were broken in my hand, and nothing remained in my hand except a broad Yemeni blade...",
+        "url": "https://sunnah.com/bukhari:4265"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-battle-of-mutah",
+        "source": "Review of Religions",
+        "title": "The Battle of Mu’tah: Diplomatic Sanctity, Heroism, and the Sword of Allah",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Battle+of+Mutah",
+        "summary": "Comprehensive analysis of the causes of Mu’tah, the martyrdom of the three revered commanders, and Khalid bin al-Walid’s legendary defensive maneuver against overwhelming Byzantine numbers.",
+        "dateOrIssue": "Military History"
+      },
+      {
+        "id": "alhakam-jafar-tayyar-mutah",
+        "source": "Al Hakam",
+        "title": "Ja‘far at-Tayyar: The Flying Martyr of the Battle of Mu’tah",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Jafar+Tayyar+Mutah",
+        "summary": "The eternal legacy of Hadrat Ja‘far bin Abi Talib at Mu’tah and the vision seen by the Holy Prophet (sa) of Ja‘far flying with angels in Paradise.",
+        "dateOrIssue": "Heroes of Islam"
+      }
+    ]
+  },
+  {
     "id": "conquest-of-makkah",
     "vol": 3,
     "period": "Late Medina / Treaties",
@@ -3243,6 +3682,77 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.alhakam.org/",
         "summary": "The revelation of 'Al-Yauma akmaltu lakum deenakum' and the final testament left to the Muslim Ummah.",
         "dateOrIssue": "Final Testaments"
+      }
+    ]
+  },
+  {
+    "id": "expedition-of-usamah",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "11 A.H. / 632 A.D.",
+    "date": "Safar 11 A.H. / May–June 632 A.D.",
+    "title": "The Expedition of Usamah bin Zaid (ra)",
+    "category": "Battle / Expedition",
+    "desc": "In Safar 11 A.H., shortly before his final illness, the Holy Prophet (sa) ordered the mobilization of a massive army to secure the northern frontiers towards Syria, where Zaid bin Harithah had fallen. To obliterate social class and age prejudices, the Prophet appointed nineteen-year-old Usamah bin Zaid (ra) as supreme commander over senior elder companions including Hadrat ‘Umar bin al-Khattab and Abu ‘Ubaidah bin al-Jarrah. When some whispered regarding Usamah’s youth, the Prophet mounted the pulpit and declared: 'If you question his leadership, you questioned the leadership of his father before him! By Allah, he was worthy of leadership, and he is among the dearest of men to me.' When the Prophet passed away, Medina was gripped by crisis and rebellions, yet Hadrat Abu Bakr (ra) steadfastly insisted: 'By Allah, even if wild beasts drag my body through Medina, I will not disband an army commissioned by the Messenger of Allah!' The army marched, secured the borders, and returned victorious without a single casualty, establishing the authority of the nascent Caliphate.",
+    "source": "Seal of the Prophets Vol. III, Ch. IX; Life of Muhammad by Hadrat Mirza Bashir-ud-Din Mahmud Ahmad (ra), pp. 210–215; Bukhari 4469",
+    "tags": [
+      "Usamah bin Zaid",
+      "Northern Border",
+      "Leadership",
+      "Meritocracy",
+      "Abu Bakr",
+      "Caliphate"
+    ],
+    "khutbas": [
+      {
+        "id": "2022-05-27",
+        "title": "Men of Excellence: Hazrat Abu Bakr (ra)",
+        "date": "May 27, 2022",
+        "year": 2022,
+        "url": "https://www.alislam.org/friday-sermon/2022-05-27.html",
+        "youtubeId": "xHPyWK2Ejz8",
+        "thumbnailUrl": "https://img.youtube.com/vi/xHPyWK2Ejz8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) described the absolute resolve of Hadrat Abu Bakr (ra) in dispatching Usamah bin Zaid’s army despite all domestic perils, fulfilling the Holy Prophet’s final instruction."
+      },
+      {
+        "id": "2019-06-14",
+        "title": "Men of Excellence: Hazrat Usamah bin Zaid (ra)",
+        "date": "Jun 14, 2019",
+        "year": 2019,
+        "url": "https://www.alislam.org/friday-sermon/2019-06-14.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the life of Hadrat Usamah bin Zaid, the Prophet’s profound love for him, and the wisdom behind appointing him as army commander."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-usamah-leadership",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 64, Hadith 489 (Hadith 4469)",
+        "narrator": "‘Abdullah bin ‘Umar (ra)",
+        "textSnippet": "...The Messenger of Allah (sa) appointed Usamah as the commander of an army. The people spoke critically of his leadership. The Prophet said: 'If you criticize his command, you have criticized the command of his father before him. By Allah, his father was fit for command, and this one is among the most beloved of people to me after him.'...",
+        "url": "https://sunnah.com/bukhari:4469"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-expedition-of-usamah",
+        "source": "Review of Religions",
+        "title": "The Expedition of Usamah bin Zaid: Meritocracy in Islam and the Unshakable Resolve of Abu Bakr",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Usamah+bin+Zaid",
+        "summary": "How the appointment of youth over elder statesmen dismantled tribal hierarchy, and how Abu Bakr’s fidelity in dispatching the expedition stabilized the Muslim world.",
+        "dateOrIssue": "Leadership & Faith"
+      },
+      {
+        "id": "alhakam-hazrat-usamah-beloved",
+        "source": "Al Hakam",
+        "title": "Hazrat Usamah bin Zaid: The Beloved Son of the Beloved",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Usamah+bin+Zaid",
+        "summary": "A tribute to Usamah bin Zaid’s steadfastness, tactical victory at the Syrian border, and the lessons of obedience to Khilafat.",
+        "dateOrIssue": "Companions of the Prophet"
       }
     ]
   },
