@@ -65,7 +65,7 @@ export const ERA_CONFIGS: Record<TimelineEra, EraColorConfig> = {
 };
 
 export const getEventEra = (event: TimelineEvent): TimelineEra => {
-  if (event.id === 'ashabul-fil') return 'pre-birth';
+  if (event.id === 'ashabul-fil' || event.id === 'vow-abdul-muttalib') return 'pre-birth';
   
   const earlyChildhoodIds = [
     'birth-prophet',
@@ -75,6 +75,7 @@ export const getEventEra = (event: TimelineEvent): TimelineEra => {
     'bahira-monk',
     'harb-e-fijar',
     'hilful-fudul',
+    'caravan-syria-maisarah',
     'marriage-khadijah',
     'arbitration-black-stone'
   ];
@@ -82,16 +83,22 @@ export const getEventEra = (event: TimelineEvent): TimelineEra => {
   
   const meccaRevelationIds = [
     'first-revelation',
+    'fatrat-ul-wahi',
     'first-believers',
+    'dawat-dhul-ashirah',
+    'proclamation-mount-safa',
     'dar-e-arqam',
     'persecution-slaves',
+    'utbah-bribery-delegation',
     'migration-abyssinia-1',
+    'conversion-abu-dharr',
     'migration-abyssinia-2',
     'conversion-hamzah',
     'conversion-umar',
     'shib-abi-talib-boycott',
     'shaqqul-qamar',
     'year-of-grief',
+    'marriage-saudah-aishah',
     'journey-taif',
     'miraj-isra',
     'first-pledge-aqabah',
@@ -106,6 +113,7 @@ export const getEventEra = (event: TimelineEvent): TimelineEra => {
     'battle-of-hunain',
     'expedition-of-tabuk',
     'year-of-delegations',
+    'demise-ibrahim-eclipse',
     'farewell-pilgrimage',
     'expedition-of-usamah',
     'demise-holy-prophet'
@@ -198,6 +206,37 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.alhakam.org/",
         "summary": "Theological exposition and historical context of the miraculous destruction of the invading Axumite army and its significance for the advent of Islam.",
         "dateOrIssue": "Quranic Exegesis"
+      }
+    ]
+  },
+  {
+    "id": "vow-abdul-muttalib",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "Circa 569–570 A.D.",
+    "date": "Circa 569–570 A.D.",
+    "title": "Vow of ‘Abdul-Muttalib & Demise of Hadrat ‘Abdullah",
+    "category": "Milestone",
+    "desc": "During the excavation of the sacred Well of Zamzam, Hadrat 'Abdul-Muttalib vowed that if blessed with ten sons, he would sacrifice one to God at the Ka‘bah. When the lots were drawn, the arrow fell upon his beloved youngest son, 'Abdullah. The Quraysh elders intervened, and a diviner recommended casting lots between 'Abdullah and ten camels until God was pleased; only at one hundred camels did the lot fall on the animals. Soon after marrying Hadrat Aminah bint Wahb, 'Abdullah was sent on a trade mission to Syria. On his return journey, he fell critically ill in Yathrib (Medina) and passed away at age twenty-five, leaving the Holy Prophet (sa) an unborn orphan.",
+    "source": "Seal of the Prophets Vol. I, Ch. III, pp. 148–151; Sirat Ibn Hisham Vol. 1",
+    "tags": [
+      "Abdul-Muttalib",
+      "Abdullah",
+      "Aminah",
+      "Zamzam",
+      "Sacrifice",
+      "Orphan"
+    ],
+    "khutbas": [],
+    "articles": [
+      {
+        "id": "ror-abdul-muttalib-vow",
+        "source": "Review of Religions",
+        "title": "The Lineage of the Holy Prophet (sa): Hadrat 'Abdullah and 'Abdul-Muttalib's Vow",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Abdul-Muttalib+Abdullah",
+        "summary": "Historical analysis of the rediscovery of Zamzam, the providential preservation of Hadrat 'Abdullah, and the noble ancestry of the Holy Prophet (sa).",
+        "dateOrIssue": "Prophetic Lineage"
       }
     ]
   },
@@ -452,6 +491,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "caravan-syria-maisarah",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "Circa 595 A.D.",
+    "date": "Circa 595 A.D. (Age 25)",
+    "title": "Trade Expedition to Syria with Maisarah & Meeting Monk Nastura",
+    "category": "Milestone",
+    "desc": "Renowned across Makkah as As-Sadiq (The Truthful) and Al-Amin (The Trustworthy), the Holy Prophet (sa) was entrusted by the noble businesswoman Hadrat Khadijah bint Khuwailid (ra) with her Syrian trade caravan, accompanied by her faithful servant Maisarah. In the market town of Busra, a Christian monk named Nastura observed the Prophet resting beneath a tree and declared to Maisarah: 'None has ever rested under this tree except a Prophet.' Maisarah was awestruck by the Prophet's peerless honesty, noble demeanor, and unprecedented business success, returning to Makkah with double the anticipated profits. Maisarah's glowing account of his sublime character inspired Hadrat Khadijah to propose marriage.",
+    "source": "Seal of the Prophets Vol. I, Ch. IV, pp. 177–180; Sirat Ibn Hisham Vol. 1",
+    "tags": [
+      "Maisarah",
+      "Khadijah",
+      "Nastura",
+      "Syria",
+      "Al-Amin",
+      "Trade"
+    ],
+    "khutbas": [
+      {
+        "id": "2019-03-29",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Mar 29, 2019",
+        "year": 2019,
+        "url": "https://www.alislam.org/friday-sermon/2019-03-29.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) narrated the trade expedition to Syria with Maisarah, the Prophet's impeccable integrity as Al-Amin, and his meeting with Monk Nastura."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-maisarah-syria-caravan",
+        "source": "Review of Religions",
+        "title": "Al-Amin in the Marketplace: The Syrian Journey with Maisarah and the Witness of Nastura",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Maisarah+Syria+Nastura",
+        "summary": "An examination of the Holy Prophet's absolute commercial honesty, monk Nastura's testimony, and how character was the catalyst for his marriage to Khadijah.",
+        "dateOrIssue": "Pre-Prophethood Character"
+      }
+    ]
+  },
+  {
     "id": "marriage-khadijah",
     "vol": 1,
     "period": "Makkan Era",
@@ -589,6 +670,57 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "fatrat-ul-wahi",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "610–611 A.D.",
+    "date": "Circa 610–611 A.D. (1 Nabawi)",
+    "title": "Period of Fatrat-ul-Wahi & Revelation of Surah Al-Muddathir",
+    "category": "Revelation & Law",
+    "desc": "Following the monumental initial revelation in the Cave of Hira, revelation temporarily ceased for an agonizing interval known as Fatrat-ul-Wahi. The Holy Prophet (sa) experienced profound spiritual longing and sorrow, yearning for communion with his Lord. One day, while walking, he heard a voice from heaven and beheld Angel Gabriel seated upon a throne between heaven and earth. Overcome with celestial awe, the Prophet returned home to Hadrat Khadijah (ra) asking to be covered, whereupon God revealed the majestic mandate of public commission: 'O thou wrapped up in a mantle! Arise and warn, and thy Lord do thou magnify!' (Surah Al-Muddathir 74:2–4). Revelation then resumed in continuous divine abundance.",
+    "source": "Seal of the Prophets Vol. I, Ch. VI, pp. 195–201; Sahih Bukhari 4, 4922",
+    "tags": [
+      "Fatrat-ul-Wahi",
+      "Al-Muddathir",
+      "Gabriel",
+      "Divine Commission",
+      "Revelation"
+    ],
+    "khutbas": [
+      {
+        "id": "2019-04-12",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Apr 12, 2019",
+        "year": 2019,
+        "url": "https://www.alislam.org/friday-sermon/2019-04-12.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the period of Fatrat-ul-Wahi, the spiritual wisdom behind the temporary pause in revelation, and the descent of Surah Al-Muddathir."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-fatrat-ul-wahi",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 1, Hadith 4 (Hadith 4922)",
+        "narrator": "Jabir bin ‘Abdullah (ra)",
+        "textSnippet": "...The Prophet (sa) speaking about the pause in revelation said: 'While walking, I heard a voice from the sky. I looked up and saw the angel who visited me in Hira sitting on a chair between sky and earth... God then revealed: O thou wrapped up in a cloak! Arise and warn...'...",
+        "url": "https://sunnah.com/bukhari:4922"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-fatrat-ul-wahi",
+        "source": "Review of Religions",
+        "title": "The Interval of Longing: Spiritual Secrets of Fatrat-ul-Wahi",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Fatrat-ul-Wahi",
+        "summary": "Theological exposition on the cessation of revelation after Hira, the psychological purification of the soul, and the call to universal admonition in Surah Al-Muddathir.",
+        "dateOrIssue": "Quranic Exegesis"
+      }
+    ]
+  },
+  {
     "id": "first-believers",
     "vol": 1,
     "period": "Makkan Era",
@@ -656,6 +788,100 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.reviewofreligions.org/",
         "summary": "How the private home of a young believer beneath Mount Safa functioned as the world's most transformative secret academy of moral reformation.",
         "dateOrIssue": "Education & History"
+      }
+    ]
+  },
+  {
+    "id": "dawat-dhul-ashirah",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "613 A.D.",
+    "date": "Circa 613 A.D. (3 Nabawi)",
+    "title": "Da‘wat Dhul-‘Ashirah (The Banquet of the Kinsmen)",
+    "category": "Milestone",
+    "desc": "When God Almighty revealed the command: 'And warn thy nearest kinsfolk' (26:215), the Holy Prophet (sa) invited forty elders of Banu Hashim and Banu 'Abdul-Muttalib to a banquet. Through divine blessing, a single leg of mutton and a small bowl of milk miraculously satiated all forty guests. When the meal concluded, the Prophet addressed them with tender earnestness: 'O sons of 'Abdul-Muttalib! By Allah, I know of no man in Arabia who has brought his people a gift superior to what I bring you: the good of this world and the Hereafter. Who among you will assist me in this mission?' While the elder chieftains sat in embarrassed silence or mocked him, thirteen-year-old Hadrat 'Ali bin Abi Talib (ra) stood up boldly three times and proclaimed: 'O Prophet of Allah! Though I am the youngest of eyes and smallest of legs, I will be your helper!'",
+    "source": "Seal of the Prophets Vol. I, Ch. VI, pp. 210–215; Tarikh al-Tabari Vol. 2",
+    "tags": [
+      "Dhul-Ashirah",
+      "Banu Hashim",
+      "Ali",
+      "Miracle",
+      "Preaching",
+      "Family"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-11-27",
+        "title": "Men of Excellence: Hazrat Ali (ra)",
+        "date": "Nov 27, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-11-27.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) narrated the inspiring courage of Hadrat Ali (ra) during Da'wat Dhul-Ashirah when all the Banu Hashim chieftains held back."
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-dawat-dhul-ashirah",
+        "source": "Al Hakam",
+        "title": "Da'wat Dhul-Ashirah: The Banquet of Kinship and the Steadfastness of Young Ali (ra)",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Dawat+Dhul+Ashirah",
+        "summary": "The commencement of family warning under Surah Ash-Shu'ara and the enduring lesson of youth dedication in the face of tribal cynicism.",
+        "dateOrIssue": "Historical Analysis"
+      }
+    ]
+  },
+  {
+    "id": "proclamation-mount-safa",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "613 A.D.",
+    "date": "Circa 613 A.D. (3 Nabawi)",
+    "title": "The Public Proclamation from Mount Safa (Ya Sabahah!)",
+    "category": "Milestone",
+    "desc": "Acting upon the divine mandate: 'Expound openly what thou art commanded, and turn away from the idolaters' (15:95), the Holy Prophet (sa) climbed to the summit of Mount Safa and sounded the traditional warning cry: 'Ya Sabahah!' (Awake to danger!). The clans of Quraysh gathered in haste at the foot of the mount. The Prophet called out to them: 'Tell me, if I were to inform you that cavalry in the foot of this valley were about to attack you, would you believe me?' They unanimously replied: 'Yes, for we have experienced nothing from you except truth (Ma jarabna 'alaika illa sidqa)!' The Prophet declared: 'Then know that I am a warner sent to you before the onset of a grievous chastisement!' His uncle Abu Lahab shouted venomously: 'May ruin seize you this day! Is it for this that you gathered us?' In response, God revealed Surah Al-Lahab (Chapter 111), foretelling Abu Lahab's eternal ignominy.",
+    "source": "Seal of the Prophets Vol. I, Ch. VI, pp. 215–218; Sahih Bukhari 4770, Sahih Muslim 208",
+    "tags": [
+      "Mount Safa",
+      "Ya Sabahah",
+      "Public Warning",
+      "Abu Lahab",
+      "Surah Al-Lahab",
+      "Quraysh"
+    ],
+    "khutbas": [
+      {
+        "id": "2019-05-17",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "May 17, 2019",
+        "year": 2019,
+        "url": "https://www.alislam.org/friday-sermon/2019-05-17.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the historic gathering at Mount Safa, the testimony of the Quraysh to the Prophet's truthfulness, and the revelation of Surah Al-Lahab."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-mount-safa-warning",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 65, Hadith 4770",
+        "narrator": "Ibn ‘Abbas (ra)",
+        "textSnippet": "...When the verse 'And warn thy nearest kinsmen' was revealed, the Prophet climbed Safa and shouted: 'O Bani Fihr! O Bani 'Adi!' until they assembled. He said: 'If I told you that horses were in the valley about to raid you, would you believe me?' They said: 'Yes, we have known nothing from you except truth.'...",
+        "url": "https://sunnah.com/bukhari:4770"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-mount-safa-proclamation",
+        "source": "Review of Religions",
+        "title": "The Call from Mount Safa: Truth as the Foundation of Prophethood",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Mount+Safa+Proclamation",
+        "summary": "How the polytheists' own collective admission of the Prophet's lifelong veracity remains an irrefutable proof of his divine mission.",
+        "dateOrIssue": "Historical Studies"
       }
     ]
   },
@@ -751,6 +977,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "utbah-bribery-delegation",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "614–615 A.D.",
+    "date": "Circa 614–615 A.D. (4–5 Nabawi)",
+    "title": "‘Utbah bin Rabi‘ah’s Bribery Delegation & The Power of the Quran",
+    "category": "Treaty & Diplomatic",
+    "desc": "Alarmed by the steady spread of Islam despite cruel persecution, the Quraysh sent their foremost statesman and orator, 'Utbah bin Rabi'ah, to strike a worldly compromise with the Prophet (sa). Meeting him in the Ka'bah precinct, 'Utbah offered immense wealth to make him the richest man in Arabia, sovereign kingship over Makkah, or the most skilled physicians to cure him if he was possessed by spirits. The Holy Prophet listened with patient dignity without interrupting. When 'Utbah finished, the Prophet gently asked: 'Have you finished, O Abu al-Walid?' He then began reciting Surah Ha-Mim As-Sajdah (Fussilat 41:1–38). When the Prophet reached the verse warning of the thunderbolt that struck 'Ad and Thamud, 'Utbah was so terrified that he placed his hand over the Prophet's mouth, pleading: 'I entreat you by kinship, cease!' 'Utbah returned to the Meccan chieftains shaken and pale, counseling them: 'Leave this man alone, for by Allah, his words will achieve great destiny!'",
+    "source": "Seal of the Prophets Vol. I, Ch. VII, pp. 222–225; Sirat Ibn Hisham Vol. 1",
+    "tags": [
+      "Utbah bin Rabiah",
+      "Bribery",
+      "Surah Fussilat",
+      "Quranic Eloquence",
+      "Diplomacy",
+      "Quraysh"
+    ],
+    "khutbas": [
+      {
+        "id": "2019-06-28",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 28, 2019",
+        "year": 2019,
+        "url": "https://www.alislam.org/friday-sermon/2019-06-28.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on 'Utbah bin Rabi'ah's dialogue with the Holy Prophet (sa), the Prophet's polite forbearance, and the irresistible spiritual majesty of the Quran."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-utbah-rabiah-dialogue",
+        "source": "Review of Religions",
+        "title": "Worldly Enticements vs. Divine Truth: The Confrontation Between 'Utbah bin Rabi'ah and Prophet Muhammad (sa)",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Utbah+bin+Rabiah",
+        "summary": "A profound look at the psychological rejection of wealth, power, and prestige by the Holy Prophet in exchange for uncompromised divine truth.",
+        "dateOrIssue": "Moral Character"
+      }
+    ]
+  },
+  {
     "id": "migration-abyssinia-1",
     "vol": 1,
     "period": "Makkan Era",
@@ -799,6 +1067,58 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.alhakam.org/",
         "summary": "The journey of the initial 15 Muslim refugees led by Hazrat Uthman and Ruqayyah (ra) and the righteous protection offered by the Negus.",
         "dateOrIssue": "Historical Chronicles"
+      }
+    ]
+  },
+  {
+    "id": "conversion-abu-dharr",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "615 A.D.",
+    "date": "Circa 615 A.D. (5 Nabawi)",
+    "title": "Acceptance of Islam by Hadrat Abu Dharr al-Ghifari (ra)",
+    "category": "Milestone",
+    "desc": "Hearing reports of a prophet teaching monotheism in Makkah, Jundub bin Junadah (Hadrat Abu Dharr) of the desert bedouin tribe of Banu Ghifar—a tribe notorious for highway robbery—traveled incognito to Makkah. Searching for the Prophet without betraying his intent, he slept at the Ka'bah for three nights, where Hadrat 'Ali (ra) hosted him each evening with customary hospitality without asking inquisitive questions. On the third day, 'Ali brought him into the presence of the Holy Prophet (sa). Upon hearing the Prophet's message, Abu Dharr accepted Islam instantly. Despite the Prophet advising him to conceal his faith until returning to his tribe, Abu Dharr's fearless zeal compelled him to march into the Ka'bah courtyard and boldly shout the Shahadah. The Quraysh pounced upon him and beat him severely until Hadrat Al-'Abbas rescued him, reminding the Quraysh that their trade caravans to Syria passed through the territory of Banu Ghifar.",
+    "source": "Seal of the Prophets Vol. I, Ch. VII, pp. 245–248; Sahih Bukhari 3522, Sahih Muslim 2474",
+    "tags": [
+      "Abu Dharr al-Ghifari",
+      "Conversion",
+      "Courage",
+      "Banu Ghifar",
+      "Ka'bah",
+      "Monotheism"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-10-30",
+        "title": "Men of Excellence: Hazrat Abu Dharr al-Ghifari (ra)",
+        "date": "Oct 30, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-10-30.html",
+        "youtubeId": "WsWQfzvoA7g",
+        "thumbnailUrl": "https://img.youtube.com/vi/WsWQfzvoA7g/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) recounted the thrilling journey of Hadrat Abu Dharr al-Ghifari to Makkah, his fearless public proclamation at the Ka'bah, and his exemplary piety."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-abu-dharr-conversion",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 63, Hadith 129 (Hadith 3861)",
+        "narrator": "Ibn ‘Abbas (ra)",
+        "textSnippet": "...Abu Dharr said: 'I went to Makkah and asked about the Prophet... 'Ali took me to him and I embraced Islam. The Prophet said: O Abu Dharr, keep this secret and return to your people. Abu Dharr replied: By Him in Whose Hand my life is, I will proclaim it loudly among them! He went to the Mosque and called out: I testify that there is no god but Allah and Muhammad is His Messenger! The people beat him nearly to death until Al-'Abbas shielded him...'...",
+        "url": "https://sunnah.com/bukhari:3861"
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-abu-dharr-ghifari",
+        "source": "Al Hakam",
+        "title": "Hazrat Abu Dharr al-Ghifari: The Lone Seeker of Truth and Uncompromising Believer",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Abu+Dharr+al-Ghifari",
+        "summary": "The remarkable story of Abu Dharr's intrinsic monotheism before Islam, his intrepid acceptance in hostile Makkah, and his subsequent transformation of the entire Ghifar tribe.",
+        "dateOrIssue": "Companions of the Prophet"
       }
     ]
   },
@@ -1098,6 +1418,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "url": "https://www.reviewofreligions.org/",
         "summary": "How the dual departures of Abu Talib and Hazrat Khadijah (ra) left the Prophet (sa) completely defenseless humanly, paving the way for divine celestial elevation.",
         "dateOrIssue": "Spiritual Resilience"
+      }
+    ]
+  },
+  {
+    "id": "marriage-saudah-aishah",
+    "vol": 1,
+    "period": "Makkan Era",
+    "year": "620 A.D.",
+    "date": "Shawwal 10 Nabawi / April–May 620 A.D.",
+    "title": "Marriage to Hadrat Saudah (ra) & Nikah of Hadrat ‘A’ishah (ra)",
+    "category": "Personal & Family",
+    "desc": "Following the agonizing Year of Grief in which Hadrat Khadijah (ra) and Abu Talib passed away, the Holy Prophet's home was left desolate with young daughters to care for. Khaulah bint Hakim (ra) approached the Prophet proposing two marriages. The Prophet first married Hadrat Saudah bint Zam'ah (ra), a mature, devoted early convert whose husband had passed away following their return from exile in Abyssinia, providing her shelter and honor while caring for his household. Simultaneously, the Prophet contracted the Nikah (matrimonial bond) with Hadrat 'A'ishah bint Abi Bakr (ra), the brilliant daughter of his dearest companion and lieutenant Abu Bakr (ra), formalizing a divine vision and cementing their spiritual brotherhood. The actual consummation (Rukhsati) took place years later in Medina when Hadrat 'A'ishah reached maturity.",
+    "source": "Seal of the Prophets Vol. I, Ch. VIII, pp. 277–280; Sahih Bukhari 3894, 5158",
+    "tags": [
+      "Saudah bint Zamah",
+      "Aishah",
+      "Abu Bakr",
+      "Nikah",
+      "Mothers of the Believers",
+      "Year of Grief"
+    ],
+    "khutbas": [
+      {
+        "id": "2020-01-17",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jan 17, 2020",
+        "year": 2020,
+        "url": "https://www.alislam.org/friday-sermon/2020-01-17.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on the compassionate circumstances surrounding the marriage to Hadrat Saudah (ra) and the divinely inspired Nikah of Hadrat 'A'ishah (ra)."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-marriages-prophet-wisdom",
+        "source": "Review of Religions",
+        "title": "The Wives of the Prophet Muhammad (sa): Compassion, Brotherhood, and Legislative Purpose",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Wives+of+the+Prophet+Saudah+Aishah",
+        "summary": "An analytical study refuting historical misconceptions regarding the Holy Prophet's marriages, highlighting the social protection offered to Saudah and the intellectual legacy of Aishah.",
+        "dateOrIssue": "Prophetic Household"
       }
     ]
   },
@@ -1951,6 +2313,48 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     "khutbas": []
   },
   {
+    "id": "marriage-hafsah-zainab",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "3 A.H.",
+    "date": "Sha‘ban–Ramadan 3 A.H. / January–March 625 A.D.",
+    "title": "Marriages to Hadrat Hafsah bint ‘Umar & Hadrat Zainab bint Khuzaimah (ra)",
+    "category": "Personal & Family",
+    "desc": "When Khunais bin Hudhaifah (ra) was martyred from wounds sustained at Badr, Hadrat 'Umar bin al-Khattab was heartbroken seeing his young daughter Hafsah widowed. When neither 'Uthman nor Abu Bakr were in a position to marry her, the Holy Prophet (sa) honored Hadrat 'Umar by marrying Hafsah himself, declaring to 'Umar: 'Allah will marry Hafsah to one better than 'Uthman, and marry 'Uthman to one better than Hafsah.' Hafsah (ra) was highly literate and later became the trusted custodian of the original standardized manuscript of the Holy Quran. Soon after, the Prophet married Hadrat Zainab bint Khuzaimah (ra), who was renowned across Medina as Ummul-Masakin (The Mother of the Poor) for her passionate devotion to feeding the hungry and caring for widows of Badr. Sadly, Hadrat Zainab passed away just a few months into the marriage, with the Prophet leading her funeral prayer.",
+    "source": "Seal of the Prophets Vol. II, Ch. VII, pp. 331–335; Sahih Bukhari 4005, 5122",
+    "tags": [
+      "Hafsah",
+      "Umar bin al-Khattab",
+      "Zainab bint Khuzaimah",
+      "Ummul-Masakin",
+      "Mothers of the Believers",
+      "Widows of Badr"
+    ],
+    "khutbas": [
+      {
+        "id": "2021-06-11",
+        "title": "Men of Excellence: Hazrat Umar ibn al-Khaṭṭāb (ra)",
+        "date": "Jun 11, 2021",
+        "year": 2021,
+        "url": "https://www.alislam.org/friday-sermon/2021-06-11.html",
+        "youtubeId": "v1rWtw867W0",
+        "thumbnailUrl": "https://img.youtube.com/vi/v1rWtw867W0/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) recounted Hadrat Umar's tender concern for his daughter Hafsah, and the Holy Prophet's noble proposal that brought tears of joy to Umar."
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-hazrat-hafsah-custodian",
+        "source": "Al Hakam",
+        "title": "Hazrat Hafsah bint Umar: Scholar, Devout Worshipper, and Custodian of the Quranic Codex",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Hazrat+Hafsah+bint+Umar",
+        "summary": "The intellectual and spiritual station of Mother of the Believers Hadrat Hafsah (ra), and her pivotal historical role in preserving the written text of the Holy Quran.",
+        "dateOrIssue": "Mothers of the Believers"
+      }
+    ]
+  },
+  {
     "id": "battle-of-uhud",
     "vol": 2,
     "period": "Early Medina",
@@ -2283,6 +2687,99 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "marriage-umm-salamah",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "4 A.H.",
+    "date": "Shawwal 4 A.H. / March–April 626 A.D.",
+    "title": "Marriage to Hadrat Umm Salamah (ra) & Care of Orphans",
+    "category": "Personal & Family",
+    "desc": "When the heroic companion Abu Salamah (ra) passed away from battle wounds sustained at Uhud, his widow Hind bint Abi Umayyah (Hadrat Umm Salamah) was left with four young orphaned children in Medina. In deep grief, she remembered Abu Salamah reciting the Prophet's instruction: 'Whosoever suffers an affliction and prays: O Allah, reward me in my affliction and grant me what is better in exchange, Allah will surely answer.' When the Prophet (sa) sent a marriage proposal to provide for her and her orphaned children, she humbly hesitated, citing her age, her children, and her protective jealousy. The Prophet tenderly reassured her: 'As for your children, they are my children; as for your jealousy, I pray that Allah removes it.' The marriage set the ultimate Islamic standard of adopting and raising the orphaned children of fallen heroes, and Umm Salamah became one of the greatest female jurists in Islam, narrating 378 Hadiths.",
+    "source": "Seal of the Prophets Vol. II, Ch. IX, pp. 418–420; Sahih Muslim 918",
+    "tags": [
+      "Umm Salamah",
+      "Abu Salamah",
+      "Orphans",
+      "Uhud",
+      "Mothers of the Believers",
+      "Hadith Jurist"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-05-31",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "May 31, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-05-31.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the marriage of the Holy Prophet (sa) to Hadrat Umm Salamah, highlighting his immense tenderness and fatherly care for her orphans."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "muslim-umm-salamah-prayer",
+        "collection": "Sahih Muslim",
+        "reference": "Book 11, Hadith 4 (Hadith 918)",
+        "narrator": "Umm Salamah (ra)",
+        "textSnippet": "...I heard the Messenger of Allah (sa) say: 'Whenever a calamity befalls a Muslim and he says: Inna lillahi wa inna ilaihi raji'un; Allahumma ajirni fi musibati wa akhlif li khairan minha, Allah will grant him better in return.' When Abu Salamah died, I wondered: Who could be better than Abu Salamah? Then Allah replaced him with the Messenger of Allah...",
+        "url": "https://sunnah.com/muslim:918"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-umm-salamah-wisdom",
+        "source": "Review of Religions",
+        "title": "Hadrat Umm Salamah: Wisdom, Statesmanship, and Jurisprudence",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Hazrat+Umm+Salamah",
+        "summary": "An exploration of Hadrat Umm Salamah's decisive counsel at Hudaibiyyah, her juristic acumen, and her position as Mother of the Believers.",
+        "dateOrIssue": "Female Scholarship"
+      }
+    ]
+  },
+  {
+    "id": "ghazwah-daumatul-jandal",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "5 A.H.",
+    "date": "Rabi‘ul-Awwal 5 A.H. / August–September 626 A.D.",
+    "title": "Ghazwah of Daumatul-Jandal (Securing the Northern Frontier)",
+    "category": "Battle / Expedition",
+    "desc": "Daumatul-Jandal was a strategic desert stronghold and trading crossroad situated on the northern frontiers towards Syria, approximately fifteen days' march from Medina. Intelligence reached Medina that local marauding Christian and Bedouin tribes under Ukaidir were assembling arms, plundering trade caravans, and actively plotting to march upon Medina. The Holy Prophet (sa) led a swift preemptive expedition of 1,000 companions, marching by night and concealing movement by day with the guidance of a skilled scout named Madhkur. When the Muslim army arrived, the enemy forces dispersed in terror into the surrounding deserts. The expedition decisively secured the northern trade routes, established the expanding sphere of security of the Islamic state, and signaled Muslim deterrence towards the Byzantine frontier.",
+    "source": "Seal of the Prophets Vol. II, Ch. IX, pp. 420–422; Sirat Ibn Hisham Vol. 2",
+    "tags": [
+      "Daumatul-Jandal",
+      "Northern Frontier",
+      "Trade Routes",
+      "Preemptive Deterrence",
+      "Expedition"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-06-07",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Jun 7, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-06-07.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on the expedition of Daumatul-Jandal, its tactical brilliance, and its role in pacifying the northern highway robbers."
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-daumatul-jandal-expedition",
+        "source": "Review of Religions",
+        "title": "Ghazwah Daumatul-Jandal: The Defense of Northern Trade Lines",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Daumatul-Jandal",
+        "summary": "Strategic appraisal of the northern expedition, international trade security in ancient Arabia, and defensive deterrence in early Islamic diplomacy.",
+        "dateOrIssue": "Military Strategy"
+      }
+    ]
+  },
+  {
     "id": "ghazwah-banu-mustaliq",
     "vol": 2,
     "period": "Early Medina",
@@ -2509,6 +3006,59 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
         "youtubeId": "vN6XktJgc60",
         "thumbnailUrl": "https://img.youtube.com/vi/vN6XktJgc60/hqdefault.jpg",
         "summary": "In today’s Friday Sermon, His Holiness(aba) continued to narrate accounts from the life of Hazrat Sa`d bin Mu’adh. His Holiness(aba) stated that as mentioned in the previous Sermon, after the Battle of Ahzab, the Holy Prophet(sa) was given the Divine command to head towards the Banu Quraizah and deal with their treachery."
+      }
+    ]
+  },
+  {
+    "id": "marriage-zainab-jahsh",
+    "vol": 2,
+    "period": "Early Medina",
+    "year": "5 A.H.",
+    "date": "Dhu’l-Qa‘dah 5 A.H. / March–April 627 A.D.",
+    "title": "Marriage to Hadrat Zainab bint Jahsh & Revelation of Ayat-ul-Hijab",
+    "category": "Revelation & Law",
+    "desc": "In pre-Islamic Arabia, an adopted son was legally treated as a biological son, rendering marriage to the ex-wife of an adopted son an inviolable taboo. When Hadrat Zaid bin Harithah (ra)—whom the Prophet had adopted prior to Islam—divorced his aristocratic cousin Hadrat Zainab bint Jahsh (ra) despite the Prophet's repeated pleas to save the marriage, God divinely ordained the Holy Prophet (sa) to marry Zainab, declaring: 'So that there may be no hindrance for the believers in respect of the wives of their adopted sons' (Surah Al-Ahzab 33:38). This marriage demolished social caste distinctions and eliminated the pagan equating of adoption with blood lineage. On the night of the wedding feast (Walimah), while some guests lingered in conversation, God revealed the famous Ayat-ul-Hijab (The Verse of the Veil, Surah Al-Ahzab 33:54), establishing refined social etiquette, family sanctuary, and physical modesty for Muslim society.",
+    "source": "Seal of the Prophets Vol. II, Ch. XI, pp. 535–548; Sahih Bukhari 4787, Sahih Muslim 1428",
+    "tags": [
+      "Zainab bint Jahsh",
+      "Zaid bin Harithah",
+      "Surah Al-Ahzab",
+      "Ayat-ul-Hijab",
+      "Adoption Law",
+      "Modesty",
+      "Mothers of the Believers"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-09-13",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Sep 13, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-09-13.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) expounded on the profound divine wisdom behind the marriage to Hadrat Zainab bint Jahsh and refuted Western orientalist allegations."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-hijab-walimah",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 65, Hadith 4787",
+        "narrator": "Anas bin Malik (ra)",
+        "textSnippet": "...Anas said: When the Prophet married Zainab bint Jahsh, he held a wedding feast with bread and meat... Three men remained talking in the house. The Prophet went out and walked around, returning when they finally departed. Then Allah revealed: 'O ye who believe, enter not the houses of the Prophet without permission...' and the veil (hijab) was decreed...",
+        "url": "https://sunnah.com/bukhari:4787"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-zainab-jahsh-allegations",
+        "source": "Review of Religions",
+        "title": "The Marriage of Prophet Muhammad (sa) and Zainab bint Jahsh: Dismantling an Ancient Fabrication",
+        "author": "Hazrat Mirza Bashir Ahmad (ra)",
+        "url": "https://www.reviewofreligions.org/?s=Zainab+bint+Jahsh",
+        "summary": "Masterful scholarly refutation by Hazrat Mirza Bashir Ahmad (ra) destroying fabricated tales regarding the marriage, elucidating the noble spiritual and legal reformation it achieved.",
+        "dateOrIssue": "Defense of the Prophet"
       }
     ]
   },
@@ -3294,6 +3844,58 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     ]
   },
   {
+    "id": "marriage-safiyyah",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "7 A.H. / 628 A.D.",
+    "date": "Safar 7 A.H. / June 628 A.D.",
+    "title": "Marriage to Hadrat Safiyyah bint Huyayy (ra)",
+    "category": "Personal & Family",
+    "desc": "Following the fall of the Jewish citadel of Khaibar, Hadrat Safiyyah (ra), daughter of the paramount chief of Banu Nadir, Huyayy bin Akhtab, was brought among the captives. Recognizing her royal lineage and status, the companions noted that none was worthy of her except the Holy Prophet (sa). The Prophet magnanimously gave her complete freedom to choose: either be granted safe passage to her surviving relatives in Syria, or accept Islam and become his honored wife. Hadrat Safiyyah responded with ardent devotion: 'O Messenger of Allah! I had longed for Islam and believed in you before you even arrived at Khaibar! What need have I of Judaism when I have Allah and His Messenger?' The Prophet granted her freedom as her bridal dowry (Mahr) and married her at a halt between Khaibar and Medina, cementing lasting peace and reconciliation between Jewish clans and the Islamic state.",
+    "source": "Seal of the Prophets Vol. III, Ch. VII, pp. 312–318; Sahih Bukhari 371, Sahih Muslim 1365",
+    "tags": [
+      "Safiyyah bint Huyayy",
+      "Khaibar",
+      "Banu Nadir",
+      "Reconciliation",
+      "Mothers of the Believers",
+      "Emancipation"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-08-30",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Aug 30, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-08-30.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) detailed the noble treatment and marriage of Hadrat Safiyyah (ra), illustrating the Prophet's supreme chivalry and chivalrous grace towards former adversaries."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-safiyyah-mahr",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 8, Hadith 23 (Hadith 371)",
+        "narrator": "Anas bin Malik (ra)",
+        "textSnippet": "...The Prophet (sa) freed Safiyyah and married her, and made her freedom her dowry (Mahr)...",
+        "url": "https://sunnah.com/bukhari:371"
+      }
+    ],
+    "articles": [
+      {
+        "id": "alhakam-hazrat-safiyyah-khaibar",
+        "source": "Al Hakam",
+        "title": "Hazrat Safiyyah bint Huyayy: From Captive of War to Mother of the Believers",
+        "author": "Al Hakam Editorial",
+        "url": "https://www.alhakam.org/?s=Hazrat+Safiyyah+bint+Huyayy",
+        "summary": "The remarkable story of Hadrat Safiyyah's visionary dream before Khaibar, her conversion to Islam, and the Holy Prophet's tender defense of her Jewish heritage.",
+        "dateOrIssue": "Mothers of the Believers"
+      }
+    ]
+  },
+  {
     "id": "return-jafar-abyssinia",
     "vol": 3,
     "period": "Late Medina / Treaties",
@@ -3634,6 +4236,67 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "Peace"
     ],
     "khutbas": []
+  },
+  {
+    "id": "demise-ibrahim-eclipse",
+    "vol": 3,
+    "period": "Late Medina / Treaties",
+    "year": "10 A.H. / 632 A.D.",
+    "date": "28–29 Shawwal 10 A.H. (27 January 632 A.D.)",
+    "title": "Demise of Hadrat Ibrahim & The Solar Eclipse (Dispelling Superstition)",
+    "category": "Milestone",
+    "desc": "Hadrat Ibrahim, the beloved infant son born to the Holy Prophet (sa) and Hadrat Mariyah al-Qibtiyyah (ra), fell grievously ill and passed away at approximately sixteen to eighteen months of age. Holding the dying child in his arms, tears streamed down the Prophet's cheeks. When 'Abdur-Rahman bin 'Auf asked in wonder about his weeping, the Prophet replied: 'This is mercy that God places in the hearts of His servants... The eyes weep and the heart grieves, but we say nothing except that which pleases our Lord; and verily, O Ibrahim, we are grieved by your parting!' By extraordinary coincidence, a total solar eclipse occurred across Arabia on that very afternoon. The people of Medina began saying: 'The sun has eclipsed out of grief for the death of Ibrahim!' The Holy Prophet immediately led the believers in Salat-ul-Kusuf (the Eclipse Prayer), mounted the pulpit, and permanently eradicated superstition: 'Verily, the sun and the moon are two signs among the signs of Allah. They do not eclipse on account of the death or birth of any mortal! When you see them, glorify Allah, supplicate, and offer prayer until it passes.'",
+    "source": "Seal of the Prophets Vol. III, Ch. IX; Sahih Bukhari 1043, 1303; Sahih Muslim 915",
+    "tags": [
+      "Ibrahim",
+      "Mariyah al-Qibtiyyah",
+      "Solar Eclipse",
+      "Salat-ul-Kusuf",
+      "Superstition",
+      "Grief",
+      "Rationalism"
+    ],
+    "khutbas": [
+      {
+        "id": "2024-03-01",
+        "title": "Muhammad (sa): The Great Exemplar",
+        "date": "Mar 1, 2024",
+        "year": 2024,
+        "url": "https://www.alislam.org/friday-sermon/2024-03-01.html",
+        "youtubeId": "c2Z4pL_88U8",
+        "thumbnailUrl": "https://img.youtube.com/vi/c2Z4pL_88U8/hqdefault.jpg",
+        "summary": "Hazrat Khalifatul-Masih V (aba) narrated the tender demise of Hadrat Ibrahim, the Holy Prophet's paternal tears, and his uncompromising stand against superstition during the solar eclipse."
+      }
+    ],
+    "hadiths": [
+      {
+        "id": "bukhari-solar-eclipse-ibrahim",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 16, Hadith 4 (Hadith 1043)",
+        "narrator": "Al-Mughirah bin Shu‘bah (ra)",
+        "textSnippet": "...The sun eclipsed on the day Ibrahim died, and the people said: 'The sun has eclipsed because of the death of Ibrahim.' The Messenger of Allah (sa) said: 'The sun and the moon are two signs among the signs of Allah. They do not eclipse because of the death of anyone or his birth. So when you see them, call upon Allah and pray until it clears.'...",
+        "url": "https://sunnah.com/bukhari:1043"
+      },
+      {
+        "id": "bukhari-prophet-tears-ibrahim",
+        "collection": "Sahih al-Bukhari",
+        "reference": "Book 23, Hadith 62 (Hadith 1303)",
+        "narrator": "Anas bin Malik (ra)",
+        "textSnippet": "...The Prophet (sa) picked up Ibrahim, kissed him, and smelled him. Later, Ibrahim was breathing his last and tears flowed from the eyes of the Prophet. 'Abdur-Rahman bin 'Auf said: 'Even you, O Messenger of Allah?' He said: 'O Ibn 'Auf, this is mercy.' Then he said: 'The eyes weep and the heart grieves, but we say nothing except that which pleases our Lord, and we are sorrowful for your departure, O Ibrahim.'...",
+        "url": "https://sunnah.com/bukhari:1303"
+      }
+    ],
+    "articles": [
+      {
+        "id": "ror-demise-ibrahim-solar-eclipse",
+        "source": "Review of Religions",
+        "title": "The Solar Eclipse and the Death of Ibrahim: How Prophet Muhammad (sa) Dismantled Superstition",
+        "author": "Research Cell Review of Religions",
+        "url": "https://www.reviewofreligions.org/?s=Solar+Eclipse+Ibrahim",
+        "summary": "Astronomical calculation of the 27 January 632 A.D. solar eclipse in Medina and the profound moral greatness of the Prophet refusing to exploit cosmic phenomena for personal veneration.",
+        "dateOrIssue": "Scientific & Historical Studies"
+      }
+    ]
   },
   {
     "id": "farewell-pilgrimage",
