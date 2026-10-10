@@ -35,6 +35,7 @@ export interface MurabbiProject {
   occasion?: string; // e.g. 'Friday Gathering', 'Monthly Ijlas'
   callToAction?: string; // Desired outcome / next step
   generatedPrompt?: string; // Form-generated prompt brief
+  customPrompt?: string; // Optional user customized prompt override
   bookmarks: ResearchBookmarkItem[];
   aiPlan?: ProjectAIPlan | null;
   aiDraft?: string | null;

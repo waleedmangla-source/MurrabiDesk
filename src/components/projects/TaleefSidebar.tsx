@@ -18,13 +18,15 @@ import {
   Check,
   ChevronRight,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Users,
+  Megaphone
 } from 'lucide-react';
 import clsx from 'clsx';
 import { MurabbiProject, ProjectType } from '@/lib/projects-storage';
 import { ResearchBookmarkItem, BookmarkCategory } from '@/lib/research-storage';
 
-export type TaleefFilter = 'all' | 'speech' | 'dars' | 'article' | 'drafted' | 'completed';
+export type TaleefFilter = 'all' | 'speech' | 'dars' | 'ijlas' | 'announcement' | 'article' | 'drafted' | 'completed';
 
 interface TaleefSidebarProps {
   isOpen: boolean;
@@ -68,20 +70,24 @@ export default function TaleefSidebar({
     const total = projects.length;
     const speech = projects.filter(p => p.type === 'speech').length;
     const dars = projects.filter(p => p.type === 'dars').length;
+    const ijlas = projects.filter(p => p.type === 'ijlas').length;
+    const announcement = projects.filter(p => p.type === 'announcement').length;
     const article = projects.filter(p => p.type === 'article').length;
     const drafted = projects.filter(p => p.status === 'drafted' || !!p.aiDraft).length;
     const completed = projects.filter(p => p.status === 'completed').length;
-    return { total, speech, dars, article, drafted, completed };
+    return { total, speech, dars, ijlas, announcement, article, drafted, completed };
   }, [projects]);
 
   // Folder categories matching the Mail tab FOLDERS layout
   const WORK_FOLDERS: { id: TaleefFilter; label: string; icon: React.ElementType; count: number }[] = [
-    { id: 'all',       label: 'All Works',    icon: Feather,        count: counts.total },
-    { id: 'speech',    label: 'Speeches',     icon: Mic,            count: counts.speech },
-    { id: 'dars',      label: 'Dars Classes', icon: GraduationCap,  count: counts.dars },
-    { id: 'article',   label: 'Articles',     icon: FileText,       count: counts.article },
-    { id: 'drafted',   label: 'Manuscripts',  icon: Sparkles,       count: counts.drafted },
-    { id: 'completed', label: 'Completed',    icon: CheckCircle,    count: counts.completed },
+    { id: 'all',          label: 'All Works',        icon: Feather,        count: counts.total },
+    { id: 'speech',       label: 'Speeches',         icon: Mic,            count: counts.speech },
+    { id: 'dars',         label: 'Dars Classes',     icon: GraduationCap,  count: counts.dars },
+    { id: 'ijlas',        label: 'Ijlas / Meetings', icon: Users,          count: counts.ijlas },
+    { id: 'announcement', label: 'Announcements',    icon: Megaphone,      count: counts.announcement },
+    { id: 'article',      label: 'Articles',         icon: FileText,       count: counts.article },
+    { id: 'drafted',      label: 'Manuscripts',      icon: Sparkles,       count: counts.drafted },
+    { id: 'completed',    label: 'Completed',        icon: CheckCircle,    count: counts.completed },
   ];
 
   // Filtered bookmarks

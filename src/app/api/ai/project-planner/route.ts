@@ -30,18 +30,23 @@ Your mission is to take a proposed project title, its specific delivery format (
 1. STRATEGIC APPROACH & ACTION PLAN:
    - Clear objective and audience alignment.
    - Delivery strategy tailored specifically to the format:
-     * For SPEECH: Oratorical rhetoric, vocal cadence, emotional arcs, audience engagement, Hamd-o-Sana delivery, and time pacing.
+     * For SPEECH: Oratorical rhetoric, vocal cadence, emotional arcs, audience engagement, Hamd-o-Sana delivery, and time pacing matching target duration.
      * For DARS: Pedagogical instruction, recitation breakdown, spiritual tafseer, interactive reflection questions, and classroom management.
+     * For IJLAS (Meeting / Session): Presidential remarks, agenda handling, tarbiyati guidance, constructive deliberation, and solemn concluding prayer.
+     * For ANNOUNCEMENT (I'laan / Appeal): Concise, high-energy delivery, clear dates/targets/deadlines, theological motivator, and immediate actionable directives.
      * For ARTICLE: Scholarly rigor, thesis argumentation arc, textual synthesis, counter-allegation refutation, and academic citation structure.
    - Phased Outline breakdown with time/word allocations, key talking points, and explicit mapping to referenced bookmarks.
    - Practical pedagogical/oratorical tips and critical pitfalls to avoid.
 
 2. COMPREHENSIVE MOCK DRAFT MANUSCRIPT:
    - A fully fleshed-out, comprehensive manuscript formatted in clean Markdown.
+   - Paced accurately for the requested time length (~130 words per minute of speaking time).
    - Seamlessly weave every selected bookmark into the flow of the text. Quote relevant Arabic phrases where applicable with translation and precise theological citations (e.g., Surah:Ayat, Hadith collection, Ruhani Khazain Vol & Page, Malfuzat).
    - Format specific requirements:
      * SPEECH: Include Arabic Hamd and Tashahhud at the beginning, smooth oratorical transitions, relatable metaphors, inspirational crescendo, and closing du'a.
      * DARS: Include Arabic recitation, word breakdown, contextual revelation background (Asbab al-Nuzul), Promised Messiah (as) spiritual insight, practical contemporary life lessons, and class discussion prompts.
+     * IJLAS: Include opening protocol (Tilawat/Nazm cues), presidential opening remarks, key agenda points, Tarbiyati moral exhortation, and concluding Dua.
+     * ANNOUNCEMENT: Clear opening greeting, high-impact announcement statement, scriptural foundation, logistical specifics (dates, venues, amounts, deadlines), and motivating call to action.
      * ARTICLE: Include academic abstract, thesis statement, primary textual exposition, analytical commentary, addressing counter-arguments, and concluding synthesis.
 
 OUTPUT FORMAT:
@@ -91,14 +96,26 @@ export async function POST(req: NextRequest) {
       type,
       description,
       targetAudience,
+      audiences,
       language,
+      speechTone,
+      durationMinutes,
+      occasion,
+      callToAction,
+      customPrompt,
       bookmarks,
     }: {
       title: string;
       type: ProjectType;
       description?: string;
       targetAudience?: string;
+      audiences?: string[];
       language?: string;
+      speechTone?: string;
+      durationMinutes?: number;
+      occasion?: string;
+      callToAction?: string;
+      customPrompt?: string;
       bookmarks: ResearchBookmarkItem[];
     } = await req.json();
 
@@ -138,12 +155,38 @@ export async function POST(req: NextRequest) {
           .join('\n\n---\n\n')
       : 'No specific bookmarks attached. Build comprehensive scholarly content using primary Quranic verses, Hadith, and Ruhani Khazain foundations relevant to the topic.';
 
-    const userPrompt = `PROJECT SPECIFICATIONS:
-- Project Title: "${title}"
+    const audienceString = Array.isArray(audiences) && audiences.length > 0
+      ? audiences.join(', ')
+      : (targetAudience || 'General Audience / Community');
+
+    const durationNotice = durationMinutes
+      ? `TARGET DURATION: Exactly ${durationMinutes} minute(s) (approx. ${durationMinutes * 130} words). Structure timing marks and speech pacing strictly for ${durationMinutes} minutes.`
+      : 'TARGET DURATION: Standard comprehensive delivery (~5-10 minutes).';
+
+    const userPrompt = customPrompt ? `EXECUTIVE SPECIFICATIONS & PROMPT DIRECTIVE:
+${customPrompt}
+
+TARGET FORMAT: ${type.toUpperCase()}
+TARGET AUDIENCE: ${audienceString}
+LANGUAGE: ${language || 'English'}
+TONE / FEEL: ${speechTone || 'Inspirational'}
+${durationNotice}
+
+CURATED RESEARCH DOSSIER (${Array.isArray(bookmarks) ? bookmarks.length : 0} items):
+${bookmarksContext}
+
+INSTRUCTIONS:
+Generate the JSON output containing both the "plan" (strategic approach & breakdown) and "mockDraft" (full Markdown text) meticulously incorporating these research materials. Output raw JSON only.`
+    : `PROJECT SPECIFICATIONS:
+- Project Topic/Title: "${title}"
 - Format Type: ${type.toUpperCase()}
-- Target Audience: ${targetAudience || 'General Audience / Community'}
-- Language Preference: ${language || 'English (with standard Arabic transliteration and citations)'}
-- Creator Notes & Focus Angle: ${description || 'Comprehensive and inspiring treatment of the subject.'}
+- Target Audience(s): ${audienceString}
+- Delivery Tone / Feel: ${speechTone || 'Inspirational'}
+- Language Preference: ${language || 'English'}
+- ${durationNotice}
+${occasion ? `- Occasion / Setting: ${occasion}` : ''}
+${callToAction ? `- Core Call to Action / Desired Outcome: ${callToAction}` : ''}
+${description ? `- Creator Notes & Focus Angle: ${description}` : ''}
 
 CURATED RESEARCH DOSSIER (${Array.isArray(bookmarks) ? bookmarks.length : 0} items):
 ${bookmarksContext}

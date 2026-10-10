@@ -26,7 +26,9 @@ import {
   ChevronRight,
   Maximize2,
   Minimize2,
-  Loader2
+  Loader2,
+  Users,
+  Megaphone
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -134,7 +136,13 @@ export default function ProjectWorkspaceModal({
           type: project.type,
           description: project.description,
           targetAudience: project.targetAudience,
+          audiences: project.audiences,
           language: project.language,
+          speechTone: project.speechTone,
+          durationMinutes: project.durationMinutes,
+          occasion: project.occasion,
+          callToAction: project.callToAction,
+          customPrompt: project.customPrompt || project.generatedPrompt,
           bookmarks: project.bookmarks,
         }),
       });
@@ -243,7 +251,7 @@ export default function ProjectWorkspaceModal({
         id: `note_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         title: `[${project.type.toUpperCase()}] ${project.title}`,
         content: draftContent || project.description || '',
-        color: project.type === 'speech' ? 'red' : project.type === 'dars' ? 'green' : 'blue',
+        color: project.type === 'speech' ? 'red' : project.type === 'dars' ? 'green' : project.type === 'ijlas' ? 'purple' : project.type === 'announcement' ? 'yellow' : 'blue',
         pinned: false,
         labels: ['Project', project.type],
         createdAt: new Date().toISOString(),
@@ -303,10 +311,14 @@ export default function ProjectWorkspaceModal({
               "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border shadow-lg",
               project.type === 'speech' && "bg-red-500/10 text-red-400 border-red-500/30 shadow-red-500/10",
               project.type === 'dars' && "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10",
+              project.type === 'ijlas' && "bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-purple-500/10",
+              project.type === 'announcement' && "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-amber-500/10",
               project.type === 'article' && "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/10"
             )}>
               {project.type === 'speech' && <Mic size={20} />}
               {project.type === 'dars' && <GraduationCap size={20} />}
+              {project.type === 'ijlas' && <Users size={20} />}
+              {project.type === 'announcement' && <Megaphone size={20} />}
               {project.type === 'article' && <FileText size={20} />}
             </div>
 
@@ -314,8 +326,29 @@ export default function ProjectWorkspaceModal({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]">
-                  {project.type === 'speech' ? 'Speech Project' : project.type === 'dars' ? 'Dars Project' : 'Theological Article'}
+                  {project.type === 'speech' ? 'Speech Project' :
+                   project.type === 'dars' ? 'Dars Project' :
+                   project.type === 'ijlas' ? 'Ijlas / Meeting' :
+                   project.type === 'announcement' ? 'Announcement / I\'laan' :
+                   'Theological Article'}
                 </span>
+                {project.durationMinutes && (
+                  <>
+                    <span className="text-white/20">•</span>
+                    <span className="text-[10px] text-white/70 font-mono flex items-center gap-1">
+                      <Clock size={10} className="text-[var(--accent-main)]" />
+                      {project.durationMinutes}m target
+                    </span>
+                  </>
+                )}
+                {project.speechTone && (
+                  <>
+                    <span className="text-white/20">•</span>
+                    <span className="text-[10px] text-white/50 capitalize">
+                      {project.speechTone}
+                    </span>
+                  </>
+                )}
                 <span className="text-white/20">•</span>
                 <span className="text-[10px] text-white/50 font-mono">
                   {project.bookmarks.length} Bookmarks Attached

@@ -22,7 +22,9 @@ import {
   ArrowRight,
   Feather,
   Menu,
-  X
+  X,
+  Users,
+  Megaphone
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -93,6 +95,8 @@ export default function ProjectsManager() {
       let matchesFilter = true;
       if (activeFilter === 'speech') matchesFilter = p.type === 'speech';
       else if (activeFilter === 'dars') matchesFilter = p.type === 'dars';
+      else if (activeFilter === 'ijlas') matchesFilter = p.type === 'ijlas';
+      else if (activeFilter === 'announcement') matchesFilter = p.type === 'announcement';
       else if (activeFilter === 'article') matchesFilter = p.type === 'article';
       else if (activeFilter === 'drafted') matchesFilter = p.status === 'drafted' || !!p.aiDraft;
       else if (activeFilter === 'completed') matchesFilter = p.status === 'completed';
@@ -112,9 +116,11 @@ export default function ProjectsManager() {
     const total = projects.length;
     const speeches = projects.filter(p => p.type === 'speech').length;
     const dars = projects.filter(p => p.type === 'dars').length;
+    const ijlas = projects.filter(p => p.type === 'ijlas').length;
+    const announcements = projects.filter(p => p.type === 'announcement').length;
     const articles = projects.filter(p => p.type === 'article').length;
     const totalAttachedBookmarks = projects.reduce((acc, p) => acc + p.bookmarks.length, 0);
-    return { total, speeches, dars, articles, totalAttachedBookmarks };
+    return { total, speeches, dars, ijlas, announcements, articles, totalAttachedBookmarks };
   }, [projects]);
 
   const handleProjectCreated = (newProject: MurabbiProject, shouldGenerateAI: boolean) => {
@@ -153,7 +159,22 @@ export default function ProjectsManager() {
           badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
           accentColor: 'text-emerald-400',
         };
+      case 'ijlas':
+        return {
+          label: 'Ijlas / Session',
+          icon: Users,
+          badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+          accentColor: 'text-purple-400',
+        };
+      case 'announcement':
+        return {
+          label: "Announcement / I'laan",
+          icon: Megaphone,
+          badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+          accentColor: 'text-amber-400',
+        };
       case 'article':
+      default:
         return {
           label: 'Theological Article',
           icon: FileText,
