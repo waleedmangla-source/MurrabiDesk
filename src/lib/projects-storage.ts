@@ -32,6 +32,11 @@ export interface MurabbiProject {
   language?: 'english' | 'urdu' | 'both' | 'arabic';
   speechTone?: string; // e.g. 'inspirational', 'direct', 'scholarly', etc.
   durationMinutes?: number; // 1 to 30 mins
+  speakingPace?: 'deliberate' | 'standard' | 'energetic';
+  openingProtocol?: 'khutba' | 'dars' | 'direct' | 'none';
+  arabicTreatment?: 'arabic_translation' | 'transliteration_translation' | 'translation_only';
+  audienceBaseline?: 'core' | 'youth' | 'interfaith';
+  outputStyle?: 'verbatim' | 'cue_cards';
   occasion?: string; // e.g. 'Friday Gathering', 'Monthly Ijlas'
   callToAction?: string; // Desired outcome / next step
   generatedPrompt?: string; // Form-generated prompt brief
@@ -84,6 +89,11 @@ export function createNewProject(payload: {
   language?: 'english' | 'urdu' | 'both' | 'arabic';
   speechTone?: string;
   durationMinutes?: number;
+  speakingPace?: 'deliberate' | 'standard' | 'energetic';
+  openingProtocol?: 'khutba' | 'dars' | 'direct' | 'none';
+  arabicTreatment?: 'arabic_translation' | 'transliteration_translation' | 'translation_only';
+  audienceBaseline?: 'core' | 'youth' | 'interfaith';
+  outputStyle?: 'verbatim' | 'cue_cards';
   occasion?: string;
   callToAction?: string;
   generatedPrompt?: string;
@@ -103,6 +113,11 @@ export function createNewProject(payload: {
     language: payload.language || 'english',
     speechTone: payload.speechTone || 'inspirational',
     durationMinutes: payload.durationMinutes || 5,
+    speakingPace: payload.speakingPace || 'standard',
+    openingProtocol: payload.openingProtocol || 'khutba',
+    arabicTreatment: payload.arabicTreatment || 'arabic_translation',
+    audienceBaseline: payload.audienceBaseline || 'core',
+    outputStyle: payload.outputStyle || 'verbatim',
     occasion: payload.occasion || '',
     callToAction: payload.callToAction || '',
     generatedPrompt: payload.generatedPrompt || '',

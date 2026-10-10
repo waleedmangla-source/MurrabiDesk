@@ -100,6 +100,11 @@ export async function POST(req: NextRequest) {
       language,
       speechTone,
       durationMinutes,
+      speakingPace,
+      openingProtocol,
+      arabicTreatment,
+      audienceBaseline,
+      outputStyle,
       occasion,
       callToAction,
       customPrompt,
@@ -113,6 +118,11 @@ export async function POST(req: NextRequest) {
       language?: string;
       speechTone?: string;
       durationMinutes?: number;
+      speakingPace?: string;
+      openingProtocol?: string;
+      arabicTreatment?: string;
+      audienceBaseline?: string;
+      outputStyle?: string;
       occasion?: string;
       callToAction?: string;
       customPrompt?: string;
@@ -159,8 +169,10 @@ export async function POST(req: NextRequest) {
       ? audiences.join(', ')
       : (targetAudience || 'General Audience / Community');
 
+    const paceWpm = speakingPace === 'deliberate' ? 105 : speakingPace === 'energetic' ? 155 : 130;
+    const estWords = durationMinutes ? durationMinutes * paceWpm : 650;
     const durationNotice = durationMinutes
-      ? `TARGET DURATION: Exactly ${durationMinutes} minute(s) (approx. ${durationMinutes * 130} words). Structure timing marks and speech pacing strictly for ${durationMinutes} minutes.`
+      ? `TARGET DURATION & CADENCE: Exactly ${durationMinutes} minute(s) at ${speakingPace || 'standard'} pace (${paceWpm} WPM -> target approx. ${estWords} words). Structure timing marks and speech pacing strictly for ${durationMinutes} minutes.`
       : 'TARGET DURATION: Standard comprehensive delivery (~5-10 minutes).';
 
     const userPrompt = customPrompt ? `EXECUTIVE SPECIFICATIONS & PROMPT DIRECTIVE:
@@ -180,9 +192,13 @@ Generate the JSON output containing both the "plan" (strategic approach & breakd
     : `PROJECT SPECIFICATIONS:
 - Project Topic/Title: "${title}"
 - Format Type: ${type.toUpperCase()}
-- Target Audience(s): ${audienceString}
+- Target Audience(s): ${audienceString} ${audienceBaseline ? `[Baseline: ${audienceBaseline}]` : ''}
 - Delivery Tone / Feel: ${speechTone || 'Inspirational'}
 - Language Preference: ${language || 'English'}
+- Speaking Cadence: ${speakingPace || 'Standard'} (${paceWpm} WPM)
+- Opening Liturgical Protocol: ${openingProtocol || 'Standard'}
+- Sacred Script & Citation Handling: ${arabicTreatment || 'Arabic Script + Translation'}
+- Desired Output Structure: ${outputStyle || 'Full Verbatim Manuscript'}
 - ${durationNotice}
 ${occasion ? `- Occasion / Setting: ${occasion}` : ''}
 ${callToAction ? `- Core Call to Action / Desired Outcome: ${callToAction}` : ''}

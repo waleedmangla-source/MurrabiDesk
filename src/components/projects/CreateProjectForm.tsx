@@ -53,6 +53,12 @@ export type SpeechToneOption =
   | 'urgent'
   | 'gentle';
 
+export type SpeakingPaceOption = 'deliberate' | 'standard' | 'energetic';
+export type OpeningProtocolOption = 'khutba' | 'dars' | 'direct' | 'none';
+export type ArabicTreatmentOption = 'arabic_translation' | 'transliteration_translation' | 'translation_only';
+export type AudienceBaselineOption = 'core' | 'youth' | 'interfaith';
+export type OutputStyleOption = 'verbatim' | 'cue_cards';
+
 export default function CreateProjectForm({
   onCancel,
   onProjectCreated,
@@ -66,6 +72,11 @@ export default function CreateProjectForm({
   const [language, setLanguage] = useState<'english' | 'urdu' | 'both'>('english');
   const [speechTone, setSpeechTone] = useState<SpeechToneOption>('inspirational');
   const [durationMinutes, setDurationMinutes] = useState<number>(5);
+  const [speakingPace, setSpeakingPace] = useState<SpeakingPaceOption>('standard');
+  const [openingProtocol, setOpeningProtocol] = useState<OpeningProtocolOption>('khutba');
+  const [arabicTreatment, setArabicTreatment] = useState<ArabicTreatmentOption>('arabic_translation');
+  const [audienceBaseline, setAudienceBaseline] = useState<AudienceBaselineOption>('core');
+  const [outputStyle, setOutputStyle] = useState<OutputStyleOption>('verbatim');
   const [occasion, setOccasion] = useState('');
   const [callToAction, setCallToAction] = useState('');
   const [autoGenerateAI, setAutoGenerateAI] = useState(true);
@@ -206,6 +217,138 @@ export default function CreateProjectForm({
     }
   ];
 
+  // Speaking Pace Profiles
+  const SPEAKING_PACES: {
+    id: SpeakingPaceOption;
+    label: string;
+    wpm: number;
+    sublabel: string;
+  }[] = [
+    {
+      id: 'deliberate',
+      label: 'Deliberate & Measured',
+      wpm: 105,
+      sublabel: 'Solemn cadence with reflective pause markers (Sermons & Tarbiyat)'
+    },
+    {
+      id: 'standard',
+      label: 'Standard Oratorical',
+      wpm: 130,
+      sublabel: 'Balanced, natural delivery pacing (Dars & General Jama’at)'
+    },
+    {
+      id: 'energetic',
+      label: 'Dynamic & Persuasive',
+      wpm: 155,
+      sublabel: 'High-momentum, punchy delivery (Youth & Urgent Appeals)'
+    }
+  ];
+
+  // Audience Spiritual & Knowledge Baseline
+  const AUDIENCE_BASELINES: {
+    id: AudienceBaselineOption;
+    label: string;
+    sublabel: string;
+  }[] = [
+    {
+      id: 'core',
+      label: 'Core Jamā‘at / Traditional',
+      sublabel: 'Authentic terminology (Tarbiyat, Wasiyyat, Khilafat)'
+    },
+    {
+      id: 'youth',
+      label: 'Youth & Contemporary',
+      sublabel: 'Rational proofs, addressing modern secular skepticism & screen-time'
+    },
+    {
+      id: 'interfaith',
+      label: 'Interfaith & Beginners',
+      sublabel: 'Universal framing, clear definitions without internal acronyms'
+    }
+  ];
+
+  // Opening Liturgical Protocols
+  const OPENING_PROTOCOLS: {
+    id: OpeningProtocolOption;
+    label: string;
+    sublabel: string;
+  }[] = [
+    {
+      id: 'khutba',
+      label: 'Full Khutba Opening',
+      sublabel: 'Tashahhud, Ta‘awwuz, Surah Al-Fatihah & primary verse'
+    },
+    {
+      id: 'dars',
+      label: 'Dars / Study Circle',
+      sublabel: 'Bismillah, Nahmaduhu wa Nusalli & direct verse recitation'
+    },
+    {
+      id: 'direct',
+      label: 'Direct Remarks / Assembly',
+      sublabel: 'Tilawat already recited; opening salam and immediate hook'
+    },
+    {
+      id: 'none',
+      label: 'Written Article / None',
+      sublabel: 'Direct thematic exposition with no vocal liturgy'
+    }
+  ];
+
+  // Arabic Citations Handling
+  const ARABIC_TREATMENTS: {
+    id: ArabicTreatmentOption;
+    label: string;
+    sublabel: string;
+  }[] = [
+    {
+      id: 'arabic_translation',
+      label: 'Arabic Script + Translation',
+      sublabel: 'Full Quranic/Hadith Arabic text with vocal recitation guidance'
+    },
+    {
+      id: 'transliteration_translation',
+      label: 'Transliteration + Translation',
+      sublabel: 'Phonetic Roman Arabic alongside translation for pronunciation support'
+    },
+    {
+      id: 'translation_only',
+      label: 'Translation Only with Reference',
+      sublabel: 'Flowing English/Urdu with exact theological citation tags'
+    }
+  ];
+
+  // Manuscript Output Style
+  const OUTPUT_STYLES: {
+    id: OutputStyleOption;
+    label: string;
+    sublabel: string;
+  }[] = [
+    {
+      id: 'verbatim',
+      label: 'Full Verbatim Manuscript',
+      sublabel: 'Complete word-for-word text ready to be delivered verbatim'
+    },
+    {
+      id: 'cue_cards',
+      label: 'Speaker Podium Cue Cards',
+      sublabel: 'Timestamped talking points, oratorical milestones & full quotes'
+    }
+  ];
+
+  // Dynamic Lookups
+  const selectedPace = SPEAKING_PACES.find(p => p.id === speakingPace) || SPEAKING_PACES[1];
+  const estWords = Math.round(durationMinutes * selectedPace.wpm);
+  const selectedBaseline = AUDIENCE_BASELINES.find(b => b.id === audienceBaseline) || AUDIENCE_BASELINES[0];
+
+  // Sync default opening protocol with format
+  useEffect(() => {
+    if (workType === 'dars') setOpeningProtocol('dars');
+    else if (workType === 'article') setOpeningProtocol('none');
+    else if (workType === 'announcement' || workType === 'ijlas') setOpeningProtocol('direct');
+    else setOpeningProtocol('khutba');
+  }, [workType]);
+
   // Audience toggle logic
   const handleAudienceToggle = (id: AudienceOption) => {
     if (id === 'all') {
@@ -236,14 +379,23 @@ export default function CreateProjectForm({
 
     const toneDesc = TONES.find(t => t.id === speechTone)?.label || speechTone;
     const langDesc = language === 'both' ? 'Bilingual (English with Urdu/Arabic terms)' : language.toUpperCase();
-    const estWords = Math.round(durationMinutes * 130);
+    const paceConfig = SPEAKING_PACES.find(p => p.id === speakingPace) || SPEAKING_PACES[1];
+    const calcWords = Math.round(durationMinutes * paceConfig.wpm);
+    const baselineDesc = AUDIENCE_BASELINES.find(b => b.id === audienceBaseline)?.label || 'Core Jamā‘at';
+    const openingDesc = OPENING_PROTOCOLS.find(o => o.id === openingProtocol)?.label || 'Full Khutba Opening';
+    const arabicDesc = ARABIC_TREATMENTS.find(a => a.id === arabicTreatment)?.label || 'Arabic Script + Translation';
+    const outputDesc = OUTPUT_STYLES.find(s => s.id === outputStyle)?.label || 'Full Verbatim Manuscript';
 
     let brief = `DELIVERABLE FORMAT: ${workType.toUpperCase()}
 TOPIC / CENTRAL THESIS: "${topic || 'Untitled Theological Theme'}"
-TARGET AUDIENCE: ${audNames}
+TARGET AUDIENCE: ${audNames} [Baseline: ${baselineDesc}]
 LANGUAGE: ${langDesc}
 DELIVERY TONE & FEEL: ${toneDesc}
-LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
+SPEAKING CADENCE: ${paceConfig.label} (~${paceConfig.wpm} WPM)
+TARGET DURATION: Exactly ${durationMinutes} minute(s) (~${calcWords} words target budget)
+OPENING LITURGICAL PROTOCOL: ${openingDesc}
+SACRED TEXT / CITATION HANDLING: ${arabicDesc}
+DESIRED OUTPUT STRUCTURE: ${outputDesc}
 `;
 
     if (occasion.trim()) {
@@ -254,12 +406,59 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
     }
 
     brief += `\nINSTRUCTIONS FOR MURABBIAI:
-1. Ground the manuscript firmly in Holy Quranic verses and Hadith, incorporating classical commentary from the Promised Messiah (as) and Khulafa-e-Ahmadiyyat.
-2. Structure the delivery pacing strictly for a ${durationMinutes}-minute time frame with clear oratorical milestones.
-3. Adhere to the requested ${speechTone} tone and address the specific spiritual needs of ${audNames}.`;
+1. THEOLOGICAL SUBSTANCE: Ground the composition firmly in primary Holy Quranic verses and authentic Hadith, incorporating philosophical elucidations from Hazrat Masih-e-Maud (as) and Khulafa-e-Ahmadiyyat.
+2. CADENCE & WORD BUDGET: Strictly calibrate the text for ~${calcWords} spoken words matching a ${durationMinutes}-minute delivery at ${paceConfig.wpm} words per minute.`;
+
+    if (speakingPace === 'deliberate') {
+      brief += `\n   - Insert explicit '[Waqfah / Pause]' directives after pivotal rhetorical questions and Quranic verses to allow congregation reflection.`;
+    } else if (speakingPace === 'energetic') {
+      brief += `\n   - Employ dynamic oratorical momentum, shorter punchy sentences, and energetic transitions suited for an urgent rally or appeal.`;
+    }
+
+    if (openingProtocol === 'khutba') {
+      brief += `\n3. OPENING LITURGY: Begin with classical Tashahhud, Ta'awwuz, Surah Al-Fatihah, followed by the foundational Arabic ayah before entering the topic.`;
+    } else if (openingProtocol === 'dars') {
+      brief += `\n3. OPENING LITURGY: Begin with Bismillah-ir-Rahman-ir-Rahim and Nahmaduhu wa Nusalli, then immediately present the selected verse with translation.`;
+    } else if (openingProtocol === 'direct') {
+      brief += `\n3. OPENING LITURGY: Presume formal Tilawat has already taken place; begin directly with warm Islamic greeting (As-Salamu 'Alaikum wa Rahmatullah) and an engaging introductory hook.`;
+    }
+
+    if (arabicTreatment === 'arabic_translation') {
+      brief += `\n4. ARABIC CITATIONS: Present full Arabic text with vowelization for Quran and Hadith quotations, followed immediately by flowing translation and source attribution.`;
+    } else if (arabicTreatment === 'transliteration_translation') {
+      brief += `\n4. ARABIC CITATIONS: Include accurate Roman transliteration alongside Arabic quotes to ensure flawless phonetic pronunciation during vocal delivery.`;
+    } else if (arabicTreatment === 'translation_only') {
+      brief += `\n4. CITATIONS: Focus on seamless English/Urdu translation with precise bibliographic source tags (e.g. Surah:Ayah, Bukhari, Ruhani Khazain Vol & Page).`;
+    }
+
+    if (audienceBaseline === 'youth') {
+      brief += `\n5. AUDIENCE FOCUS: Tailor arguments to young minds by addressing modern intellectual doubts, rational proofs, and contemporary digital/social realities.`;
+    } else if (audienceBaseline === 'interfaith') {
+      brief += `\n5. AUDIENCE FOCUS: Use universally accessible language, explaining Islamic/Ahmadi concepts clearly without assuming prior familiarity with community acronyms.`;
+    }
+
+    if (outputStyle === 'cue_cards') {
+      brief += `\n6. MANUSCRIPT FORMAT: Structure output as Speaker's Podium Cue Cards with explicit timestamp markers (e.g. [00:00 - 01:30]), bulleted talking points, and full verbatim text only for central scriptural quotations.`;
+    } else {
+      brief += `\n6. MANUSCRIPT FORMAT: Provide a comprehensive, full-length verbatim prose manuscript ready for immediate podium reading.`;
+    }
 
     return brief;
-  }, [workType, topic, selectedAudiences, language, speechTone, durationMinutes, occasion, callToAction]);
+  }, [
+    workType,
+    topic,
+    selectedAudiences,
+    language,
+    speechTone,
+    durationMinutes,
+    speakingPace,
+    openingProtocol,
+    arabicTreatment,
+    audienceBaseline,
+    outputStyle,
+    occasion,
+    callToAction
+  ]);
 
   // Sync customPrompt with generatedPrompt if not manually edited
   useEffect(() => {
@@ -340,12 +539,17 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
     const newProj = createNewProject({
       title: topic.trim(),
       type: workType,
-      description: `Tone: ${speechTone} • Length: ${durationMinutes} min • Occasion: ${occasion || 'N/A'}`,
+      description: `Tone: ${speechTone} • Length: ${durationMinutes}m (${speakingPace}) • Occasion: ${occasion || 'N/A'}`,
       targetAudience: selectedAudiences.join(', '),
       audiences: selectedAudiences,
       language,
       speechTone,
       durationMinutes,
+      speakingPace,
+      openingProtocol,
+      arabicTreatment,
+      audienceBaseline,
+      outputStyle,
       occasion: occasion.trim(),
       callToAction: callToAction.trim(),
       generatedPrompt: finalPrompt,
@@ -524,15 +728,45 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                       ))}
                     </div>
                   </div>
+
+                  {/* Audience Spiritual & Knowledge Baseline */}
+                  <div className="grid grid-cols-1 gap-2">
+                    <label className="lbl flex items-center justify-between">
+                      <span>Audience Spiritual & Knowledge Baseline</span>
+                      <span className="text-[10px] text-[var(--accent-main)] font-mono font-bold uppercase">
+                        {selectedBaseline.label.split('/')[0].trim()}
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={audienceBaseline}
+                        onChange={e => setAudienceBaseline(e.target.value as AudienceBaselineOption)}
+                        className="cursor-pointer appearance-none !pl-4 !pr-10"
+                      >
+                        {AUDIENCE_BASELINES.map(b => (
+                          <option key={b.id} value={b.id} className="bg-neutral-900 text-neutral-100">
+                            {b.label} — {b.sublabel}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                      />
+                    </div>
+                    <p className="text-[10px] text-[var(--text-dim)] italic">
+                      {selectedBaseline.sublabel}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Right: Duration Slider & Call-To-Action */}
+                {/* Right: Duration Slider, Speaking Pace & Call-To-Action */}
                 <div className="space-y-5">
                   <div className="grid grid-cols-1 gap-2">
                     <label className="lbl flex items-center justify-between">
                       <span>Target Delivery Length</span>
                       <span className="font-mono text-xs text-[var(--accent-main)] font-black">
-                        {durationMinutes} min (~{Math.round(durationMinutes * 130)} words)
+                        {durationMinutes} min (~{estWords} words @ {selectedPace.wpm} WPM)
                       </span>
                     </label>
 
@@ -555,6 +789,39 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                     </div>
                   </div>
 
+                  {/* Speaking Pace Segmented Control */}
+                  <div className="grid grid-cols-1 gap-2">
+                    <label className="lbl flex items-center justify-between">
+                      <span>Speaking Cadence / Pace</span>
+                      <span className="text-[10px] text-[var(--accent-main)] font-mono font-bold">
+                        {selectedPace.wpm} words/min
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {SPEAKING_PACES.map(p => {
+                        const isSelected = speakingPace === p.id;
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => setSpeakingPace(p.id)}
+                            className={clsx(
+                              "p-2.5 rounded-xl border text-center cursor-pointer transition-all select-none flex flex-col justify-between",
+                              isSelected
+                                ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] font-bold shadow-sm"
+                                : "bg-[var(--glass-bg)] border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--accent-main)]/30"
+                            )}
+                          >
+                            <div className="text-xs font-bold leading-tight">{p.label.split('&')[0].trim()}</div>
+                            <div className="text-[9px] text-[var(--text-dim)] font-mono mt-1">{p.wpm} WPM</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-[var(--text-dim)] italic">
+                      {selectedPace.sublabel}
+                    </p>
+                  </div>
+
                   {/* Call to action */}
                   <div className="grid grid-cols-1 gap-2">
                     <label className="lbl">Desired Call-to-Action / Outcome (Optional)</label>
@@ -571,14 +838,14 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             </div>
           </div>
 
-          {/* ════════ CARD 3: DELIVERY TONE & EMOTIONAL CADENCE ════════ */}
+          {/* ════════ CARD 3: DELIVERY TONE & ORATORICAL ARCHITECTURE ════════ */}
           <div className="card" id="tone-card">
             <div className="card-hdr">
               <div className="dot"></div>
-              <span>DELIVERY TONE & EMOTIONAL CADENCE</span>
+              <span>DELIVERY TONE & ORATORICAL ARCHITECTURE</span>
             </div>
 
-            <div className="card-body">
+            <div className="card-body space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {TONES.map(tone => {
                   const Icon = tone.icon;
@@ -613,6 +880,90 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Oratorical Nuances & Liturgical Protocols */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-[var(--glass-border)]">
+                {/* 1. Opening Protocol */}
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="lbl flex items-center justify-between">
+                    <span>Opening Liturgy (Hamd-o-Sana)</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={openingProtocol}
+                      onChange={e => setOpeningProtocol(e.target.value as OpeningProtocolOption)}
+                      className="cursor-pointer appearance-none !pl-3.5 !pr-10 text-xs"
+                    >
+                      {OPENING_PROTOCOLS.map(op => (
+                        <option key={op.id} value={op.id} className="bg-neutral-900 text-neutral-100">
+                          {op.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-[var(--text-dim)] italic line-clamp-1">
+                    {OPENING_PROTOCOLS.find(o => o.id === openingProtocol)?.sublabel}
+                  </p>
+                </div>
+
+                {/* 2. Arabic Text & Citation Handling */}
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="lbl flex items-center justify-between">
+                    <span>Sacred Script & Citations</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={arabicTreatment}
+                      onChange={e => setArabicTreatment(e.target.value as ArabicTreatmentOption)}
+                      className="cursor-pointer appearance-none !pl-3.5 !pr-10 text-xs"
+                    >
+                      {ARABIC_TREATMENTS.map(ar => (
+                        <option key={ar.id} value={ar.id} className="bg-neutral-900 text-neutral-100">
+                          {ar.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-[var(--text-dim)] italic line-clamp-1">
+                    {ARABIC_TREATMENTS.find(a => a.id === arabicTreatment)?.sublabel}
+                  </p>
+                </div>
+
+                {/* 3. Output Structure Style */}
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="lbl flex items-center justify-between">
+                    <span>Manuscript Output Style</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={outputStyle}
+                      onChange={e => setOutputStyle(e.target.value as OutputStyleOption)}
+                      className="cursor-pointer appearance-none !pl-3.5 !pr-10 text-xs"
+                    >
+                      {OUTPUT_STYLES.map(s => (
+                        <option key={s.id} value={s.id} className="bg-neutral-900 text-neutral-100">
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-[var(--text-dim)] italic line-clamp-1">
+                    {OUTPUT_STYLES.find(s => s.id === outputStyle)?.sublabel}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
