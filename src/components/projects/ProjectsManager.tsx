@@ -20,7 +20,7 @@ import {
   Filter,
   RefreshCw,
   ArrowRight,
-  FolderKanban
+  Feather
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -352,7 +352,7 @@ export default function ProjectsManager() {
             /* Empty State: Guide & Quick-starters */
             <div className="max-w-3xl mx-auto py-12 text-center space-y-8 animate-in fade-in duration-300">
               <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 flex items-center justify-center mx-auto shadow-2xl shadow-[var(--accent-glow)]">
-                <FolderKanban size={32} />
+                <Feather size={32} />
               </div>
 
               <div className="space-y-2">

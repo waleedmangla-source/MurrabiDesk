@@ -21,7 +21,7 @@ import {
   X,
   BookOpen,
   Search,
-  FolderKanban,
+  Feather,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -66,7 +66,7 @@ export const dailyNavLinks = [
 export const researchNavLinks = [
   { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Search, label: "Research", href: "/research" },
-  { icon: FolderKanban, label: "Taleef", href: "/projects" },
+  { icon: Feather, label: "Taleef", href: "/projects" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
   { icon: TimelineIcon, label: "Timelines", href: "/life-of-muhammad" },

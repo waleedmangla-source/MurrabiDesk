@@ -14,6 +14,7 @@ import {
   Square,
   Bookmark,
   Layers,
+  Feather,
   Scroll,
   Volume2,
   Video,
@@ -169,7 +170,7 @@ export default function CreateProjectModal({
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0 bg-white/[0.02]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-main)]/30 flex items-center justify-center text-[var(--accent-main)] shadow-lg shadow-[var(--accent-glow)]">
-              <Layers size={20} />
+              <Feather size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">

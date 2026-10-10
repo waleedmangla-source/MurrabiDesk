@@ -9,7 +9,7 @@ import {
   X,
   Command,
   BookOpen,
-  FolderKanban
+  Feather
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 export default function CommandPalette() {
@@ -19,7 +19,7 @@ export default function CommandPalette() {
   const commands = [
     { id: 'dash', label: 'Go to Dashboard', icon: Home, action: () => router.push('/') },
     { id: 'research', label: 'Theological Research Engine (Beta)', icon: BookOpen, action: () => router.push('/research') },
-    { id: 'projects', label: 'Taleef — Theological Compositions & AI Drafting', icon: FolderKanban, action: () => router.push('/projects') },
+    { id: 'projects', label: 'Taleef — Theological Compositions & AI Drafting', icon: Feather, action: () => router.push('/projects') },
     { id: 'ai', label: 'Ask AI Assistant', icon: Sparkles, action: () => router.push('/chat') },
     { id: 'email', label: 'Compose New Email', icon: Mail, action: () => router.push('/emails') },
     { id: 'expense', label: 'Log New Expense', icon: Receipt, action: () => router.push('/expenses') },
