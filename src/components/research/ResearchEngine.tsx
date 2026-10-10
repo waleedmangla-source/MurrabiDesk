@@ -66,6 +66,17 @@ import SearchStageTracker from './SearchStageTracker';
 import SearchFiltersPopup from './SearchFiltersPopup';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
 import MurabbiLogoAI from '@/components/MurabbiLogoAI';
+import ResearchSidebar from './ResearchSidebar';
+import {
+  SearchHistoryEntry,
+  ResearchBookmarkItem,
+  getLocalResearchHistory,
+  saveLocalResearchHistory,
+  getLocalResearchBookmarks,
+  saveLocalResearchBookmarks,
+  triggerDriveSync,
+  syncResearchFromDrive
+} from '@/lib/research-storage';
 
 type ActiveSourceFilter = 'all' | 'quran' | 'ahadith' | 'literature' | 'articles' | 'audios' | 'videos';
 
@@ -284,6 +295,78 @@ export default function ResearchEngine() {
   const recognitionRef = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Research Sidebar & Drive Sync States
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
+  const [bookmarks, setBookmarks] = useState<ResearchBookmarkItem[]>([]);
+  const [isSyncingDrive, setIsSyncingDrive] = useState(false);
+  const [isDriveConnected, setIsDriveConnected] = useState(false);
+
+  // Initialize and sync history & bookmarks
+  useEffect(() => {
+    // 1. Load locally immediately
+    const localHist = getLocalResearchHistory();
+    const localBk = getLocalResearchBookmarks();
+    setSearchHistory(localHist);
+    setBookmarks(localBk);
+
+    const hasToken = !!localStorage.getItem("google_refresh_token_encrypted") && localStorage.getItem("murabbi_guest_mode") !== "true";
+    setIsDriveConnected(hasToken);
+
+    // 2. Sync from Google Drive in background
+    if (hasToken) {
+      setIsSyncingDrive(true);
+      syncResearchFromDrive().then(({ history: h, bookmarks: b }) => {
+        setSearchHistory(h);
+        setBookmarks(b);
+      }).catch(err => {
+        console.warn('Sync from drive error:', err);
+      }).finally(() => {
+        setIsSyncingDrive(false);
+      });
+    }
+  }, []);
+
+  const bookmarkMap = useMemo(() => {
+    const map = new Set<string>();
+    bookmarks.forEach(b => map.add(b.id));
+    return map;
+  }, [bookmarks]);
+
+  const toggleBookmark = (item: Omit<ResearchBookmarkItem, 'savedAt'>) => {
+    setBookmarks(prev => {
+      const exists = prev.some(b => b.id === item.id);
+      let updated: ResearchBookmarkItem[];
+      if (exists) {
+        updated = prev.filter(b => b.id !== item.id);
+      } else {
+        const newBookmark: ResearchBookmarkItem = {
+          ...item,
+          savedAt: Date.now()
+        };
+        updated = [newBookmark, ...prev];
+      }
+      saveLocalResearchBookmarks(updated);
+      triggerDriveSync({ bookmarks: updated });
+      return updated;
+    });
+  };
+
+  const removeBookmarkById = (id: string) => {
+    setBookmarks(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      saveLocalResearchBookmarks(updated);
+      triggerDriveSync({ bookmarks: updated });
+      return updated;
+    });
+  };
+
+  const clearHistory = () => {
+    setSearchHistory([]);
+    saveLocalResearchHistory([]);
+    triggerDriveSync({ history: [] });
+  };
+
   // Copy Feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -425,6 +508,53 @@ export default function ResearchEngine() {
         );
       } catch (e) {
         console.warn("[Research Engine] Failed to save search to session:", e);
+      }
+
+      // Record to persistent Search History and sync with Google Drive
+      try {
+        const qCount = data.data?.quranVerses?.length || 0;
+        const hCount = data.data?.ahadith?.length || 0;
+        const rkC = data.data?.ruhaniKhazain?.length || 0;
+        const mC = data.data?.malfuzat?.length || 0;
+        const tC = data.data?.tazkirah?.length || 0;
+        const eC = data.data?.essenceOfIslam?.length || 0;
+        const bC = data.data?.books?.length || 0;
+        const litCount = rkC + mC + tC + eC + bC;
+        const alHakamC = data.data?.totalAlHakamHits || 0;
+        const rorC = data.data?.totalRoRHits || 0;
+        const alislamC = data.data?.totalAlIslamHits || (data.data?.alislamArticles?.length || 0);
+        const artCount = data.data?.totalArticleHits || (alislamC + alHakamC + rorC);
+        const audCount = data.data?.audios?.length || 0;
+        const vidCount = data.data?.videos?.length || 0;
+        const allCount = qCount + hCount + litCount + artCount + audCount + vidCount;
+
+        const newEntry: SearchHistoryEntry = {
+          id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          query: targetQuery,
+          timestamp: Date.now(),
+          filters: activeFilters,
+          searchMode: mode,
+          resultCounts: {
+            all: allCount,
+            quran: qCount,
+            ahadith: hCount,
+            literature: litCount,
+            articles: artCount,
+            audios: audCount,
+            videos: vidCount
+          }
+        };
+
+        setSearchHistory(prev => {
+          // Keep newest, avoid consecutive exact duplicates
+          const filtered = prev.filter(p => !(p.query.toLowerCase() === targetQuery.toLowerCase() && p.searchMode === mode));
+          const updated = [newEntry, ...filtered].slice(0, 100);
+          saveLocalResearchHistory(updated);
+          triggerDriveSync({ history: updated });
+          return updated;
+        });
+      } catch (histErr) {
+        console.warn('[Research Engine] Failed to record search history:', histErr);
       }
     } catch (err: any) {
       setError(err.message || "Failed to complete multi-source query.");
@@ -808,6 +938,22 @@ export default function ResearchEngine() {
       <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 select-none relative w-full">
         {/* Top Header Bar for Landing View */}
         <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
+          {/* Secondary Sidebar Trigger: History & Bookmarks */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="px-3.5 py-2 rounded-full text-xs font-bold glass bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+            title="Open Research History & Bookmarks"
+          >
+            <BookmarkCheck size={14} className="text-emerald-400" />
+            <span className="hidden sm:inline">Hub</span>
+            {bookmarks.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-[var(--accent-main)] text-white text-[10px] font-black">
+                {bookmarks.length}
+              </span>
+            )}
+          </button>
+
           {isUserLoggedIn ? (
             <Link
               href="/"
@@ -1114,8 +1260,23 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Right Wing: New Search Button */}
-          <div className="flex items-center justify-end md:w-28 shrink-0">
+          {/* Right Wing: Hub Button + New Search Button */}
+          <div className="flex items-center justify-end gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/10 dark:hover:bg-white/5 border border-white/10 transition-all active:scale-95 shadow-sm"
+              title="Open Research History & Bookmarks"
+            >
+              <BookmarkCheck size={14} className="text-emerald-400" />
+              <span className="hidden lg:inline">Hub</span>
+              {bookmarks.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-[var(--accent-main)] text-white text-[10px] font-black">
+                  {bookmarks.length}
+                </span>
+              )}
+            </button>
+
             <button
               type="button"
               onClick={resetToHome}
@@ -1321,14 +1482,50 @@ export default function ResearchEngine() {
                         </a>
                       </div>
 
-                      <button
-                        onClick={() => copyToClipboard(quranCitation, verseKey)}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                        title="Copy Citation"
-                      >
-                        {copiedId === verseKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                        <span className="text-[11px] uppercase tracking-wider">{copiedId === verseKey ? "Copied" : "Cite"}</span>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => toggleBookmark({
+                            id: verseKey,
+                            category: 'quran',
+                            title: `Surah ${v.surahNameEnglish} (${v.surahNumber}:${v.verseNumber})`,
+                            subtitle: `Holy Qur'an — Surah ${v.surahNameArabic}`,
+                            snippet: v.englishTranslation,
+                            citationText: quranCitation,
+                            url: v.url,
+                            metadata: {
+                              surahNumber: v.surahNumber,
+                              verseNumber: v.verseNumber,
+                              surahNameEnglish: v.surahNameEnglish,
+                              surahNameArabic: v.surahNameArabic,
+                              arabicText: v.arabicText,
+                              englishTranslation: v.englishTranslation,
+                              urduTranslation: v.urduTranslation
+                            }
+                          })}
+                          className={clsx(
+                            "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                            bookmarkMap.has(verseKey)
+                              ? "text-emerald-400 bg-emerald-500/10"
+                              : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                          )}
+                          title={bookmarkMap.has(verseKey) ? "Remove Bookmark" : "Save Bookmark"}
+                        >
+                          {bookmarkMap.has(verseKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                          <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                            {bookmarkMap.has(verseKey) ? "Saved" : "Save"}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => copyToClipboard(quranCitation, verseKey)}
+                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                          title="Copy Citation"
+                        >
+                          {copiedId === verseKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                          <span className="text-[11px] uppercase tracking-wider">{copiedId === verseKey ? "Copied" : "Cite"}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1484,14 +1681,52 @@ export default function ResearchEngine() {
                             )}
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(citationText, hadithKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === hadithKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === hadithKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark({
+                                id: hadithKey,
+                                category: 'ahadith',
+                                title: hadithTitle,
+                                subtitle: h.narrator ? `Narrated by ${h.narrator}` : undefined,
+                                snippet: h.englishTranslation,
+                                citationText,
+                                url: h.url,
+                                metadata: {
+                                  book: h.book,
+                                  chapter: h.chapter,
+                                  hadithNumber: h.hadithNumber,
+                                  narrator: h.narrator,
+                                  grade: h.grade,
+                                  arabicText: h.arabicText,
+                                  englishTranslation: h.englishTranslation,
+                                  urduTranslation: h.urduTranslation,
+                                  contextNote: h.contextNote
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(hadithKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(hadithKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(hadithKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(hadithKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(citationText, hadithKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === hadithKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === hadithKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1679,14 +1914,49 @@ export default function ResearchEngine() {
                             </span>
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(`${citation}\n"${item.snippetBefore} [${item.matchedSlice}] ${item.snippetAfter}"`, itemKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark({
+                                id: itemKey,
+                                category: 'khazain',
+                                title: `Ruhani Khazain Vol. ${item.volume}, p. ${item.pageNum} — ${item.bookTitle}`,
+                                subtitle: item.bookUrduTitle ? `روحانی خزائن جلد ${item.volume}: ${item.bookUrduTitle}` : undefined,
+                                snippet: `${item.snippetBefore} [${item.matchedSlice}] ${item.snippetAfter}`,
+                                citationText: `${citation}\n"${item.snippetBefore} [${item.matchedSlice}] ${item.snippetAfter}"`,
+                                url: item.readerUrl,
+                                metadata: {
+                                  volume: item.volume,
+                                  pageNum: item.pageNum,
+                                  bookTitle: item.bookTitle,
+                                  bookUrduTitle: item.bookUrduTitle,
+                                  matchedSlice: item.matchedSlice,
+                                  readerUrl: item.readerUrl
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(itemKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(itemKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(itemKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(itemKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(`${citation}\n"${item.snippetBefore} [${item.matchedSlice}] ${item.snippetAfter}"`, itemKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1831,14 +2101,51 @@ export default function ResearchEngine() {
                             </a>
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(malfuzatCitation, malfuzatKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === malfuzatKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === malfuzatKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark({
+                                id: malfuzatKey,
+                                category: 'malfuzat',
+                                title: `Malfuzat Vol. ${m.volume}: ${m.title}`,
+                                subtitle: m.urduTitle || `Malfuzat Vol. ${m.volume}`,
+                                snippet: m.englishTranslation,
+                                citationText: malfuzatCitation,
+                                url: pdfTargetUrl,
+                                metadata: {
+                                  volume: m.volume,
+                                  pageNum: m.pageNum,
+                                  pdfPage: m.pdfPage,
+                                  title: m.title,
+                                  urduTitle: m.urduTitle,
+                                  dateStr: m.dateStr,
+                                  englishTranslation: m.englishTranslation,
+                                  urduText: m.urduText
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(malfuzatKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(malfuzatKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(malfuzatKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(malfuzatKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(malfuzatCitation, malfuzatKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === malfuzatKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === malfuzatKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1985,14 +2292,54 @@ export default function ResearchEngine() {
                             )}
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(tazkirahCitation, tazkirahKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === tazkirahKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === tazkirahKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark({
+                                id: tazkirahKey,
+                                category: 'tazkirah',
+                                title: `Tadhkirah: ${t.title}`,
+                                subtitle: t.urduTitle || `Tadhkirah Revelation (${t.year || ''})`,
+                                snippet: t.englishTranslation || t.originalText,
+                                citationText: tazkirahCitation,
+                                url: t.url,
+                                metadata: {
+                                  title: t.title,
+                                  urduTitle: t.urduTitle,
+                                  year: t.year,
+                                  dateStr: t.dateStr,
+                                  category: t.category,
+                                  pageEnglish: t.pageEnglish,
+                                  pageUrdu: t.pageUrdu,
+                                  pdfPage: t.pdfPage,
+                                  originalText: t.originalText,
+                                  englishTranslation: t.englishTranslation,
+                                  historicalContext: t.historicalContext
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(tazkirahKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(tazkirahKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(tazkirahKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(tazkirahKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(tazkirahCitation, tazkirahKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === tazkirahKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === tazkirahKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2118,14 +2465,52 @@ export default function ResearchEngine() {
                             </a>
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(essenceCitation, essenceKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === essenceKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === essenceKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark({
+                                id: essenceKey,
+                                category: 'essence',
+                                title: e.title,
+                                subtitle: `The Essence of Islam Vol. ${e.volumeRoman}, p. ${e.pageNum}`,
+                                snippet: e.excerpt,
+                                citationText: essenceCitation,
+                                url: e.pdfUrl,
+                                metadata: {
+                                  volume: e.volume,
+                                  volumeRoman: e.volumeRoman,
+                                  pageNum: e.pageNum,
+                                  pdfPage: e.pdfPage,
+                                  title: e.title,
+                                  topic: e.topic,
+                                  sourceTreatise: e.sourceTreatise,
+                                  excerpt: e.excerpt,
+                                  fullText: e.fullText
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(essenceKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(essenceKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(essenceKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(essenceKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(essenceCitation, essenceKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === essenceKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === essenceKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2212,14 +2597,47 @@ export default function ResearchEngine() {
                             </a>
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(bookCitation, bookKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === bookKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === bookKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleBookmark({
+                                id: bookKey,
+                                category: 'books',
+                                title: b.title,
+                                subtitle: `${b.author}${b.year ? ` • ${b.year}` : ''}`,
+                                snippet: b.summary,
+                                url: b.url,
+                                citationText: bookCitation,
+                                metadata: {
+                                  url: b.url,
+                                  title: b.title,
+                                  source: 'Al Islam Books',
+                                  author: b.author,
+                                  summary: b.summary
+                                }
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(bookKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(bookKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(bookKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(bookKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(bookCitation, bookKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === bookKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === bookKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2333,6 +2751,48 @@ export default function ResearchEngine() {
                         </span>
                       )}
                     </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => toggleBookmark({
+                          id: `alislam-${art.id}`,
+                          category: 'articles',
+                          title: art.title,
+                          subtitle: art.author ? `Al Islam • ${art.author}` : 'Al Islam',
+                          snippet: art.summary,
+                          url: art.url,
+                          citationText: `[Al Islam: "${art.title}"${art.author ? ` by ${art.author}` : ''}]\n"${art.summary}"\nSource: ${art.url}`,
+                          metadata: {
+                            url: art.url,
+                            title: art.title,
+                            source: 'Al Islam',
+                            author: art.author,
+                            summary: art.summary
+                          }
+                        })}
+                        className={clsx(
+                          "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                          bookmarkMap.has(`alislam-${art.id}`)
+                            ? "text-emerald-400 bg-emerald-500/10"
+                            : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                        )}
+                        title={bookmarkMap.has(`alislam-${art.id}`) ? "Remove Bookmark" : "Save Bookmark"}
+                      >
+                        {bookmarkMap.has(`alislam-${art.id}`) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                        <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                          {bookmarkMap.has(`alislam-${art.id}`) ? "Saved" : "Save"}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => copyToClipboard(`[Al Islam: "${art.title}"${art.author ? ` by ${art.author}` : ''}]\n"${art.summary}"\nSource: ${art.url}`, `alislam-${art.id}`)}
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                        title="Copy Citation"
+                      >
+                        {copiedId === `alislam-${art.id}` ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        <span className="text-[11px] uppercase tracking-wider">{copiedId === `alislam-${art.id}` ? "Copied" : "Cite"}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2417,6 +2877,48 @@ export default function ResearchEngine() {
                                   By {pub.author}
                                 </span>
                               )}
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => toggleBookmark({
+                                  id: `pub-${pub.id}`,
+                                  category: 'articles',
+                                  title: pub.title,
+                                  subtitle: `${pub.source}${pub.author ? ` • ${pub.author}` : ''}${pub.date ? ` • ${pub.date}` : ''}`,
+                                  snippet: pub.summary,
+                                  url: pub.url,
+                                  citationText: `[${pub.source}: "${pub.title}"${pub.author ? ` by ${pub.author}` : ''}${pub.date ? ` (${pub.date})` : ''}]\n"${pub.summary}"\nSource: ${pub.url}`,
+                                  metadata: {
+                                    url: pub.url,
+                                    title: pub.title,
+                                    source: pub.source,
+                                    author: pub.author,
+                                    summary: pub.summary
+                                  }
+                                })}
+                                className={clsx(
+                                  "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                  bookmarkMap.has(`pub-${pub.id}`)
+                                    ? "text-emerald-400 bg-emerald-500/10"
+                                    : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                                )}
+                                title={bookmarkMap.has(`pub-${pub.id}`) ? "Remove Bookmark" : "Save Bookmark"}
+                              >
+                                {bookmarkMap.has(`pub-${pub.id}`) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                                <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                  {bookmarkMap.has(`pub-${pub.id}`) ? "Saved" : "Save"}
+                                </span>
+                              </button>
+
+                              <button
+                                onClick={() => copyToClipboard(`[${pub.source}: "${pub.title}"${pub.author ? ` by ${pub.author}` : ''}${pub.date ? ` (${pub.date})` : ''}]\n"${pub.summary}"\nSource: ${pub.url}`, `pub-${pub.id}`)}
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                                title="Copy Citation"
+                              >
+                                {copiedId === `pub-${pub.id}` ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                <span className="text-[11px] uppercase tracking-wider">{copiedId === `pub-${pub.id}` ? "Copied" : "Cite"}</span>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -2532,14 +3034,41 @@ export default function ResearchEngine() {
                             </a>
                           </div>
 
-                          <button
-                            onClick={() => copyToClipboard(citation, itemKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleBookmark({
+                                id: itemKey,
+                                category: 'audios',
+                                title: item.title,
+                                subtitle: `Ask Islam • ${item.speaker} • ${item.category}`,
+                                snippet: item.audioUrl,
+                                url: item.url,
+                                citationText: citation,
+                                metadata: item
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(itemKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(itemKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(itemKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(itemKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(citation, itemKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2752,14 +3281,41 @@ export default function ResearchEngine() {
                             <ExternalLink size={11} className="opacity-60" />
                           </a>
 
-                          <button
-                            onClick={() => copyToClipboard(videoCitation, itemKey)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
-                            title="Copy Citation"
-                          >
-                            {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                            <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleBookmark({
+                                id: itemKey,
+                                category: 'videos',
+                                title: item.title,
+                                subtitle: `${item.source} • ${item.channel}${item.published ? ` • ${item.published}` : ''}`,
+                                snippet: item.transcriptSnippet || item.description,
+                                url: item.url,
+                                citationText: videoCitation,
+                                metadata: item
+                              })}
+                              className={clsx(
+                                "p-1.5 rounded-lg flex items-center gap-1 font-bold transition-all",
+                                bookmarkMap.has(itemKey)
+                                  ? "text-emerald-400 bg-emerald-500/10"
+                                  : "text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5"
+                              )}
+                              title={bookmarkMap.has(itemKey) ? "Remove Bookmark" : "Save Bookmark"}
+                            >
+                              {bookmarkMap.has(itemKey) ? <BookmarkCheck size={14} className="text-emerald-400" /> : <Bookmark size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider hidden sm:inline">
+                                {bookmarkMap.has(itemKey) ? "Saved" : "Save"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => copyToClipboard(videoCitation, itemKey)}
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-white/5 flex items-center gap-1 font-bold"
+                              title="Copy Citation"
+                            >
+                              {copiedId === itemKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              <span className="text-[11px] uppercase tracking-wider">{copiedId === itemKey ? "Copied" : "Cite"}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2976,6 +3532,42 @@ export default function ResearchEngine() {
           onClose={() => setActiveEssencePdf(null)}
         />
       )}
+
+      {/* ── SECONDARY RESEARCH SIDEBAR (HISTORY & BOOKMARKS) ── */}
+      <ResearchSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        history={searchHistory}
+        bookmarks={bookmarks}
+        isSyncing={isSyncingDrive}
+        isDriveConnected={isDriveConnected}
+        onSelectHistory={(entry) => {
+          setQuery(entry.query);
+          if (entry.filters) {
+            setFilters(entry.filters);
+          }
+          performSearch(entry.query, entry.searchMode, entry.filters);
+        }}
+        onRemoveBookmark={(bookmarkId) => removeBookmarkById(bookmarkId)}
+        onClearHistory={() => clearHistory()}
+        onOpenItemModal={(bookmark) => {
+          if (!bookmark.metadata) return;
+          const cat = bookmark.category;
+          if (cat === 'quran') {
+            setActiveCommentaryVerse(bookmark.metadata as any);
+          } else if (cat === 'ahadith') {
+            setActiveHadith(bookmark.metadata as any);
+          } else if (cat === 'malfuzat') {
+            setActiveMalfuzatPdf(bookmark.metadata as any);
+          } else if (cat === 'tazkirah') {
+            setActiveTadhkirahPdf(bookmark.metadata as any);
+          } else if (cat === 'essence') {
+            setActiveEssencePdf(bookmark.metadata as any);
+          } else if (cat === 'articles' || cat === 'books') {
+            setActiveReadingArticle(bookmark.metadata as any);
+          }
+        }}
+      />
     </div>
   );
 }
