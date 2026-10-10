@@ -21,6 +21,7 @@ import {
   X,
   BookOpen,
   Search,
+  FolderKanban,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { usePathname, useRouter } from "next/navigation";
@@ -65,6 +66,7 @@ export const dailyNavLinks = [
 export const researchNavLinks = [
   { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Search, label: "Research", href: "/research" },
+  { icon: FolderKanban, label: "Projects", href: "/projects" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
   { icon: TimelineIcon, label: "Timelines", href: "/life-of-muhammad" },
@@ -248,7 +250,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const authenticated = isAuth || isGuest;
     setIsAuthenticated(authenticated);
 
-    const isPublicPage = pathname === "/onboarding" || pathname === "/research" || pathname.startsWith("/research");
+    const isPublicPage = pathname === "/onboarding" || pathname === "/research" || pathname.startsWith("/research") || pathname === "/projects" || pathname.startsWith("/projects");
     if (!authenticated && !isPublicPage) {
       router.push("/onboarding");
     } else if (authenticated && pathname === "/onboarding") {
