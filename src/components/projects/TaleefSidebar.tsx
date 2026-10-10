@@ -139,13 +139,13 @@ export default function TaleefSidebar({
       
       {/* ── Sidebar Title (Matching Email Sidebar Header) ── */}
       <div className="px-5 pt-8 pb-2 flex items-center justify-between">
-        <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+        <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
           Taleef
         </h1>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
+            className="lg:hidden p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-[var(--text-main)] transition-all"
             title="Close Sidebar"
           >
             <X size={14} />
@@ -162,7 +162,7 @@ export default function TaleefSidebar({
                 <Cloud size={11} className={isDriveConnected ? "text-emerald-400" : "text-[var(--text-dim)]"} />
                 {isDriveConnected ? (isSyncing ? "Syncing..." : "Drive Synced") : "Local Storage"}
               </span>
-              <span className="text-[9px] font-mono font-bold text-white/40">
+              <span className="text-[9px] font-mono font-bold text-[var(--text-dim)]">
                 {counts.total} Works
               </span>
             </div>
@@ -236,7 +236,7 @@ export default function TaleefSidebar({
                     className={clsx(
                       "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2",
                       active
-                        ? "font-black text-white border-[var(--accent-main)]"
+                        ? "font-black text-[var(--foreground)] border-[var(--accent-main)]"
                         : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
                     )}
                     style={active ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
@@ -272,7 +272,7 @@ export default function TaleefSidebar({
                 />
                 {filterQuery && (
                   <button onClick={() => setFilterQuery('')}>
-                    <X size={11} className="text-[var(--text-dim)] hover:text-white" />
+                    <X size={11} className="text-[var(--text-dim)] hover:text-[var(--text-main)]" />
                   </button>
                 )}
               </div>
@@ -296,7 +296,7 @@ export default function TaleefSidebar({
                     "px-2 py-0.5 rounded-full font-bold whitespace-nowrap transition-colors",
                     bookmarkCategory === tab.id
                       ? "bg-[var(--accent-main)] text-white shadow-sm"
-                      : "bg-white/5 text-[var(--text-dim)] hover:text-white"
+                      : "bg-white/5 text-[var(--text-dim)] hover:text-[var(--text-main)]"
                   )}
                 >
                   {tab.label}
@@ -357,7 +357,7 @@ export default function TaleefSidebar({
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); copyCitation(b.citationText || b.title, b.id); }}
-                            className="p-1 rounded-md text-[var(--text-dim)] hover:text-white hover:bg-white/5 transition-all"
+                            className="p-1 rounded-md text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-white/5 transition-all"
                             title="Copy Citation"
                           >
                             {copiedId === b.id ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}

@@ -334,8 +334,8 @@ export default function ProjectWorkspaceModal({
                 </span>
                 {project.durationMinutes && (
                   <>
-                    <span className="text-white/20">•</span>
-                    <span className="text-[10px] text-white/70 font-mono flex items-center gap-1">
+                    <span className="text-[var(--text-dim)]">•</span>
+                    <span className="text-[10px] text-[var(--text-muted)] font-mono flex items-center gap-1">
                       <Clock size={10} className="text-[var(--accent-main)]" />
                       {project.durationMinutes}m target
                     </span>
@@ -343,20 +343,20 @@ export default function ProjectWorkspaceModal({
                 )}
                 {project.speechTone && (
                   <>
-                    <span className="text-white/20">•</span>
-                    <span className="text-[10px] text-white/50 capitalize">
+                    <span className="text-[var(--text-dim)]">•</span>
+                    <span className="text-[10px] text-[var(--text-dim)] capitalize">
                       {project.speechTone}
                     </span>
                   </>
                 )}
-                <span className="text-white/20">•</span>
-                <span className="text-[10px] text-white/50 font-mono">
+                <span className="text-[var(--text-dim)]">•</span>
+                <span className="text-[10px] text-[var(--text-dim)] font-mono">
                   {project.bookmarks.length} Bookmarks Attached
                 </span>
                 {wordCount > 0 && (
                   <>
-                    <span className="text-white/20">•</span>
-                    <span className="text-[10px] text-white/50 font-mono">
+                    <span className="text-[var(--text-dim)]">•</span>
+                    <span className="text-[10px] text-[var(--text-dim)] font-mono">
                       {wordCount} words (~{estimatedMins} min)
                     </span>
                   </>
@@ -369,7 +369,7 @@ export default function ProjectWorkspaceModal({
                     type="text"
                     value={titleText}
                     onChange={e => setTitleText(e.target.value)}
-                    className="px-2.5 py-1 rounded-lg bg-black/50 border border-[var(--accent-main)] text-white text-base font-bold focus:outline-none"
+                    className="px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--accent-main)] text-[var(--text-main)] text-base font-bold focus:outline-none"
                     autoFocus
                     onKeyDown={e => e.key === 'Enter' && handleSaveTitle()}
                   />
@@ -383,11 +383,11 @@ export default function ProjectWorkspaceModal({
               ) : (
                 <h2
                   onClick={() => setIsEditingTitle(true)}
-                  className="text-lg sm:text-xl font-black italic tracking-tight text-white truncate cursor-pointer hover:text-[var(--accent-main)] transition-colors group flex items-center gap-2"
+                  className="text-lg sm:text-xl font-black italic tracking-tight text-[var(--text-main)] truncate cursor-pointer hover:text-[var(--accent-main)] transition-colors group flex items-center gap-2"
                   title="Click to edit title"
                 >
                   <span>{project.title}</span>
-                  <Edit3 size={13} className="opacity-0 group-hover:opacity-60 text-white" />
+                  <Edit3 size={13} className="opacity-0 group-hover:opacity-60 text-[var(--text-main)]" />
                 </h2>
               )}
             </div>
@@ -399,20 +399,20 @@ export default function ProjectWorkspaceModal({
             <select
               value={status}
               onChange={e => handleStatusChange(e.target.value as any)}
-              className="px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-white text-[11px] font-bold focus:outline-none focus:border-[var(--accent-main)]"
+              className="px-2.5 py-1.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-main)] text-[11px] font-bold focus:outline-none focus:border-[var(--accent-main)]"
             >
-              <option value="drafting" className="bg-[#0a0f1d]">Drafting</option>
-              <option value="drafted" className="bg-[#0a0f1d]">Drafted</option>
-              <option value="planned" className="bg-[#0a0f1d]">Planned</option>
-              <option value="in_progress" className="bg-[#0a0f1d]">In Progress</option>
-              <option value="completed" className="bg-[#0a0f1d]">Completed</option>
+              <option value="drafting">Drafting</option>
+              <option value="drafted">Drafted</option>
+              <option value="planned">Planned</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
             </select>
 
             {/* Regenerate AI button */}
             <button
               onClick={handleGenerateAI}
               disabled={isGenerating}
-              className="btn-ruby px-3.5 py-1.5 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] disabled:opacity-50"
+              className="btn-ruby px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] disabled:opacity-50"
               title="Regenerate mock draft and approach plan with MurabbiAI"
             >
               <Sparkles size={13} className={clsx(isGenerating && "animate-spin")} />
@@ -422,7 +422,7 @@ export default function ProjectWorkspaceModal({
             {/* Export To Notes */}
             <button
               onClick={exportToNotes}
-              className="p-2 rounded-xl glass border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all relative"
+              className="p-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--accent-soft)] transition-all relative"
               title="Export Draft to Murabbi Notes"
             >
               {notesExportSuccess ? <Check size={16} className="text-emerald-400" /> : <FileDown size={16} />}
@@ -437,7 +437,7 @@ export default function ProjectWorkspaceModal({
                   onClose();
                 }
               }}
-              className="p-2 rounded-xl glass border border-white/10 text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+              className="p-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-dim)] hover:text-red-400 hover:bg-red-500/10 transition-all"
               title="Delete Project"
             >
               <Trash2 size={16} />
@@ -446,7 +446,7 @@ export default function ProjectWorkspaceModal({
             {/* Close */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl glass border border-white/10 text-white/40 hover:text-white hover:bg-white/5 transition-all"
+              className="p-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-[var(--accent-soft)] transition-all"
             >
               <X size={18} />
             </button>
@@ -454,15 +454,15 @@ export default function ProjectWorkspaceModal({
         </div>
 
         {/* ──────── WORKSPACE NAVIGATION TABS ──────── */}
-        <div className="flex items-center justify-between px-6 border-b border-white/10 shrink-0 bg-white/[0.01]">
+        <div className="flex items-center justify-between px-6 border-b border-[var(--glass-border)] shrink-0 bg-[var(--glass-bg)]/20">
           <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setActiveTab('draft')}
               className={clsx(
                 "px-4 py-3 text-xs font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-2",
                 activeTab === 'draft'
-                  ? "border-[var(--accent-main)] text-white bg-white/[0.03]"
-                  : "border-transparent text-white/40 hover:text-white/70"
+                  ? "border-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)]/30 font-black"
+                  : "border-transparent text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               <FileText size={14} />
@@ -477,8 +477,8 @@ export default function ProjectWorkspaceModal({
               className={clsx(
                 "px-4 py-3 text-xs font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-2",
                 activeTab === 'plan'
-                  ? "border-[var(--accent-main)] text-white bg-white/[0.03]"
-                  : "border-transparent text-white/40 hover:text-white/70"
+                  ? "border-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)]/30 font-black"
+                  : "border-transparent text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               <Layers size={14} />
@@ -493,13 +493,13 @@ export default function ProjectWorkspaceModal({
               className={clsx(
                 "px-4 py-3 text-xs font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-2",
                 activeTab === 'bookmarks'
-                  ? "border-[var(--accent-main)] text-white bg-white/[0.03]"
-                  : "border-transparent text-white/40 hover:text-white/70"
+                  ? "border-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)]/30 font-black"
+                  : "border-transparent text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               <Bookmark size={14} />
               <span>Research Dossier</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-white/10 text-white/80">
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-[var(--accent-soft)] text-[var(--accent-main)]">
                 {project.bookmarks.length}
               </span>
             </button>
@@ -509,8 +509,8 @@ export default function ProjectWorkspaceModal({
               className={clsx(
                 "px-4 py-3 text-xs font-black uppercase tracking-wider transition-all border-b-2 flex items-center gap-2",
                 activeTab === 'notes'
-                  ? "border-[var(--accent-main)] text-white bg-white/[0.03]"
-                  : "border-transparent text-white/40 hover:text-white/70"
+                  ? "border-[var(--accent-main)] text-[var(--accent-main)] bg-[var(--accent-soft)]/30 font-black"
+                  : "border-transparent text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               <Edit3 size={14} />
@@ -526,7 +526,7 @@ export default function ProjectWorkspaceModal({
                   if (isEditingDraft) handleSaveDraft();
                   else setIsEditingDraft(true);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 text-[11px] font-bold flex items-center gap-1 border border-white/10 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[var(--text-muted)] hover:text-[var(--text-main)] text-[11px] font-bold flex items-center gap-1 border border-[var(--glass-border)] transition-colors"
               >
                 {isEditingDraft ? <Save size={12} className="text-emerald-400" /> : <Edit3 size={12} />}
                 <span>{isEditingDraft ? 'Save Edits' : 'Edit Draft'}</span>
@@ -534,7 +534,7 @@ export default function ProjectWorkspaceModal({
 
               <button
                 onClick={copyDraftToClipboard}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 text-[11px] font-bold flex items-center gap-1 border border-white/10 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[var(--text-muted)] hover:text-[var(--text-main)] text-[11px] font-bold flex items-center gap-1 border border-[var(--glass-border)] transition-colors"
               >
                 {copiedDraft ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                 <span>{copiedDraft ? 'Copied' : 'Copy'}</span>
@@ -545,7 +545,7 @@ export default function ProjectWorkspaceModal({
           {activeTab === 'bookmarks' && (
             <button
               onClick={() => setIsAddingBookmarks(true)}
-              className="px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-hover)] text-[var(--accent-main)] hover:text-white text-[11px] font-bold flex items-center gap-1 border border-[var(--accent-main)]/30 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-hover)] text-[var(--accent-main)] hover:text-[var(--text-main)] text-[11px] font-bold flex items-center gap-1 border border-[var(--accent-main)]/30 transition-colors"
             >
               <Plus size={12} />
               <span>Attach More Bookmarks</span>
@@ -559,11 +559,11 @@ export default function ProjectWorkspaceModal({
             <div className="flex items-center gap-3">
               <Loader2 size={20} className="text-[var(--accent-main)] animate-spin" />
               <div>
-                <h4 className="font-black text-sm text-white">MurabbiAI Generation Protocol Active</h4>
+                <h4 className="font-black text-sm text-[var(--text-main)]">MurabbiAI Generation Protocol Active</h4>
                 <p className="text-xs text-[var(--accent-main)] font-mono">{generationStep}</p>
               </div>
             </div>
-            <div className="text-[10px] text-white/40 font-mono">
+            <div className="text-[10px] text-[var(--text-dim)] font-mono">
               Model: gemini-3.6-flash
             </div>
           </div>
@@ -576,7 +576,7 @@ export default function ProjectWorkspaceModal({
               <AlertTriangle size={16} className="text-red-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
-            <button onClick={() => setErrorMsg(null)} className="text-white/60 hover:text-white">
+            <button onClick={() => setErrorMsg(null)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
               <X size={14} />
             </button>
           </div>
@@ -590,22 +590,22 @@ export default function ProjectWorkspaceModal({
             <div className="max-w-4xl mx-auto space-y-6">
               {!draftContent && !isGenerating ? (
                 /* Empty state CTA */
-                <div className="text-center py-16 px-6 rounded-2xl glass border border-white/10 bg-white/[0.02] space-y-4">
+                <div className="text-center py-16 px-6 rounded-2xl glass border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center mx-auto border border-[var(--accent-main)]/30 shadow-xl shadow-[var(--accent-glow)]">
                     <Sparkles size={28} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-black italic tracking-tight text-white">
+                    <h3 className="text-xl font-black italic tracking-tight text-[var(--text-main)]">
                       Draft Manuscript Not Yet Initialized
                     </h3>
-                    <p className="text-xs text-white/60 max-w-md mx-auto">
+                    <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
                       Click below to have MurabbiAI synthesize your attached research bookmarks into a comprehensive, publication-ready {project.type} manuscript.
                     </p>
                   </div>
                   <button
                     onClick={handleGenerateAI}
                     disabled={isGenerating}
-                    className="btn-ruby px-6 py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
+                    className="btn-ruby px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
                   >
                     <Sparkles size={14} />
                     <span>Generate Manuscript with MurabbiAI</span>
@@ -614,7 +614,7 @@ export default function ProjectWorkspaceModal({
               ) : isEditingDraft ? (
                 /* Editable text area */
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs text-white/50">
+                  <div className="flex items-center justify-between text-xs text-[var(--text-dim)]">
                     <span>Editing manuscript markdown directly</span>
                     <span>{wordCount} words</span>
                   </div>
@@ -622,18 +622,18 @@ export default function ProjectWorkspaceModal({
                     value={draftContent}
                     onChange={e => setDraftContent(e.target.value)}
                     rows={26}
-                    className="w-full p-5 rounded-2xl bg-black/60 border border-white/20 text-white font-mono text-sm leading-relaxed focus:outline-none focus:border-[var(--accent-main)] resize-none"
+                    className="w-full p-5 rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-main)] font-mono text-sm leading-relaxed focus:outline-none focus:border-[var(--accent-main)] resize-none"
                   />
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setIsEditingDraft(false)}
-                      className="px-4 py-2 rounded-xl glass border border-white/10 text-white/60 text-xs font-bold"
+                      className="px-4 py-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-muted)] text-xs font-bold"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveDraft}
-                      className="btn-ruby px-5 py-2 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+                      className="btn-ruby px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
                     >
                       <Save size={14} />
                       <span>Save Changes</span>
@@ -644,8 +644,8 @@ export default function ProjectWorkspaceModal({
                 /* Rendered Manuscript View */
                 <div className="space-y-6">
                   {/* Manuscript stats card */}
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-4 text-white/60">
+                  <div className="p-4 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-4 text-[var(--text-muted)]">
                       <div className="flex items-center gap-1.5">
                         <Clock size={13} className="text-[var(--accent-main)]" />
                         <span>~{estimatedMins} min delivery time</span>
@@ -662,7 +662,7 @@ export default function ProjectWorkspaceModal({
 
                     <button
                       onClick={copyDraftToClipboard}
-                      className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center gap-1.5 border border-white/10 transition-colors"
+                      className="px-3 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[var(--text-main)] text-xs font-bold flex items-center gap-1.5 border border-[var(--glass-border)] transition-colors"
                     >
                       {copiedDraft ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                       <span>{copiedDraft ? 'Copied to Clipboard' : 'Copy Full Manuscript'}</span>
@@ -670,7 +670,7 @@ export default function ProjectWorkspaceModal({
                   </div>
 
                   {/* Formatted Markdown Content */}
-                  <div className="p-8 sm:p-10 rounded-2xl glass bg-white/[0.015] border border-white/10 shadow-xl space-y-6 text-white/90 leading-relaxed font-sans select-text">
+                  <div className="p-8 sm:p-10 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] shadow-xl space-y-6 text-[var(--text-main)] leading-relaxed font-sans select-text">
                     {draftContent.split('\n\n').map((paragraph, pIdx) => {
                       const trimmed = paragraph.trim();
                       if (!trimmed) return null;
@@ -678,7 +678,7 @@ export default function ProjectWorkspaceModal({
                       // Level 1 Heading
                       if (trimmed.startsWith('# ')) {
                         return (
-                          <h1 key={pIdx} className="text-2xl sm:text-3xl font-black italic tracking-tight text-white border-b border-white/10 pb-3 pt-2 text-[var(--accent-main)]">
+                          <h1 key={pIdx} className="text-2xl sm:text-3xl font-black italic tracking-tight border-b border-[var(--glass-border)] pb-3 pt-2 text-[var(--accent-main)]">
                             {trimmed.replace('# ', '')}
                           </h1>
                         );
@@ -687,7 +687,7 @@ export default function ProjectWorkspaceModal({
                       // Level 2 Heading
                       if (trimmed.startsWith('## ')) {
                         return (
-                          <h2 key={pIdx} className="text-xl sm:text-2xl font-black italic tracking-tight text-white pt-4 text-white">
+                          <h2 key={pIdx} className="text-xl sm:text-2xl font-black italic tracking-tight text-[var(--text-main)] pt-4">
                             {trimmed.replace('## ', '')}
                           </h2>
                         );
@@ -708,7 +708,7 @@ export default function ProjectWorkspaceModal({
                         return (
                           <div
                             key={pIdx}
-                            className="my-4 p-4 rounded-xl bg-[var(--accent-soft)] border-l-4 border-[var(--accent-main)] text-white/95 italic leading-relaxed space-y-1"
+                            className="my-4 p-4 rounded-xl bg-[var(--accent-soft)] border-l-4 border-[var(--accent-main)] text-[var(--text-main)] italic leading-relaxed space-y-1"
                           >
                             <p className="font-serif text-sm sm:text-base">{quoteContent}</p>
                           </div>
@@ -719,7 +719,7 @@ export default function ProjectWorkspaceModal({
                       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                         const items = trimmed.split('\n').map(line => line.replace(/^[-*]\s*/, ''));
                         return (
-                          <ul key={pIdx} className="space-y-2 my-3 pl-4 list-disc list-outside text-white/80 text-sm">
+                          <ul key={pIdx} className="space-y-2 my-3 pl-4 list-disc list-outside text-[var(--text-muted)] text-sm">
                             {items.map((it, iIdx) => (
                               <li key={iIdx} className="leading-relaxed">
                                 {it}
@@ -731,7 +731,7 @@ export default function ProjectWorkspaceModal({
 
                       // Standard paragraph
                       return (
-                        <p key={pIdx} className="text-sm sm:text-base leading-relaxed text-white/85">
+                        <p key={pIdx} className="text-sm sm:text-base leading-relaxed text-[var(--text-main)]">
                           {trimmed}
                         </p>
                       );
@@ -747,22 +747,22 @@ export default function ProjectWorkspaceModal({
             <div className="max-w-4xl mx-auto space-y-6">
               {!project.aiPlan ? (
                 /* Empty Plan state */
-                <div className="text-center py-16 px-6 rounded-2xl glass border border-white/10 bg-white/[0.02] space-y-4">
+                <div className="text-center py-16 px-6 rounded-2xl glass border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center mx-auto border border-[var(--accent-main)]/30 shadow-xl shadow-[var(--accent-glow)]">
                     <Layers size={28} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-black italic tracking-tight text-white">
+                    <h3 className="text-xl font-black italic tracking-tight text-[var(--text-main)]">
                       Strategic Action Plan Not Yet Generated
                     </h3>
-                    <p className="text-xs text-white/60 max-w-md mx-auto">
+                    <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
                       Generate the AI roadmap to receive pedagogical instructions, delivery strategies, and phased timeline allocations.
                     </p>
                   </div>
                   <button
                     onClick={handleGenerateAI}
                     disabled={isGenerating}
-                    className="btn-ruby px-6 py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
+                    className="btn-ruby px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
                   >
                     <Sparkles size={14} />
                     <span>Generate Strategic Plan</span>
@@ -773,22 +773,22 @@ export default function ProjectWorkspaceModal({
                 <div className="space-y-6">
                   {/* Objective & Target Audience Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-2">
+                    <div className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-2">
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]">
                         <Lightbulb size={12} />
                         <span>Core Strategic Objective</span>
                       </div>
-                      <p className="text-sm text-white/90 leading-relaxed">
+                      <p className="text-sm text-[var(--text-main)] leading-relaxed">
                         {project.aiPlan.objective}
                       </p>
                     </div>
 
-                    <div className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-2">
+                    <div className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-2">
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]">
                         <GraduationCap size={12} />
                         <span>Target Audience Adaptation</span>
                       </div>
-                      <p className="text-sm text-white/90 leading-relaxed">
+                      <p className="text-sm text-[var(--text-main)] leading-relaxed">
                         {project.aiPlan.targetAudience}
                       </p>
                     </div>
@@ -803,7 +803,7 @@ export default function ProjectWorkspaceModal({
                           {project.type === 'speech' ? 'Oratorical & Delivery Protocol' : project.type === 'dars' ? 'Classroom & Pedagogical Protocol' : 'Scholarly Writing & Academic Tone'}
                         </span>
                       </div>
-                      <p className="text-sm text-white/90 leading-relaxed font-sans">
+                      <p className="text-sm text-[var(--text-main)] leading-relaxed font-sans">
                         {project.aiPlan.deliveryStrategy}
                       </p>
                     </div>
@@ -811,15 +811,15 @@ export default function ProjectWorkspaceModal({
 
                   {/* Key Themes Chips */}
                   {project.aiPlan.keyThemes && project.aiPlan.keyThemes.length > 0 && (
-                    <div className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
+                    <div className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-3">
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-dim)]">
                         Theological Anchor Themes
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {project.aiPlan.keyThemes.map((thm, tIdx) => (
                           <span
                             key={tIdx}
-                            className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-xl bg-[var(--accent-soft)]/40 border border-[var(--glass-border)] text-[var(--text-main)] font-bold text-xs flex items-center gap-1.5"
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-main)]" />
                             <span>{thm}</span>
@@ -832,7 +832,7 @@ export default function ProjectWorkspaceModal({
                   {/* Phased Timeline / Structure Breakdown */}
                   {project.aiPlan.structureBreakdown && project.aiPlan.structureBreakdown.length > 0 && (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-white/60 px-1">
+                      <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] px-1">
                         <span>Phased Delivery Breakdown</span>
                         <span>{project.aiPlan.structureBreakdown.length} Stages</span>
                       </div>
@@ -841,36 +841,36 @@ export default function ProjectWorkspaceModal({
                         {project.aiPlan.structureBreakdown.map((sec, sIdx) => (
                           <div
                             key={sIdx}
-                            className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-3 hover:border-white/20 transition-all"
+                            className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-3 hover:border-[var(--accent-main)]/30 transition-all"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] text-[var(--accent-main)] border border-[var(--accent-main)]/30 text-xs font-mono font-black flex items-center justify-center">
                                   {sIdx + 1}
                                 </span>
-                                <h4 className="font-bold text-base text-white">
+                                <h4 className="font-bold text-base text-[var(--text-main)]">
                                   {sec.title}
                                 </h4>
                               </div>
 
                               {sec.durationOrWords && (
-                                <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-white/70">
+                                <span className="px-2.5 py-1 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[10px] font-mono font-bold text-[var(--text-muted)]">
                                   {sec.durationOrWords}
                                 </span>
                               )}
                             </div>
 
                             {sec.summary && (
-                              <p className="text-xs text-white/70 italic">
+                              <p className="text-xs text-[var(--text-muted)] italic">
                                 {sec.summary}
                               </p>
                             )}
 
                             {/* Talking points */}
                             {sec.talkingPoints && sec.talkingPoints.length > 0 && (
-                              <div className="space-y-1.5 pl-2 border-l border-white/10">
+                              <div className="space-y-1.5 pl-2 border-l border-[var(--glass-border)]">
                                 {sec.talkingPoints.map((tp, tpIdx) => (
-                                  <div key={tpIdx} className="text-xs text-white/80 flex items-start gap-2">
+                                  <div key={tpIdx} className="text-xs text-[var(--text-main)] flex items-start gap-2">
                                     <ChevronRight size={12} className="text-[var(--accent-main)] shrink-0 mt-0.5" />
                                     <span>{tp}</span>
                                   </div>
@@ -880,10 +880,10 @@ export default function ProjectWorkspaceModal({
 
                             {/* Referenced bookmarks */}
                             {sec.referencedBookmarks && sec.referencedBookmarks.length > 0 && (
-                              <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[10px] text-white/50">
+                              <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[10px] text-[var(--text-dim)]">
                                 <span className="font-mono">Sources:</span>
                                 {sec.referencedBookmarks.map((rb, rbIdx) => (
-                                  <span key={rbIdx} className="px-2 py-0.5 rounded bg-white/5 text-[var(--accent-main)] font-mono font-bold border border-white/5">
+                                  <span key={rbIdx} className="px-2 py-0.5 rounded bg-[var(--glass-bg)] text-[var(--accent-main)] font-mono font-bold border border-[var(--glass-border)]">
                                     {rb}
                                   </span>
                                 ))}
@@ -899,12 +899,12 @@ export default function ProjectWorkspaceModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Pedagogical Tips */}
                     {project.aiPlan.pedagogicalTips && project.aiPlan.pedagogicalTips.length > 0 && (
-                      <div className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-3">
+                      <div className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-3">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
                           <CheckCircle size={13} />
                           <span>Key Recommendations</span>
                         </div>
-                        <ul className="space-y-2 text-xs text-white/80">
+                        <ul className="space-y-2 text-xs text-[var(--text-muted)]">
                           {project.aiPlan.pedagogicalTips.map((tip, tipIdx) => (
                             <li key={tipIdx} className="flex items-start gap-2 leading-relaxed">
                               <span className="text-emerald-400 font-bold">•</span>
@@ -917,12 +917,12 @@ export default function ProjectWorkspaceModal({
 
                     {/* Pitfalls to Avoid */}
                     {project.aiPlan.pitfallsToAvoid && project.aiPlan.pitfallsToAvoid.length > 0 && (
-                      <div className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-3">
+                      <div className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-3">
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
                           <AlertTriangle size={13} />
                           <span>Pitfalls & Traps to Avoid</span>
                         </div>
-                        <ul className="space-y-2 text-xs text-white/80">
+                        <ul className="space-y-2 text-xs text-[var(--text-muted)]">
                           {project.aiPlan.pitfallsToAvoid.map((pf, pfIdx) => (
                             <li key={pfIdx} className="flex items-start gap-2 leading-relaxed">
                               <span className="text-amber-400 font-bold">•</span>
@@ -943,17 +943,17 @@ export default function ProjectWorkspaceModal({
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-black italic tracking-tight text-white">
+                  <h3 className="text-lg font-black italic tracking-tight text-[var(--text-main)]">
                     Attached Research Evidence ({project.bookmarks.length})
                   </h3>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-[var(--text-dim)]">
                     Citations and theological texts actively backing this project.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setIsAddingBookmarks(true)}
-                  className="btn-ruby px-3.5 py-1.5 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)]"
+                  className="btn-ruby px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)]"
                 >
                   <Plus size={13} />
                   <span>Attach More Bookmarks</span>
@@ -961,15 +961,15 @@ export default function ProjectWorkspaceModal({
               </div>
 
               {project.bookmarks.length === 0 ? (
-                <div className="text-center py-16 px-6 rounded-2xl glass border border-white/10 bg-white/[0.02] space-y-3">
-                  <Bookmark size={32} className="mx-auto text-white/20" />
-                  <h4 className="font-bold text-sm text-white">No Research Bookmarks Attached</h4>
-                  <p className="text-xs text-white/50 max-w-sm mx-auto">
+                <div className="text-center py-16 px-6 rounded-2xl glass border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-3">
+                  <Bookmark size={32} className="mx-auto text-[var(--text-dim)]" />
+                  <h4 className="font-bold text-sm text-[var(--text-main)]">No Research Bookmarks Attached</h4>
+                  <p className="text-xs text-[var(--text-muted)] max-w-sm mx-auto">
                     You can attach saved verses, hadith narrations, or Ruhani Khazain excerpts from your research library at any time.
                   </p>
                   <button
                     onClick={() => setIsAddingBookmarks(true)}
-                    className="px-4 py-2 rounded-xl glass border border-white/10 text-white text-xs font-bold hover:bg-white/5"
+                    className="px-4 py-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-main)] text-xs font-bold hover:bg-[var(--accent-soft)]"
                   >
                     Select Bookmarks from Library
                   </button>
@@ -982,18 +982,18 @@ export default function ProjectWorkspaceModal({
                     return (
                       <div
                         key={b.id}
-                        className="p-4 rounded-2xl glass bg-white/[0.02] border border-white/10 space-y-3 hover:border-white/20 transition-all text-left"
+                        className="p-4 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-3 hover:border-[var(--accent-main)]/30 transition-all text-left"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className={clsx("px-2 py-0.5 rounded text-[9px] font-bold border", badge.color)}>
                               {badge.label}
                             </span>
-                            <h4 className="font-bold text-sm text-white">
+                            <h4 className="font-bold text-sm text-[var(--text-main)]">
                               {b.title}
                             </h4>
                             {b.subtitle && (
-                              <span className="text-xs text-white/50">
+                              <span className="text-xs text-[var(--text-dim)]">
                                 • {b.subtitle}
                               </span>
                             )}
@@ -1002,7 +1002,7 @@ export default function ProjectWorkspaceModal({
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => copyCitation(b.citationText || b.title, b.id)}
-                              className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-[10px] font-bold flex items-center gap-1 border border-white/5 transition-colors"
+                              className="px-2 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[var(--text-muted)] hover:text-[var(--text-main)] text-[10px] font-bold flex items-center gap-1 border border-[var(--glass-border)] transition-colors"
                               title="Copy Citation"
                             >
                               {copiedCitationId === b.id ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
@@ -1014,7 +1014,7 @@ export default function ProjectWorkspaceModal({
                                 href={b.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-1 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                                className="p-1 rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] hover:bg-[var(--accent-soft)] transition-colors"
                                 title="Open Source URL"
                               >
                                 <ExternalLink size={13} />
@@ -1023,7 +1023,7 @@ export default function ProjectWorkspaceModal({
 
                             <button
                               onClick={() => handleRemoveBookmark(b.id)}
-                              className="p-1 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="p-1 rounded-lg text-[var(--text-dim)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                               title="Remove bookmark from project"
                             >
                               <Trash2 size={13} />
@@ -1032,13 +1032,13 @@ export default function ProjectWorkspaceModal({
                         </div>
 
                         {b.snippet && (
-                          <p className="text-xs text-white/80 italic leading-relaxed border-l-2 border-[var(--accent-main)]/50 pl-3">
+                          <p className="text-xs text-[var(--text-main)] italic leading-relaxed border-l-2 border-[var(--accent-main)]/50 pl-3">
                             "{b.snippet}"
                           </p>
                         )}
 
                         {b.citationText && (
-                          <div className="text-[10px] font-mono text-white/40">
+                          <div className="text-[10px] font-mono text-[var(--text-dim)]">
                             Reference: {b.citationText}
                           </div>
                         )}
@@ -1055,17 +1055,17 @@ export default function ProjectWorkspaceModal({
             <div className="max-w-4xl mx-auto space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-black italic tracking-tight text-white">
+                  <h3 className="text-lg font-black italic tracking-tight text-[var(--text-main)]">
                     Personal Scratchpad & Working Notes
                   </h3>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-[var(--text-dim)]">
                     Private prep notes, stage cues, or speech reminders.
                   </p>
                 </div>
 
                 <button
                   onClick={handleSaveNotes}
-                  className="btn-ruby px-4 py-1.5 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+                  className="btn-ruby px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
                 >
                   <Save size={13} />
                   <span>Save Notes</span>
@@ -1077,7 +1077,7 @@ export default function ProjectWorkspaceModal({
                 onChange={e => setUserNotes(e.target.value)}
                 placeholder="Write preparation notes, personal reflections, timing cues, or points to follow up on..."
                 rows={18}
-                className="w-full p-5 rounded-2xl bg-black/50 border border-white/10 text-white text-sm leading-relaxed focus:outline-none focus:border-[var(--accent-main)] resize-none"
+                className="w-full p-5 rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-main)] text-sm leading-relaxed focus:outline-none focus:border-[var(--accent-main)] resize-none"
               />
             </div>
           )}
@@ -1093,26 +1093,26 @@ export default function ProjectWorkspaceModal({
             className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setIsAddingBookmarks(false)}
           />
-          <div className="relative w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl glass bg-[#0a0f1d] border border-white/20 shadow-2xl z-10 p-6 space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="relative w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] shadow-2xl z-10 p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-3">
               <div>
-                <h3 className="font-black italic text-lg text-white">
+                <h3 className="font-black italic text-lg text-[var(--text-main)]">
                   Attach Saved Research Bookmarks
                 </h3>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-[var(--text-dim)]">
                   Select items from your Research library to add to this project.
                 </p>
               </div>
               <button
                 onClick={() => setIsAddingBookmarks(false)}
-                className="p-1 rounded-lg text-white/40 hover:text-white"
+                className="p-1 rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)]"
               >
                 <X size={16} />
               </button>
             </div>
 
             {availableBookmarks.length === 0 ? (
-              <div className="text-center py-12 text-white/40 text-xs">
+              <div className="text-center py-12 text-[var(--text-dim)] text-xs">
                 All saved bookmarks in your library are already attached to this project!
               </div>
             ) : (
@@ -1136,14 +1136,14 @@ export default function ProjectWorkspaceModal({
                         "p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3",
                         isSelected
                           ? "bg-[var(--accent-soft)] border-[var(--accent-main)]"
-                          : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                          : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30"
                       )}
                     >
                       <div className={clsx(
                         "w-4 h-4 rounded mt-0.5 flex items-center justify-center border",
                         isSelected
                           ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white"
-                          : "border-white/20"
+                          : "border-[var(--glass-border)]"
                       )}>
                         {isSelected && <Check size={10} />}
                       </div>
@@ -1153,12 +1153,12 @@ export default function ProjectWorkspaceModal({
                           <span className={clsx("px-1.5 py-0.2 rounded text-[8px] font-bold border", badge.color)}>
                             {badge.label}
                           </span>
-                          <span className="font-bold text-xs text-white truncate">
+                          <span className="font-bold text-xs text-[var(--text-main)] truncate">
                             {b.title}
                           </span>
                         </div>
                         {b.snippet && (
-                          <p className="text-[10px] text-white/60 line-clamp-1 italic">
+                          <p className="text-[10px] text-[var(--text-muted)] line-clamp-1 italic">
                             "{b.snippet}"
                           </p>
                         )}
@@ -1169,21 +1169,21 @@ export default function ProjectWorkspaceModal({
               </div>
             )}
 
-            <div className="flex items-center justify-between border-t border-white/10 pt-3">
-              <span className="text-xs text-white/50">
+            <div className="flex items-center justify-between border-t border-[var(--glass-border)] pt-3">
+              <span className="text-xs text-[var(--text-dim)]">
                 {selectedToAdd.size} bookmarks selected
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsAddingBookmarks(false)}
-                  className="px-3 py-1.5 rounded-xl glass border border-white/10 text-white/60 text-xs font-bold"
+                  className="px-3 py-1.5 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-muted)] text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAttachBookmarks}
                   disabled={selectedToAdd.size === 0}
-                  className="btn-ruby px-4 py-1.5 rounded-xl text-white text-xs font-black uppercase tracking-wider disabled:opacity-40"
+                  className="btn-ruby px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider disabled:opacity-40"
                 >
                   Attach to Project
                 </button>

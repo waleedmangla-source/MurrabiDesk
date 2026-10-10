@@ -238,7 +238,7 @@ export default function ProjectsManager() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-xl glass border border-white/10 text-white/70 hover:text-white hover:bg-white/5 transition-all"
+                className="lg:hidden p-2 rounded-xl glass border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--accent-soft)] transition-all"
                 title="Open Sidebar"
               >
                 <Menu size={18} />
@@ -249,14 +249,14 @@ export default function ProjectsManager() {
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]">
                     Theological Composition Protocol
                   </span>
-                  <span className="text-white/20">•</span>
-                  <span className="text-[10px] font-mono text-white/40 capitalize">
+                  <span className="text-[var(--text-dim)]">•</span>
+                  <span className="text-[10px] font-mono text-[var(--text-dim)] capitalize">
                     {view === 'create'
                       ? 'Questionnaire'
                       : (activeFilter === 'all' ? 'All Works' : activeFilter === 'drafted' ? 'Manuscripts' : activeFilter)}
                   </span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black italic tracking-tighter text-white">
+                <h1 className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[var(--text-main)]">
                   {view === 'create'
                     ? 'New Composition Form'
                     : (activeFilter === 'all' ? 'Taleef Library' :
@@ -275,18 +275,18 @@ export default function ProjectsManager() {
               <div className="flex items-center gap-3">
                 {/* Search input */}
                 <div className="relative w-full sm:w-64">
-                  <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+                  <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Search works..."
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/10 focus:border-[var(--accent-main)] focus:outline-none text-white text-xs placeholder:text-white/30"
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] focus:border-[var(--accent-main)] focus:outline-none text-[var(--text-main)] text-xs placeholder:text-[var(--text-dim)]"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[var(--text-main)]"
                     >
                       <X size={12} />
                     </button>
@@ -300,7 +300,7 @@ export default function ProjectsManager() {
                     setCreateInitialType('speech');
                     setView('create');
                   }}
-                  className="btn-ruby px-4 py-2 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] shrink-0 transition-all hover:scale-[1.02]"
+                  className="btn-ruby px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-[var(--accent-glow)] shrink-0 transition-all hover:scale-[1.02]"
                 >
                   <Plus size={14} />
                   <span>New Work</span>
@@ -311,7 +311,7 @@ export default function ProjectsManager() {
                 <button
                   type="button"
                   onClick={() => setView('library')}
-                  className="px-4 py-2 rounded-xl glass border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2 rounded-xl glass border border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 text-[var(--text-muted)] hover:text-[var(--text-main)] text-xs font-bold flex items-center gap-1.5 transition-colors"
                 >
                   <ArrowLeft size={14} />
                   <span>Back to Library</span>
@@ -343,10 +343,10 @@ export default function ProjectsManager() {
                   </div>
 
                   <div className="space-y-2">
-                    <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white">
+                    <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-[var(--text-main)]">
                       No Taleef Works Initialized Yet
                     </h2>
-                    <p className="text-sm text-white/60 max-w-lg mx-auto">
+                    <p className="text-sm text-[var(--text-muted)] max-w-lg mx-auto">
                       Taleef enables you to assemble your saved Quran, Hadith, and Ruhani Khazain research bookmarks into structured speeches, dars lessons, and scholarly articles with AI-crafted drafts.
                     </p>
                   </div>
@@ -359,16 +359,16 @@ export default function ProjectsManager() {
                         setCreateInitialType('speech');
                         setView('create');
                       }}
-                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-red-500/40 hover:bg-red-500/[0.02] transition-all group space-y-3"
+                      className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-red-500/40 hover:bg-red-500/[0.04] transition-all group space-y-3"
                     >
                       <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center">
                         <Mic size={18} />
                       </div>
                       <div>
-                        <h4 className="font-black text-sm text-white group-hover:text-red-400 transition-colors">
+                        <h4 className="font-black text-sm text-[var(--text-main)] group-hover:text-red-400 transition-colors">
                           Start a Speech / Taqreer
                         </h4>
-                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                        <p className="text-[11px] text-[var(--text-muted)] mt-1 leading-snug">
                           Draft a Friday sermon or Jalsa speech with Hamd-o-Sana, rhetorical arcs, and time pacing.
                         </p>
                       </div>
@@ -384,16 +384,16 @@ export default function ProjectsManager() {
                         setCreateInitialType('dars');
                         setView('create');
                       }}
-                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/[0.02] transition-all group space-y-3"
+                      className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-emerald-500/40 hover:bg-emerald-500/[0.04] transition-all group space-y-3"
                     >
                       <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                         <GraduationCap size={18} />
                       </div>
                       <div>
-                        <h4 className="font-black text-sm text-white group-hover:text-emerald-400 transition-colors">
+                        <h4 className="font-black text-sm text-[var(--text-main)] group-hover:text-emerald-400 transition-colors">
                           Start a Dars Class
                         </h4>
-                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                        <p className="text-[11px] text-[var(--text-muted)] mt-1 leading-snug">
                           Build an interactive study circle with verse recitation, linguistic nuances & discussion questions.
                         </p>
                       </div>
@@ -409,16 +409,16 @@ export default function ProjectsManager() {
                         setCreateInitialType('article');
                         setView('create');
                       }}
-                      className="p-5 rounded-2xl glass bg-white/[0.02] border border-white/10 hover:border-blue-500/40 hover:bg-blue-500/[0.02] transition-all group space-y-3"
+                      className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-blue-500/40 hover:bg-blue-500/[0.04] transition-all group space-y-3"
                     >
                       <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
                         <FileText size={18} />
                       </div>
                       <div>
-                        <h4 className="font-black text-sm text-white group-hover:text-blue-400 transition-colors">
+                        <h4 className="font-black text-sm text-[var(--text-main)] group-hover:text-blue-400 transition-colors">
                           Write an Article
                         </h4>
-                        <p className="text-[11px] text-white/50 mt-1 leading-snug">
+                        <p className="text-[11px] text-[var(--text-muted)] mt-1 leading-snug">
                           Compose an academic theological paper with systematic proofs and academic citations.
                         </p>
                       </div>
@@ -430,7 +430,7 @@ export default function ProjectsManager() {
                   </div>
                 </div>
               ) : filteredProjects.length === 0 ? (
-            <div className="text-center py-20 text-white/40 text-xs">
+            <div className="text-center py-20 text-[var(--text-dim)] text-xs">
               No works match your active filter or search query.
             </div>
           ) : (
@@ -447,7 +447,7 @@ export default function ProjectsManager() {
                       setActiveProject(proj);
                       setAutoTriggerGenerateOnOpen(false);
                     }}
-                    className="p-5 rounded-2xl glass bg-white/[0.015] border border-white/10 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-300 cursor-pointer flex flex-col justify-between group space-y-4 hover:shadow-xl relative overflow-hidden"
+                    className="p-5 rounded-2xl glass bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/20 transition-all duration-300 cursor-pointer flex flex-col justify-between group space-y-4 hover:shadow-xl relative overflow-hidden"
                   >
                     {/* Top Card Bar */}
                     <div className="space-y-2">
@@ -462,26 +462,26 @@ export default function ProjectsManager() {
                           proj.status === 'completed' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                           proj.status === 'drafted' ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" :
                           proj.status === 'in_progress' ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
-                          "bg-white/5 text-white/50 border border-white/10"
+                          "bg-[var(--glass-bg)] text-[var(--text-dim)] border border-[var(--glass-border)]"
                         )}>
                           {proj.status.replace('_', ' ')}
                         </span>
                       </div>
 
-                      <h3 className="font-black text-base sm:text-lg text-white group-hover:text-[var(--accent-main)] transition-colors line-clamp-2 italic tracking-tight">
+                      <h3 className="font-black text-base sm:text-lg text-[var(--text-main)] group-hover:text-[var(--accent-main)] transition-colors line-clamp-2 italic tracking-tight">
                         {proj.title}
                       </h3>
 
                       {proj.description && (
-                        <p className="text-xs text-white/60 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
                           {proj.description}
                         </p>
                       )}
                     </div>
 
                     {/* Card Middle: Attached Bookmarks preview */}
-                    <div className="space-y-2 pt-2 border-t border-white/5 text-xs">
-                      <div className="flex items-center justify-between text-[11px] text-white/50">
+                    <div className="space-y-2 pt-2 border-t border-[var(--glass-border)] text-xs">
+                      <div className="flex items-center justify-between text-[11px] text-[var(--text-dim)]">
                         <span className="flex items-center gap-1 font-mono">
                           <Bookmark size={11} className="text-[var(--accent-main)]" />
                           <span>{proj.bookmarks.length} Bookmarks Attached</span>
@@ -497,13 +497,13 @@ export default function ProjectsManager() {
                           {proj.bookmarks.slice(0, 3).map(b => (
                             <span
                               key={b.id}
-                              className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-white/70 truncate max-w-[140px]"
+                              className="px-2 py-0.5 rounded bg-[var(--accent-soft)]/50 border border-[var(--glass-border)] text-[9px] text-[var(--text-muted)] truncate max-w-[140px]"
                             >
                               {b.title}
                             </span>
                           ))}
                           {proj.bookmarks.length > 3 && (
-                            <span className="px-1.5 py-0.5 rounded bg-white/5 text-[9px] text-white/40 font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-[var(--glass-bg)] text-[9px] text-[var(--text-dim)] border border-[var(--glass-border)] font-mono">
                               +{proj.bookmarks.length - 3} more
                             </span>
                           )}
@@ -512,7 +512,7 @@ export default function ProjectsManager() {
                     </div>
 
                     {/* Card Footer: Action Bar */}
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                    <div className="flex items-center justify-between pt-2 border-t border-[var(--glass-border)] text-xs">
                       <div className="flex items-center gap-1.5">
                         {hasDraft ? (
                           <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold">
@@ -527,7 +527,7 @@ export default function ProjectsManager() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-white/50 group-hover:text-white font-bold text-xs transition-colors">
+                      <div className="flex items-center gap-1 text-[var(--text-dim)] group-hover:text-[var(--text-main)] font-bold text-xs transition-colors">
                         <span>Workspace</span>
                         <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                       </div>

@@ -370,7 +370,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
         
         {/* Summary Stats Pill (Desktop) */}
-        <div className="hidden lg:flex items-center gap-6 px-6 py-3.5 glass bg-white/5 rounded-[20px] border border-white/5 shadow-2xl shadow-black/20">
+        <div className="hidden lg:flex items-center gap-6 px-6 py-3.5 glass bg-[var(--glass-bg)] rounded-[20px] border border-[var(--glass-border)] shadow-2xl shadow-black/20">
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">
               Deliverable Format
@@ -380,35 +380,35 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             </span>
           </div>
           
-          <div className="w-px h-10 bg-white/10" />
+          <div className="w-px h-10 bg-[var(--glass-border)]" />
           
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">
               Duration Pacing
             </span>
-            <span className="text-sm font-black text-[var(--text-main)]/80 uppercase tracking-widest">
+            <span className="text-sm font-black text-[var(--text-main)] uppercase tracking-widest">
               {durationMinutes} min (~{Math.round(durationMinutes * 130)}w)
             </span>
           </div>
 
-          <div className="w-px h-10 bg-white/10" />
+          <div className="w-px h-10 bg-[var(--glass-border)]" />
 
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">
               Audience
             </span>
-            <span className="text-sm font-black text-amber-400 uppercase tracking-widest truncate max-w-[140px]">
+            <span className="text-sm font-black text-amber-500 uppercase tracking-widest truncate max-w-[140px]">
               {selectedAudiences.includes('all') ? 'All Members' : selectedAudiences.join(', ')}
             </span>
           </div>
 
-          <div className="w-px h-10 bg-white/10" />
+          <div className="w-px h-10 bg-[var(--glass-border)]" />
 
           <div className="flex flex-col">
             <span className="text-[8px] font-black uppercase text-[var(--text-dim)] tracking-[0.2em] mb-1">
               Research Dossier
             </span>
-            <span className="text-sm font-black text-emerald-400 uppercase tracking-widest">
+            <span className="text-sm font-black text-emerald-500 uppercase tracking-widest">
               {selectedBookmarkIds.size} Citations
             </span>
           </div>
@@ -419,7 +419,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-3.5 glass rounded-[18px] border border-white/10 hover:border-white/20 hover:bg-white/5 text-white/70 hover:text-white transition-all flex items-center gap-2 text-xs font-bold cursor-pointer"
+            className="px-5 py-3.5 glass rounded-[18px] border border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all flex items-center gap-2 text-xs font-bold cursor-pointer"
           >
             <ArrowLeft size={16} />
             <span>Back to Works</span>
@@ -429,7 +429,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             type="button"
             onClick={handleCreate}
             disabled={!topic.trim()}
-            className="btn-ruby px-7 py-3.5 rounded-[18px] text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-[var(--accent-glow)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="btn-ruby px-7 py-3.5 rounded-[18px] text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-[var(--accent-glow)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <Sparkles size={16} />
             <span>{autoGenerateAI ? "Initialize & Generate Draft" : "Save Work"}</span>
@@ -465,12 +465,12 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                           className={clsx(
                             "p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
                             isSelected
-                              ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]/20"
-                              : "bg-black/20 border-white/10 hover:border-white/20 hover:bg-white/5"
+                              ? "bg-[var(--accent-soft)] border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]/20"
+                              : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/30"
                           )}
                         >
                           <div className="flex items-center justify-between">
-                            <span className={clsx("p-1.5 rounded-lg bg-white/5", type.badgeColor)}>
+                            <span className={clsx("p-1.5 rounded-lg bg-[var(--accent-soft)]", type.badgeColor)}>
                               <Icon size={16} />
                             </span>
                             {isSelected && (
@@ -478,10 +478,10 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                             )}
                           </div>
                           <div>
-                            <div className="font-bold text-xs text-white tracking-wide">
+                            <div className="font-bold text-xs text-[var(--text-main)] tracking-wide">
                               {type.label}
                             </div>
-                            <div className="text-[10px] text-white/50 leading-tight mt-0.5 line-clamp-1">
+                            <div className="text-[10px] text-[var(--text-muted)] leading-tight mt-0.5 line-clamp-1">
                               {type.sublabel}
                             </div>
                           </div>
@@ -498,7 +498,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                       <span>Topic / Central Thesis</span>
                       <span className={clsx(
                         "font-mono font-bold normal-case tracking-normal text-[10px]",
-                        topic.length >= 150 ? "text-amber-400" : "text-[var(--text-dim)]"
+                        topic.length >= 150 ? "text-amber-500" : "text-[var(--text-dim)]"
                       )}>
                         {topic.length} / 150 letters
                       </span>
@@ -511,7 +511,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                       placeholder="e.g. The Philosophy of Divine Decree & Free Will according to the Promised Messiah (as)"
                       className="font-medium"
                     />
-                    <p className="text-[10px] text-white/40 italic">
+                    <p className="text-[10px] text-[var(--text-dim)] italic">
                       Strict 150-character limit to ensure crisp, focused doctrinal alignment.
                     </p>
                   </div>
@@ -546,7 +546,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                   <div className="grid grid-cols-1 gap-2">
                     <label className="lbl flex items-center justify-between">
                       <span>Target Audience</span>
-                      <span className="text-[10px] text-white/40 font-mono normal-case">
+                      <span className="text-[10px] text-[var(--text-dim)] font-mono normal-case">
                         Multi-select allowed
                       </span>
                     </label>
@@ -561,13 +561,13 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                             className={clsx(
                               "px-3 py-2 rounded-xl border text-xs cursor-pointer transition-all flex items-center gap-2 select-none",
                               isSelected
-                                ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)] text-white font-bold"
-                                : "bg-black/20 border-white/10 text-white/70 hover:text-white hover:border-white/20"
+                                ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] font-bold"
+                                : "bg-[var(--glass-bg)] border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--accent-main)]/30"
                             )}
                           >
                             <div className={clsx(
                               "w-4 h-4 rounded-md border flex items-center justify-center shrink-0 text-[10px]",
-                              isSelected ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white" : "border-white/20"
+                              isSelected ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white" : "border-[var(--glass-border)]"
                             )}>
                               {isSelected && <Check size={10} />}
                             </div>
@@ -593,12 +593,12 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                           className={clsx(
                             "p-2.5 rounded-xl border text-center cursor-pointer transition-all select-none",
                             language === lang.id
-                              ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)] text-white font-bold"
-                              : "bg-black/20 border-white/10 text-white/70 hover:text-white hover:border-white/20"
+                              ? "bg-[var(--accent-soft)] border-[var(--accent-main)] text-[var(--accent-main)] font-bold"
+                              : "bg-[var(--glass-bg)] border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--accent-main)]/30"
                           )}
                         >
                           <div className="text-xs font-bold">{lang.label}</div>
-                          <div className="text-[9px] text-white/40 mt-0.5">{lang.desc}</div>
+                          <div className="text-[9px] text-[var(--text-dim)] mt-0.5">{lang.desc}</div>
                         </div>
                       ))}
                     </div>
@@ -616,7 +616,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                     </label>
 
                     {/* Range Slider */}
-                    <div className="p-3 rounded-xl bg-black/20 border border-white/5 space-y-2">
+                    <div className="p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] space-y-2">
                       <input
                         type="range"
                         min="1"
@@ -626,7 +626,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                         onChange={e => setDurationMinutes(parseInt(e.target.value, 10))}
                         className="w-full accent-[var(--accent-main)] cursor-pointer"
                       />
-                      <div className="flex justify-between text-[9px] font-mono text-white/40">
+                      <div className="flex justify-between text-[9px] font-mono text-[var(--text-dim)]">
                         <span>1 min (Brief)</span>
                         <span>15 min (Speech)</span>
                         <span>30 min (Keynote)</span>
@@ -644,7 +644,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                             "px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border",
                             durationMinutes === preset.value
                               ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-sm"
-                              : "bg-black/30 text-white/60 border-white/10 hover:text-white hover:border-white/20"
+                              : "bg-[var(--glass-bg)] text-[var(--text-muted)] border-[var(--glass-border)] hover:text-[var(--text-main)] hover:border-[var(--accent-main)]/30"
                           )}
                         >
                           {preset.label}
@@ -688,12 +688,12 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                       className={clsx(
                         "p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2 select-none",
                         isSelected
-                          ? "bg-[var(--accent-main)]/15 border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]/20"
-                          : "bg-black/20 border-white/10 hover:border-white/20 hover:bg-white/5"
+                          ? "bg-[var(--accent-soft)] border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]/20"
+                          : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/20"
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={clsx("p-2 rounded-lg bg-white/5", tone.color)}>
+                        <span className={clsx("p-2 rounded-lg bg-[var(--accent-soft)]", tone.color)}>
                           <Icon size={16} />
                         </span>
                         {isSelected && (
@@ -701,10 +701,10 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                         )}
                       </div>
                       <div>
-                        <div className="font-bold text-xs text-white">
+                        <div className="font-bold text-xs text-[var(--text-main)]">
                           {tone.label}
                         </div>
-                        <div className="text-[10px] text-white/50 leading-relaxed mt-1">
+                        <div className="text-[10px] text-[var(--text-muted)] leading-relaxed mt-1">
                           {tone.description}
                         </div>
                       </div>
@@ -730,11 +730,11 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             <div className="card-body space-y-4">
               
               {/* Category Filter & Search Row */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-white/5">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-[var(--glass-border)]">
                 
                 {/* Search in bookmarks */}
                 <div className="relative flex-1 max-w-md">
-                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
                   <input
                     type="text"
                     value={bookmarkSearch}
@@ -746,7 +746,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                     <button
                       type="button"
                       onClick={() => setBookmarkSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] hover:text-[var(--text-main)]"
                     >
                       <X size={12} />
                     </button>
@@ -758,14 +758,14 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                   <button
                     type="button"
                     onClick={selectAllFiltered}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-bold text-white/70 hover:text-white border border-white/10 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[11px] font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--glass-border)] transition-colors"
                   >
                     Select All ({filteredBookmarks.length})
                   </button>
                   <button
                     type="button"
                     onClick={deselectAllFiltered}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-bold text-white/50 hover:text-white border border-white/10 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[11px] font-bold text-[var(--text-dim)] hover:text-[var(--text-main)] border border-[var(--glass-border)] transition-colors"
                   >
                     Deselect All
                   </button>
@@ -774,15 +774,15 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
 
               {/* Bookmarks Grid / Empty State */}
               {allBookmarks.length === 0 ? (
-                <div className="text-center py-10 px-4 rounded-xl border border-white/5 bg-black/20 space-y-2">
-                  <Bookmark size={28} className="mx-auto text-white/20" />
-                  <div className="font-bold text-xs text-white">No Bookmarks Saved in Research Tab Yet</div>
-                  <p className="text-[11px] text-white/50 max-w-md mx-auto">
+                <div className="text-center py-10 px-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-2">
+                  <Bookmark size={28} className="mx-auto text-[var(--text-dim)]" />
+                  <div className="font-bold text-xs text-[var(--text-main)]">No Bookmarks Saved in Research Tab Yet</div>
+                  <p className="text-[11px] text-[var(--text-muted)] max-w-md mx-auto">
                     You can still initialize this work! MurabbiAI will synthesize authoritative scriptural citations automatically based on your prompt brief.
                   </p>
                 </div>
               ) : filteredBookmarks.length === 0 ? (
-                <div className="text-center py-8 text-white/40 text-xs">
+                <div className="text-center py-8 text-[var(--text-dim)] text-xs">
                   No bookmarks match your search filter.
                 </div>
               ) : (
@@ -798,15 +798,15 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                         className={clsx(
                           "p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none",
                           isSelected
-                            ? "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/70 shadow-sm"
-                            : "bg-black/20 border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--accent-soft)] border-[var(--accent-main)]/70 shadow-sm"
+                            : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/20"
                         )}
                       >
                         <div className={clsx(
                           "w-5 h-5 rounded-md border mt-0.5 shrink-0 flex items-center justify-center transition-colors text-xs",
                           isSelected
                             ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white"
-                            : "border-white/20"
+                            : "border-[var(--glass-border)]"
                         )}>
                           {isSelected && <Check size={12} />}
                         </div>
@@ -816,19 +816,19 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                             <span className={clsx("px-1.5 py-0.5 rounded text-[9px] font-bold border", badge.color)}>
                               {badge.label}
                             </span>
-                            <span className="font-bold text-xs text-white truncate">
+                            <span className="font-bold text-xs text-[var(--text-main)] truncate">
                               {b.title}
                             </span>
                           </div>
 
                           {b.subtitle && (
-                            <p className="text-[11px] text-white/60 line-clamp-1 font-mono">
+                            <p className="text-[11px] text-[var(--text-muted)] line-clamp-1 font-mono">
                               {b.subtitle}
                             </p>
                           )}
 
                           {b.snippet && (
-                            <p className="text-[10px] text-white/40 line-clamp-2 italic leading-relaxed">
+                            <p className="text-[10px] text-[var(--text-dim)] line-clamp-2 italic leading-relaxed">
                               "{b.snippet}"
                             </p>
                           )}
@@ -852,7 +852,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                 <button
                   type="button"
                   onClick={() => setIsEditingPrompt(prev => !prev)}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/70 hover:text-white border border-white/10 flex items-center gap-1 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--glass-border)] flex items-center gap-1 transition-colors"
                 >
                   <Edit3 size={11} />
                   <span>{isEditingPrompt ? 'Auto-Sync' : 'Customize'}</span>
@@ -860,9 +860,9 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                 <button
                   type="button"
                   onClick={copyPromptToClipboard}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/70 hover:text-white border border-white/10 flex items-center gap-1 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--accent-soft)] text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--glass-border)] flex items-center gap-1 transition-colors"
                 >
-                  {copiedPrompt ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                  {copiedPrompt ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                   <span>{copiedPrompt ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
@@ -874,23 +874,23 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                   rows={7}
                   value={customPrompt}
                   onChange={e => setCustomPrompt(e.target.value)}
-                  className="w-full !p-3.5 !rounded-xl !bg-black/60 !border-[var(--accent-main)]/50 text-white font-mono text-xs leading-relaxed"
+                  className="w-full !p-3.5 !rounded-xl !bg-[var(--glass-bg)] !border-[var(--accent-main)]/50 text-[var(--text-main)] font-mono text-xs leading-relaxed"
                 />
               ) : (
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 font-mono text-xs text-white/80 whitespace-pre-wrap leading-relaxed max-h-52 overflow-y-auto">
+                <div className="p-4 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] font-mono text-xs text-[var(--text-main)] whitespace-pre-wrap leading-relaxed max-h-52 overflow-y-auto">
                   {generatedPrompt}
                 </div>
               )}
 
               {/* Auto Generate Checkbox */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent-main)] flex items-center justify-center shrink-0">
                     <Sparkles size={16} />
                   </div>
                   <div>
-                    <h5 className="font-bold text-xs text-white">Generate Mock Draft & Action Plan with MurabbiAI</h5>
-                    <p className="text-[10px] text-white/60">
+                    <h5 className="font-bold text-xs text-[var(--text-main)]">Generate Mock Draft & Action Plan with MurabbiAI</h5>
+                    <p className="text-[10px] text-[var(--text-muted)]">
                       MurabbiAI will synthesize your selected bookmarks into a structured delivery roadmap and full draft.
                     </p>
                   </div>
@@ -900,7 +900,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                   type="checkbox"
                   checked={autoGenerateAI}
                   onChange={e => setAutoGenerateAI(e.target.checked)}
-                  className="w-5 h-5 rounded border-white/20 accent-[var(--accent-main)] cursor-pointer"
+                  className="w-5 h-5 rounded border-[var(--glass-border)] accent-[var(--accent-main)] cursor-pointer"
                 />
               </div>
             </div>
@@ -911,7 +911,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-3.5 glass rounded-[18px] border border-white/10 hover:border-white/20 hover:bg-white/5 text-white/70 hover:text-white transition-all text-xs font-bold flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3.5 glass rounded-[18px] border border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all text-xs font-bold flex items-center gap-2 cursor-pointer"
             >
               <ArrowLeft size={16} />
               <span>Back to Works</span>
@@ -921,7 +921,7 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
               type="button"
               onClick={handleCreate}
               disabled={!topic.trim()}
-              className="btn-ruby px-8 py-3.5 rounded-[18px] text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-[var(--accent-glow)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="btn-ruby px-8 py-3.5 rounded-[18px] text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-[var(--accent-glow)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <Sparkles size={16} />
               <span>{autoGenerateAI ? "Initialize & Generate Draft" : "Save Taleef Work"}</span>
