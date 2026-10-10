@@ -136,6 +136,7 @@ export default function LiveReaderPage() {
 
   const pageTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pdfDocRef = useRef<any>(null);
 
   // PDF Loading options
   const pdfOptions = useMemo(
@@ -497,11 +498,14 @@ export default function LiveReaderPage() {
     setShowAiDrawer(true);
 
     try {
-      // Capture text or canvas snapshot of current page
+      // Capture text from PDF.js document or canvas snapshot
       let pageText = "";
-      const textLayer = document.querySelector(".react-pdf__Page__textContent");
-      if (textLayer) {
-        pageText = (textLayer as HTMLElement).innerText || "";
+      if (pdfDocRef.current) {
+        try {
+          const pageObj = await pdfDocRef.current.getPage(currentPage);
+          const textContent = await pageObj.getTextContent();
+          pageText = textContent.items.map((item: any) => item.str).join(" ");
+        } catch {}
       }
 
       let imageBase64: string | undefined = undefined;
@@ -1054,29 +1058,29 @@ export default function LiveReaderPage() {
             {/* ── CARD DECK PRESENTATION ── */}
             <div className="relative w-full max-w-[760px] flex items-center justify-center my-auto pb-16 select-none perspective-[1400px]">
               {/* Stacked Deck Silhouette 2 (Deepest layer) */}
-              <div className="absolute inset-x-8 top-1 bottom-6 rounded-[34px] bg-white/[0.02] border border-white/5 shadow-lg scale-[0.93] -translate-y-3 pointer-events-none transition-all duration-300" />
+              <div className="absolute inset-x-8 top-1 bottom-6 rounded-[34px] bg-white/70 border border-zinc-200/80 shadow-md scale-[0.93] -translate-y-3 pointer-events-none transition-all duration-300" />
 
               {/* Stacked Deck Silhouette 1 (Middle layer) */}
-              <div className="absolute inset-x-4 top-2 bottom-5 rounded-[32px] bg-white/[0.04] border border-white/10 shadow-xl scale-[0.965] -translate-y-1.5 pointer-events-none transition-all duration-300" />
+              <div className="absolute inset-x-4 top-2 bottom-5 rounded-[32px] bg-white/90 border border-zinc-200 shadow-lg scale-[0.965] -translate-y-1.5 pointer-events-none transition-all duration-300" />
 
-              {/* Main Interactive Card */}
+              {/* Main Interactive Card (White Card with Crisp Black Text) */}
               <div
                 className={clsx(
-                  "relative w-full rounded-[28px] overflow-hidden glass bg-zinc-950/95 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.85)] flex flex-col group/card transition-all duration-300 ease-out",
+                  "relative w-full rounded-[28px] overflow-hidden bg-white text-zinc-950 border border-zinc-200/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.45)] flex flex-col group/card transition-all duration-300 ease-out",
                   isFlipping && flipDirection === "next" && "-translate-x-14 rotate-[-3.5deg] opacity-60 scale-[0.96]",
                   isFlipping && flipDirection === "prev" && "translate-x-14 rotate-[3.5deg] opacity-60 scale-[0.96]",
                   !isFlipping && "translate-x-0 rotate-0 opacity-100 scale-100"
                 )}
               >
-                {/* Card Header Banner */}
-                <div className="px-5 py-3 border-b border-white/10 bg-white/[0.04] flex items-center justify-between select-none">
+                {/* Card Header Banner (Black Text) */}
+                <div className="px-5 py-3 border-b border-zinc-200/80 bg-zinc-50/90 flex items-center justify-between select-none">
                   <div className="flex items-center gap-2">
                     <BookOpen size={14} className="text-[var(--accent-main)]" />
-                    <span className="text-xs font-black text-white truncate max-w-[320px]">
+                    <span className="text-xs font-black text-zinc-950 truncate max-w-[320px]">
                       {activeBook.title}
                     </span>
                     {activeBook.volume && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-[var(--text-dim)] border border-white/10">
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-200/70 text-zinc-800 border border-zinc-300">
                         Vol {activeBook.volume}
                       </span>
                     )}
@@ -1084,28 +1088,29 @@ export default function LiveReaderPage() {
 
                   {/* Card Number Badge */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-[var(--accent-main)] bg-[var(--accent-main)]/10 px-2 py-0.5 rounded-full border border-[var(--accent-main)]/30">
+                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-emerald-950 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-full">
                       Card {currentPage} of {numPages || "..."}
                     </span>
                     <button
                       onClick={() => {
                         recordPageTelemetryAndBookmark(currentPage, pageElapsedSeconds, pageNotes);
                       }}
-                      className="p-1 rounded-lg hover:bg-white/10 text-amber-400 transition-all"
+                      className="p-1 rounded-lg hover:bg-zinc-200 text-amber-500 transition-all"
                       title="Bookmark this card"
                     >
-                      <Bookmark size={13} className="fill-amber-400" />
+                      <Bookmark size={13} className="fill-amber-500" />
                     </button>
                   </div>
                 </div>
 
-                {/* PDF Card Body */}
-                <div className="w-full flex justify-center bg-zinc-950 overflow-hidden py-2 min-h-[500px]">
+                {/* PDF Card Body (100% Crisp Black Vector & Canvas Rendering) */}
+                <div className="w-full flex justify-center bg-white overflow-hidden py-2 min-h-[500px]">
                   <Document
                     file={activeBook.pdfUrl}
                     options={pdfOptions}
-                    onLoadSuccess={({ numPages: loadedNum }) => {
-                      setNumPages(loadedNum);
+                    onLoadSuccess={(pdf) => {
+                      pdfDocRef.current = pdf;
+                      setNumPages(pdf.numPages);
                       setPdfLoading(false);
                       setPdfError(null);
                     }}
@@ -1115,18 +1120,18 @@ export default function LiveReaderPage() {
                       setPdfLoading(false);
                     }}
                     loading={
-                      <div className="flex flex-col items-center justify-center p-24 gap-3 text-white">
+                      <div className="flex flex-col items-center justify-center p-24 gap-3 text-zinc-900">
                         <Loader2 size={32} className="animate-spin text-[var(--accent-main)]" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-dim)]">
+                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-600">
                           Preparing Card...
                         </span>
                       </div>
                     }
                     error={
-                      <div className="p-8 rounded-2xl glass border border-red-500/30 text-center max-w-md my-auto">
-                        <AlertCircle size={28} className="text-red-400 mx-auto mb-2" />
-                        <h3 className="text-sm font-bold text-white mb-1">Failed to Render Card</h3>
-                        <p className="text-xs text-[var(--text-dim)] leading-relaxed">
+                      <div className="p-8 rounded-2xl bg-zinc-50 border border-red-300 text-center max-w-md my-auto">
+                        <AlertCircle size={28} className="text-red-500 mx-auto mb-2" />
+                        <h3 className="text-sm font-bold text-zinc-900 mb-1">Failed to Render Card</h3>
+                        <p className="text-xs text-zinc-600 leading-relaxed">
                           {pdfError || "Unable to display this card. Please retry or choose another book."}
                         </p>
                       </div>
@@ -1136,9 +1141,9 @@ export default function LiveReaderPage() {
                       pageNumber={currentPage}
                       scale={pdfScale}
                       renderAnnotationLayer={false}
-                      renderTextLayer={true}
+                      renderTextLayer={false}
                       loading={
-                        <div className="w-[580px] h-[780px] flex items-center justify-center bg-zinc-900/60">
+                        <div className="w-[580px] h-[780px] flex items-center justify-center bg-zinc-100">
                           <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
                         </div>
                       }
@@ -1146,15 +1151,15 @@ export default function LiveReaderPage() {
                   </Document>
                 </div>
 
-                {/* Card Footer Bar */}
-                <div className="px-5 py-2.5 border-t border-white/10 bg-white/[0.03] flex items-center justify-between text-[10px] text-[var(--text-dim)] select-none">
+                {/* Card Footer Bar (Black/Dark Text) */}
+                <div className="px-5 py-2.5 border-t border-zinc-200/80 bg-zinc-50/90 flex items-center justify-between text-[10px] text-zinc-700 select-none">
                   <div className="flex items-center gap-2">
-                    <span>Dwell: {formatTimeSeconds(pageElapsedSeconds)}</span>
+                    <span className="font-bold text-zinc-900">Dwell: {formatTimeSeconds(pageElapsedSeconds)}</span>
                     <span>•</span>
-                    <span>Avg: {formatTimeSeconds(avgSpeedSecs)} / card</span>
+                    <span className="font-bold text-zinc-900">Avg: {formatTimeSeconds(avgSpeedSecs)} / card</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 opacity-80 group-hover/card:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 font-semibold text-zinc-600">
                     <span>Swipe 2-fingers or use ← → keys</span>
                   </div>
                 </div>
@@ -1164,7 +1169,7 @@ export default function LiveReaderPage() {
               <button
                 disabled={currentPage <= 1}
                 onClick={() => triggerPageFlip("prev")}
-                className="absolute -left-5 md:-left-6 p-3 rounded-full glass bg-black/70 border border-white/15 text-white hover:bg-black hover:border-[var(--accent-main)] shadow-2xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
+                className="absolute -left-5 md:-left-6 p-3 rounded-full bg-white/95 border border-zinc-300 text-zinc-900 hover:bg-white hover:border-[var(--accent-main)] shadow-xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
                 title="Previous Card (Swipe right)"
               >
                 <ChevronLeft size={20} />
@@ -1174,7 +1179,7 @@ export default function LiveReaderPage() {
               <button
                 disabled={!numPages || currentPage >= numPages}
                 onClick={() => triggerPageFlip("next")}
-                className="absolute -right-5 md:-right-6 p-3 rounded-full glass bg-black/70 border border-white/15 text-white hover:bg-black hover:border-[var(--accent-main)] shadow-2xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
+                className="absolute -right-5 md:-right-6 p-3 rounded-full bg-white/95 border border-zinc-300 text-zinc-900 hover:bg-white hover:border-[var(--accent-main)] shadow-xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
                 title="Next Card (Swipe left)"
               >
                 <ChevronRight size={20} />

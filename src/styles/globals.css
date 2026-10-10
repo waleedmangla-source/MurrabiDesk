@@ -37,6 +37,20 @@
   line-height: 2.2;
 }
 
+/* Ensure react-pdf text layer never renders visible white text */
+.textLayer,
+.react-pdf__Page__textContent {
+  color: transparent !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.textLayer :is(span, br),
+.react-pdf__Page__textContent span {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 :root {
   --foreground: #1e293b;
   --text-main: #1e293b;

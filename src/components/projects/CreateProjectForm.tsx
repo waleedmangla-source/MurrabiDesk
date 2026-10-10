@@ -22,6 +22,7 @@ import {
   AlertCircle,
   Sprout,
   CheckCircle,
+  ChevronDown,
   X
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -139,6 +140,9 @@ export default function CreateProjectForm({
       badgeColor: 'text-blue-400'
     }
   ];
+
+  const selectedFormat = WORK_TYPES.find(t => t.id === workType) || WORK_TYPES[0];
+  const FormatIcon = selectedFormat.icon;
 
   // Audiences
   const AUDIENCES: { id: AudienceOption; label: string; desc: string }[] = [
@@ -451,47 +455,56 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
             <div className="card-body">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 
-                {/* Left Column: Format Cards */}
-                <div className="space-y-3">
-                  <label className="lbl">Deliverable Format / Type</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {WORK_TYPES.map(type => {
-                      const Icon = type.icon;
-                      const isSelected = workType === type.id;
-                      return (
-                        <div
-                          key={type.id}
-                          onClick={() => setWorkType(type.id)}
-                          className={clsx(
-                            "p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
-                            isSelected
-                              ? "bg-[var(--accent-soft)] border-[var(--accent-main)] shadow-md shadow-[var(--accent-glow)]/20"
-                              : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/30"
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className={clsx("p-1.5 rounded-lg bg-[var(--accent-soft)]", type.badgeColor)}>
-                              <Icon size={16} />
-                            </span>
-                            {isSelected && (
-                              <span className="w-2 h-2 rounded-full bg-[var(--accent-main)]" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-bold text-xs text-[var(--text-main)] tracking-wide">
-                              {type.label}
-                            </div>
-                            <div className="text-[10px] text-[var(--text-muted)] leading-tight mt-0.5 line-clamp-1">
-                              {type.sublabel}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                {/* Left Column: Format Dropdown & Occasion */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-2">
+                    <label className="lbl flex items-center justify-between">
+                      <span>Deliverable Format / Type</span>
+                      <span className="text-[10px] text-[var(--accent-main)] font-mono font-bold uppercase tracking-wider">
+                        {selectedFormat.label.split('/')[0].trim()}
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--accent-main)] flex items-center">
+                        <FormatIcon size={16} />
+                      </div>
+                      <select
+                        value={workType}
+                        onChange={e => setWorkType(e.target.value as ProjectType)}
+                        className="cursor-pointer appearance-none !pl-10 !pr-10"
+                      >
+                        {WORK_TYPES.map(type => (
+                          <option
+                            key={type.id}
+                            value={type.id}
+                            className="bg-neutral-900 text-neutral-100"
+                          >
+                            {type.label} — {type.sublabel}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                      />
+                    </div>
+                    <p className="text-[10px] text-[var(--text-dim)] italic">
+                      {selectedFormat.sublabel}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2">
+                    <label className="lbl">Occasion / Setting (Optional)</label>
+                    <input
+                      type="text"
+                      value={occasion}
+                      onChange={e => setOccasion(e.target.value)}
+                      placeholder="e.g. Friday Sermon, Jalsa Salana, National Ijtema, Local Halqa Dars"
+                    />
                   </div>
                 </div>
 
-                {/* Right Column: Topic with 150-char limit & Occasion */}
+                {/* Right Column: Topic with 150-char limit */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-2">
                     <label className="lbl flex items-center justify-between">
@@ -514,16 +527,6 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                     <p className="text-[10px] text-[var(--text-dim)] italic">
                       Strict 150-character limit to ensure crisp, focused doctrinal alignment.
                     </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label className="lbl">Occasion / Setting (Optional)</label>
-                    <input
-                      type="text"
-                      value={occasion}
-                      onChange={e => setOccasion(e.target.value)}
-                      placeholder="e.g. Friday Sermon, Jalsa Salana, National Ijtema, Local Halqa Dars"
-                    />
                   </div>
                 </div>
 
