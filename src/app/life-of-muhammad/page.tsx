@@ -559,11 +559,11 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title (Centered at all times, no bubble, prominent typography) */}
-      <section className="w-full shrink-0 z-30 mt-6 md:mt-8 px-4 flex flex-col items-center justify-center text-center min-h-[4.5rem]">
+      {/* Top Active Title (Centered at all times, no bubble, clean typography) */}
+      <section className="w-full shrink-0 z-30 mt-4 md:mt-6 px-4 flex flex-col items-center justify-center text-center min-h-[3.5rem]">
         {activeEvent ? (
-          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-tight drop-shadow-sm transition-all duration-150">
+          <div className="max-w-3xl mx-auto flex flex-col items-center justify-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-snug drop-shadow-sm transition-all duration-150">
               {activeEvent.title}
             </h2>
           </div>
