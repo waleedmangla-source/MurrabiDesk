@@ -67,7 +67,7 @@ export const researchNavLinks = [
   { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Search, label: "Research", href: "/research" },
   { icon: Feather, label: "Taleef", href: "/projects" },
-  { icon: BookOpen, label: "Reader", href: "/reader" },
+  { icon: BookOpen, label: "Live Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
   { icon: TimelineIcon, label: "Timelines", href: "/life-of-muhammad" },
   { icon: Beaker, label: "Beta Tools", href: "/beta-tools" },
