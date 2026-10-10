@@ -410,6 +410,52 @@ export default function LifeOfMuhammadTimeline() {
   const activeEra: TimelineEra = activeEvent ? getEventEra(activeEvent) : 'medina';
   const activeEraConfig = ERA_CONFIGS[activeEra];
 
+  const titleContainerRef = useRef<HTMLDivElement>(null);
+  const [titleFontSize, setTitleFontSize] = useState<number>(24);
+
+  // Dynamic single-line title font size calculator to fit any title in one line
+  useEffect(() => {
+    const updateTitleSize = () => {
+      const container = titleContainerRef.current;
+      const title = activeEvent?.title;
+      if (!container || !title) return;
+
+      const availWidth = Math.max(240, container.clientWidth - 24);
+      const isMobile = window.innerWidth < 640;
+      const isTablet = window.innerWidth < 1024;
+      const maxFs = isMobile ? 18 : isTablet ? 22 : 28;
+      const minFs = 9;
+
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.font = `900 italic ${maxFs}px sans-serif`;
+          const measuredWidth = ctx.measureText(title.toUpperCase()).width;
+          if (measuredWidth > availWidth) {
+            const ratio = availWidth / measuredWidth;
+            const computedSize = Math.max(minFs, Math.floor(maxFs * ratio * 0.96));
+            setTitleFontSize(computedSize);
+            return;
+          }
+        }
+      } catch (e) {
+        const estimatedWidth = title.length * maxFs * 0.65;
+        if (estimatedWidth > availWidth) {
+          const ratio = availWidth / estimatedWidth;
+          setTitleFontSize(Math.max(minFs, Math.floor(maxFs * ratio * 0.95)));
+          return;
+        }
+      }
+
+      setTitleFontSize(maxFs);
+    };
+
+    updateTitleSize();
+    window.addEventListener('resize', updateTitleSize);
+    return () => window.removeEventListener('resize', updateTitleSize);
+  }, [activeEvent?.title, containerWidth]);
+
   // Dynamic SVG Gradient stops based on event positions along the track
   const gradientStops = useMemo(() => {
     if (filteredEvents.length === 0 || containerWidth <= 0) return [];
@@ -559,11 +605,17 @@ export default function LifeOfMuhammadTimeline() {
         </div>
       </header>
 
-      {/* Top Active Title (Centered at all times, no bubble, clean typography) */}
-      <section className="w-full shrink-0 z-30 mt-4 md:mt-6 px-4 flex flex-col items-center justify-center text-center min-h-[3.5rem]">
+      {/* Top Active Title (Centered at all times, fits dynamically on ONE single line) */}
+      <section 
+        ref={titleContainerRef}
+        className="w-full shrink-0 z-30 mt-4 md:mt-6 px-3 sm:px-6 flex flex-col items-center justify-center text-center min-h-[3.25rem] overflow-hidden"
+      >
         {activeEvent ? (
-          <div className="max-w-3xl mx-auto flex flex-col items-center justify-center">
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black italic tracking-tight text-main uppercase whitespace-normal break-words leading-snug drop-shadow-sm transition-all duration-150">
+          <div className="w-full max-w-5xl md:max-w-6xl mx-auto flex items-center justify-center overflow-hidden">
+            <h2 
+              className="font-black italic tracking-tight text-main uppercase whitespace-nowrap drop-shadow-sm transition-all duration-150 select-none text-center truncate max-w-full"
+              style={{ fontSize: `${titleFontSize}px`, lineHeight: 1.25 }}
+            >
               {activeEvent.title}
             </h2>
           </div>
