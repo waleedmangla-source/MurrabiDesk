@@ -79,7 +79,13 @@ export function createNewProject(payload: {
   type: ProjectType;
   description?: string;
   targetAudience?: string;
-  language?: 'english' | 'urdu' | 'arabic';
+  audiences?: string[];
+  language?: 'english' | 'urdu' | 'both' | 'arabic';
+  speechTone?: string;
+  durationMinutes?: number;
+  occasion?: string;
+  callToAction?: string;
+  generatedPrompt?: string;
   bookmarks?: ResearchBookmarkItem[];
   aiPlan?: ProjectAIPlan | null;
   aiDraft?: string | null;
@@ -91,7 +97,13 @@ export function createNewProject(payload: {
     type: payload.type,
     description: payload.description || '',
     targetAudience: payload.targetAudience || 'General Audience',
+    audiences: payload.audiences || [],
     language: payload.language || 'english',
+    speechTone: payload.speechTone || 'inspirational',
+    durationMinutes: payload.durationMinutes || 5,
+    occasion: payload.occasion || '',
+    callToAction: payload.callToAction || '',
+    generatedPrompt: payload.generatedPrompt || '',
     bookmarks: payload.bookmarks || [],
     aiPlan: payload.aiPlan || null,
     aiDraft: payload.aiDraft || null,
