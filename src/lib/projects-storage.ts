@@ -1,6 +1,6 @@
 import { ResearchBookmarkItem } from './research-storage';
 
-export type ProjectType = 'speech' | 'dars' | 'article';
+export type ProjectType = 'speech' | 'dars' | 'ijlas' | 'announcement' | 'article';
 
 export type ProjectStatus = 'drafting' | 'drafted' | 'planned' | 'in_progress' | 'completed';
 
@@ -28,7 +28,13 @@ export interface MurabbiProject {
   type: ProjectType;
   description?: string;
   targetAudience?: string;
-  language?: 'english' | 'urdu' | 'arabic';
+  audiences?: string[]; // e.g. ['lajna', 'khuddam', 'all']
+  language?: 'english' | 'urdu' | 'both' | 'arabic';
+  speechTone?: string; // e.g. 'inspirational', 'direct', 'scholarly', etc.
+  durationMinutes?: number; // 1 to 30 mins
+  occasion?: string; // e.g. 'Friday Gathering', 'Monthly Ijlas'
+  callToAction?: string; // Desired outcome / next step
+  generatedPrompt?: string; // Form-generated prompt brief
   bookmarks: ResearchBookmarkItem[];
   aiPlan?: ProjectAIPlan | null;
   aiDraft?: string | null;
