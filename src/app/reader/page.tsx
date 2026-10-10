@@ -27,7 +27,8 @@ import {
   Share2,
   FolderDown,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Hand
 } from "lucide-react";
 import { clsx } from "clsx";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -74,12 +75,27 @@ export default function LiveReaderPage() {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageInput, setPageInput] = useState<string>("1");
-  const [pdfScale, setPdfScale] = useState<number>(1.1);
+  const [pdfScale, setPdfScale] = useState<number>(1.05);
   const [pdfLoading, setPdfLoading] = useState<boolean>(true);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   // ─────────────────────────────────────────────────────────────
-  // 3. Telemetry & Per-Page Timer State
+  // 3. Card Flip & Two-Finger Swipe Gesture State
+  // ─────────────────────────────────────────────────────────────
+  const cardContainerRef = useRef<HTMLDivElement>(null);
+  const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
+  const [isFlipping, setIsFlipping] = useState<boolean>(false);
+  const swipeLockRef = useRef<boolean>(false);
+  const wheelAccumulatorRef = useRef<number>(0);
+  const wheelResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Touch tracking for mobile/touchscreens
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const isTwoFingerTouchRef = useRef<boolean>(false);
+
+  // ─────────────────────────────────────────────────────────────
+  // 4. Telemetry & Per-Page Timer State
   // ─────────────────────────────────────────────────────────────
   const [pageElapsedSeconds, setPageElapsedSeconds] = useState<number>(0);
   const [sessionElapsedSeconds, setSessionElapsedSeconds] = useState<number>(0);
@@ -88,14 +104,14 @@ export default function LiveReaderPage() {
   const [bookProgress, setBookProgress] = useState<BookProgress | null>(null);
 
   // ─────────────────────────────────────────────────────────────
-  // 4. Per-Page Notepad & Drive Sync State
+  // 5. Per-Page Notepad & Drive Sync State
   // ─────────────────────────────────────────────────────────────
   const [pageNotes, setPageNotes] = useState<string>("");
   const [driveSyncStatus, setDriveSyncStatus] = useState<"synced" | "saving" | "offline" | "error">("synced");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ─────────────────────────────────────────────────────────────
-  // 5. MurabbiAI Page Analysis State
+  // 6. MurabbiAI Page Analysis State
   // ─────────────────────────────────────────────────────────────
   const [isAiAnalyzing, setIsAiAnalyzing] = useState<boolean>(false);
   const [aiAnalysisResult, setAiAnalysisResult] = useState<any | null>(null);
@@ -103,7 +119,7 @@ export default function LiveReaderPage() {
   const [showAiDrawer, setShowAiDrawer] = useState<boolean>(false);
 
   // ─────────────────────────────────────────────────────────────
-  // 6. AI Compilation Modal State
+  // 7. AI Compilation Modal State
   // ─────────────────────────────────────────────────────────────
   const [isCompileModalOpen, setIsCompileModalOpen] = useState<boolean>(false);
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
@@ -111,7 +127,7 @@ export default function LiveReaderPage() {
   const [compileStatus, setCompileStatus] = useState<string | null>(null);
 
   // ─────────────────────────────────────────────────────────────
-  // 7. Add Custom Book Modal State
+  // 8. Add Custom Book Modal State
   // ─────────────────────────────────────────────────────────────
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState<boolean>(false);
   const [newBookTitle, setNewBookTitle] = useState("");
@@ -305,22 +321,163 @@ export default function LiveReaderPage() {
   };
 
   // ── Page Navigation Handler ──
-  const changePage = (newPage: number) => {
-    if (!numPages || newPage < 1 || newPage > numPages || newPage === currentPage) return;
+  const changePage = useCallback(
+    (newPage: number) => {
+      if (!numPages || newPage < 1 || newPage > numPages || newPage === currentPage) return;
 
-    // Save telemetry and notes for outgoing page
-    recordPageTelemetryAndBookmark(currentPage, pageElapsedSeconds, pageNotes);
+      // Save telemetry and notes for outgoing page
+      recordPageTelemetryAndBookmark(currentPage, pageElapsedSeconds, pageNotes);
 
-    // Switch to new page
-    setCurrentPage(newPage);
-    setPageInput(String(newPage));
+      // Switch to new page
+      setCurrentPage(newPage);
+      setPageInput(String(newPage));
 
-    // Load notes for incoming page
-    const existingNotesForNewPage = bookProgress?.pages?.[String(newPage)]?.notes || "";
-    setPageNotes(existingNotesForNewPage);
-    setAiAnalysisResult(null);
-    setAiError(null);
-  };
+      // Load notes for incoming page
+      const existingNotesForNewPage = bookProgress?.pages?.[String(newPage)]?.notes || "";
+      setPageNotes(existingNotesForNewPage);
+      setAiAnalysisResult(null);
+      setAiError(null);
+    },
+    [numPages, currentPage, pageElapsedSeconds, pageNotes, recordPageTelemetryAndBookmark, bookProgress]
+  );
+
+  // ── Trigger Animated Card Flip ──
+  const triggerPageFlip = useCallback(
+    (direction: "next" | "prev") => {
+      if (swipeLockRef.current) return;
+
+      if (direction === "next") {
+        if (!numPages || currentPage >= numPages) return;
+        swipeLockRef.current = true;
+        wheelAccumulatorRef.current = 0;
+        setFlipDirection("next");
+        setIsFlipping(true);
+
+        setTimeout(() => {
+          changePage(currentPage + 1);
+          setTimeout(() => {
+            setIsFlipping(false);
+            setFlipDirection(null);
+            swipeLockRef.current = false;
+          }, 200);
+        }, 130);
+      } else {
+        if (currentPage <= 1) return;
+        swipeLockRef.current = true;
+        wheelAccumulatorRef.current = 0;
+        setFlipDirection("prev");
+        setIsFlipping(true);
+
+        setTimeout(() => {
+          changePage(currentPage - 1);
+          setTimeout(() => {
+            setIsFlipping(false);
+            setFlipDirection(null);
+            swipeLockRef.current = false;
+          }, 200);
+        }, 130);
+      }
+    },
+    [currentPage, numPages, changePage]
+  );
+
+  // ── Two-Finger Swipe Trackpad & Touch Listeners ──
+  useEffect(() => {
+    const el = cardContainerRef.current;
+    if (!el) return;
+
+    // Trackpad 2-finger horizontal swipe
+    const onWheel = (e: WheelEvent) => {
+      const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.75 && Math.abs(e.deltaX) > 6;
+      if (!isHorizontal && !e.shiftKey) return;
+
+      // Prevent macOS back/forward browser navigation swipe
+      e.preventDefault();
+
+      if (swipeLockRef.current) return;
+
+      wheelAccumulatorRef.current += e.deltaX;
+
+      if (wheelResetTimeoutRef.current) clearTimeout(wheelResetTimeoutRef.current);
+      wheelResetTimeoutRef.current = setTimeout(() => {
+        wheelAccumulatorRef.current = 0;
+      }, 200);
+
+      const SWIPE_THRESHOLD = 28; // Responsive threshold for macOS trackpad
+      if (wheelAccumulatorRef.current > SWIPE_THRESHOLD) {
+        triggerPageFlip("next");
+      } else if (wheelAccumulatorRef.current < -SWIPE_THRESHOLD) {
+        triggerPageFlip("prev");
+      }
+    };
+
+    // Touchscreen 2-finger swipe
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        isTwoFingerTouchRef.current = true;
+        touchStartXRef.current = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        touchStartYRef.current = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      } else {
+        isTwoFingerTouchRef.current = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isTwoFingerTouchRef.current || touchStartXRef.current === null) return;
+      if (e.touches.length !== 2) return;
+
+      const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const deltaX = currentX - touchStartXRef.current;
+      const deltaY = currentY - (touchStartYRef.current || 0);
+
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 35) {
+        e.preventDefault();
+        if (deltaX < -35) {
+          triggerPageFlip("next");
+        } else if (deltaX > 35) {
+          triggerPageFlip("prev");
+        }
+      }
+    };
+
+    const onTouchEnd = () => {
+      isTwoFingerTouchRef.current = false;
+      touchStartXRef.current = null;
+      touchStartYRef.current = null;
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [triggerPageFlip]);
+
+  // ── Keyboard Arrow Keys Navigation ──
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        triggerPageFlip("next");
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        triggerPageFlip("prev");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [triggerPageFlip]);
 
   // ── Handle Notepad Typing (Debounced Auto-Save) ──
   const handleNotesChange = (text: string) => {
@@ -387,7 +544,6 @@ export default function LiveReaderPage() {
     setCompileStatus("Synthesizing notes with MurabbiAI...");
 
     try {
-      // Collect all page notes for active book
       const notesByPage = bookProgress?.pages || {};
       const res = await fetch("/api/live-reader/compile", {
         method: "POST",
@@ -726,7 +882,7 @@ export default function LiveReaderPage() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          MAIN CONTENT AREA: Header Telemetry + Center PDF Canvas + Right Notepad
+          MAIN CONTENT AREA: Header Telemetry + Center Card Deck + Right Notepad
       ───────────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--background)]">
         {/* ── Top Header Controls & Telemetry Bar ── */}
@@ -746,9 +902,9 @@ export default function LiveReaderPage() {
             <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1 ml-2">
               <button
                 disabled={currentPage <= 1}
-                onClick={() => changePage(currentPage - 1)}
+                onClick={() => triggerPageFlip("prev")}
                 className="p-1 rounded-lg hover:bg-white/10 text-white disabled:opacity-30 disabled:pointer-events-none transition-all"
-                title="Previous Page (Left Arrow)"
+                title="Previous Card (Left Arrow or Two-finger swipe right)"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -771,9 +927,9 @@ export default function LiveReaderPage() {
 
               <button
                 disabled={!numPages || currentPage >= numPages}
-                onClick={() => changePage(currentPage + 1)}
+                onClick={() => triggerPageFlip("next")}
                 className="p-1 rounded-lg hover:bg-white/10 text-white disabled:opacity-30 disabled:pointer-events-none transition-all"
-                title="Next Page (Right Arrow)"
+                title="Next Card (Right Arrow or Two-finger swipe left)"
               >
                 <ChevronRight size={16} />
               </button>
@@ -795,7 +951,7 @@ export default function LiveReaderPage() {
             <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
               <div className="flex flex-col">
                 <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-dim)]">
-                  This Page
+                  Card Time
                 </span>
                 <span className="text-xs font-mono font-bold text-emerald-400">
                   {formatTimeSeconds(pageElapsedSeconds)}
@@ -807,7 +963,7 @@ export default function LiveReaderPage() {
                   Avg Speed
                 </span>
                 <span className="text-xs font-mono font-bold text-white">
-                  {formatTimeSeconds(avgSpeedSecs)} / pg
+                  {formatTimeSeconds(avgSpeedSecs)} / card
                 </span>
               </div>
             </div>
@@ -852,84 +1008,177 @@ export default function LiveReaderPage() {
           </div>
         </header>
 
-        {/* ── Main Stage: PDF Canvas (Center) + Notepad Pane (Right) ── */}
+        {/* ── Main Stage: Card Deck Stage (Center) + Notepad Pane (Right) ── */}
         <div className="flex-1 flex overflow-hidden">
-          {/* CENTER: Clean Embedded PDF Canvas */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center p-4 md:p-6 bg-black/40 relative">
-            {/* Zoom Controls Overlay */}
-            <div className="sticky top-2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass bg-black/60 border border-white/10 shadow-xl mb-4 backdrop-blur-md">
-              <button
-                onClick={() => setPdfScale((s) => Math.max(0.7, s - 0.1))}
-                className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
-                title="Zoom Out"
-              >
-                -
-              </button>
-              <span className="text-[10px] font-mono font-bold text-white px-1">
-                {Math.round(pdfScale * 100)}%
-              </span>
-              <button
-                onClick={() => setPdfScale((s) => Math.min(2.0, s + 0.1))}
-                className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
-                title="Zoom In"
-              >
-                +
-              </button>
-              <button
-                onClick={() => setPdfScale(1.1)}
-                className="text-[9px] font-bold text-[var(--text-dim)] hover:text-white ml-2 px-1.5 py-0.5 rounded border border-white/10"
-              >
-                Reset
-              </button>
+          {/* CENTER: Interactive Card Stage with Two-Finger Swipe */}
+          <div
+            ref={cardContainerRef}
+            className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center p-4 md:p-6 bg-black/50 relative cursor-grab active:cursor-grabbing"
+            style={{ touchAction: "pan-y" }}
+          >
+            {/* Top Toolbar: Zoom Controls & Swipe Hint */}
+            <div className="sticky top-2 z-20 flex items-center justify-between w-full max-w-[760px] mb-3 px-2 pointer-events-none">
+              <div className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass bg-black/60 border border-white/10 shadow-xl backdrop-blur-md">
+                <button
+                  onClick={() => setPdfScale((s) => Math.max(0.7, s - 0.1))}
+                  className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
+                  title="Zoom Out"
+                >
+                  -
+                </button>
+                <span className="text-[10px] font-mono font-bold text-white px-1">
+                  {Math.round(pdfScale * 100)}%
+                </span>
+                <button
+                  onClick={() => setPdfScale((s) => Math.min(2.0, s + 0.1))}
+                  className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
+                  title="Zoom In"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => setPdfScale(1.05)}
+                  className="text-[9px] font-bold text-[var(--text-dim)] hover:text-white ml-2 px-1.5 py-0.5 rounded border border-white/10"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {/* Two-Finger Swipe Helper Pill */}
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl glass bg-black/60 border border-white/10 text-[10px] font-bold text-[var(--text-dim)] shadow-xl backdrop-blur-md">
+                <Hand size={12} className="text-[var(--accent-main)]" />
+                <span>Swipe with two fingers horizontally to flip cards</span>
+              </div>
             </div>
 
-            {/* The Embedded PDF Document & Page */}
-            <div className="w-full flex justify-center pb-24">
-              <Document
-                file={activeBook.pdfUrl}
-                options={pdfOptions}
-                onLoadSuccess={({ numPages: loadedNum }) => {
-                  setNumPages(loadedNum);
-                  setPdfLoading(false);
-                  setPdfError(null);
-                }}
-                onLoadError={(err) => {
-                  console.error("PDF Load Error:", err);
-                  setPdfError("Failed to load PDF. Please check your connection or the PDF URL.");
-                  setPdfLoading(false);
-                }}
-                loading={
-                  <div className="flex flex-col items-center justify-center p-16 gap-3 text-white">
-                    <Loader2 size={32} className="animate-spin text-[var(--accent-main)]" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-dim)]">
-                      Opening PDF Book...
-                    </span>
-                  </div>
-                }
-                error={
-                  <div className="p-8 rounded-2xl glass border border-red-500/30 text-center max-w-md">
-                    <AlertCircle size={28} className="text-red-400 mx-auto mb-2" />
-                    <h3 className="text-sm font-bold text-white mb-1">Failed to Render PDF</h3>
-                    <p className="text-xs text-[var(--text-dim)] leading-relaxed">
-                      {pdfError || "Unable to display this PDF. Please retry or choose another book."}
-                    </p>
-                  </div>
-                }
+            {/* ── CARD DECK PRESENTATION ── */}
+            <div className="relative w-full max-w-[760px] flex items-center justify-center my-auto pb-16 select-none perspective-[1400px]">
+              {/* Stacked Deck Silhouette 2 (Deepest layer) */}
+              <div className="absolute inset-x-8 top-1 bottom-6 rounded-[34px] bg-white/[0.02] border border-white/5 shadow-lg scale-[0.93] -translate-y-3 pointer-events-none transition-all duration-300" />
+
+              {/* Stacked Deck Silhouette 1 (Middle layer) */}
+              <div className="absolute inset-x-4 top-2 bottom-5 rounded-[32px] bg-white/[0.04] border border-white/10 shadow-xl scale-[0.965] -translate-y-1.5 pointer-events-none transition-all duration-300" />
+
+              {/* Main Interactive Card */}
+              <div
+                className={clsx(
+                  "relative w-full rounded-[28px] overflow-hidden glass bg-zinc-950/95 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.85)] flex flex-col group/card transition-all duration-300 ease-out",
+                  isFlipping && flipDirection === "next" && "-translate-x-14 rotate-[-3.5deg] opacity-60 scale-[0.96]",
+                  isFlipping && flipDirection === "prev" && "translate-x-14 rotate-[3.5deg] opacity-60 scale-[0.96]",
+                  !isFlipping && "translate-x-0 rotate-0 opacity-100 scale-100"
+                )}
               >
-                <div className="shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-zinc-950">
-                  <Page
-                    pageNumber={currentPage}
-                    scale={pdfScale}
-                    renderAnnotationLayer={false}
-                    renderTextLayer={true}
+                {/* Card Header Banner */}
+                <div className="px-5 py-3 border-b border-white/10 bg-white/[0.04] flex items-center justify-between select-none">
+                  <div className="flex items-center gap-2">
+                    <BookOpen size={14} className="text-[var(--accent-main)]" />
+                    <span className="text-xs font-black text-white truncate max-w-[320px]">
+                      {activeBook.title}
+                    </span>
+                    {activeBook.volume && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-[var(--text-dim)] border border-white/10">
+                        Vol {activeBook.volume}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Card Number Badge */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-[var(--accent-main)] bg-[var(--accent-main)]/10 px-2 py-0.5 rounded-full border border-[var(--accent-main)]/30">
+                      Card {currentPage} of {numPages || "..."}
+                    </span>
+                    <button
+                      onClick={() => {
+                        recordPageTelemetryAndBookmark(currentPage, pageElapsedSeconds, pageNotes);
+                      }}
+                      className="p-1 rounded-lg hover:bg-white/10 text-amber-400 transition-all"
+                      title="Bookmark this card"
+                    >
+                      <Bookmark size={13} className="fill-amber-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* PDF Card Body */}
+                <div className="w-full flex justify-center bg-zinc-950 overflow-hidden py-2 min-h-[500px]">
+                  <Document
+                    file={activeBook.pdfUrl}
+                    options={pdfOptions}
+                    onLoadSuccess={({ numPages: loadedNum }) => {
+                      setNumPages(loadedNum);
+                      setPdfLoading(false);
+                      setPdfError(null);
+                    }}
+                    onLoadError={(err) => {
+                      console.error("PDF Load Error:", err);
+                      setPdfError("Failed to load PDF. Please check your connection or the PDF URL.");
+                      setPdfLoading(false);
+                    }}
                     loading={
-                      <div className="w-[600px] h-[800px] flex items-center justify-center bg-zinc-900/60">
-                        <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
+                      <div className="flex flex-col items-center justify-center p-24 gap-3 text-white">
+                        <Loader2 size={32} className="animate-spin text-[var(--accent-main)]" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-dim)]">
+                          Preparing Card...
+                        </span>
                       </div>
                     }
-                  />
+                    error={
+                      <div className="p-8 rounded-2xl glass border border-red-500/30 text-center max-w-md my-auto">
+                        <AlertCircle size={28} className="text-red-400 mx-auto mb-2" />
+                        <h3 className="text-sm font-bold text-white mb-1">Failed to Render Card</h3>
+                        <p className="text-xs text-[var(--text-dim)] leading-relaxed">
+                          {pdfError || "Unable to display this card. Please retry or choose another book."}
+                        </p>
+                      </div>
+                    }
+                  >
+                    <Page
+                      pageNumber={currentPage}
+                      scale={pdfScale}
+                      renderAnnotationLayer={false}
+                      renderTextLayer={true}
+                      loading={
+                        <div className="w-[580px] h-[780px] flex items-center justify-center bg-zinc-900/60">
+                          <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
+                        </div>
+                      }
+                    />
+                  </Document>
                 </div>
-              </Document>
+
+                {/* Card Footer Bar */}
+                <div className="px-5 py-2.5 border-t border-white/10 bg-white/[0.03] flex items-center justify-between text-[10px] text-[var(--text-dim)] select-none">
+                  <div className="flex items-center gap-2">
+                    <span>Dwell: {formatTimeSeconds(pageElapsedSeconds)}</span>
+                    <span>•</span>
+                    <span>Avg: {formatTimeSeconds(avgSpeedSecs)} / card</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 opacity-80 group-hover/card:opacity-100 transition-opacity">
+                    <span>Swipe 2-fingers or use ← → keys</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Left Flip Button */}
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => triggerPageFlip("prev")}
+                className="absolute -left-5 md:-left-6 p-3 rounded-full glass bg-black/70 border border-white/15 text-white hover:bg-black hover:border-[var(--accent-main)] shadow-2xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
+                title="Previous Card (Swipe right)"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              {/* Floating Right Flip Button */}
+              <button
+                disabled={!numPages || currentPage >= numPages}
+                onClick={() => triggerPageFlip("next")}
+                className="absolute -right-5 md:-right-6 p-3 rounded-full glass bg-black/70 border border-white/15 text-white hover:bg-black hover:border-[var(--accent-main)] shadow-2xl transition-all disabled:opacity-0 disabled:pointer-events-none active:scale-90 z-20"
+                title="Next Card (Swipe left)"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           </div>
 
@@ -941,7 +1190,7 @@ export default function LiveReaderPage() {
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-[var(--accent-main)]" />
                   <span className="text-xs font-black text-white uppercase tracking-wider">
-                    Page {currentPage} Notes
+                    Card {currentPage} Notes
                   </span>
                 </div>
                 <span className="text-[9px] text-[var(--text-dim)] font-medium mt-0.5">
@@ -965,13 +1214,13 @@ export default function LiveReaderPage() {
               <textarea
                 value={pageNotes}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                placeholder={`Type thoughts, key points, or quotes for Page ${currentPage} here...\n\nEvery page gets its own notepad, automatically saved to your book's JSON file on Google Drive.`}
+                placeholder={`Type thoughts, key points, or quotes for Card ${currentPage} here...\n\nEvery page card gets its own notepad, automatically saved to your book's JSON file on Google Drive.`}
                 className="flex-1 w-full p-3.5 rounded-2xl bg-black/30 border border-white/10 text-xs text-white placeholder-[var(--text-dim)] focus:border-[var(--accent-main)] focus:outline-none resize-none leading-relaxed custom-scrollbar"
               />
 
               {/* Status Footnote */}
               <div className="flex items-center justify-between text-[9px] text-[var(--text-dim)] mt-2 px-1">
-                <span>Total Annotated Pages: {totalNotesCount}</span>
+                <span>Total Annotated Cards: {totalNotesCount}</span>
                 <span className="text-emerald-400 font-bold">
                   {driveSyncStatus === "saving" ? "Saving..." : "Synced to Drive ✓"}
                 </span>
@@ -1041,7 +1290,7 @@ export default function LiveReaderPage() {
                 </div>
               ) : (
                 <p className="text-[10px] text-[var(--text-dim)] italic py-2">
-                  Click "MurabbiAI Analyze" in the top bar to extract theological insights and vocabulary for this page.
+                  Click "MurabbiAI Analyze" in the top bar to extract theological insights and vocabulary for this card.
                 </p>
               )}
             </div>
@@ -1103,7 +1352,7 @@ export default function LiveReaderPage() {
             {/* Modal Footer Actions */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10">
               <div className="text-[10px] text-[var(--text-dim)]">
-                Compiled from {totalNotesCount} page notepads
+                Compiled from {totalNotesCount} card notepads
               </div>
               <div className="flex items-center gap-2">
                 <button
