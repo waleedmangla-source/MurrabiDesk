@@ -65,7 +65,7 @@ export default function CreateProjectForm({
   const [selectedAudiences, setSelectedAudiences] = useState<AudienceOption[]>(['all']);
   const [language, setLanguage] = useState<'english' | 'urdu' | 'both'>('english');
   const [speechTone, setSpeechTone] = useState<SpeechToneOption>('inspirational');
-  const [durationMinutes, setDurationMinutes] = useState<number>(10);
+  const [durationMinutes, setDurationMinutes] = useState<number>(5);
   const [occasion, setOccasion] = useState('');
   const [callToAction, setCallToAction] = useState('');
   const [autoGenerateAI, setAutoGenerateAI] = useState(true);
@@ -204,17 +204,6 @@ export default function CreateProjectForm({
       icon: Sprout,
       color: 'text-teal-400'
     }
-  ];
-
-  // Duration Presets
-  const PRESET_MINUTES = [
-    { label: '1m (Announcement)', value: 1 },
-    { label: '3m (Brief)', value: 3 },
-    { label: '5m (Dars)', value: 5 },
-    { label: '10m (Standard)', value: 10 },
-    { label: '15m (Speech)', value: 15 },
-    { label: '20m (Jalsa)', value: 20 },
-    { label: '30m (Keynote)', value: 30 }
   ];
 
   // Audience toggle logic
@@ -634,25 +623,6 @@ LENGTH: Exactly ${durationMinutes} minute(s) (~${estWords} words)
                         <span>15 min (Speech)</span>
                         <span>30 min (Keynote)</span>
                       </div>
-                    </div>
-
-                    {/* Preset Pills */}
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      {PRESET_MINUTES.map(preset => (
-                        <button
-                          key={preset.value}
-                          type="button"
-                          onClick={() => setDurationMinutes(preset.value)}
-                          className={clsx(
-                            "px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border",
-                            durationMinutes === preset.value
-                              ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-sm"
-                              : "bg-[var(--glass-bg)] text-[var(--text-muted)] border-[var(--glass-border)] hover:text-[var(--text-main)] hover:border-[var(--accent-main)]/30"
-                          )}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
                     </div>
                   </div>
 
