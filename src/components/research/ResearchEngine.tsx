@@ -940,6 +940,8 @@ export default function ResearchEngine() {
         bookmarks={bookmarks}
         isSyncing={isSyncingDrive}
         isDriveConnected={isDriveConnected}
+        currentQuery={query}
+        onNewSearch={resetToHome}
         onSelectHistory={(entry) => {
           setQuery(entry.query);
           if (entry.filters) {

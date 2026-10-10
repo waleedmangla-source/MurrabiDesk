@@ -5,16 +5,13 @@ import {
   X,
   History,
   Bookmark,
-  BookmarkCheck,
   Search,
   Trash2,
   ExternalLink,
   BookOpen,
   Copy,
   Check,
-  Clock,
-  ArrowRight,
-  Filter,
+  Plus,
   ShieldCheck,
   Scroll,
   FileText,
@@ -23,10 +20,10 @@ import {
   BookMarked,
   Sparkles,
   Cloud,
-  CloudOff,
   RefreshCw,
-  ChevronLeft
+  FolderKanban
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
 import {
   SearchHistoryEntry,
@@ -43,6 +40,8 @@ interface ResearchSidebarProps {
   onClearHistory: () => void;
   onRemoveBookmark: (id: string) => void;
   onOpenItemModal?: (bookmark: ResearchBookmarkItem) => void;
+  onNewSearch?: () => void;
+  currentQuery?: string;
   isSyncing?: boolean;
   isDriveConnected?: boolean;
 }
@@ -56,6 +55,8 @@ export default function ResearchSidebar({
   onClearHistory,
   onRemoveBookmark,
   onOpenItemModal,
+  onNewSearch,
+  currentQuery,
   isSyncing,
   isDriveConnected
 }: ResearchSidebarProps) {
@@ -63,6 +64,7 @@ export default function ResearchSidebar({
   const [filterQuery, setFilterQuery] = useState('');
   const [bookmarkCategory, setBookmarkCategory] = useState<'all' | BookmarkCategory>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const router = useRouter();
 
   const copyCitation = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -100,7 +102,7 @@ export default function ResearchSidebar({
       case 'quran':
         return { label: "Holy Qur'an", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25", icon: BookOpen };
       case 'ahadith':
-        return { label: 'Ahadith', color: 'bg-amber-500/15 text-amber-400 border-amber-500/25', icon: Scroll };
+        return { label: 'Hadith', color: 'bg-amber-500/15 text-amber-400 border-amber-500/25', icon: Scroll };
       case 'khazain':
         return { label: 'Ruhani Khazain', color: 'bg-[var(--accent-soft)] text-[var(--accent-main)] border-[var(--accent-main)]/25', icon: ShieldCheck };
       case 'malfuzat':
@@ -108,7 +110,7 @@ export default function ResearchSidebar({
       case 'tazkirah':
         return { label: 'Tadhkirah', color: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25', icon: Sparkles };
       case 'essence':
-        return { label: 'Essence of Islam', color: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25', icon: Bookmark };
+        return { label: 'Essence', color: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25', icon: Bookmark };
       case 'books':
         return { label: 'Books', color: 'bg-purple-500/15 text-purple-400 border-purple-500/25', icon: BookMarked };
       case 'articles':
@@ -118,7 +120,7 @@ export default function ResearchSidebar({
       case 'videos':
         return { label: 'Videos', color: 'bg-red-500/15 text-red-400 border-red-500/25', icon: Video };
       default:
-        return { label: 'Research', color: 'bg-white/10 text-white/80 border-white/15', icon: Bookmark };
+        return { label: 'Record', color: 'bg-white/10 text-white/80 border-white/15', icon: Bookmark };
     }
   };
 
@@ -128,18 +130,20 @@ export default function ResearchSidebar({
       {/* ── Sidebar Title (Matching Email Sidebar Header) ── */}
       <div className="px-5 pt-8 pb-2 flex items-center justify-between">
         <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
-          Hub
+          Research
         </h1>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
-          title="Collapse Research Hub"
-        >
-          <ChevronLeft size={16} />
-        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1 rounded-md hover:bg-black/20 text-[var(--text-dim)] hover:text-white transition-all"
+            title="Close Sidebar"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
-      {/* ── Sync Status & Animated Tabs Header ── */}
+      {/* ── Account / Sync Header (Matching Mail Account Header) ── */}
       <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
         <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
           <div className="flex-1 min-w-0 overflow-hidden">
@@ -155,10 +159,10 @@ export default function ResearchSidebar({
           </div>
         </div>
 
-        {/* Animated Sidebar Tabs (History vs Saved) */}
-        <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-white/5">
+        {/* ── Animated Sidebar Tabs ── */}
+        <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
           {/* Animated Background Pill */}
-          <div 
+          <div
             className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
             style={{
               left: activeTab === 'history' ? '0.25rem' : 'calc(50%)',
@@ -166,8 +170,8 @@ export default function ResearchSidebar({
             }}
           />
           {[
-            { id: 'history', label: `History (${history.length})` },
-            { id: 'bookmarks', label: `Saved (${bookmarks.length})` }
+            { id: 'history', label: 'History' },
+            { id: 'bookmarks', label: 'Saved' }
           ].map(t => (
             <button
               key={t.id}
@@ -183,242 +187,321 @@ export default function ResearchSidebar({
         </div>
       </div>
 
-      {/* ── Quick Search Filter Input ── */}
-      <div className="px-4 py-2 border-b border-white/5">
-        <div className="relative flex items-center">
-          <Search size={12} className="absolute left-2.5 text-[var(--text-dim)]" />
-          <input
-            type="text"
-            value={filterQuery}
-            onChange={(e) => setFilterQuery(e.target.value)}
-            placeholder={activeTab === 'history' ? "Search history..." : "Search saved..."}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-7 pr-6 py-1.5 text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)]"
-          />
-          {filterQuery && (
-            <button
-              onClick={() => setFilterQuery('')}
-              className="absolute right-2 p-0.5 text-[var(--text-dim)] hover:text-white"
-            >
-              <X size={11} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ── Category Sub-Filter Pills (Bookmarks tab only) ── */}
-      {activeTab === 'bookmarks' && (
-        <div className="px-3 py-2 border-b border-white/5 flex items-center gap-1 overflow-x-auto no-scrollbar text-[10px]">
-          {[
-            { id: 'all', label: 'All' },
-            { id: 'quran', label: "Qur'an" },
-            { id: 'ahadith', label: 'Hadith' },
-            { id: 'khazain', label: 'Khazain' },
-            { id: 'malfuzat', label: 'Malfuzat' },
-            { id: 'tazkirah', label: 'Tadhkirah' },
-            { id: 'essence', label: 'Essence' },
-            { id: 'books', label: 'Books' },
-            { id: 'articles', label: 'Articles' },
-            { id: 'audios', label: 'Audios' },
-            { id: 'videos', label: 'Videos' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setBookmarkCategory(tab.id as any)}
-              className={clsx(
-                "px-2 py-0.5 rounded-full font-bold whitespace-nowrap transition-colors",
-                bookmarkCategory === tab.id
-                  ? "bg-[var(--accent-main)] text-white shadow-sm"
-                  : "bg-white/5 text-[var(--text-dim)] hover:text-white"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* ── Main Scrollable List ── */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col p-2 space-y-1.5">
+      {/* ── Tab Content ── */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
         {activeTab === 'history' ? (
-          /* ──────── HISTORY LIST ──────── */
-          filteredHistory.length === 0 ? (
-            <div className="text-center py-16 text-[var(--text-dim)] space-y-2 px-4">
-              <History size={28} className="mx-auto opacity-30" />
-              <p className="text-xs font-semibold">
-                {filterQuery ? "No matching searches" : "No previous searches"}
-              </p>
-              <p className="text-[10px] opacity-70">
-                Searches are saved automatically and synced to Google Drive.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)] px-2 py-1">
-                <span>Recent Searches</span>
-                {history.length > 0 && (
-                  <button
-                    onClick={onClearHistory}
-                    className="hover:text-red-400 flex items-center gap-1 transition-colors"
-                    title="Clear search history"
-                  >
-                    <Trash2 size={10} />
-                    <span>Clear</span>
+          <div className="flex-1 flex flex-col">
+            {/* Search Input for History */}
+            <div className="px-4 pt-1 pb-2">
+              <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-2.5 py-1.5">
+                <Search size={12} className="text-[var(--text-dim)] shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Filter searches..."
+                  value={filterQuery}
+                  onChange={e => setFilterQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none min-w-0"
+                />
+                {filterQuery && (
+                  <button onClick={() => setFilterQuery('')}>
+                    <X size={11} className="text-[var(--text-dim)] hover:text-white" />
                   </button>
                 )}
               </div>
+            </div>
 
-              {filteredHistory.map(entry => (
-                <div
-                  key={entry.id}
-                  onClick={() => onSelectHistory(entry)}
-                  className="group p-2.5 rounded-xl bg-white/[0.02] hover:bg-black/20 hover:border-white/10 border border-white/5 transition-all cursor-pointer space-y-1.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-xs text-white truncate group-hover:text-[var(--accent-main)] transition-colors">
-                      "{entry.query}"
-                    </span>
-                    <span className="text-[9px] text-[var(--text-dim)] shrink-0 font-mono">
-                      {formatRelativeTime(entry.timestamp)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 flex-wrap text-[9px] text-[var(--text-dim)]">
-                    {entry.searchMode === 'verbatim' && (
-                      <span className="px-1 py-0.2 rounded bg-[var(--accent-soft)] text-[var(--accent-main)] font-bold">
-                        Verbatim
-                      </span>
-                    )}
-                    {entry.resultCounts && (
-                      <span className="opacity-70">
-                        {entry.resultCounts.all} results
-                      </span>
-                    )}
-                    <ArrowRight size={10} className="ml-auto opacity-0 group-hover:opacity-100 text-[var(--accent-main)] transition-opacity" />
-                  </div>
+            {/* Folder-style Navigation matching Mail */}
+            <nav className="py-2 space-y-px flex-1">
+              {filteredHistory.length === 0 ? (
+                <div className="text-center py-12 text-[var(--text-dim)] space-y-2 px-4">
+                  <History size={24} className="mx-auto opacity-30" />
+                  <p className="text-xs font-bold">
+                    {filterQuery ? "No matching searches" : "No searches yet"}
+                  </p>
+                  <p className="text-[10px] opacity-70">
+                    Recent searches will appear here.
+                  </p>
                 </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] px-6 py-2">
+                    <span>Recent Searches</span>
+                    {history.length > 0 && (
+                      <button
+                        onClick={onClearHistory}
+                        className="hover:text-red-400 flex items-center gap-1 transition-colors lowercase font-normal tracking-normal text-[10px]"
+                        title="Clear search history"
+                      >
+                        <Trash2 size={10} />
+                        <span>Clear</span>
+                      </button>
+                    )}
+                  </div>
+                  {filteredHistory.map(entry => {
+                    const active = currentQuery?.trim().toLowerCase() === entry.query.trim().toLowerCase();
+                    return (
+                      <button
+                        key={entry.id}
+                        onClick={() => {
+                          onSelectHistory(entry);
+                          if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+                        }}
+                        className={clsx(
+                          "w-full flex items-center gap-3 px-6 py-3 transition-all text-left border-l-2 group",
+                          active
+                            ? "font-black text-white border-[var(--accent-main)]"
+                            : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
+                        )}
+                        style={active ? { background: 'rgba(0, 0, 0, 0.2)' } : {}}
+                      >
+                        <History
+                          size={15}
+                          className={clsx(
+                            "shrink-0 transition-colors",
+                            active ? "text-[var(--accent-main)]" : "text-[var(--text-dim)] group-hover:text-white"
+                          )}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-bold truncate block group-hover:text-white transition-colors">
+                            {entry.query}
+                          </span>
+                          <span className="text-[9px] text-[var(--text-dim)] block">
+                            {formatRelativeTime(entry.timestamp)}
+                          </span>
+                        </div>
+                        {entry.resultCounts && (
+                          <span
+                            className={clsx(
+                              "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0",
+                              active
+                                ? "bg-white/20 text-white"
+                                : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                            )}
+                          >
+                            {entry.resultCounts.all}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </>
+              )}
+            </nav>
+          </div>
+        ) : (
+          <div className="p-4 flex flex-col flex-1">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <span className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)]">
+                Saved Records
+              </span>
+              <span className="text-[9px] font-bold text-[var(--text-dim)]">
+                {filteredBookmarks.length}
+              </span>
+            </div>
+
+            {/* Filter Input for Saved Items */}
+            <div className="mb-2">
+              <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-2.5 py-1.5">
+                <Search size={12} className="text-[var(--text-dim)] shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Filter saved..."
+                  value={filterQuery}
+                  onChange={e => setFilterQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none min-w-0"
+                />
+                {filterQuery && (
+                  <button onClick={() => setFilterQuery('')}>
+                    <X size={11} className="text-[var(--text-dim)] hover:text-white" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Category Filter Badges */}
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-2 mb-2 text-[9px]">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'quran', label: "Qur'an" },
+                { id: 'ahadith', label: 'Hadith' },
+                { id: 'khazain', label: 'Khazain' },
+                { id: 'malfuzat', label: 'Malfuzat' },
+                { id: 'tazkirah', label: 'Tadhkirah' },
+                { id: 'essence', label: 'Essence' },
+                { id: 'books', label: 'Books' },
+                { id: 'articles', label: 'Articles' },
+                { id: 'audios', label: 'Audios' },
+                { id: 'videos', label: 'Videos' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setBookmarkCategory(tab.id as any)}
+                  className={clsx(
+                    "px-2 py-0.5 rounded-full font-bold whitespace-nowrap transition-colors",
+                    bookmarkCategory === tab.id
+                      ? "bg-[var(--accent-main)] text-white shadow-sm"
+                      : "bg-white/5 text-[var(--text-dim)] hover:text-white"
+                  )}
+                >
+                  {tab.label}
+                </button>
               ))}
             </div>
-          )
-        ) : (
-          /* ──────── BOOKMARKS LIST ──────── */
-          filteredBookmarks.length === 0 ? (
-            <div className="text-center py-16 text-[var(--text-dim)] space-y-2 px-4">
-              <BookmarkCheck size={28} className="mx-auto opacity-30" />
-              <p className="text-xs font-semibold">
-                {filterQuery || bookmarkCategory !== 'all' ? "No matching saved items" : "No saved records"}
-              </p>
-              <p className="text-[10px] opacity-70">
-                Click the Save icon on any search result to save it here.
-              </p>
+
+            {/* Bookmarks Header with Build Project Action */}
+            <div className="flex items-center justify-between pb-1 px-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)]">
+                {filteredBookmarks.length} Saved Records
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push('/projects')}
+                className="px-2 py-0.5 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-hover)] text-[var(--accent-main)] hover:text-white text-[9px] font-bold border border-[var(--accent-main)]/30 flex items-center gap-1 transition-all"
+                title="Open Projects & AI Drafting"
+              >
+                <FolderKanban size={10} />
+                <span>Build Project</span>
+              </button>
             </div>
-          ) : (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-[var(--text-dim)] px-2 py-1">
-                <span>{filteredBookmarks.length} Saved Records</span>
-              </div>
 
-              {filteredBookmarks.map(b => {
-                const badge = getCategoryBadge(b.category);
-                const BadgeIcon = badge.icon;
-                return (
-                  <div
-                    key={b.id}
-                    className="group p-2.5 rounded-xl bg-white/[0.02] hover:bg-black/20 hover:border-white/10 border border-white/5 transition-all space-y-2 text-left"
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className={clsx("px-1.5 py-0.5 rounded text-[9px] font-bold border flex items-center gap-1", badge.color)}>
-                        <BadgeIcon size={9} />
-                        <span>{badge.label}</span>
-                      </span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onRemoveBookmark(b.id); }}
-                        className="p-1 rounded text-[var(--text-dim)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        title="Remove bookmark"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    </div>
-
-                    <div className="text-xs font-bold text-white line-clamp-2 leading-snug">
-                      {b.title}
-                    </div>
-                    {b.subtitle && (
-                      <div className="text-[10px] text-[var(--text-muted)] line-clamp-1">
-                        {b.subtitle}
-                      </div>
-                    )}
-                    {b.snippet && (
-                      <p className="text-[10px] text-[var(--text-dim)] line-clamp-2 italic leading-relaxed border-l border-white/10 pl-2">
-                        "{b.snippet}"
-                      </p>
-                    )}
-
-                    {/* Actions footer */}
-                    <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px]">
-                      <div className="flex items-center gap-1">
-                        {onOpenItemModal && (
+            {/* Bookmarks List styled like Mail contact cards */}
+            <div className="flex flex-col gap-2 pb-4">
+              {filteredBookmarks.length === 0 ? (
+                <div className="text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8">
+                  {filterQuery || bookmarkCategory !== 'all' ? "No matching saved items" : "No saved records yet"}
+                </div>
+              ) : (
+                filteredBookmarks.map(b => {
+                  const badge = getCategoryBadge(b.category);
+                  const BadgeIcon = badge.icon;
+                  return (
+                    <div
+                      key={b.id}
+                      className="flex flex-col gap-1.5 p-2.5 rounded-2xl bg-white/5 border border-white/5 hover:bg-black/10 hover:border-white/10 transition-all group"
+                    >
+                      {/* Top: Category Pill & Actions */}
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={clsx("px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border flex items-center gap-1", badge.color)}>
+                          <BadgeIcon size={8} />
+                          <span>{badge.label}</span>
+                        </span>
+                        <div className="flex items-center gap-0.5">
                           <button
                             type="button"
-                            onClick={() => onOpenItemModal(b)}
-                            className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[var(--foreground)] font-bold flex items-center gap-1 transition-colors"
-                            title="Open Reader"
+                            onClick={() => copyCitation(b.citationText || b.title, b.id)}
+                            className="p-1 rounded-md text-[var(--text-dim)] hover:text-white hover:bg-white/5 transition-all"
+                            title="Copy Citation"
                           >
-                            <BookOpen size={10} />
-                            <span>Read</span>
+                            {copiedId === b.id ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
                           </button>
-                        )}
-                        {b.url && (
-                          <a
-                            href={b.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 rounded text-[var(--text-dim)] hover:text-white hover:bg-white/5 transition-colors"
-                            title="Open Source URL"
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onRemoveBookmark(b.id); }}
+                            className="p-1 rounded-md text-[var(--text-dim)] hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            title="Remove bookmark"
                           >
-                            <ExternalLink size={10} />
-                          </a>
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Title & Reference */}
+                      <div
+                        onClick={() => {
+                          if (onOpenItemModal) {
+                            onOpenItemModal(b);
+                          } else if (b.url) {
+                            window.open(b.url, '_blank');
+                          }
+                        }}
+                        className="cursor-pointer group/title"
+                      >
+                        <div className="text-[10px] font-black tracking-tight text-[var(--foreground)] line-clamp-2 leading-tight group-hover/title:text-[var(--accent-main)] transition-colors">
+                          {b.title}
+                        </div>
+                        {b.subtitle && (
+                          <div className="text-[9px] text-[var(--text-dim)] truncate mt-0.5">
+                            {b.subtitle}
+                          </div>
+                        )}
+                        {b.snippet && (
+                          <p className="text-[9px] text-[var(--text-dim)] line-clamp-2 italic border-l border-white/10 pl-1.5 mt-1 leading-relaxed">
+                            "{b.snippet}"
+                          </p>
                         )}
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => copyCitation(b.citationText || b.title, b.id)}
-                        className="px-1.5 py-0.5 rounded text-[var(--text-dim)] hover:text-white hover:bg-white/5 flex items-center gap-1 font-bold"
-                        title="Copy Citation"
-                      >
-                        {copiedId === b.id ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
-                        <span>{copiedId === b.id ? "Copied" : "Cite"}</span>
-                      </button>
+                      {/* Bottom action link if modal or external link */}
+                      {(onOpenItemModal || b.url) && (
+                        <div className="flex items-center justify-between pt-1 border-t border-white/5 mt-0.5">
+                          {onOpenItemModal && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenItemModal(b)}
+                              className="text-[9px] font-bold text-[var(--accent-main)] hover:underline flex items-center gap-1"
+                            >
+                              <BookOpen size={9} />
+                              <span>Open Reader</span>
+                            </button>
+                          )}
+                          {b.url && (
+                            <a
+                              href={b.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-[var(--text-dim)] hover:text-white flex items-center gap-0.5 ml-auto"
+                            >
+                              <span>Source</span>
+                              <ExternalLink size={8} />
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
-          )
+          </div>
         )}
+      </div>
+
+      {/* ── New Search (Matching Mail Compose Button) ── */}
+      <div className="p-4 border-t border-white/5">
+        <button
+          onClick={() => {
+            if (onNewSearch) onNewSearch();
+            if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+          }}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-md shadow-[var(--accent-glow)]"
+          style={{ background: 'var(--accent-main)' }}
+        >
+          <Plus size={14} />
+          New Search
+        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* ── Panel 1: Stationary Desktop Sidebar (Exactly like Mail tab) ── */}
+      {/* ── Panel 1: Folder Sidebar — Desktop only (Matching Mail Tab w-[240px]) ── */}
       <aside
         className={clsx(
-          "hidden lg:flex w-[260px] xl:w-[280px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 select-none transition-all duration-300 ease-in-out relative z-20",
+          "hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 select-none transition-all duration-300 ease-in-out relative z-20",
           isOpen
             ? "ml-0 opacity-100"
-            : "-ml-[260px] xl:-ml-[280px] opacity-0 pointer-events-none w-0 overflow-hidden border-r-0"
+            : "-ml-[240px] opacity-0 pointer-events-none w-0 overflow-hidden border-r-0"
         )}
       >
         {sidebarInner}
       </aside>
 
-      {/* ── Mobile Overlay Drawer (Sliding in from the left on mobile/tablet) ── */}
+      {/* ── Mobile Overlay Drawer ── */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex animate-in fade-in duration-200">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-          <aside className="relative w-[280px] sm:w-[320px] h-full flex flex-col border-r border-white/10 glass bg-[#0a0f1d] z-10 shadow-2xl animate-in slide-in-from-left duration-300 select-none">
+          <aside className="relative w-[240px] sm:w-[260px] h-full flex flex-col border-r border-white/10 glass bg-[#0a0f1d] z-10 shadow-2xl animate-in slide-in-from-left duration-300 select-none">
             {sidebarInner}
           </aside>
         </div>
