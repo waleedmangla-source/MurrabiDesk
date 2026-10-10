@@ -357,10 +357,10 @@ export default function ResearchSidebar({
                 type="button"
                 onClick={() => router.push('/projects')}
                 className="px-2 py-0.5 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent-hover)] text-[var(--accent-main)] hover:text-white text-[9px] font-bold border border-[var(--accent-main)]/30 flex items-center gap-1 transition-all"
-                title="Open Projects & AI Drafting"
+                title="Open Taleef (Compositions & Manuscripts)"
               >
                 <FolderKanban size={10} />
-                <span>Build Project</span>
+                <span>Taleef</span>
               </button>
             </div>
 

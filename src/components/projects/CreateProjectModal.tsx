@@ -174,7 +174,7 @@ export default function CreateProjectModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-main)]">
-                  Project Creation Protocol
+                  Taleef Creation Protocol
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/5 border border-white/10 text-white/60">
                   Step {step} of 2
@@ -584,7 +584,7 @@ export default function CreateProjectModal({
                 className="btn-ruby px-6 py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
               >
                 <Sparkles size={14} />
-                <span>Initialize Project</span>
+                <span>Initialize Taleef Work</span>
               </button>
             )}
           </div>

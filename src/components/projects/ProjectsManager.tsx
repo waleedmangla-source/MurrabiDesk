@@ -202,10 +202,10 @@ export default function ProjectsManager() {
               )}
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black italic tracking-tighter text-white">
-              RESEARCH PROJECTS
+              TALEEF
             </h1>
             <p className="text-xs sm:text-sm text-white/60 mt-1 max-w-2xl font-sans">
-              Transform saved research bookmarks into structured speeches, study circles, and scholarly articles with AI planning.
+              Synthesize saved research bookmarks into structured speeches, study circles, and scholarly treatises with AI planning.
             </p>
           </div>
 
@@ -235,7 +235,7 @@ export default function ProjectsManager() {
               className="btn-ruby px-5 py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-[var(--accent-glow)] transition-all hover:scale-[1.02]"
             >
               <Plus size={16} />
-              <span>New Project</span>
+              <span>New Work</span>
             </button>
           </div>
         </div>
@@ -357,10 +357,10 @@ export default function ProjectsManager() {
 
               <div className="space-y-2">
                 <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white">
-                  No Research Projects Initialized Yet
+                  No Taleef Works Initialized Yet
                 </h2>
                 <p className="text-sm text-white/60 max-w-lg mx-auto">
-                  Research Projects let you group your saved Quran, Hadith, and Ruhani Khazain bookmarks into structured speeches, dars lessons, and articles with instant AI manuscripts.
+                  Taleef enables you to assemble your saved Quran, Hadith, and Ruhani Khazain research bookmarks into structured speeches, dars lessons, and scholarly articles with AI-crafted drafts.
                 </p>
               </div>
 

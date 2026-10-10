@@ -3,8 +3,8 @@ import ProjectsManager from '@/components/projects/ProjectsManager';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Research Projects & AI Drafting — Murabbi Desk OS",
-  description: "Synthesize saved research bookmarks into structured speeches, dars lessons, and scholarly articles."
+  title: "Taleef (Compositions & Manuscripts) — Murabbi Desk OS",
+  description: "Synthesize saved research bookmarks into structured speeches, dars lessons, and scholarly treatises."
 };
 
 export default function ProjectsPage() {

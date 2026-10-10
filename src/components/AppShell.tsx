@@ -66,7 +66,7 @@ export const dailyNavLinks = [
 export const researchNavLinks = [
   { icon: Sparkles, label: "MurabbiAI", href: "/chat" },
   { icon: Search, label: "Research", href: "/research" },
-  { icon: FolderKanban, label: "Projects", href: "/projects" },
+  { icon: FolderKanban, label: "Taleef", href: "/projects" },
   { icon: BookOpen, label: "Reader", href: "/reader" },
   { icon: FileText, label: "Notes", href: "/notes" },
   { icon: TimelineIcon, label: "Timelines", href: "/life-of-muhammad" },
