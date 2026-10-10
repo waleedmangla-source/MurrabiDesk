@@ -681,24 +681,24 @@ export default function LiveReaderPage() {
       {/* ─────────────────────────────────────────────────────────────
           SECONDARY SIDEBAR: Exactly w-[240px] Matching Email Tab
       ───────────────────────────────────────────────────────────── */}
-      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 select-none">
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-[var(--glass-border)] glass bg-black/5 dark:bg-black/20 select-none">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
             Live Reader
           </h1>
         </div>
 
         {/* Sync Status Badge */}
-        <div className="px-5 pt-1 pb-3 border-b border-white/5 mb-2">
+        <div className="px-5 pt-1 pb-3 border-b border-[var(--glass-border)] mb-2">
           <div className="flex items-center gap-2 py-1">
             <span
               className={clsx(
                 "w-2 h-2 rounded-full shrink-0",
                 driveSyncStatus === "synced"
-                  ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                   : driveSyncStatus === "saving"
-                  ? "bg-amber-400 animate-pulse"
+                  ? "bg-amber-500 animate-pulse"
                   : "bg-slate-400"
               )}
             />
@@ -712,7 +712,7 @@ export default function LiveReaderPage() {
           </div>
 
           {/* Animated Sidebar Tabs: Reading vs Library */}
-          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-white/5">
+          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-[var(--glass-border)]">
             <div
               className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
               style={{
@@ -724,7 +724,7 @@ export default function LiveReaderPage() {
               onClick={() => setSidebarTab("reading")}
               className={clsx(
                 "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                sidebarTab === "reading" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-white"
+                sidebarTab === "reading" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               Reading
@@ -733,7 +733,7 @@ export default function LiveReaderPage() {
               onClick={() => setSidebarTab("library")}
               className={clsx(
                 "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                sidebarTab === "library" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-white"
+                sidebarTab === "library" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-main)]"
               )}
             >
               Library
@@ -772,14 +772,14 @@ export default function LiveReaderPage() {
                         "w-full flex flex-col p-3 rounded-2xl border text-left transition-all duration-200 group relative",
                         isActive
                           ? "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/40 shadow-sm"
-                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-[var(--text-dim)]"
+                          : "bg-black/5 dark:bg-white/5 border-[var(--glass-border)] hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)]"
                       )}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span
                           className={clsx(
                             "text-xs font-black truncate",
-                            isActive ? "text-white" : "text-[var(--foreground)] group-hover:text-white"
+                            isActive ? "text-[var(--accent-main)]" : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
                           )}
                         >
                           {prog.bookTitle}
@@ -790,7 +790,7 @@ export default function LiveReaderPage() {
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="w-full bg-black/40 rounded-full h-1 overflow-hidden my-1">
+                      <div className="w-full bg-black/10 dark:bg-black/40 rounded-full h-1 overflow-hidden my-1">
                         <div
                           className="bg-[var(--accent-main)] h-full transition-all duration-500 rounded-full"
                           style={{ width: `${progressPct}%` }}
@@ -817,7 +817,7 @@ export default function LiveReaderPage() {
                   placeholder="Search books..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/20 border border-white/5 text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)]"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/5 dark:bg-black/20 border border-[var(--glass-border)] text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
                 />
               </div>
 
@@ -830,8 +830,8 @@ export default function LiveReaderPage() {
                     className={clsx(
                       "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider shrink-0 transition-all",
                       libraryFilter === cat
-                        ? "bg-white/20 text-white"
-                        : "bg-white/5 text-[var(--text-dim)] hover:text-white"
+                        ? "bg-[var(--accent-main)] text-white shadow-sm"
+                        : "bg-black/5 dark:bg-white/5 text-[var(--text-dim)] hover:text-[var(--text-main)]"
                     )}
                   >
                     {cat === "khazain" ? "Khazain" : cat === "english" ? "English" : cat}
@@ -851,10 +851,10 @@ export default function LiveReaderPage() {
                         "w-full flex flex-col p-2.5 rounded-xl border text-left transition-all group",
                         isSelected
                           ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-sm"
-                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-[var(--text-dim)]"
+                          : "bg-black/5 dark:bg-white/5 border-[var(--glass-border)] hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)]"
                       )}
                     >
-                      <span className={clsx("text-xs font-bold truncate", isSelected ? "text-white" : "text-[var(--foreground)]")}>
+                      <span className={clsx("text-xs font-bold truncate", isSelected ? "text-white" : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]")}>
                         {b.title}
                       </span>
                       {b.urduTitle && (
@@ -874,10 +874,10 @@ export default function LiveReaderPage() {
         </div>
 
         {/* Footer: + Add Custom Book Button */}
-        <div className="p-3 border-t border-white/5">
+        <div className="p-3 border-t border-[var(--glass-border)]">
           <button
             onClick={() => setIsAddBookModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10 glass bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all active:scale-95"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[var(--glass-border)] glass bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-main)] text-xs font-bold transition-all active:scale-95"
           >
             <Plus size={14} />
             <span>Add Custom PDF</span>
@@ -890,30 +890,30 @@ export default function LiveReaderPage() {
       ───────────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--background)]">
         {/* ── Top Header Controls & Telemetry Bar ── */}
-        <header className="h-16 shrink-0 border-b border-white/10 glass bg-black/40 px-4 md:px-6 flex items-center justify-between gap-4">
+        <header className="h-16 shrink-0 border-b border-[var(--glass-border)] glass bg-[var(--glass-bg)]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between gap-4">
           {/* Active Book Info & Page Pagination */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex flex-col min-w-0">
               <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-main)]">
                 Active Book
               </span>
-              <h2 className="text-sm md:text-base font-black text-white truncate max-w-[220px] md:max-w-md">
+              <h2 className="text-sm md:text-base font-black text-[var(--text-main)] truncate max-w-[220px] md:max-w-md">
                 {activeBook.title}
               </h2>
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1 ml-2">
+            <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] rounded-xl p-1 ml-2">
               <button
                 disabled={currentPage <= 1}
                 onClick={() => triggerPageFlip("prev")}
-                className="p-1 rounded-lg hover:bg-white/10 text-white disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none transition-all"
                 title="Previous Card (Left Arrow or Two-finger swipe right)"
               >
                 <ChevronLeft size={16} />
               </button>
 
-              <div className="flex items-center gap-1 px-2 text-xs font-mono font-bold text-white">
+              <div className="flex items-center gap-1 px-2 text-xs font-mono font-bold text-[var(--foreground)]">
                 <input
                   type="text"
                   value={pageInput}
@@ -924,7 +924,7 @@ export default function LiveReaderPage() {
                       if (!isNaN(val)) changePage(val);
                     }
                   }}
-                  className="w-10 bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-center text-xs text-white outline-none focus:border-[var(--accent-main)]"
+                  className="w-10 bg-black/5 dark:bg-black/40 border border-[var(--glass-border)] rounded px-1.5 py-0.5 text-center text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent-main)] font-bold"
                 />
                 <span className="text-[var(--text-dim)]">/ {numPages || "..."}</span>
               </div>
@@ -932,7 +932,7 @@ export default function LiveReaderPage() {
               <button
                 disabled={!numPages || currentPage >= numPages}
                 onClick={() => triggerPageFlip("next")}
-                className="p-1 rounded-lg hover:bg-white/10 text-white disabled:opacity-30 disabled:pointer-events-none transition-all"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none transition-all"
                 title="Next Card (Right Arrow or Two-finger swipe left)"
               >
                 <ChevronRight size={16} />
@@ -941,10 +941,10 @@ export default function LiveReaderPage() {
 
             {/* Auto-Bookmark Pill */}
             <div
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold"
               title="Automatically saves your bookmark on page change"
             >
-              <Bookmark size={12} className="fill-amber-400" />
+              <Bookmark size={12} className="fill-amber-500" />
               <span>Bookmarked</span>
             </div>
           </div>
@@ -952,48 +952,48 @@ export default function LiveReaderPage() {
           {/* Right Header: Per-Page Telemetry & General Session Timer */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Per-Page Timer & Speed Analytics */}
-            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--glass-border)]">
               <div className="flex flex-col">
                 <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-dim)]">
                   Card Time
                 </span>
-                <span className="text-xs font-mono font-bold text-emerald-400">
+                <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                   {formatTimeSeconds(pageElapsedSeconds)}
                 </span>
               </div>
-              <div className="h-6 w-px bg-white/10" />
+              <div className="h-6 w-px bg-[var(--glass-border)]" />
               <div className="flex flex-col">
                 <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-dim)]">
                   Avg Speed
                 </span>
-                <span className="text-xs font-mono font-bold text-white">
+                <span className="text-xs font-mono font-bold text-[var(--foreground)]">
                   {formatTimeSeconds(avgSpeedSecs)} / card
                 </span>
               </div>
             </div>
 
             {/* General Session Timer */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--glass-border)]">
               <Clock size={14} className="text-[var(--accent-main)]" />
               <div className="flex flex-col">
                 <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-dim)]">
                   Session
                 </span>
-                <span className="text-xs font-mono font-black text-white">
+                <span className="text-xs font-mono font-black text-[var(--foreground)]">
                   {formatTimeSeconds(sessionElapsedSeconds)}
                 </span>
               </div>
 
               <button
                 onClick={() => setIsSessionTimerRunning(!isSessionTimerRunning)}
-                className="p-1 rounded-lg hover:bg-white/10 text-white transition-all ml-1"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--foreground)] transition-all ml-1"
                 title={isSessionTimerRunning ? "Pause Reading Session" : "Resume Reading Session"}
               >
                 {isSessionTimerRunning ? <Pause size={12} /> : <Play size={12} />}
               </button>
               <button
                 onClick={() => setSessionElapsedSeconds(0)}
-                className="p-1 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--text-main)] transition-all"
                 title="Reset Session Timer"
               >
                 <RotateCcw size={12} />
@@ -1017,39 +1017,39 @@ export default function LiveReaderPage() {
           {/* CENTER: Interactive Card Stage with Two-Finger Swipe */}
           <div
             ref={cardContainerRef}
-            className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center p-4 md:p-6 bg-black/50 relative cursor-grab active:cursor-grabbing"
+            className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center p-4 md:p-6 bg-slate-100/70 dark:bg-black/50 relative cursor-grab active:cursor-grabbing"
             style={{ touchAction: "pan-y" }}
           >
             {/* Top Toolbar: Zoom Controls & Swipe Hint */}
             <div className="sticky top-2 z-20 flex items-center justify-between w-full max-w-[760px] mb-3 px-2 pointer-events-none">
-              <div className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass bg-black/60 border border-white/10 shadow-xl backdrop-blur-md">
+              <div className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass bg-white/95 dark:bg-black/70 border border-zinc-200 dark:border-white/10 shadow-xl backdrop-blur-md">
                 <button
                   onClick={() => setPdfScale((s) => Math.max(0.7, s - 0.1))}
-                  className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
+                  className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 text-zinc-900 dark:text-white text-xs font-bold"
                   title="Zoom Out"
                 >
                   -
                 </button>
-                <span className="text-[10px] font-mono font-bold text-white px-1">
+                <span className="text-[10px] font-mono font-bold text-zinc-900 dark:text-white px-1">
                   {Math.round(pdfScale * 100)}%
                 </span>
                 <button
                   onClick={() => setPdfScale((s) => Math.min(2.0, s + 0.1))}
-                  className="p-1 rounded hover:bg-white/10 text-white text-xs font-bold"
+                  className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 text-zinc-900 dark:text-white text-xs font-bold"
                   title="Zoom In"
                 >
                   +
                 </button>
                 <button
                   onClick={() => setPdfScale(1.05)}
-                  className="text-[9px] font-bold text-[var(--text-dim)] hover:text-white ml-2 px-1.5 py-0.5 rounded border border-white/10"
+                  className="text-[9px] font-bold text-zinc-600 hover:text-zinc-950 dark:text-[var(--text-dim)] dark:hover:text-white ml-2 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-white/10"
                 >
                   Reset
                 </button>
               </div>
 
               {/* Two-Finger Swipe Helper Pill */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl glass bg-black/60 border border-white/10 text-[10px] font-bold text-[var(--text-dim)] shadow-xl backdrop-blur-md">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl glass bg-white/95 dark:bg-black/70 border border-zinc-200 dark:border-white/10 text-[10px] font-bold text-zinc-800 dark:text-[var(--text-dim)] shadow-xl backdrop-blur-md">
                 <Hand size={12} className="text-[var(--accent-main)]" />
                 <span>Swipe with two fingers horizontally to flip cards</span>
               </div>
@@ -1188,13 +1188,13 @@ export default function LiveReaderPage() {
           </div>
 
           {/* RIGHT: Small Dedicated Notepad for Current Page & AI Compile Button */}
-          <aside className="w-[320px] md:w-[360px] shrink-0 border-l border-white/10 glass bg-black/40 flex flex-col h-full overflow-hidden select-none">
+          <aside className="w-[320px] md:w-[360px] shrink-0 border-l border-[var(--glass-border)] glass bg-[var(--glass-bg)] flex flex-col h-full overflow-hidden select-none">
             {/* Notepad Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+            <div className="p-4 border-b border-[var(--glass-border)] flex items-center justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-[var(--accent-main)]" />
-                  <span className="text-xs font-black text-white uppercase tracking-wider">
+                  <span className="text-xs font-black text-[var(--text-main)] uppercase tracking-wider">
                     Card {currentPage} Notes
                   </span>
                 </div>
@@ -1206,10 +1206,10 @@ export default function LiveReaderPage() {
               {/* Compile All Notes Button */}
               <button
                 onClick={handleOpenCompileModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-[11px] font-black transition-all active:scale-95 shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 border border-[var(--glass-border)] text-[var(--text-main)] text-[11px] font-black transition-all active:scale-95 shadow-sm"
                 title="Compile all page notes into a polished single document using AI"
               >
-                <Sparkles size={12} className="text-amber-400" />
+                <Sparkles size={12} className="text-amber-500" />
                 <span>Compile AI Doc</span>
               </button>
             </div>
@@ -1220,20 +1220,20 @@ export default function LiveReaderPage() {
                 value={pageNotes}
                 onChange={(e) => handleNotesChange(e.target.value)}
                 placeholder={`Type thoughts, key points, or quotes for Card ${currentPage} here...\n\nEvery page card gets its own notepad, automatically saved to your book's JSON file on Google Drive.`}
-                className="flex-1 w-full p-3.5 rounded-2xl bg-black/30 border border-white/10 text-xs text-white placeholder-[var(--text-dim)] focus:border-[var(--accent-main)] focus:outline-none resize-none leading-relaxed custom-scrollbar"
+                className="flex-1 w-full p-3.5 rounded-2xl bg-black/5 dark:bg-black/30 border border-[var(--glass-border)] text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] focus:border-[var(--accent-main)] focus:outline-none resize-none leading-relaxed custom-scrollbar font-medium"
               />
 
               {/* Status Footnote */}
               <div className="flex items-center justify-between text-[9px] text-[var(--text-dim)] mt-2 px-1">
                 <span>Total Annotated Cards: {totalNotesCount}</span>
-                <span className="text-emerald-400 font-bold">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                   {driveSyncStatus === "saving" ? "Saving..." : "Synced to Drive ✓"}
                 </span>
               </div>
             </div>
 
             {/* MurabbiAI Analysis Card (Collapsible) */}
-            <div className="border-t border-white/10 p-4 max-h-[45%] overflow-y-auto custom-scrollbar flex flex-col gap-2">
+            <div className="border-t border-[var(--glass-border)] p-4 max-h-[45%] overflow-y-auto custom-scrollbar flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-[var(--accent-main)] flex items-center gap-1.5">
                   <Sparkles size={12} />
@@ -1247,7 +1247,7 @@ export default function LiveReaderPage() {
                       const append = `\n\n[MurabbiAI Insight]:\n${summary}\n\nTakeaway: ${insight}`;
                       handleNotesChange((pageNotes + append).trim());
                     }}
-                    className="text-[9px] font-bold text-[var(--text-dim)] hover:text-white underline"
+                    className="text-[9px] font-bold text-[var(--text-dim)] hover:text-[var(--text-main)] underline"
                   >
                     + Copy to Notes
                   </button>
@@ -1262,18 +1262,18 @@ export default function LiveReaderPage() {
               ) : aiAnalysisResult ? (
                 <div className="flex flex-col gap-2.5 text-xs">
                   <div>
-                    <h4 className="text-[10px] font-bold uppercase text-white/60 mb-0.5">Synopsis</h4>
-                    <p className="text-[11px] text-slate-200 leading-relaxed font-sans">
+                    <h4 className="text-[10px] font-bold uppercase text-[var(--text-dim)] mb-0.5">Synopsis</h4>
+                    <p className="text-[11px] text-[var(--text-main)] leading-relaxed font-sans">
                       {aiAnalysisResult.summary}
                     </p>
                   </div>
 
                   {aiAnalysisResult.theologicalInsight && (
                     <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                      <h4 className="text-[9px] font-black uppercase tracking-wider text-emerald-400 mb-0.5">
+                      <h4 className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-0.5">
                         Murabbi Pedagogical Insight
                       </h4>
-                      <p className="text-[11px] text-emerald-200 leading-relaxed">
+                      <p className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-relaxed font-medium">
                         {aiAnalysisResult.theologicalInsight}
                       </p>
                     </div>
@@ -1281,12 +1281,12 @@ export default function LiveReaderPage() {
 
                   {Array.isArray(aiAnalysisResult.hardWords) && aiAnalysisResult.hardWords.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase text-white/60 mb-1">Vocabulary</h4>
+                      <h4 className="text-[10px] font-bold uppercase text-[var(--text-dim)] mb-1">Vocabulary</h4>
                       <div className="flex flex-col gap-1">
                         {aiAnalysisResult.hardWords.map((hw: any, idx: number) => (
-                          <div key={idx} className="p-1.5 rounded-lg bg-white/5 text-[10px]">
-                            <span className="font-bold text-white mr-1.5">{hw.word}:</span>
-                            <span className="text-[var(--text-dim)]">{hw.meaning}</span>
+                          <div key={idx} className="p-1.5 rounded-lg bg-black/5 dark:bg-white/5 text-[10px]">
+                            <span className="font-bold text-[var(--text-main)] mr-1.5">{hw.word}:</span>
+                            <span className="text-[var(--text-muted)]">{hw.meaning}</span>
                           </div>
                         ))}
                       </div>
@@ -1308,15 +1308,15 @@ export default function LiveReaderPage() {
       ───────────────────────────────────────────────────────────── */}
       {isCompileModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="w-full max-w-3xl glass bg-zinc-950/90 border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl">
+          <div className="w-full max-w-3xl glass bg-white dark:bg-zinc-950/90 border border-zinc-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-white/10">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-[var(--accent-main)]/20 border border-[var(--accent-main)]/30 text-[var(--accent-main)]">
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black italic text-white tracking-tight">
+                  <h3 className="text-xl font-black italic text-[var(--text-main)] tracking-tight">
                     MurabbiAI Study Document Compiler
                   </h3>
                   <p className="text-xs text-[var(--text-dim)]">
@@ -1326,23 +1326,23 @@ export default function LiveReaderPage() {
               </div>
               <button
                 onClick={() => setIsCompileModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-white/10 text-[var(--text-dim)] hover:text-white transition-all"
+                className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--text-main)] transition-all"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Document Body Preview */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar my-4 p-5 rounded-2xl bg-black/40 border border-white/5 font-sans leading-relaxed text-sm text-slate-200">
+            <div className="flex-1 overflow-y-auto custom-scrollbar my-4 p-5 rounded-2xl bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-white/5 font-sans leading-relaxed text-sm text-[var(--foreground)]">
               {isCompiling ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
                   <Loader2 size={32} className="animate-spin text-[var(--accent-main)]" />
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
                     {compileStatus}
                   </span>
                 </div>
               ) : compiledResult ? (
-                <div className="prose prose-invert max-w-none text-xs sm:text-sm">
+                <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-zinc-900 dark:text-slate-200">
                   <div
                     dangerouslySetInnerHTML={{ __html: compiledResult.html }}
                   />
@@ -1355,7 +1355,7 @@ export default function LiveReaderPage() {
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-zinc-200 dark:border-white/10">
               <div className="text-[10px] text-[var(--text-dim)]">
                 Compiled from {totalNotesCount} card notepads
               </div>
@@ -1368,14 +1368,14 @@ export default function LiveReaderPage() {
                       alert("Markdown copied to clipboard!");
                     }
                   }}
-                  className="px-4 py-2 rounded-xl border border-white/10 glass bg-white/5 hover:bg-white/10 text-xs font-bold text-white transition-all"
+                  className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-white/10 glass bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-bold text-[var(--text-main)] transition-all"
                 >
                   Copy Markdown
                 </button>
                 <button
                   disabled={!compiledResult}
                   onClick={handleExportToMurabbiNotes}
-                  className="px-4 py-2 rounded-xl border border-white/10 glass bg-white/5 hover:bg-white/10 text-xs font-bold text-white transition-all"
+                  className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-white/10 glass bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-bold text-[var(--text-main)] transition-all"
                 >
                   Save to Notes
                 </button>
@@ -1398,12 +1398,12 @@ export default function LiveReaderPage() {
       ───────────────────────────────────────────────────────────── */}
       {isAddBookModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="w-full max-w-md glass bg-zinc-950/90 border border-white/10 rounded-3xl p-6 flex flex-col gap-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-black italic text-white tracking-tight">Add Custom PDF Book</h3>
+          <div className="w-full max-w-md glass bg-white dark:bg-zinc-950/90 border border-zinc-200 dark:border-white/10 rounded-3xl p-6 flex flex-col gap-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <h3 className="text-lg font-black italic text-[var(--text-main)] tracking-tight">Add Custom PDF Book</h3>
               <button
                 onClick={() => setIsAddBookModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-[var(--text-dim)] hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)] hover:text-[var(--text-main)]"
               >
                 <X size={16} />
               </button>
@@ -1419,7 +1419,7 @@ export default function LiveReaderPage() {
                   placeholder="e.g. Tadhkiratul Auliya"
                   value={newBookTitle}
                   onChange={(e) => setNewBookTitle(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)]"
+                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/5 dark:bg-black/40 border border-zinc-200 dark:border-white/10 text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
                 />
               </div>
 
@@ -1432,7 +1432,7 @@ export default function LiveReaderPage() {
                   placeholder="e.g. Farid al-Din Attar"
                   value={newBookAuthor}
                   onChange={(e) => setNewBookAuthor(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)]"
+                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/5 dark:bg-black/40 border border-zinc-200 dark:border-white/10 text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
                 />
               </div>
 
@@ -1445,21 +1445,21 @@ export default function LiveReaderPage() {
                   placeholder="https://.../book.pdf or /filename.pdf"
                   value={newBookUrl}
                   onChange={(e) => setNewBookUrl(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)]"
+                  className="w-full mt-1 px-3 py-2 rounded-xl bg-black/5 dark:bg-black/40 border border-zinc-200 dark:border-white/10 text-xs text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-white/10">
               <button
                 onClick={() => setIsAddBookModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-white/10 glass bg-white/5 text-xs font-bold text-white"
+                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-white/10 glass bg-black/5 dark:bg-white/5 text-xs font-bold text-[var(--text-main)]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCustomBook}
-                className="px-4 py-2 rounded-xl bg-[var(--accent-main)] text-xs font-bold text-white shadow-lg"
+                className="px-4 py-2 rounded-xl bg-[var(--accent-main)] text-xs font-bold text-white shadow-lg shadow-[var(--accent-main)]/20 active:scale-95 transition-all"
               >
                 Add & Open Book
               </button>
