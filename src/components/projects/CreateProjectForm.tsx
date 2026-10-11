@@ -44,7 +44,15 @@ interface CreateProjectFormProps {
   initialType?: ProjectType;
 }
 
-export type AudienceOption = 'lajna' | 'khuddam' | 'atfal' | 'ansar' | 'nasirat' | 'all';
+export type AudienceOption =
+  | 'all'
+  | 'khuddam'
+  | 'lajna'
+  | 'atfal'
+  | 'nasirat'
+  | 'ansar'
+  | 'secular'
+  | 'interfaith';
 export type SpeechToneOption =
   | 'inspirational'
   | 'direct'
@@ -175,7 +183,9 @@ export default function CreateProjectForm({
     { id: 'lajna', label: 'Lajna Ima’illah', desc: 'Ahmadi Muslim women' },
     { id: 'atfal', label: 'Majlis Atfalul Ahmadiyya', desc: 'Boys under 15' },
     { id: 'nasirat', label: 'Nasirat-ul-Ahmadiyya', desc: 'Girls under 15' },
-    { id: 'ansar', label: 'Majlis Ansarullah', desc: 'Men over 40' }
+    { id: 'ansar', label: 'Majlis Ansarullah', desc: 'Men over 40' },
+    { id: 'secular', label: 'Secular Audience', desc: 'General public & secular context' },
+    { id: 'interfaith', label: 'Interfaith Guests', desc: 'Non-Muslim & interfaith attendees' }
   ];
 
   // Delivery Tones
@@ -451,7 +461,10 @@ export default function CreateProjectForm({
   const generatedPrompt = useMemo(() => {
     const audNames = selectedAudiences.includes('all')
       ? 'General Jama’at (All members)'
-      : selectedAudiences.map(a => a.toUpperCase()).join(', ');
+      : selectedAudiences.map(a => {
+          const match = AUDIENCES.find(aud => aud.id === a);
+          return match ? match.label : a.toUpperCase();
+        }).join(', ');
 
     const toneDesc = TONES.find(t => t.id === speechTone)?.label || speechTone;
     const langDesc = language === 'both' ? 'Bilingual (English with Urdu/Arabic terms)' : language.toUpperCase();
@@ -515,6 +528,13 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
       brief += `\n5. AUDIENCE FOCUS: Tailor arguments to young minds by addressing modern intellectual doubts, rational proofs, and contemporary digital/social realities.`;
     } else if (audienceBaseline === 'interfaith') {
       brief += `\n5. AUDIENCE FOCUS: Use universally accessible language, explaining Islamic/Ahmadi concepts clearly without assuming prior familiarity with community acronyms.`;
+    }
+
+    if (selectedAudiences.includes('secular')) {
+      brief += `\n   - SECULAR AUDIENCE ADAPTATION: Frame concepts with objective moral reasoning, rational philosophical principles, and relatable human examples rather than presupposing theological dogma.`;
+    }
+    if (selectedAudiences.includes('interfaith')) {
+      brief += `\n   - INTERFAITH DIALOGUE ADAPTATION: Highlight common spiritual values, use respectful comparative theological framing, and clearly define Arabic or Islamic terms with accessible explanations.`;
     }
 
     if (outputStyle === 'cue_cards') {
