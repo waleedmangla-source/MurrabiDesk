@@ -22,7 +22,9 @@ export async function POST(req: NextRequest) {
       sources: Array.isArray(body.sources) ? body.sources : undefined,
       articlePage: body.articlePage,
       alhakamPage: body.alhakamPage,
-      periodicalPage: body.periodicalPage
+      periodicalPage: body.periodicalPage,
+      author: typeof body.author === 'string' ? body.author : undefined,
+      collection: typeof body.collection === 'string' ? body.collection : undefined
     });
 
     return NextResponse.json({

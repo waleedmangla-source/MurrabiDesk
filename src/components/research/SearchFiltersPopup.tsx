@@ -8,10 +8,13 @@ import {
   Calendar,
   Layers,
   Globe,
-  Type
+  Type,
+  BookMarked
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { SearchFilters, SearchLanguage } from '@/lib/research-sources';
+import authorsList from '@/data/research/authors.json';
+import collectionsList from '@/data/research/collections.json';
 
 interface SearchFiltersPopupProps {
   filters: SearchFilters;
@@ -123,7 +126,9 @@ export default function SearchFiltersPopup({
       yearFrom: null,
       yearTo: null,
       sources: [],
-      language: 'all'
+      language: 'all',
+      author: undefined,
+      collection: undefined
     });
   };
 
@@ -136,7 +141,9 @@ export default function SearchFiltersPopup({
     filters.yearFrom !== null ||
     filters.yearTo !== null ||
     filters.sources.length > 0 ||
-    filters.language !== 'all';
+    filters.language !== 'all' ||
+    Boolean(filters.author) ||
+    Boolean(filters.collection);
 
   return (
     <div
@@ -368,6 +375,63 @@ export default function SearchFiltersPopup({
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* ── Section 5: Author & Collection (Ahmadiyya Library) ── */}
+      <div className="space-y-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookMarked size={14} className="text-[var(--accent-main)]" />
+            <span className="text-xs font-bold text-[var(--foreground)]">Author & Collection</span>
+          </div>
+          {(filters.author || filters.collection) && (
+            <button
+              type="button"
+              onClick={() => onChange({ ...filters, author: undefined, collection: undefined })}
+              className="text-[10px] text-[var(--accent-main)] hover:underline font-bold"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div>
+            <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">
+              Author ({authorsList.length} Scholars)
+            </label>
+            <select
+              value={filters.author || ''}
+              onChange={(e) => onChange({ ...filters, author: e.target.value || undefined })}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-bold text-[var(--foreground)] focus:border-[var(--accent-main)] focus:outline-none"
+            >
+              <option value="">All Authors ({authorsList.length})</option>
+              {authorsList.map((a) => (
+                <option key={a.slug} value={a.slug}>
+                  {a.name} {a.subtitle ? `(${a.subtitle})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">
+              Collection ({collectionsList.length} Series)
+            </label>
+            <select
+              value={filters.collection || ''}
+              onChange={(e) => onChange({ ...filters, collection: e.target.value || undefined })}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-bold text-[var(--foreground)] focus:border-[var(--accent-main)] focus:outline-none"
+            >
+              <option value="">All Collections ({collectionsList.length})</option>
+              {collectionsList.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

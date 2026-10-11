@@ -1,0 +1,324 @@
+[
+  {
+    "slug": "abul-ata-jalandhri",
+    "name": "Abul-Ata Jalandhri",
+    "subtitle": "Maulana",
+    "bio": "Abul-Ata Jalandhri",
+    "image": ""
+  },
+  {
+    "slug": "ansar-raza",
+    "name": "Ansar Raza",
+    "subtitle": "",
+    "bio": "Ansar Raza",
+    "image": ""
+  },
+  {
+    "slug": "anwer-mahmood-khan",
+    "name": "Anwer Mahmood Khan",
+    "subtitle": "",
+    "bio": "Anwer Mahmood Khan",
+    "image": ""
+  },
+  {
+    "slug": "arif-humayun",
+    "name": "Arif Humayun",
+    "subtitle": "",
+    "bio": "Arif Humayun",
+    "image": ""
+  },
+  {
+    "slug": "arshad-ahmedi",
+    "name": "Arshad Ahmedi",
+    "subtitle": "",
+    "bio": "Arshad Ahmedi",
+    "image": ""
+  },
+  {
+    "slug": "ataul-mujeeb-rashid",
+    "name": "Ataul Mujeeb Rashid",
+    "subtitle": "Maulana",
+    "bio": "Ataul Mujeeb Rashid",
+    "image": ""
+  },
+  {
+    "slug": "b-a-rafiq",
+    "name": "B. A. Rafiq",
+    "subtitle": "Imam",
+    "bio": "B. A. Rafiq",
+    "image": ""
+  },
+  {
+    "slug": "bashir-ahmad-orchard",
+    "name": "Bashir Ahmad Orchard",
+    "subtitle": "",
+    "bio": "Bashir Ahmad Orchard",
+    "image": ""
+  },
+  {
+    "slug": "dost-muhammad-shahid",
+    "name": "Dost Muhammad Shahid",
+    "subtitle": "Maulana",
+    "bio": "Dost Muhammad Shahid",
+    "image": ""
+  },
+  {
+    "slug": "dr-abdul-mannan-siddiqui-shaheed",
+    "name": "Dr. Abdul Mannan Siddiqui Shaheed",
+    "subtitle": "",
+    "bio": "Dr. Abdul Mannan Siddiqui Shaheed",
+    "image": ""
+  },
+  {
+    "slug": "dr-iftikhar-ahmad-ayaz",
+    "name": "Dr. Iftikhar Ahmad Ayaz",
+    "subtitle": "",
+    "bio": "Dr. Iftikhar Ahmad Ayaz",
+    "image": ""
+  },
+  {
+    "slug": "dr-karimullah-zirvi",
+    "name": "Dr. Karimullah Zirvi",
+    "subtitle": "",
+    "bio": "Dr. Karimullah Zirvi",
+    "image": ""
+  },
+  {
+    "slug": "dr-khalil-ahmad-nasir",
+    "name": "Dr. Khalil Ahmad Nasir",
+    "subtitle": "",
+    "bio": "Dr. Khalil Ahmad Nasir",
+    "image": ""
+  },
+  {
+    "slug": "h-ali",
+    "name": "H. Ali",
+    "subtitle": "",
+    "bio": "H. Ali",
+    "image": ""
+  },
+  {
+    "slug": "hadi-ali-chaudhary",
+    "name": "Hadi Ali Chaudhary",
+    "subtitle": "",
+    "bio": "Hadi Ali Chaudhary",
+    "image": ""
+  },
+  {
+    "slug": "hafiz-muzaffar-ahmad",
+    "name": "Hafiz Muzaffar Ahmad",
+    "subtitle": "",
+    "bio": "Hafiz Muzaffar Ahmad",
+    "image": ""
+  },
+  {
+    "slug": "hazrat-abu-bakr-siddiq",
+    "name": "Hazrat Abu Bakr Siddiq (ra)",
+    "subtitle": "",
+    "bio": "Hazrat Abu Bakr Siddiq (ra)",
+    "image": ""
+  },
+  {
+    "slug": "hazrat-ali-ibn-abi-talib",
+    "name": "Hazrat Ali ibn Abi Talib (ra)",
+    "subtitle": "",
+    "bio": "Hazrat Ali ibn Abi Talib (ra)",
+    "image": ""
+  },
+  {
+    "slug": "hazrat-hakeem-nooruddin",
+    "name": "Hazrat Hakeem Noor-ud-Deen",
+    "subtitle": "Khalifatul Masih I (ra)",
+    "bio": "Hazrat Hakeem Noor-ud-Deen",
+    "image": "https://files.alislam.cloud/profiles/1.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-bashir-ahmad",
+    "name": "Hazrat Mirza Bashir Ahmad",
+    "subtitle": "M.A. (ra)",
+    "bio": "Hazrat Mirza Bashir Ahmad",
+    "image": "https://files.alislam.cloud/profiles/bashir.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-bashiruddin-mahmud-ahmad",
+    "name": "Hazrat Mirza Bashir-ud-Din Mahmud Ahmad",
+    "subtitle": "Khalifatul Masih II (ra)",
+    "bio": "Hazrat Mirza Bashir-ud-Din Mahmud Ahmad",
+    "image": "https://files.alislam.cloud/profiles/2.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-ghulam-ahmad",
+    "name": "Hazrat Mirza Ghulam Ahmad",
+    "subtitle": "The Promised Messiah and Mahdi (as)",
+    "bio": "Hazrat Mirza Ghulam Ahmad",
+    "image": "https://files.alislam.cloud/profiles/pm.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-masroor-ahmad",
+    "name": "Hazrat Mirza Masroor Ahmad",
+    "subtitle": "Khalifatul Masih V (aba)",
+    "bio": "Hazrat Mirza Masroor Ahmad",
+    "image": "https://files.alislam.cloud/profiles/5.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-nasir-ahmad",
+    "name": "Hazrat Mirza Nasir Ahmad",
+    "subtitle": "Khalifatul Masih III (rh)",
+    "bio": "Hazrat Mirza Nasir Ahmad",
+    "image": "https://files.alislam.cloud/profiles/3.jpg"
+  },
+  {
+    "slug": "hazrat-mirza-tahir-ahmad",
+    "name": "Hazrat Mirza Tahir Ahmad",
+    "subtitle": "Khalifatul Masih IV (rh)",
+    "bio": "Hazrat Mirza Tahir Ahmad",
+    "image": "https://files.alislam.cloud/profiles/4.jpg"
+  },
+  {
+    "slug": "hazrat-umar-bin-khattab",
+    "name": "Hazrat Umar bin Khattab (ra)",
+    "subtitle": "",
+    "bio": "Hazrat Umar bin Khattab (ra)",
+    "image": ""
+  },
+  {
+    "slug": "hazrat-uthman-bin-affan",
+    "name": "Hazrat Uthman bin Affan (ra)",
+    "subtitle": "",
+    "bio": "Hazrat Uthman bin Affan (ra)",
+    "image": ""
+  },
+  {
+    "slug": "iqbal-ahmad-najm",
+    "name": "Iqbal Ahmad Najm",
+    "subtitle": "",
+    "bio": "Iqbal Ahmad Najm",
+    "image": ""
+  },
+  {
+    "slug": "jalal-ud-din-shams",
+    "name": "Jalal-ud-Din Shams",
+    "subtitle": "",
+    "bio": "Jalal-ud-Din Shams",
+    "image": ""
+  },
+  {
+    "slug": "m-m-ahmad",
+    "name": "M M Ahmad",
+    "subtitle": "",
+    "bio": "M M Ahmad",
+    "image": ""
+  },
+  {
+    "slug": "malik-ghulam-farid",
+    "name": "Malik Ghulam Farid",
+    "subtitle": "M.A.",
+    "bio": "Malik Ghulam Farid",
+    "image": ""
+  },
+  {
+    "slug": "malik-saif-ur-rahman",
+    "name": "Malik Saif-ur-Rahman",
+    "subtitle": "",
+    "bio": "Malik Saif-ur-Rahman",
+    "image": ""
+  },
+  {
+    "slug": "mubasher-ahmad",
+    "name": "Mubasher Ahmad",
+    "subtitle": "M.A., LLB",
+    "bio": "Mubasher Ahmad",
+    "image": ""
+  },
+  {
+    "slug": "mujeebur-rahman",
+    "name": "Mujeebur Rahman",
+    "subtitle": "",
+    "bio": "Mujeebur Rahman",
+    "image": ""
+  },
+  {
+    "slug": "mukhtar-ahmad-cheema",
+    "name": "Mukhtar Ahmad Cheema",
+    "subtitle": "",
+    "bio": "Mukhtar Ahmad Cheema",
+    "image": ""
+  },
+  {
+    "slug": "n-r-a-g-soofi",
+    "name": "N. R. A. G. Soofi",
+    "subtitle": "",
+    "bio": "N. R. A. G. Soofi",
+    "image": ""
+  },
+  {
+    "slug": "naeem-osman-memon",
+    "name": "Naeem Osman Memon",
+    "subtitle": "",
+    "bio": "Naeem Osman Memon",
+    "image": ""
+  },
+  {
+    "slug": "naseem-ahmad-bajwa",
+    "name": "Naseem Ahmad Bajwa",
+    "subtitle": "",
+    "bio": "Naseem Ahmad Bajwa",
+    "image": ""
+  },
+  {
+    "slug": "other-authors",
+    "name": "Other Authors",
+    "subtitle": "",
+    "bio": "Other Authors",
+    "image": ""
+  },
+  {
+    "slug": "abdus-salam",
+    "name": "Professor Abdus Salam",
+    "subtitle": "",
+    "bio": "Professor Abdus Salam",
+    "image": ""
+  },
+  {
+    "slug": "qazi-muhammad-nazir",
+    "name": "Qazi Muhammad Nazir",
+    "subtitle": "",
+    "bio": "Qazi Muhammad Nazir",
+    "image": ""
+  },
+  {
+    "slug": "rashid-ahmad-chaudhry",
+    "name": "Rashid Ahmad Chaudhry",
+    "subtitle": "",
+    "bio": "Rashid Ahmad Chaudhry",
+    "image": ""
+  },
+  {
+    "slug": "sheikh-mubarak-ahmad",
+    "name": "Sheikh Mubarak Ahmad",
+    "subtitle": "",
+    "bio": "Sheikh Mubarak Ahmad",
+    "image": ""
+  },
+  {
+    "slug": "sheikh-muhammad-ismail-panipati",
+    "name": "Sheikh Muhammad Ismail Panipati",
+    "subtitle": "",
+    "bio": "Sheikh Muhammad Ismail Panipati",
+    "image": ""
+  },
+  {
+    "slug": "sir-muhammad-zafrulla-khan",
+    "name": "Sir Muhammad Zafrulla Khan",
+    "subtitle": "(ra)",
+    "bio": "Sir Muhammad Zafrulla Khan",
+    "image": "https://files.alislam.cloud/profiles/zafar.jpg"
+  },
+  {
+    "slug": "syed-hasanat-ahmad",
+    "name": "Syed Hasanat Ahmad",
+    "subtitle": "",
+    "bio": "Syed Hasanat Ahmad",
+    "image": ""
+  }
+]

@@ -1,19 +1,28 @@
-// Ahmadiyya Canonical Books & Literature Catalog (alislam.org/books)
+// Ahmadiyya Canonical Books & Literature Catalog (alislam.org/books & ahmadiyyabooks.com)
 import { THEOLOGICAL_TOPIC_MAP } from "./khazain-data";
+import rawAhmadiyyaBooks from "@/data/research/ahmadiyya-books.json";
 
 export interface BookItem {
   id: string;
+  slug?: string;
   title: string;
   urduTitle?: string;
   author: string;
+  authorSlug?: string;
   year?: string;
-  category: "Promised Messiah" | "Khulafa-e-Ahmadiyya" | "Scholarly Classic" | "Contemporary";
+  category?: "Promised Messiah" | "Khulafa-e-Ahmadiyya" | "Scholarly Classic" | "Contemporary" | string;
+  collection?: string;
+  collectionSlug?: string;
+  coverUrl?: string;
+  language?: string;
   summary: string;
   url: string;
+  alislamUrl?: string;
   topics: string[];
+  relevanceScore?: number;
 }
 
-export const AHMADIYYA_BOOKS_CATALOG: BookItem[] = [
+const CANONICAL_DETAILED_BOOKS: BookItem[] = [
   // ── 1. BOOKS OF HAZRAT MIRZA GHULAM AHMAD, THE PROMISED MESSIAH (AS) ───────
   {
     id: "book-philosophy-teachings-islam",
@@ -390,30 +399,186 @@ export const AHMADIYYA_BOOKS_CATALOG: BookItem[] = [
   }
 ];
 
-export function searchAhmadiyyaBooks(query: string): BookItem[] {
-  const normQuery = query.toLowerCase().trim();
-  if (!normQuery) return [];
+export interface BookSearchOptions {
+  author?: string;
+  collection?: string;
+  language?: string;
+  limit?: number;
+}
 
-  const queryWords = normQuery.split(/\s+/).filter(w => w.length >= 2);
+// Map canonical detailed books by slug, id, and normalized title
+const canonicalByNormalizedTitle = new Map<string, BookItem>();
+const canonicalBySlug = new Map<string, BookItem>();
 
-  const expandedTerms = [normQuery, ...queryWords];
-  for (const [topicKey, urduList] of Object.entries(THEOLOGICAL_TOPIC_MAP)) {
-    if (normQuery.includes(topicKey) || topicKey.includes(normQuery)) {
-      expandedTerms.push(topicKey, ...urduList);
+for (const book of CANONICAL_DETAILED_BOOKS) {
+  const normTitle = book.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+  canonicalByNormalizedTitle.set(normTitle, book);
+  const slugFromUrl = book.url.split('/').filter(Boolean).pop();
+  if (slugFromUrl) {
+    canonicalBySlug.set(slugFromUrl, book);
+  }
+}
+
+const mergedBookList: BookItem[] = [];
+const usedCanonicalIds = new Set<string>();
+
+// 1. Ingest all 1,531 books from AhmadiyyaBooks.com catalog
+for (const raw of rawAhmadiyyaBooks as any[]) {
+  const normTitle = (raw.title || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const canonical = canonicalBySlug.get(raw.slug) || canonicalByNormalizedTitle.get(normTitle);
+
+  if (canonical) {
+    usedCanonicalIds.add(canonical.id);
+    mergedBookList.push({
+      ...canonical,
+      id: raw.id || canonical.id,
+      slug: raw.slug,
+      title: canonical.title || raw.title,
+      author: canonical.author || raw.author,
+      authorSlug: raw.authorSlug,
+      collection: raw.collection,
+      collectionSlug: raw.collectionSlug,
+      coverUrl: raw.coverUrl,
+      language: raw.language || 'en',
+      alislamUrl: raw.alislamUrl || canonical.url,
+      url: raw.url || `https://ahmadiyyabooks.com/book/${raw.slug}/`
+    });
+  } else {
+    mergedBookList.push({
+      id: raw.id || `book-${raw.slug}`,
+      slug: raw.slug,
+      title: raw.title,
+      author: raw.author || 'Ahmadiyya Literature',
+      authorSlug: raw.authorSlug,
+      collection: raw.collection,
+      collectionSlug: raw.collectionSlug,
+      coverUrl: raw.coverUrl,
+      language: raw.language || 'ur',
+      summary: raw.collection
+        ? `Part of the ${raw.collection} series by ${raw.author || 'Ahmadiyya Literature'}. Official publication indexed on AhmadiyyaBooks.com & Al Islam.`
+        : `Published treatise by ${raw.author || 'Ahmadiyya Literature'}. Official publication indexed on AhmadiyyaBooks.com & Al Islam.`,
+      url: raw.url || `https://ahmadiyyabooks.com/book/${raw.slug}/`,
+      alislamUrl: raw.alislamUrl || `https://www.alislam.org/book/${raw.slug}/`,
+      topics: [raw.title.toLowerCase(), ...(raw.collection ? [raw.collection.toLowerCase()] : [])]
+    });
+  }
+}
+
+// 2. Append any canonical books that weren't in rawAhmadiyyaBooks
+for (const canonical of CANONICAL_DETAILED_BOOKS) {
+  if (!usedCanonicalIds.has(canonical.id)) {
+    mergedBookList.push(canonical);
+  }
+}
+
+export const AHMADIYYA_BOOKS_CATALOG: BookItem[] = mergedBookList;
+
+export function searchAhmadiyyaBooks(query: string, options?: BookSearchOptions): BookItem[] {
+  const normQuery = (query || '').toLowerCase().trim();
+  const authorFilter = options?.author?.toLowerCase().trim();
+  const collectionFilter = options?.collection?.toLowerCase().trim();
+  const languageFilter = options?.language?.toLowerCase().trim();
+  const limit = options?.limit || 60;
+
+  // If no query and no filters, return top catalog items
+  if (!normQuery && !authorFilter && !collectionFilter && (!languageFilter || languageFilter === 'all')) {
+    return AHMADIYYA_BOOKS_CATALOG.slice(0, limit);
+  }
+
+  const queryWords = normQuery ? normQuery.split(/\s+/).filter(w => w.length >= 2) : [];
+  const expandedTerms = normQuery ? [normQuery, ...queryWords] : [];
+
+  if (normQuery) {
+    for (const [topicKey, urduList] of Object.entries(THEOLOGICAL_TOPIC_MAP)) {
+      if (normQuery.includes(topicKey) || topicKey.includes(normQuery)) {
+        expandedTerms.push(topicKey, ...urduList);
+      }
     }
   }
 
-  return AHMADIYYA_BOOKS_CATALOG.filter(book => {
-    const hayText = `${book.title} ${book.urduTitle || ""} ${book.author} ${book.summary} ${book.topics.join(" ")} ${book.category}`.toLowerCase();
-    
-    if (hayText.includes(normQuery)) return true;
+  const scoredResults: { book: BookItem; score: number }[] = [];
 
-    return expandedTerms.some(term => {
-      const termLower = term.toLowerCase();
-      return (
-        hayText.includes(termLower) ||
-        (book.urduTitle && book.urduTitle.includes(term))
-      );
-    });
-  });
+  for (const book of AHMADIYYA_BOOKS_CATALOG) {
+    // Author filter check
+    if (authorFilter && authorFilter !== 'all') {
+      const authorMatch =
+        (book.author && book.author.toLowerCase().includes(authorFilter)) ||
+        (book.authorSlug && book.authorSlug.toLowerCase().includes(authorFilter));
+      if (!authorMatch) continue;
+    }
+
+    // Collection filter check
+    if (collectionFilter && collectionFilter !== 'all') {
+      const collMatch =
+        (book.collection && book.collection.toLowerCase().includes(collectionFilter)) ||
+        (book.collectionSlug && book.collectionSlug.toLowerCase().includes(collectionFilter));
+      if (!collMatch) continue;
+    }
+
+    // Language filter check
+    if (languageFilter && languageFilter !== 'all') {
+      if (book.language && book.language !== languageFilter) continue;
+    }
+
+    // If query is empty, but filters matched, add with base score
+    if (!normQuery) {
+      scoredResults.push({ book, score: 10 });
+      continue;
+    }
+
+    let score = 0;
+    const lowerTitle = (book.title || '').toLowerCase();
+    const lowerUrduTitle = (book.urduTitle || '').toLowerCase();
+    const lowerAuthor = (book.author || '').toLowerCase();
+    const lowerCollection = (book.collection || '').toLowerCase();
+    const lowerSummary = (book.summary || '').toLowerCase();
+    const lowerTopics = (book.topics || []).join(' ').toLowerCase();
+
+    // Exact title match
+    if (lowerTitle === normQuery || lowerUrduTitle === normQuery) {
+      score += 150;
+    } else if (lowerTitle.startsWith(normQuery)) {
+      score += 80;
+    } else if (lowerTitle.includes(normQuery) || lowerUrduTitle.includes(normQuery)) {
+      score += 50;
+    }
+
+    // Collection match
+    if (lowerCollection.includes(normQuery)) {
+      score += 40;
+    }
+
+    // Author match
+    if (lowerAuthor.includes(normQuery)) {
+      score += 35;
+    }
+
+    // Word matches in title
+    for (const word of queryWords) {
+      if (lowerTitle.includes(word)) score += 15;
+      if (lowerUrduTitle.includes(word)) score += 15;
+    }
+
+    // Topics & Summary
+    if (lowerTopics.includes(normQuery)) score += 25;
+    if (lowerSummary.includes(normQuery)) score += 15;
+
+    // Expanded theological terms
+    for (const term of expandedTerms) {
+      const t = term.toLowerCase();
+      if (lowerTitle.includes(t) || lowerUrduTitle.includes(t)) {
+        score += 20;
+      } else if (lowerTopics.includes(t) || lowerSummary.includes(t)) {
+        score += 8;
+      }
+    }
+
+    if (score > 0) {
+      scoredResults.push({ book: { ...book, relevanceScore: score }, score });
+    }
+  }
+
+  scoredResults.sort((a, b) => b.score - a.score);
+  return scoredResults.slice(0, limit).map(r => r.book);
 }
+

@@ -62,6 +62,7 @@ import HadithReaderModal from './HadithReaderModal';
 import MalfuzatPdfModal from './MalfuzatPdfModal';
 import TadhkirahPdfModal from './TadhkirahPdfModal';
 import EssencePdfModal from './EssencePdfModal';
+import AhmadiyyaBookReaderModal from './AhmadiyyaBookReaderModal';
 import SearchStageTracker from './SearchStageTracker';
 import SearchFiltersPopup from './SearchFiltersPopup';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
@@ -202,6 +203,14 @@ export default function ResearchEngine() {
     source: string;
     author?: string;
     summary?: string;
+  } | null>(null);
+
+  const [activeAhmadiyyaBook, setActiveAhmadiyyaBook] = useState<{
+    slug: string;
+    title?: string;
+    author?: string;
+    coverUrl?: string;
+    initialPage?: number;
   } | null>(null);
 
   const [activeCommentaryVerse, setActiveCommentaryVerse] = useState<{
@@ -951,6 +960,11 @@ export default function ResearchEngine() {
         }}
         onRemoveBookmark={(bookmarkId) => removeBookmarkById(bookmarkId)}
         onClearHistory={() => clearHistory()}
+        onSelectTopic={(topicName, subtopicName) => {
+          const q = subtopicName || topicName;
+          setQuery(q);
+          performSearch(q, 'contextual', filters);
+        }}
         onOpenItemModal={(bookmark) => {
           if (!bookmark.metadata) return;
           const cat = bookmark.category;
@@ -964,7 +978,20 @@ export default function ResearchEngine() {
             setActiveTadhkirahPdf(bookmark.metadata as any);
           } else if (cat === 'essence') {
             setActiveEssencePdf(bookmark.metadata as any);
-          } else if (cat === 'articles' || cat === 'books') {
+          } else if (cat === 'books') {
+            const meta = bookmark.metadata as any;
+            if (meta?.slug) {
+              setActiveAhmadiyyaBook({
+                slug: meta.slug,
+                title: bookmark.title,
+                author: meta.author || bookmark.subtitle,
+                coverUrl: meta.coverUrl,
+                initialPage: meta.initialPage || 1
+              });
+            } else {
+              setActiveReadingArticle(bookmark.metadata as any);
+            }
+          } else if (cat === 'articles') {
             setActiveReadingArticle(bookmark.metadata as any);
           }
         }}
@@ -2594,13 +2621,24 @@ export default function ResearchEngine() {
                           <h3 className="text-lg md:text-xl font-black italic tracking-tight text-[var(--foreground)] leading-snug">
                             <button
                               type="button"
-                              onClick={() => setActiveReadingArticle({
-                                url: b.url,
-                                title: b.title,
-                                source: 'Al Islam Books',
-                                author: b.author,
-                                summary: b.summary
-                              })}
+                              onClick={() => {
+                                if (b.slug) {
+                                  setActiveAhmadiyyaBook({
+                                    slug: b.slug,
+                                    title: b.title,
+                                    author: b.author,
+                                    coverUrl: b.coverUrl
+                                  });
+                                } else {
+                                  setActiveReadingArticle({
+                                    url: b.url,
+                                    title: b.title,
+                                    source: 'Al Islam Books',
+                                    author: b.author,
+                                    summary: b.summary
+                                  });
+                                }
+                              }}
                               className="text-left hover:text-[var(--accent-main)] transition-colors inline-flex items-center gap-1.5 group/link"
                             >
                               <span>{b.title}</span>
@@ -2614,8 +2652,14 @@ export default function ResearchEngine() {
                           )}
                         </div>
 
-                        <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide">
-                          By <span className="text-[var(--foreground)]">{b.author}</span>
+                        <div className="text-xs font-bold text-[var(--text-muted)] tracking-wide flex items-center gap-2">
+                          <span>By <span className="text-[var(--foreground)]">{b.author}</span></span>
+                          {b.collection && (
+                            <>
+                              <span>•</span>
+                              <span className="text-purple-400 font-semibold">{b.collection}</span>
+                            </>
+                          )}
                         </div>
 
                         <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
@@ -2623,9 +2667,35 @@ export default function ResearchEngine() {
                         </p>
 
                         <div className="flex items-center justify-between pt-1 text-xs">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (b.slug) {
+                                  setActiveAhmadiyyaBook({
+                                    slug: b.slug,
+                                    title: b.title,
+                                    author: b.author,
+                                    coverUrl: b.coverUrl
+                                  });
+                                } else {
+                                  setActiveReadingArticle({
+                                    url: b.url,
+                                    title: b.title,
+                                    source: 'Al Islam Books',
+                                    author: b.author,
+                                    summary: b.summary
+                                  });
+                                }
+                              }}
+                              className="px-3 py-1.5 rounded-[10px] bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white font-black flex items-center gap-1.5 shadow-sm shadow-[var(--accent-glow)] transition-all active:scale-95"
+                            >
+                              <BookOpen size={13} />
+                              <span>Read Book</span>
+                            </button>
+
                             <a
-                              href={b.url}
+                              href={b.alislamUrl || b.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1.5 rounded-[10px] bg-white/5 hover:bg-white/10 text-[var(--foreground)]/80 border border-white/10 font-bold flex items-center gap-1.5 transition-colors"
@@ -2647,10 +2717,12 @@ export default function ResearchEngine() {
                                 url: b.url,
                                 citationText: bookCitation,
                                 metadata: {
+                                  slug: b.slug,
                                   url: b.url,
                                   title: b.title,
                                   source: 'Al Islam Books',
                                   author: b.author,
+                                  coverUrl: b.coverUrl,
                                   summary: b.summary
                                 }
                               })}
@@ -3493,6 +3565,19 @@ export default function ResearchEngine() {
     </div>
   )}
 </div>
+
+      {/* ── IN-DESK AHMADIYYA BOOK READER MODAL (AHMADIYYABOOKS.COM) ── */}
+      {activeAhmadiyyaBook && (
+        <AhmadiyyaBookReaderModal
+          isOpen={true}
+          slug={activeAhmadiyyaBook.slug}
+          initialPage={activeAhmadiyyaBook.initialPage || 1}
+          bookTitle={activeAhmadiyyaBook.title}
+          bookAuthor={activeAhmadiyyaBook.author}
+          coverUrl={activeAhmadiyyaBook.coverUrl}
+          onClose={() => setActiveAhmadiyyaBook(null)}
+        />
+      )}
 
       {/* ── IN-DESK ARTICLE READER MODAL ── */}
       {activeReadingArticle && (

@@ -42,6 +42,7 @@ import {
 } from '@/lib/external-sources';
 import { PublicationResult, AlIslamArticleResult } from '@/lib/research-sources';
 import { resolveVerbatimEquivalents } from '@/lib/verbatim-search';
+import rawCuratedArticles from '@/data/research/curated-articles.json';
 
 export interface ResearchSearchParams {
   query: string;
@@ -53,6 +54,8 @@ export interface ResearchSearchParams {
   articlePage?: number;
   alhakamPage?: number;
   periodicalPage?: number;
+  author?: string;
+  collection?: string;
 }
 
 interface CachedPage {
@@ -583,6 +586,29 @@ export async function executeResearchSearch(params: ResearchSearchParams): Promi
             merged.push(art);
           }
         }
+
+        // Incorporate curated articles from ahmadiyyabooks.com
+        const queryLower = rawQuery.toLowerCase();
+        for (const art of rawCuratedArticles as any[]) {
+          const hay = `${art.title} ${art.description || ''} ${art.author || ''}`.toLowerCase();
+          if (hay.includes(queryLower)) {
+            const normUrl = art.url.toLowerCase();
+            if (!seenUrls.has(normUrl)) {
+              seenUrls.add(normUrl);
+              merged.push({
+                id: art.id,
+                title: art.title,
+                author: art.author,
+                category: 'Article',
+                summary: art.description || art.title,
+                url: art.url,
+                date: art.datePublished,
+                topics: [art.title.toLowerCase()]
+              });
+            }
+          }
+        }
+
         return merged;
       } catch (e) {
         console.warn('[Research API] Live Al Islam fallback to local:', e);
@@ -718,10 +744,15 @@ export async function executeResearchSearch(params: ResearchSearchParams): Promi
     const booksPromise: Promise<BookItem[]> = (async () => {
       if (!isSourceEnabled('books') && !isSourceEnabled('literature')) return [];
       try {
-        const localBooks = searchAhmadiyyaBooks(rawQuery);
+        const bookOpts = {
+          author: body.author,
+          collection: body.collection,
+          language: filterLanguage
+        };
+        const localBooks = searchAhmadiyyaBooks(rawQuery, bookOpts);
         if (searchMode === 'verbatim') {
           if (localBooks.length === 0 && verbatimEquivs.translations.length > 0) {
-            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0]);
+            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0], bookOpts);
             for (const item of extra) {
               if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
             }
@@ -730,7 +761,7 @@ export async function executeResearchSearch(params: ResearchSearchParams): Promi
         }
 
         if (localBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
-          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept);
+          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept, bookOpts);
           for (const item of extra) {
             if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
           }

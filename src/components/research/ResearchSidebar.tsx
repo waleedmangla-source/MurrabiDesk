@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   X,
   History,
@@ -21,7 +21,11 @@ import {
   Sparkles,
   Cloud,
   RefreshCw,
-  Feather
+  Feather,
+  ChevronDown,
+  ChevronRight,
+  Compass,
+  Tag
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
@@ -30,6 +34,7 @@ import {
   ResearchBookmarkItem,
   BookmarkCategory
 } from '@/lib/research-storage';
+import grandTopicsList from '@/data/research/grand-topics.json';
 
 interface ResearchSidebarProps {
   isOpen: boolean;
@@ -41,6 +46,7 @@ interface ResearchSidebarProps {
   onRemoveBookmark: (id: string) => void;
   onOpenItemModal?: (bookmark: ResearchBookmarkItem) => void;
   onNewSearch?: () => void;
+  onSelectTopic?: (topicName: string, subtopicName?: string, pageRef?: { volume: string; page: string }) => void;
   currentQuery?: string;
   isSyncing?: boolean;
   isDriveConnected?: boolean;
@@ -56,15 +62,36 @@ export default function ResearchSidebar({
   onRemoveBookmark,
   onOpenItemModal,
   onNewSearch,
+  onSelectTopic,
   currentQuery,
   isSyncing,
   isDriveConnected
 }: ResearchSidebarProps) {
-  const [activeTab, setActiveTab] = useState<'history' | 'bookmarks'>('history');
+  const [activeTab, setActiveTab] = useState<'history' | 'bookmarks' | 'topics'>('history');
   const [filterQuery, setFilterQuery] = useState('');
   const [bookmarkCategory, setBookmarkCategory] = useState<'all' | BookmarkCategory>('all');
+  const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const router = useRouter();
+
+  const filteredTopics = useMemo(() => {
+    const q = filterQuery.toLowerCase().trim();
+    if (!q) return grandTopicsList;
+
+    return grandTopicsList
+      .map(t => {
+        const titleMatch = t.title.toLowerCase().includes(q);
+        const matchingSubtopics = t.subtopics.filter(
+          s =>
+            s.title.toLowerCase().includes(q) ||
+            (s.description && s.description.toLowerCase().includes(q))
+        );
+        if (titleMatch) return t;
+        if (matchingSubtopics.length > 0) return { ...t, subtopics: matchingSubtopics };
+        return null;
+      })
+      .filter(Boolean) as typeof grandTopicsList;
+  }, [filterQuery]);
 
   const copyCitation = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -163,15 +190,21 @@ export default function ResearchSidebar({
         <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
           {/* Animated Background Pill */}
           <div
-            className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
+            className="absolute top-1 bottom-1 w-[calc(33.333%-0.2rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
             style={{
-              left: activeTab === 'history' ? '0.25rem' : 'calc(50%)',
+              left:
+                activeTab === 'history'
+                  ? '0.25rem'
+                  : activeTab === 'bookmarks'
+                  ? 'calc(33.333% + 0.1rem)'
+                  : 'calc(66.666% - 0.05rem)',
               background: 'var(--accent-main)'
             }}
           />
           {[
             { id: 'history', label: 'History' },
-            { id: 'bookmarks', label: 'Saved' }
+            { id: 'bookmarks', label: 'Saved' },
+            { id: 'topics', label: 'Topics' }
           ].map(t => (
             <button
               key={t.id}
@@ -454,6 +487,154 @@ export default function ResearchSidebar({
                               <span>Source</span>
                               <ExternalLink size={8} />
                             </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'topics' && (
+          <div className="flex-1 flex flex-col">
+            {/* Search Input for Topics */}
+            <div className="px-4 pt-1 pb-2">
+              <div className="flex items-center gap-2 glass bg-white/5 border border-white/10 rounded-xl px-2.5 py-1.5">
+                <Search size={12} className="text-[var(--text-dim)] shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search 2,254 grand topics..."
+                  value={filterQuery}
+                  onChange={e => setFilterQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none min-w-0 font-medium"
+                />
+                {filterQuery && (
+                  <button onClick={() => setFilterQuery('')}>
+                    <X size={11} className="text-[var(--text-dim)] hover:text-white" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-[9px] text-[var(--text-dim)] px-1 pt-1.5 font-bold uppercase tracking-wider">
+                <span>54 Grand Themes</span>
+                <span>{filteredTopics.reduce((acc, t) => acc + t.subtopics.length, 0)} Topics</span>
+              </div>
+            </div>
+
+            {/* Grand Topics Accordion List */}
+            <div className="py-1 px-3 space-y-1.5 flex-1">
+              {filteredTopics.length === 0 ? (
+                <div className="text-center py-12 text-[var(--text-dim)] space-y-2 px-4">
+                  <Compass size={24} className="mx-auto opacity-30" />
+                  <p className="text-xs font-bold">No matching topics</p>
+                  <p className="text-[10px] opacity-70">Try broader terms or clearing filter</p>
+                </div>
+              ) : (
+                filteredTopics.map((topic) => {
+                  const isExpanded = expandedTopicId === topic.id || Boolean(filterQuery.trim());
+                  return (
+                    <div
+                      key={topic.id}
+                      className="rounded-xl border border-white/5 glass bg-white/[0.02] overflow-hidden transition-all duration-200"
+                    >
+                      {/* Topic Header Accordion Button */}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedTopicId(isExpanded && !filterQuery ? null : topic.id)}
+                        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-white/5 transition-colors gap-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {isExpanded ? (
+                            <ChevronDown size={12} className="text-[var(--accent-main)] shrink-0" />
+                          ) : (
+                            <ChevronRight size={12} className="text-[var(--text-dim)] shrink-0" />
+                          )}
+                          <span className="text-xs font-bold text-[var(--foreground)] truncate font-urdu text-right" dir="auto">
+                            {topic.title}
+                          </span>
+                        </div>
+                        <span className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold text-[var(--text-dim)] shrink-0">
+                          {topic.subtopics.length}
+                        </span>
+                      </button>
+
+                      {/* Subtopics List */}
+                      {isExpanded && (
+                        <div className="px-2.5 pb-2.5 pt-1 space-y-2 border-t border-white/5 bg-black/20">
+                          {topic.subtopics.slice(0, 40).map((sub) => (
+                            <div
+                              key={sub.id}
+                              className="p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition-all text-left space-y-1.5 group"
+                            >
+                              <div className="flex items-start justify-between gap-1">
+                                <h4
+                                  className="text-[11px] font-bold text-[var(--foreground)] font-urdu leading-snug cursor-pointer hover:text-[var(--accent-main)]"
+                                  dir="auto"
+                                  onClick={() => {
+                                    if (onSelectTopic) {
+                                      onSelectTopic(topic.title, sub.title);
+                                      if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+                                    }
+                                  }}
+                                >
+                                  {sub.title}
+                                </h4>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (onSelectTopic) {
+                                      onSelectTopic(topic.title, sub.title);
+                                      if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+                                    }
+                                  }}
+                                  className="p-1 rounded text-[var(--text-dim)] hover:text-white hover:bg-white/10 opacity-70 group-hover:opacity-100 transition-all"
+                                  title="Search this topic"
+                                >
+                                  <Search size={10} />
+                                </button>
+                              </div>
+
+                              {sub.description && (
+                                <p className="text-[10px] text-[var(--text-dim)] font-urdu leading-relaxed line-clamp-2" dir="auto">
+                                  {sub.description}
+                                </p>
+                              )}
+
+                              {/* Volume and Page References Chips */}
+                              {sub.references && sub.references.length > 0 && (
+                                <div className="flex flex-wrap gap-1 pt-0.5">
+                                  {sub.references.map((ref, rIdx) =>
+                                    ref.pages.slice(0, 5).map((page, pIdx) => (
+                                      <button
+                                        key={`${rIdx}-${pIdx}`}
+                                        type="button"
+                                        onClick={() => {
+                                          if (onSelectTopic) {
+                                            onSelectTopic(topic.title, sub.title, { volume: ref.volume, page });
+                                            if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+                                          }
+                                        }}
+                                        className="px-1.5 py-0.5 rounded bg-[var(--accent-soft)] hover:bg-[var(--accent-main)]/30 border border-[var(--accent-main)]/20 text-[9px] font-bold text-[var(--accent-main)] transition-colors flex items-center gap-0.5"
+                                        title={`${ref.volume} Page ${page}`}
+                                      >
+                                        <Tag size={8} className="opacity-60" />
+                                        <span>{ref.volume.replace(/جلد\s*/, 'v.')} p.{page}</span>
+                                      </button>
+                                    ))
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
+                          {topic.subtopics.length > 40 && (
+                            <div className="text-center py-1">
+                              <span className="text-[9px] text-[var(--text-dim)] font-bold">
+                                +{topic.subtopics.length - 40} more subtopics in this theme
+                              </span>
+                            </div>
                           )}
                         </div>
                       )}

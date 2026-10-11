@@ -137,6 +137,8 @@ export interface SearchFilters {
   yearTo: number | null;
   sources: string[]; // empty = all sources
   language: SearchLanguage;
+  author?: string;
+  collection?: string;
 }
 
 export type { MalfuzatResult, TazkirahResult, EssenceResult, VerbatimEquivalents };
