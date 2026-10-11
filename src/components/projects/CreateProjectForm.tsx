@@ -23,7 +23,8 @@ import {
   Sprout,
   CheckCircle,
   ChevronDown,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -34,7 +35,9 @@ import {
 import {
   ResearchBookmarkItem,
   BookmarkCategory,
-  getLocalResearchBookmarks
+  getLocalResearchBookmarks,
+  saveLocalResearchBookmarks,
+  triggerDriveSync
 } from '@/lib/research-storage';
 
 interface CreateProjectFormProps {
@@ -109,6 +112,11 @@ export default function CreateProjectForm({
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<Set<string>>(new Set());
   const [bookmarkSearch, setBookmarkSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | BookmarkCategory>('all');
+  const [isFindingSources, setIsFindingSources] = useState(false);
+  const [sourcesFeedback, setSourcesFeedback] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
 
   // Prompt customization state
   const [customPrompt, setCustomPrompt] = useState('');
@@ -639,6 +647,85 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
     });
   };
 
+  const handleAutoFindSources = async () => {
+    if (!topic.trim()) {
+      setSourcesFeedback({
+        message: 'Please enter a Topic / Central Thesis first.',
+        type: 'info'
+      });
+      const topicInput = document.getElementById('project-topic-input');
+      if (topicInput) topicInput.focus();
+      return;
+    }
+
+    setIsFindingSources(true);
+    setSourcesFeedback(null);
+
+    try {
+      const res = await fetch('/api/projects/auto-sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: topic.trim(),
+          workType,
+          occasion: occasion.trim(),
+          audiences: selectedAudiences
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to search Research Tab library');
+      }
+
+      const newSources: ResearchBookmarkItem[] = data.sources || [];
+      if (newSources.length === 0) {
+        setSourcesFeedback({
+          message: 'No direct scriptural sources matched this query in the Research library.',
+          type: 'info'
+        });
+        return;
+      }
+
+      // Merge newly discovered sources into allBookmarks (avoiding duplicate IDs)
+      const existingIds = new Set(allBookmarks.map(b => b.id));
+      const newlyAdded = newSources.filter(s => !existingIds.has(s.id));
+      const updatedBookmarks = [...newlyAdded, ...allBookmarks];
+
+      setAllBookmarks(updatedBookmarks);
+      saveLocalResearchBookmarks(updatedBookmarks);
+      triggerDriveSync({ bookmarks: updatedBookmarks });
+
+      // Automatically select all discovered sources for this project
+      setSelectedBookmarkIds(prev => {
+        const next = new Set(prev);
+        newSources.forEach(s => next.add(s.id));
+        return next;
+      });
+
+      setSourcesFeedback({
+        message: `Found ${newSources.length} authentic sources from Research Tab & added to dossier!`,
+        type: 'success'
+      });
+
+      // Smooth scroll to citations card
+      setTimeout(() => {
+        const citationsCard = document.getElementById('citations-card');
+        if (citationsCard) {
+          citationsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    } catch (err: any) {
+      console.error('Error auto-finding sources:', err);
+      setSourcesFeedback({
+        message: err.message || 'Error communicating with Research Tab library.',
+        type: 'error'
+      });
+    } finally {
+      setIsFindingSources(false);
+    }
+  };
+
   const getCategoryBadge = (cat: BookmarkCategory) => {
     switch (cat) {
       case 'quran':
@@ -814,6 +901,7 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                       </span>
                     </label>
                     <input
+                      id="project-topic-input"
                       type="text"
                       value={topic}
                       maxLength={150}
@@ -821,9 +909,51 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                       placeholder="e.g. The Philosophy of Divine Decree & Free Will according to the Promised Messiah (as)"
                       className="font-medium"
                     />
-                    <p className="text-[10px] text-[var(--text-dim)] italic">
-                      Strict 150-character limit to ensure crisp, focused doctrinal alignment.
-                    </p>
+
+                    {/* Auto-Find Sources Action Bar */}
+                    <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
+                      <p className="text-[10px] text-[var(--text-dim)] italic">
+                        Strict 150-character limit to ensure crisp, focused doctrinal alignment.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={handleAutoFindSources}
+                        disabled={isFindingSources}
+                        className={clsx(
+                          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all shadow-sm select-none",
+                          isFindingSources
+                            ? "bg-[var(--accent-main)]/20 text-[var(--accent-main)] border-[var(--accent-main)]/40 cursor-wait animate-pulse"
+                            : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:border-emerald-500/50 active:scale-[0.98]"
+                        )}
+                        title="Automatically search Holy Qur'an, Ahadith, Ruhani Khazain & classical literature from the Research tab"
+                      >
+                        {isFindingSources ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin text-emerald-400" />
+                            <span>Scanning Research Library...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={13} className="text-emerald-400" />
+                            <span>Auto-Find Sources via Research Tab</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Sources Feedback Notification */}
+                    {sourcesFeedback && (
+                      <div className={clsx(
+                        "text-[11px] font-medium animate-in fade-in flex items-center gap-1.5 px-3 py-2 rounded-lg border",
+                        sourcesFeedback.type === 'success' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                        sourcesFeedback.type === 'error' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                        "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                      )}>
+                        {sourcesFeedback.type === 'success' ? <Check size={13} /> : <AlertCircle size={13} />}
+                        <span>{sourcesFeedback.message}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1256,7 +1386,27 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                 </div>
 
                 {/* Selection helper buttons */}
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleAutoFindSources}
+                    disabled={isFindingSources}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-[11px] font-bold text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors inline-flex items-center gap-1.5 active:scale-[0.98]"
+                    title="Automatically find and attach sources from the Research Tab"
+                  >
+                    {isFindingSources ? (
+                      <>
+                        <Loader2 size={12} className="animate-spin" />
+                        <span>Finding Sources...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={12} />
+                        <span>Auto-Find Sources</span>
+                      </>
+                    )}
+                  </button>
+
                   <button
                     type="button"
                     onClick={selectAllFiltered}
@@ -1276,12 +1426,32 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
 
               {/* Bookmarks Grid / Empty State */}
               {allBookmarks.length === 0 ? (
-                <div className="text-center py-10 px-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-2">
+                <div className="text-center py-10 px-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] space-y-3">
                   <Bookmark size={28} className="mx-auto text-[var(--text-dim)]" />
                   <div className="font-bold text-xs text-[var(--text-main)]">No Bookmarks Saved in Research Tab Yet</div>
                   <p className="text-[11px] text-[var(--text-muted)] max-w-md mx-auto">
-                    You can still initialize this work! MurabbiAI will synthesize authoritative scriptural citations automatically based on your prompt brief.
+                    You can automatically search and pull authoritative verses, hadith, and writings directly from the Research tab based on your topic.
                   </p>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleAutoFindSources}
+                      disabled={isFindingSources}
+                      className="mt-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-lg shadow-emerald-900/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      {isFindingSources ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Scanning Holy Qur'an, Hadith & Ruhani Khazain...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={14} />
+                          <span>Automatically Find Sources for This Topic</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : filteredBookmarks.length === 0 ? (
                 <div className="text-center py-8 text-[var(--text-dim)] text-xs">
