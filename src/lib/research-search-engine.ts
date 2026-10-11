@@ -43,6 +43,7 @@ import {
 import { PublicationResult, AlIslamArticleResult } from '@/lib/research-sources';
 import { resolveVerbatimEquivalents } from '@/lib/verbatim-search';
 import rawCuratedArticles from '@/data/research/curated-articles.json';
+import { searchCanonicalFTS } from '@/lib/canonical-db';
 
 export interface ResearchSearchParams {
   query: string;
@@ -749,24 +750,74 @@ export async function executeResearchSearch(params: ResearchSearchParams): Promi
           collection: body.collection,
           language: filterLanguage
         };
-        const localBooks = searchAhmadiyyaBooks(rawQuery, bookOpts);
-        if (searchMode === 'verbatim') {
-          if (localBooks.length === 0 && verbatimEquivs.translations.length > 0) {
-            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0], bookOpts);
-            for (const item of extra) {
-              if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+
+        const combinedBooks: BookItem[] = [];
+        const seenKeys = new Set<string>();
+
+        // 1. Search full-text SQLite canonical database for page-level matches (0-5ms)
+        try {
+          const pageHits = searchCanonicalFTS(rawQuery, {
+            author: body.author,
+            collection: body.collection,
+            limit: 30
+          });
+
+          for (const hit of pageHits) {
+            const key = `page-${hit.bookSlug}-${hit.pageNum}`;
+            if (!seenKeys.has(key)) {
+              seenKeys.add(key);
+              combinedBooks.push({
+                id: `page-${hit.pageId}`,
+                slug: hit.bookSlug,
+                title: hit.title,
+                author: hit.author,
+                collection: hit.collection,
+                matchedPageNum: hit.pageNum,
+                highlightedSnippet: hit.snippet,
+                isPageMatch: true,
+                summary: hit.snippet.replace(/<[^>]+>/g, ''),
+                url: `https://ahmadiyyabooks.com/book/${hit.bookSlug}/`,
+                alislamUrl: hit.alislamScanUrl || `https://www.alislam.org/book/${hit.bookSlug}/`,
+                topics: [hit.title.toLowerCase()]
+              });
             }
           }
-          return localBooks;
+        } catch (dbErr) {
+          console.warn('[Research API] Canonical FTS search skipped:', dbErr);
         }
 
-        if (localBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
-          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept, bookOpts);
-          for (const item of extra) {
-            if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+        // 2. Search catalog-level books (titles, summaries, theological concepts)
+        const localBooks = searchAhmadiyyaBooks(rawQuery, bookOpts);
+        for (const b of localBooks) {
+          if (!seenKeys.has(b.id) && !seenKeys.has(b.slug || '')) {
+            seenKeys.add(b.id);
+            combinedBooks.push(b);
           }
         }
-        return localBooks;
+
+        if (searchMode === 'verbatim') {
+          if (combinedBooks.length === 0 && verbatimEquivs.translations.length > 0) {
+            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0], bookOpts);
+            for (const item of extra) {
+              if (!seenKeys.has(item.id)) {
+                seenKeys.add(item.id);
+                combinedBooks.push(item);
+              }
+            }
+          }
+          return combinedBooks;
+        }
+
+        if (combinedBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept, bookOpts);
+          for (const item of extra) {
+            if (!seenKeys.has(item.id)) {
+              seenKeys.add(item.id);
+              combinedBooks.push(item);
+            }
+          }
+        }
+        return combinedBooks;
       } catch (e) {
         console.warn('[Research API] Books search failed:', e);
         return [];

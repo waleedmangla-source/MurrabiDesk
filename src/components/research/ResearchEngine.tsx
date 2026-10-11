@@ -63,6 +63,7 @@ import MalfuzatPdfModal from './MalfuzatPdfModal';
 import TadhkirahPdfModal from './TadhkirahPdfModal';
 import EssencePdfModal from './EssencePdfModal';
 import AhmadiyyaBookReaderModal from './AhmadiyyaBookReaderModal';
+import AskMurabbiAIModal from './AskMurabbiAIModal';
 import SearchStageTracker from './SearchStageTracker';
 import SearchFiltersPopup from './SearchFiltersPopup';
 import QuranVerseWithHover, { prefetchQuranWords } from './QuranVerseWithHover';
@@ -212,6 +213,10 @@ export default function ResearchEngine() {
     coverUrl?: string;
     initialPage?: number;
   } | null>(null);
+
+  // Ask Murabbi AI Modal State (Canonical RAG)
+  const [isAskAiOpen, setIsAskAiOpen] = useState<boolean>(false);
+  const [askAiInitialQuery, setAskAiInitialQuery] = useState<string>('');
 
   const [activeCommentaryVerse, setActiveCommentaryVerse] = useState<{
     surah: number;
@@ -1159,14 +1164,26 @@ export default function ResearchEngine() {
             </div>
           </form>
 
-          {/* Murabbi Desk Action Button (Centered) */}
-          <div className="flex items-center justify-center mt-6">
+          {/* Murabbi Desk Action Buttons (Centered) */}
+          <div className="flex items-center justify-center gap-3 mt-6">
             <button
               onClick={() => performSearch()}
               disabled={!query.trim()}
-              className="px-9 py-3.5 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+              className="px-8 py-3 rounded-[14px] bg-gradient-to-r from-[var(--accent-main)] to-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent-glow)] font-black text-xs uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
             >
               Search
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAskAiInitialQuery(query || '');
+                setIsAskAiOpen(true);
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-[14px] bg-gradient-to-r from-amber-500/20 to-[var(--accent-main)]/20 hover:from-amber-500/30 hover:to-[var(--accent-main)]/30 border border-amber-500/40 text-amber-200 shadow-lg font-black text-xs uppercase tracking-wider transition-all hover:brightness-110 active:scale-95"
+            >
+              <Sparkles size={14} className="text-amber-400" />
+              <span>Ask Murabbi AI</span>
             </button>
           </div>
         </div>
@@ -1318,8 +1335,21 @@ export default function ResearchEngine() {
             </div>
           </div>
 
-          {/* Right Wing: Hub Button + New Search Button */}
+          {/* Right Wing: Ask AI + Hub Button + New Search Button */}
           <div className="flex items-center justify-end gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setAskAiInitialQuery(query || submittedQuery || '');
+                setIsAskAiOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-[var(--accent-main)] to-amber-600 text-white shadow-md shadow-[var(--accent-glow)] hover:brightness-110 transition-all active:scale-95 border border-white/20"
+              title="Ask Murabbi AI (Grounded Theological RAG)"
+            >
+              <Sparkles size={13} className="text-amber-200" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsSidebarOpen(prev => !prev)}
@@ -2599,21 +2629,35 @@ export default function ResearchEngine() {
                               />
                             </div>
                             <div className="flex items-center gap-1.5 truncate font-semibold uppercase text-[10px] tracking-wider">
-                              <span className="text-[var(--foreground)] font-bold">Al Islam Books</span>
-                              <span>›</span>
-                              <span className="text-purple-400 font-bold">{b.category}</span>
-                              {b.year && (
+                              <span className="text-[var(--foreground)] font-bold">{b.collection || 'Al Islam Books'}</span>
+                              {b.isPageMatch ? (
                                 <>
-                                  <span>•</span>
-                                  <span>{b.year}</span>
+                                  <span>›</span>
+                                  <span className="text-amber-400 font-bold">Page {b.matchedPageNum}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>›</span>
+                                  <span className="text-purple-400 font-bold">{b.category || 'Canonical Book'}</span>
+                                  {b.year && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{b.year}</span>
+                                    </>
+                                  )}
                                 </>
                               )}
                             </div>
                           </div>
 
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1 shrink-0">
+                          <span className={clsx(
+                            "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0 border",
+                            b.isPageMatch
+                              ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                              : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                          )}>
                             <BookMarked size={11} />
-                            Canonical Literature
+                            {b.isPageMatch ? `Page ${b.matchedPageNum} Match` : 'Canonical Literature'}
                           </span>
                         </div>
 
@@ -2627,7 +2671,8 @@ export default function ResearchEngine() {
                                     slug: b.slug,
                                     title: b.title,
                                     author: b.author,
-                                    coverUrl: b.coverUrl
+                                    coverUrl: b.coverUrl,
+                                    initialPage: b.matchedPageNum || 1
                                   });
                                 } else {
                                   setActiveReadingArticle({
@@ -2662,9 +2707,16 @@ export default function ResearchEngine() {
                           )}
                         </div>
 
-                        <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
-                          {b.summary}
-                        </p>
+                        {b.highlightedSnippet ? (
+                          <p
+                            className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium"
+                            dangerouslySetInnerHTML={{ __html: b.highlightedSnippet }}
+                          />
+                        ) : (
+                          <p className="text-sm text-[var(--foreground)]/80 leading-relaxed font-medium">
+                            {b.summary}
+                          </p>
+                        )}
 
                         <div className="flex items-center justify-between pt-1 text-xs">
                           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -2676,7 +2728,8 @@ export default function ResearchEngine() {
                                     slug: b.slug,
                                     title: b.title,
                                     author: b.author,
-                                    coverUrl: b.coverUrl
+                                    coverUrl: b.coverUrl,
+                                    initialPage: b.matchedPageNum || 1
                                   });
                                 } else {
                                   setActiveReadingArticle({
@@ -2691,7 +2744,7 @@ export default function ResearchEngine() {
                               className="px-3 py-1.5 rounded-[10px] bg-[var(--accent-main)] hover:bg-[var(--accent-hover)] text-white font-black flex items-center gap-1.5 shadow-sm shadow-[var(--accent-glow)] transition-all active:scale-95"
                             >
                               <BookOpen size={13} />
-                              <span>Read Book</span>
+                              <span>{b.isPageMatch ? `Read Page ${b.matchedPageNum}` : 'Read Book'}</span>
                             </button>
 
                             <a
@@ -3565,6 +3618,19 @@ export default function ResearchEngine() {
     </div>
   )}
 </div>
+
+      {/* ── ASK MURABBI AI RESEARCH MODAL (CANONICAL RAG) ── */}
+      {isAskAiOpen && (
+        <AskMurabbiAIModal
+          isOpen={true}
+          initialQuery={askAiInitialQuery}
+          onClose={() => setIsAskAiOpen(false)}
+          onOpenBook={(slug, pageNum, title, author) => {
+            setIsAskAiOpen(false);
+            setActiveAhmadiyyaBook({ slug, initialPage: pageNum, title, author });
+          }}
+        />
+      )}
 
       {/* ── IN-DESK AHMADIYYA BOOK READER MODAL (AHMADIYYABOOKS.COM) ── */}
       {activeAhmadiyyaBook && (

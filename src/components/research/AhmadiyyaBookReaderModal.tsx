@@ -16,7 +16,8 @@ import {
   Minimize2,
   Bookmark,
   Share2,
-  Loader2
+  Loader2,
+  Search
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -56,6 +57,14 @@ export default function AhmadiyyaBookReaderModal({
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
+  // In-book search state
+  const [showInBookSearch, setShowInBookSearch] = useState<boolean>(false);
+  const [inBookQuery, setInBookQuery] = useState<string>('');
+  const [inBookMatches, setInBookMatches] = useState<Array<{ pageNum: number; snippet: string; alislamScanUrl?: string }>>([]);
+  const [inBookLoading, setInBookLoading] = useState<boolean>(false);
+  const [inBookSearched, setInBookSearched] = useState<boolean>(false);
+  const inBookInputRef = useRef<HTMLInputElement>(null);
+
   // Sync initialPage when opened
   useEffect(() => {
     if (isOpen) {
@@ -64,8 +73,48 @@ export default function AhmadiyyaBookReaderModal({
       if (bookTitle) setTitle(bookTitle);
       if (bookAuthor) setAuthor(bookAuthor);
       if (coverUrl) setCover(coverUrl);
+      setShowInBookSearch(false);
+      setInBookQuery('');
+      setInBookMatches([]);
+      setInBookSearched(false);
     }
   }, [isOpen, initialPage, bookTitle, bookAuthor, coverUrl]);
+
+  // Execute in-book search
+  const executeInBookSearch = useCallback(
+    async (searchTerm: string) => {
+      const clean = searchTerm.trim();
+      if (!clean || !slug) {
+        setInBookMatches([]);
+        setInBookSearched(false);
+        return;
+      }
+      setInBookLoading(true);
+      setInBookSearched(true);
+      try {
+        const res = await fetch(`/api/research/in-book-search?slug=${encodeURIComponent(slug)}&query=${encodeURIComponent(clean)}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.results)) {
+          setInBookMatches(data.results);
+        } else {
+          setInBookMatches([]);
+        }
+      } catch (err) {
+        console.error('[BookReader] In-book search error:', err);
+        setInBookMatches([]);
+      } finally {
+        setInBookLoading(false);
+      }
+    },
+    [slug]
+  );
+
+  // Auto-focus search input when search is toggled open
+  useEffect(() => {
+    if (showInBookSearch) {
+      setTimeout(() => inBookInputRef.current?.focus(), 80);
+    }
+  }, [showInBookSearch]);
 
   // Fetch page content
   const fetchPage = useCallback(
@@ -114,7 +163,21 @@ export default function AhmadiyyaBookReaderModal({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in the jump input
+      // Toggle In-Book Search with Cmd+F / Ctrl+F
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setShowInBookSearch(prev => !prev);
+        return;
+      }
+
+      // If user presses Escape while in-book search is open, close search first
+      if (e.key === 'Escape' && showInBookSearch) {
+        e.preventDefault();
+        setShowInBookSearch(false);
+        return;
+      }
+
+      // Don't intercept arrow keys if user is typing in any input
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
 
       if (e.key === 'Escape') {
@@ -132,7 +195,7 @@ export default function AhmadiyyaBookReaderModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentPage, totalPages, onClose]);
+  }, [isOpen, currentPage, totalPages, onClose, showInBookSearch]);
 
   if (!isOpen) return null;
 
@@ -177,6 +240,35 @@ export default function AhmadiyyaBookReaderModal({
 
   const isRtl = isUrduOrArabic(pageText);
 
+  const renderHighlightedContent = (text: string, searchHighlight: string) => {
+    if (!searchHighlight || searchHighlight.trim().length < 2) return text;
+    const clean = searchHighlight.trim();
+    const terms = clean
+      .split(/\s+/)
+      .filter(t => t.length >= 2)
+      .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (terms.length === 0) return text;
+
+    try {
+      const regex = new RegExp(`(${terms.join('|')})`, 'gi');
+      const parts = text.split(regex);
+      return parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark
+            key={i}
+            className="bg-amber-400/35 text-white font-bold px-0.5 rounded border-b-2 border-amber-400"
+          >
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      );
+    } catch {
+      return text;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
@@ -213,6 +305,22 @@ export default function AhmadiyyaBookReaderModal({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Find in Book Button */}
+            <button
+              onClick={() => setShowInBookSearch(!showInBookSearch)}
+              className={clsx(
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border transition-all",
+                showInBookSearch
+                  ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-sm"
+                  : "bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white border-white/10"
+              )}
+              title="Find in this book (Cmd+F / Ctrl+F)"
+            >
+              <Search size={13} />
+              <span className="hidden sm:inline">Find</span>
+              <kbd className="hidden md:inline px-1 py-0.2 rounded bg-black/40 text-[9px] font-mono text-white/70">⌘F</kbd>
+            </button>
+
             {/* Font size toggle */}
             <div className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-lg p-0.5">
               <button
@@ -350,6 +458,116 @@ export default function AhmadiyyaBookReaderModal({
           </div>
         </div>
 
+        {/* ── In-Book Search Drawer (Cmd+F) ── */}
+        {showInBookSearch && (
+          <div className="border-b border-white/10 bg-black/60 backdrop-blur-md px-4 py-3 shrink-0 animate-in slide-in-from-top-2 duration-150">
+            <div className="flex items-center gap-2 max-w-3xl mx-auto">
+              <div className="relative flex-1 flex items-center">
+                <Search size={14} className="absolute left-3 text-[var(--text-muted)] pointer-events-none" />
+                <input
+                  ref={inBookInputRef}
+                  type="text"
+                  value={inBookQuery}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setInBookQuery(val);
+                    if (val.trim().length >= 2) {
+                      executeInBookSearch(val);
+                    } else if (!val.trim()) {
+                      setInBookMatches([]);
+                      setInBookSearched(false);
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      executeInBookSearch(inBookQuery);
+                    }
+                  }}
+                  placeholder="Find words, names, or quotes in this book..."
+                  className="w-full pl-9 pr-8 py-1.5 bg-white/5 border border-white/15 rounded-xl text-xs font-semibold text-white placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)]"
+                />
+                {inBookQuery && (
+                  <button
+                    onClick={() => {
+                      setInBookQuery('');
+                      setInBookMatches([]);
+                      setInBookSearched(false);
+                    }}
+                    className="absolute right-2.5 p-0.5 text-[var(--text-muted)] hover:text-white rounded"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {inBookLoading && (
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] shrink-0 font-medium">
+                  <Loader2 size={13} className="animate-spin text-[var(--accent-main)]" />
+                  <span className="hidden sm:inline">Searching...</span>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowInBookSearch(false)}
+                className="p-1.5 text-[var(--text-muted)] hover:text-white hover:bg-white/10 rounded-lg transition-colors shrink-0"
+                title="Close search drawer"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Results strip / drawer */}
+            {inBookSearched && !inBookLoading && inBookMatches.length > 0 && (
+              <div className="mt-2.5 pt-2 border-t border-white/10 max-w-3xl mx-auto">
+                <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] mb-1.5 font-bold">
+                  <span>{inBookMatches.length} matching page{inBookMatches.length !== 1 ? 's' : ''} found:</span>
+                  <span className="text-[10px] text-[var(--text-dim)]">Click any page to jump</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                  {inBookMatches.map((m) => {
+                    const isSelected = m.pageNum === currentPage;
+                    return (
+                      <button
+                        key={m.pageNum}
+                        onClick={() => setCurrentPage(m.pageNum)}
+                        className={clsx(
+                          "flex flex-col text-left p-2 rounded-xl border shrink-0 w-56 md:w-64 transition-all text-xs",
+                          isSelected
+                            ? "bg-[var(--accent-main)]/20 border-[var(--accent-main)] shadow-sm ring-1 ring-[var(--accent-main)]"
+                            : "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20"
+                        )}
+                      >
+                        <div className="flex items-center justify-between w-full mb-1">
+                          <span className={clsx(
+                            "px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
+                            isSelected ? "bg-[var(--accent-main)] text-white" : "bg-white/10 text-[var(--text-muted)]"
+                          )}>
+                            Page {m.pageNum}
+                          </span>
+                          {isSelected && (
+                            <span className="text-[9px] font-bold text-[var(--accent-main)]">Current</span>
+                          )}
+                        </div>
+                        <p
+                          className="text-[11px] text-white/80 line-clamp-2 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: m.snippet }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {inBookSearched && !inBookLoading && inBookMatches.length === 0 && inBookQuery.trim() && (
+              <div className="mt-2 text-center text-xs text-[var(--text-muted)]">
+                No indexed occurrences of &quot;{inBookQuery}&quot; found in this book.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Reading Content Canvas ── */}
         <div
           ref={contentScrollRef}
@@ -414,7 +632,7 @@ export default function AhmadiyyaBookReaderModal({
                   fontSize === 'xl' && (isRtl ? "text-2xl" : "text-xl")
                 )}
               >
-                {pageText}
+                {renderHighlightedContent(pageText, inBookQuery)}
               </article>
 
               {/* Bottom Page Footer Citation */}
@@ -440,6 +658,8 @@ export default function AhmadiyyaBookReaderModal({
         <div className="px-4 py-2 border-t border-white/5 bg-black/60 flex items-center justify-between text-[10px] text-[var(--text-dim)] shrink-0 font-medium">
           <div className="flex items-center gap-3">
             <span>Use <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[9px]">←</kbd> and <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[9px]">→</kbd> to turn pages</span>
+            <span className="hidden sm:inline">•</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[9px]">⌘F</kbd> search inside book</span>
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline"><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[9px]">Esc</kbd> to close</span>
           </div>

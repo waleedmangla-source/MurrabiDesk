@@ -20,6 +20,9 @@ export interface BookItem {
   alislamUrl?: string;
   topics: string[];
   relevanceScore?: number;
+  matchedPageNum?: number;
+  highlightedSnippet?: string;
+  isPageMatch?: boolean;
 }
 
 const CANONICAL_DETAILED_BOOKS: BookItem[] = [

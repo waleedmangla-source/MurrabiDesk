@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import https from 'https';
 import * as cheerio from 'cheerio';
 import rawAhmadiyyaBooks from '@/data/research/ahmadiyya-books.json';
+import { getCanonicalPage } from '@/lib/canonical-db';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -153,7 +154,29 @@ export async function GET(req: NextRequest) {
 
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
 
-    // Check memory cache
+    // 1. Fast-path: Check local SQLite canonical database (0ms lookup)
+    try {
+      const localPage = getCanonicalPage(cleanSlug, requestedPage);
+      if (localPage) {
+        const catalogMeta = catalogLookup.get(cleanSlug);
+        return NextResponse.json({
+          success: true,
+          slug: cleanSlug,
+          title: localPage.title || catalogMeta?.title || cleanSlug,
+          author: localPage.author || catalogMeta?.author || 'Ahmadiyya Author',
+          pageNum: requestedPage,
+          totalPages: localPage.totalPages || 1,
+          text: localPage.text,
+          alislamUrl: localPage.alislamUrl || catalogMeta?.alislamUrl || `https://www.alislam.org/book/${cleanSlug}/`,
+          sourceUrl: `https://ahmadiyyabooks.com/book/${cleanSlug}/`,
+          coverUrl: catalogMeta?.coverUrl
+        });
+      }
+    } catch (e) {
+      // Fall through to memory cache / live fetch
+    }
+
+    // 2. Check memory cache or live scrape fallback
     let cachedBook = bookCache.get(cleanSlug);
     const isExpired = cachedBook && Date.now() - cachedBook.cachedAt > CACHE_TTL_MS;
 
