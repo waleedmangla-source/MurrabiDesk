@@ -99,6 +99,8 @@ export default function CreateProjectForm({
     'metaphors'
   ]);
   const [occasion, setOccasion] = useState('');
+  const [occasionChoice, setOccasionChoice] = useState('');
+  const [customOccasion, setCustomOccasion] = useState('');
   const [callToAction, setCallToAction] = useState('');
   const [autoGenerateAI, setAutoGenerateAI] = useState(true);
 
@@ -186,6 +188,24 @@ export default function CreateProjectForm({
     { id: 'ansar', label: 'Majlis Ansarullah', desc: 'Men over 40' },
     { id: 'secular', label: 'Secular Audience', desc: 'General public & secular context' },
     { id: 'interfaith', label: 'Interfaith Guests', desc: 'Non-Muslim & interfaith attendees' }
+  ];
+
+  // Occasion / Setting Options
+  const OCCASION_OPTIONS: { id: string; label: string }[] = [
+    { id: '', label: 'Select Occasion / Setting (Optional)...' },
+    { id: 'Friday Sermon / Khutba Jumu‘ah', label: 'Friday Sermon / Khutba Jumu‘ah' },
+    { id: 'Jalsa Salana (Annual Convention)', label: 'Jalsa Salana (Annual Convention)' },
+    { id: 'National / Regional Ijtema', label: 'National / Regional Ijtema' },
+    { id: 'Local Halqa Dars / Study Circle', label: 'Local Halqa Dars / Study Circle' },
+    { id: 'Monthly General Jama’at Meeting', label: 'Monthly General Jama’at Meeting' },
+    { id: 'Peace Symposium / Interfaith Forum', label: 'Peace Symposium / Interfaith Forum' },
+    { id: 'Tabligh Seminar / Campus Lecture', label: 'Tabligh Seminar / Campus Lecture' },
+    { id: 'Seerat-un-Nabi (sa) Jalsa', label: 'Seerat-un-Nabi (sa) Jalsa' },
+    { id: 'Yaum-e-Musleh Maud Jalsa', label: 'Yaum-e-Musleh Maud Jalsa' },
+    { id: 'Yaum-e-Masih Maud Jalsa', label: 'Yaum-e-Masih Maud Jalsa' },
+    { id: 'Yaum-e-Khilafat (Khilafat Day)', label: 'Yaum-e-Khilafat (Khilafat Day)' },
+    { id: 'Tahrik-e-Jadid / Waqf-e-Jadid Appeal', label: 'Tahrik-e-Jadid / Waqf-e-Jadid Appeal' },
+    { id: 'other', label: 'Other (Custom Occasion...)' }
   ];
 
   // Delivery Tones
@@ -725,13 +745,59 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                   </div>
 
                   <div className="grid grid-cols-1 gap-2">
-                    <label className="lbl">Occasion / Setting (Optional)</label>
-                    <input
-                      type="text"
-                      value={occasion}
-                      onChange={e => setOccasion(e.target.value)}
-                      placeholder="e.g. Friday Sermon, Jalsa Salana, National Ijtema, Local Halqa Dars"
-                    />
+                    <label className="lbl flex items-center justify-between">
+                      <span>Occasion / Setting (Optional)</span>
+                      {occasionChoice === 'other' && (
+                        <span className="text-[10px] text-[var(--accent-main)] font-mono font-bold uppercase tracking-wider">
+                          Custom
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={occasionChoice}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setOccasionChoice(val);
+                          if (val === 'other') {
+                            setOccasion(customOccasion);
+                          } else {
+                            setOccasion(val);
+                          }
+                        }}
+                        className="cursor-pointer appearance-none !pl-4 !pr-10"
+                      >
+                        {OCCASION_OPTIONS.map(opt => (
+                          <option
+                            key={opt.id}
+                            value={opt.id}
+                            className="bg-neutral-900 text-neutral-100"
+                          >
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-dim)]"
+                      />
+                    </div>
+
+                    {/* Custom input when "other" is selected */}
+                    {occasionChoice === 'other' && (
+                      <div className="animate-in fade-in duration-200 mt-1">
+                        <input
+                          type="text"
+                          value={customOccasion}
+                          onChange={e => {
+                            setCustomOccasion(e.target.value);
+                            setOccasion(e.target.value);
+                          }}
+                          placeholder="Enter custom occasion or setting (e.g. Tarbiyyati Camp, Youth Q&A...)"
+                          autoFocus
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
