@@ -15,6 +15,14 @@
 }
 
 @font-face {
+  font-family: 'Nastaleeq';
+  src: url('/fonts/Jameel-Noori-Nastaleeq.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Manzoor Naskh Al-Islam';
   src: url('/fonts/ManzoorNaskh-alislam.ttf') format('truetype');
   font-weight: normal;
@@ -31,9 +39,8 @@
   line-height: 2.2;
 }
 
-.font-urdu, .font-nastaleeq {
-  font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
-  font-size: 16px;
+.font-urdu, .font-nastaleeq, .nastaleeq, [lang="ur"], :lang(ur) {
+  font-family: 'Jameel Noori Nastaleeq Regular', 'Jameel Noori Nastaleeq', 'Nastaleeq', 'Noto Nastaliq Urdu', serif !important;
   line-height: 2.2;
 }
 

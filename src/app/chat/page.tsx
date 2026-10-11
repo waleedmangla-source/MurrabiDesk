@@ -112,8 +112,12 @@ function renderMarkdown(text: string) {
   // Horizontal rules
   html = html.replace(/^[-*━_]{3,}$/gm, '<hr class="border-black/10 my-3" />');
 
-  // Format Arabic / Quranic verses in Manzoor Naskh Al-Islam font
+  // Format Arabic / Urdu text: Urdu in Nastaleeq, Arabic in Manzoor Naskh
   html = html.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:\s+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*)/g, (match) => {
+    const isUrduText = /[ٹپچڈڑژگںھہۂۃے]/.test(match) || /(?:^|\s)(ہے|ہیں|تھا|تھی|تھے|کا|کے|کی|میں|پر|سے|کو|نے|اور|کہ|یہ|وہ|کیا|کر|گے|گی)(?:\s|$)/.test(match);
+    if (isUrduText) {
+      return `<span class="font-urdu text-lg lg:text-xl leading-[2.2] inline-block text-black px-1" dir="rtl">${match}</span>`;
+    }
     return `<span class="font-quran text-base lg:text-lg leading-loose inline-block text-black px-1" dir="rtl">${match}</span>`;
   });
 
