@@ -703,8 +703,12 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
         return next;
       });
 
+      const consensusInfo = data.consensus?.consensusLevel
+        ? ` (${data.consensus.consensusLevel} • ${data.consensus.confidenceScore}% confidence)`
+        : '';
+
       setSourcesFeedback({
-        message: `Found ${newSources.length} authentic sources from Research Tab & added to dossier!`,
+        message: `Found ${newSources.length} authentic sources from Research Tab${consensusInfo}!`,
         type: 'success'
       });
 

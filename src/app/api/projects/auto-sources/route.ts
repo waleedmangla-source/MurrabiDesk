@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { executeResearchSearch } from '@/lib/research-search-engine';
 import {
-  normalizeKhazainText,
-  normalizeWithIndexMap,
-  getBookForPage,
-  THEOLOGICAL_TOPIC_MAP
-} from '@/lib/khazain-data';
-import {
-  searchQuranVerses,
-  searchSunnahHadith,
-  searchAlIslamResources,
+  MultiSourceSearchResult,
   QuranVerseResult,
-  HadithResult
+  HadithResult,
+  RuhaniKhazainSearchResult,
+  BookItem,
+  AlIslamArticleResult,
+  PublicationResult
 } from '@/lib/research-sources';
-import { searchEssenceFullText } from '@/lib/essence-fulltext';
 import { EssenceResult } from '@/lib/essence-data';
-import { searchUnifiedMalfuzat } from '@/lib/malfuzat-fulltext';
 import { MalfuzatResult } from '@/lib/malfuzat-data';
-import { searchAhmadiyyaBooks } from '@/lib/books-catalog';
+import { TazkirahResult } from '@/lib/tazkirah-data';
+import { THEOLOGICAL_TOPIC_MAP } from '@/lib/khazain-data';
 import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
 import { ResearchBookmarkItem } from '@/lib/research-storage';
 
@@ -42,55 +38,7 @@ function getGeminiApiKey(): string | null {
   return apiKey || null;
 }
 
-// ── Ruhani Khazain In-Memory Volume Cache ──
-interface CachedPage {
-  page_num: number;
-  text: string;
-  norm: string;
-  indexMap: number[];
-}
-
-interface CachedVolume {
-  volume: number;
-  pages: CachedPage[];
-}
-
-const volumeCache: Map<number, CachedVolume> = new Map();
-
-function getCachedVolume(volNum: number): CachedVolume | null {
-  if (volumeCache.has(volNum)) {
-    return volumeCache.get(volNum)!;
-  }
-  try {
-    const filePath = path.resolve(process.cwd(), `public/ruhani-khazain/volume_${volNum}.json`);
-    if (!fs.existsSync(filePath)) return null;
-
-    const rawData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const pages: CachedPage[] = [];
-
-    if (Array.isArray(rawData.pages)) {
-      for (const p of rawData.pages) {
-        if (!p.text) continue;
-        const { norm, indexMap } = normalizeWithIndexMap(p.text);
-        pages.push({
-          page_num: p.page_num,
-          text: p.text,
-          norm,
-          indexMap
-        });
-      }
-    }
-
-    const cached: CachedVolume = { volume: volNum, pages };
-    volumeCache.set(volNum, cached);
-    return cached;
-  } catch (err) {
-    console.error(`[Auto-Sources] Failed to load RK volume ${volNum}:`, err);
-    return null;
-  }
-}
-
-// ── Query Decomposition via Gemini AI ──
+// ── Query Decomposition via AI (acts as intelligent indexer for Research Tab) ──
 interface DecomposedQueries {
   verseRefs: string[];
   hadithTerms: string[];
@@ -113,14 +61,14 @@ A user is preparing a project on the topic: "${topic}"
 Delivery Format: ${workType || 'Speech'}
 Occasion/Setting: ${occasion || 'General'}
 
-Analyze this topic and identify targeted search queries to query the Research Tab search index:
-1. "verseRefs": Array of 2 to 4 precise Holy Qur'an chapter and verse references most relevant to this topic (e.g. ["2:186", "54:50", "25:3"]).
+Decompose this topic into targeted search queries to execute directly through the Murabbi Desk Research Tab search engine:
+1. "verseRefs": Array of 2 to 4 precise Holy Qur'an chapter and verse references (e.g. ["2:186", "54:50", "25:3"]).
 2. "hadithTerms": Array of 2 to 3 search phrases in English or Arabic for Sunnah/Hadith collections (e.g. ["bukhari divine decree", "supplication changes fate", "tirmidhi dua"]).
 3. "khazainUrduTerms": Array of 2 to 4 Urdu terms or treatise concepts from Hazrat Masih-e-Maud (as) in Ruhani Khazain (e.g. ["تقدیر", "جبر و قدر", "دعا اور تقدیر", "مسئلہ قضا و قدر"]).
 4. "essenceTerms": Array of 1 to 2 English concepts for The Essence of Islam series (e.g. ["Fate and Divine Decree", "Philosophy of Prayer"]).
 5. "generalConcepts": Array of 2 to 3 primary thematic keywords (e.g. ["predestination", "free will", "supplication"]).
 
-Return strictly valid JSON conforming to this schema without code fences or extra text:
+Return strictly valid JSON without markdown wrapping or code blocks:
 {
   "verseRefs": ["string"],
   "hadithTerms": ["string"],
@@ -144,7 +92,7 @@ Return strictly valid JSON conforming to this schema without code fences or extr
     });
 
     if (!res.ok) {
-      console.warn('[Auto-Sources] Gemini decomposition returned status', res.status);
+      console.warn('[Auto-Sources] Gemini query decomposition returned status', res.status);
       return null;
     }
 
@@ -173,10 +121,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Try AI-powered query decomposition first, then fallback to theological lexicon mapping
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 1: Query Formulation for Research Tab Search Engine
+    // ─────────────────────────────────────────────────────────────────────────
     const aiQueries = await decomposeTopicWithAI(rawTopic, workType, occasion);
-
-    // Rule-based concepts extraction
     const dsgtCtx = disambiguateTheologicalContext(rawTopic);
     const topicLower = rawTopic.toLowerCase();
     const topicWords = topicLower.split(/[\s,.;:!?()"-]+/).filter(w => w.length > 2);
@@ -193,71 +141,160 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Unified search terms for the Research tab corpora
-    const quranSearchQueries: string[] = [];
-    if (aiQueries?.verseRefs?.length) {
-      quranSearchQueries.push(...aiQueries.verseRefs);
-    }
-    quranSearchQueries.push(rawTopic);
-    if (dsgtCtx.winningSense?.primaryConcept) {
-      quranSearchQueries.push(dsgtCtx.winningSense.primaryConcept);
-    }
-
-    const hadithQueries: string[] = [];
-    if (aiQueries?.hadithTerms?.length) {
-      hadithQueries.push(...aiQueries.hadithTerms);
-    }
-    hadithQueries.push(rawTopic);
-    if (dsgtCtx.winningSense?.primaryConcept) {
-      hadithQueries.push(dsgtCtx.winningSense.primaryConcept);
-    }
-
-    const khazainTerms: string[] = [];
-    if (aiQueries?.khazainUrduTerms?.length) {
-      khazainTerms.push(...aiQueries.khazainUrduTerms);
-    }
-    khazainTerms.push(...mappedUrduTerms);
-    if (dsgtCtx.winningSense?.scripturalAnchors?.length) {
-      khazainTerms.push(...dsgtCtx.winningSense.scripturalAnchors);
-    }
-    const normTopic = normalizeKhazainText(rawTopic);
-    if (normTopic && !khazainTerms.includes(normTopic)) {
-      khazainTerms.push(normTopic);
-    }
-
-    const essenceQueries: string[] = [];
-    if (aiQueries?.essenceTerms?.length) {
-      essenceQueries.push(...aiQueries.essenceTerms);
-    }
-    essenceQueries.push(rawTopic);
-    if (dsgtCtx.winningSense?.primaryConcept) {
-      essenceQueries.push(dsgtCtx.winningSense.primaryConcept);
-    }
-
-    const discoveredBookmarks: ResearchBookmarkItem[] = [];
-    const now = Date.now();
-
     // ─────────────────────────────────────────────────────────────────────────
-    // 2. Query Research Tab Feature: Holy Qur'an Corpus
+    // Phase 2: Execute Search through Shared Research Tab Engine Core
+    // All research queries flow directly through executeResearchSearch!
+    // As the Research Tab evolves (new corpora, better HITS, triangulation,
+    // Rocchio expansion, new volumes), Auto-Sources automatically inherits every update!
     // ─────────────────────────────────────────────────────────────────────────
-    const matchedVerses: QuranVerseResult[] = [];
-    const seenVerseKeys = new Set<string>();
+    const searchPromises: Promise<MultiSourceSearchResult>[] = [
+      executeResearchSearch({ query: rawTopic, searchMode: 'contextual' })
+    ];
 
-    for (const q of quranSearchQueries) {
-      const verses = searchQuranVerses(q);
-      for (const v of verses) {
-        const key = `${v.surahNumber}:${v.verseNumber}`;
-        if (!seenVerseKeys.has(key)) {
-          seenVerseKeys.add(key);
-          matchedVerses.push(v);
-        }
+    // Additional targeted queries formulated from topic analysis
+    const extraQueriesToRun: string[] = [];
+    if (aiQueries?.verseRefs && aiQueries.verseRefs.length > 0) {
+      extraQueriesToRun.push(aiQueries.verseRefs[0]);
+    }
+    if (aiQueries?.khazainUrduTerms && aiQueries.khazainUrduTerms.length > 0) {
+      extraQueriesToRun.push(aiQueries.khazainUrduTerms[0]);
+    } else if (mappedUrduTerms.length > 0) {
+      extraQueriesToRun.push(mappedUrduTerms[0]);
+    }
+    if (aiQueries?.hadithTerms && aiQueries.hadithTerms.length > 0) {
+      extraQueriesToRun.push(aiQueries.hadithTerms[0]);
+    }
+
+    // Limit extra queries to top 2 to preserve speed
+    for (const eq of extraQueriesToRun.slice(0, 2)) {
+      if (eq.toLowerCase() !== rawTopic.toLowerCase()) {
+        searchPromises.push(executeResearchSearch({ query: eq, searchMode: 'contextual' }));
       }
-      if (matchedVerses.length >= 6) break;
     }
 
-    // Take top 2 - 4 most relevant Qur'an verses
-    const selectedVerses = matchedVerses.slice(0, 4);
-    for (const v of selectedVerses) {
+    const searchResultsList = await Promise.all(searchPromises);
+    const primaryResult = searchResultsList[0];
+
+    // Combine all results from Research Tab engine executions
+    const allQuranVerses: QuranVerseResult[] = [];
+    const allAhadith: HadithResult[] = [];
+    const allRuhaniKhazain: RuhaniKhazainSearchResult[] = [];
+    const allBooks: BookItem[] = [];
+    const allMalfuzat: MalfuzatResult[] = [];
+    const allTazkirah: TazkirahResult[] = [];
+    const allEssence: EssenceResult[] = [];
+    const allAlIslamArticles: AlIslamArticleResult[] = [];
+    const allPublications: PublicationResult[] = [];
+
+    const seenQuran = new Set<string>();
+    const seenHadith = new Set<string>();
+    const seenRk = new Set<string>();
+    const seenBook = new Set<string>();
+    const seenMalfuzat = new Set<string>();
+    const seenTazkirah = new Set<string>();
+    const seenEssence = new Set<string>();
+    const seenArticle = new Set<string>();
+
+    for (const res of searchResultsList) {
+      // Holy Quran
+      res.quranVerses.forEach(v => {
+        const k = `${v.surahNumber}:${v.verseNumber}`;
+        if (!seenQuran.has(k)) {
+          seenQuran.add(k);
+          allQuranVerses.push(v);
+        }
+      });
+      // Ahadith
+      res.ahadith.forEach(h => {
+        const k = h.id || `${h.book}-${h.hadithNumber}`;
+        if (!seenHadith.has(k)) {
+          seenHadith.add(k);
+          allAhadith.push(h);
+        }
+      });
+      // Ruhani Khazain
+      res.ruhaniKhazain.forEach(rk => {
+        const k = `${rk.volume}-${rk.pageNum}`;
+        if (!seenRk.has(k)) {
+          seenRk.add(k);
+          allRuhaniKhazain.push(rk);
+        }
+      });
+      // Books
+      res.books.forEach(b => {
+        const k = b.id || b.title;
+        if (!seenBook.has(k)) {
+          seenBook.add(k);
+          allBooks.push(b);
+        }
+      });
+      // Malfuzat
+      res.malfuzat.forEach(m => {
+        const k = `${m.volume}-${m.pageNum}`;
+        if (!seenMalfuzat.has(k)) {
+          seenMalfuzat.add(k);
+          allMalfuzat.push(m);
+        }
+      });
+      // Tazkirah
+      res.tazkirah.forEach(t => {
+        const k = t.id || `${t.pageEnglish || t.pageUrdu || ''}-${t.dateStr}`;
+        if (!seenTazkirah.has(k)) {
+          seenTazkirah.add(k);
+          allTazkirah.push(t);
+        }
+      });
+      // The Essence of Islam
+      res.essenceOfIslam.forEach(e => {
+        const k = `${e.volume}-${e.pageNum}`;
+        if (!seenEssence.has(k)) {
+          seenEssence.add(k);
+          allEssence.push(e);
+        }
+      });
+      // Articles & Periodicals
+      res.alislamArticles.forEach(a => {
+        if (!seenArticle.has(a.id)) {
+          seenArticle.add(a.id);
+          allAlIslamArticles.push(a);
+        }
+      });
+      res.publications.forEach(p => {
+        if (!seenArticle.has(p.id)) {
+          seenArticle.add(p.id);
+          allPublications.push(p);
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3: Research Tab Triangulation & Authority Scoring
+    // Use the Research Tab's Consensus Triangulation Matrix & HITS authority
+    // scores to prioritize sources with highest theological convergence!
+    // ─────────────────────────────────────────────────────────────────────────
+    const consensusMatrix = primaryResult.consensusMatrix;
+    const hitsRankings = primaryResult.hitsRankings || {};
+
+    const corroboratedCitations = new Set<string>();
+    if (consensusMatrix?.evidencePoints) {
+      consensusMatrix.evidencePoints.forEach(ep => {
+        if (ep.citation) corroboratedCitations.add(ep.citation.toLowerCase());
+      });
+    }
+
+    const now = Date.now();
+    const discoveredBookmarks: ResearchBookmarkItem[] = [];
+
+    // 1. Select Holy Qur'an Verses (top 2 - 4)
+    allQuranVerses.sort((a, b) => {
+      const aRef = `${a.surahNumber}:${a.verseNumber}`;
+      const bRef = `${b.surahNumber}:${b.verseNumber}`;
+      const aCorrob = corroboratedCitations.has(aRef) ? 100 : 0;
+      const bCorrob = corroboratedCitations.has(bRef) ? 100 : 0;
+      return (bCorrob + (b.relevanceScore || 0)) - (aCorrob + (a.relevanceScore || 0));
+    });
+
+    for (const v of allQuranVerses.slice(0, 4)) {
       const verseKey = `quran-${v.surahNumber}-${v.verseNumber}`;
       discoveredBookmarks.push({
         id: verseKey,
@@ -274,37 +311,15 @@ export async function POST(req: NextRequest) {
           surahNameArabic: v.surahNameArabic,
           arabicText: v.arabicText,
           englishTranslation: v.englishTranslation,
-          urduTranslation: v.urduTranslation
+          urduTranslation: v.urduTranslation,
+          consensusCorroborated: corroboratedCitations.has(`${v.surahNumber}:${v.verseNumber}`)
         },
         savedAt: now
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 3. Query Research Tab Feature: Sunnah / Hadith Corpus
-    // ─────────────────────────────────────────────────────────────────────────
-    const matchedHadith: HadithResult[] = [];
-    const seenHadithKeys = new Set<string>();
-
-    for (const hq of hadithQueries) {
-      try {
-        const hadiths = await searchSunnahHadith(hq);
-        for (const h of hadiths) {
-          const key = h.id || `${h.book}-${h.hadithNumber}`;
-          if (!seenHadithKeys.has(key)) {
-            seenHadithKeys.add(key);
-            matchedHadith.push(h);
-          }
-        }
-        if (matchedHadith.length >= 4) break;
-      } catch (e) {
-        console.warn('[Auto-Sources] Hadith search error:', e);
-      }
-    }
-
-    // Take top 2 - 3 Ahadith
-    const selectedHadith = matchedHadith.slice(0, 3);
-    for (const h of selectedHadith) {
+    // 2. Select Hadith traditions (top 2 - 3)
+    for (const h of allAhadith.slice(0, 3)) {
       const hadithKey = `hadith-${h.id}`;
       const title = `${h.book}${h.hadithNumber ? ` #${h.hadithNumber}` : ''}`;
       const subtitle = h.narrator ? `Narrated by ${h.narrator}` : h.chapter || 'Hadith Collection';
@@ -331,66 +346,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 4. Query Research Tab Feature: Ruhani Khazain (23 Volumes Full-Text)
-    // ─────────────────────────────────────────────────────────────────────────
-    const matchedRk: Array<{
-      volume: number;
-      pageNum: number;
-      bookTitle: string;
-      bookUrduTitle?: string;
-      snippet: string;
-      readerUrl: string;
-    }> = [];
+    // 3. Select Ruhani Khazain excerpts (top 2 - 3, ranked by HITS authority score)
+    allRuhaniKhazain.sort((a, b) => {
+      const aAuth = (hitsRankings[`volume_${a.volume}`] || 0) + (hitsRankings[a.bookTitle] || 0);
+      const bAuth = (hitsRankings[`volume_${b.volume}`] || 0) + (hitsRankings[b.bookTitle] || 0);
+      return bAuth - aAuth;
+    });
 
-    const activeKhazainTerms = khazainTerms.filter(t => t.length >= 2);
-    if (activeKhazainTerms.length > 0) {
-      // Prioritize primary theological treatises in RK (Vols 1, 3, 10, 14, 15, 17, 18, 19, 20, 22, 23)
-      const priorityVols = [1, 3, 10, 14, 15, 17, 18, 19, 20, 22, 23, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16, 21];
-
-      for (const volNum of priorityVols) {
-        const volData = getCachedVolume(volNum);
-        if (!volData) continue;
-
-        for (const page of volData.pages) {
-          for (const term of activeKhazainTerms) {
-            const pos = page.norm.indexOf(term);
-            if (pos !== -1) {
-              const rawStart = page.indexMap[pos] ?? pos;
-              const rawEnd = rawStart + term.length;
-              const snipStart = Math.max(0, rawStart - 100);
-              const snipEnd = Math.min(page.text.length, rawEnd + 120);
-
-              const constituentBook = getBookForPage(volNum, page.page_num);
-              const slice = page.text.slice(snipStart, snipEnd).replace(/\s+/g, ' ').trim();
-
-              matchedRk.push({
-                volume: volNum,
-                pageNum: page.page_num,
-                bookTitle: constituentBook.title,
-                bookUrduTitle: constituentBook.urduTitle,
-                snippet: slice,
-                readerUrl: `/reader?volume=${volNum}&page=${page.page_num}`
-              });
-              break;
-            }
-          }
-          if (matchedRk.length >= 3) break;
-        }
-        if (matchedRk.length >= 3) break;
-      }
-    }
-
-    // Add top 2 - 3 Ruhani Khazain excerpts
-    for (const rk of matchedRk.slice(0, 3)) {
+    for (const rk of allRuhaniKhazain.slice(0, 3)) {
       const rkKey = `rk-${rk.volume}-${rk.pageNum}`;
+      const snippet = `${rk.snippetBefore} [${rk.matchedSlice}] ${rk.snippetAfter}`.replace(/\s+/g, ' ').trim();
       discoveredBookmarks.push({
         id: rkKey,
         category: 'khazain',
         title: `Ruhani Khazain Vol. ${rk.volume}, p. ${rk.pageNum} — ${rk.bookTitle}`,
         subtitle: rk.bookUrduTitle ? `روحانی خزائن جلد ${rk.volume}: ${rk.bookUrduTitle}` : `Volume ${rk.volume}`,
-        snippet: rk.snippet,
-        citationText: `[Ruhani Khazain, Vol. ${rk.volume}, p. ${rk.pageNum} - ${rk.bookTitle}]\n"${rk.snippet}"`,
+        snippet,
+        citationText: `[Ruhani Khazain, Vol. ${rk.volume}, p. ${rk.pageNum} - ${rk.bookTitle}]\n"${snippet}"`,
         url: rk.readerUrl,
         metadata: {
           volume: rk.volume,
@@ -403,21 +375,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 5. Query Research Tab Feature: The Essence of Islam (Volumes 1-5)
-    // ─────────────────────────────────────────────────────────────────────────
-    const matchedEssence: EssenceResult[] = [];
-    for (const eq of essenceQueries) {
-      const res = searchEssenceFullText(eq, 5);
-      for (const e of res) {
-        if (!matchedEssence.some(m => m.volume === e.volume && m.pageNum === e.pageNum)) {
-          matchedEssence.push(e);
-        }
-      }
-      if (matchedEssence.length >= 3) break;
-    }
-
-    for (const e of matchedEssence.slice(0, 2)) {
+    // 4. Select The Essence of Islam (top 1 - 2)
+    for (const e of allEssence.slice(0, 2)) {
       const essenceKey = `essence-${e.volume}-${e.pageNum}`;
       discoveredBookmarks.push({
         id: essenceKey,
@@ -442,21 +401,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 6. Query Research Tab Feature: Malfuzat (Volumes 1-10)
-    // ─────────────────────────────────────────────────────────────────────────
-    const matchedMalfuzat: MalfuzatResult[] = [];
-    for (const eq of essenceQueries) {
-      const res = searchUnifiedMalfuzat(eq);
-      for (const m of res) {
-        if (!matchedMalfuzat.some(item => item.volume === m.volume && item.pageNum === m.pageNum)) {
-          matchedMalfuzat.push(m);
-        }
-      }
-      if (matchedMalfuzat.length >= 2) break;
-    }
-
-    for (const m of matchedMalfuzat.slice(0, 2)) {
+    // 5. Select Malfuzat (top 1 - 2)
+    for (const m of allMalfuzat.slice(0, 2)) {
       const malfuzatKey = `malfuzat-${m.volume}-${m.pageNum}`;
       discoveredBookmarks.push({
         id: malfuzatKey,
@@ -480,11 +426,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // 7. Query Research Tab Feature: Ahmadiyya Literature & Al Islam Articles
-    // ─────────────────────────────────────────────────────────────────────────
-    const matchedBooks = searchAhmadiyyaBooks(rawTopic);
-    for (const b of matchedBooks.slice(0, 1)) {
+    // 6. Select Canonical Ahmadiyya Books (top 1)
+    for (const b of allBooks.slice(0, 1)) {
       discoveredBookmarks.push({
         id: `book-${b.id}`,
         category: 'books',
@@ -503,22 +446,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const matchedArticles = searchAlIslamResources(rawTopic);
-    for (const art of matchedArticles.slice(0, 1)) {
+    // 7. Select Al Islam Articles / Periodicals (top 1)
+    const topArticle = allAlIslamArticles[0] || allPublications[0];
+    if (topArticle) {
       discoveredBookmarks.push({
-        id: `alislam-${art.id}`,
+        id: `article-${topArticle.id}`,
         category: 'articles',
-        title: art.title,
-        subtitle: art.author ? `Al Islam • ${art.author}` : 'Al Islam Article',
-        snippet: art.summary,
-        citationText: `[Al Islam: "${art.title}"${art.author ? ` by ${art.author}` : ''}]\n"${art.summary}"\nSource: ${art.url}`,
-        url: art.url,
+        title: topArticle.title,
+        subtitle: (topArticle as any).source ? `${(topArticle as any).source} • ${topArticle.author || ''}` : `Al Islam • ${topArticle.author || ''}`,
+        snippet: topArticle.summary,
+        citationText: `["${topArticle.title}"${topArticle.author ? ` by ${topArticle.author}` : ''}]\n"${topArticle.summary}"\nSource: ${topArticle.url}`,
+        url: topArticle.url,
         metadata: {
-          url: art.url,
-          title: art.title,
-          source: 'Al Islam',
-          author: art.author,
-          summary: art.summary
+          url: topArticle.url,
+          title: topArticle.title,
+          author: topArticle.author,
+          summary: topArticle.summary
         },
         savedAt: now
       });
@@ -529,13 +472,18 @@ export async function POST(req: NextRequest) {
       topic: rawTopic,
       sources: discoveredBookmarks,
       count: discoveredBookmarks.length,
-      message: `Found ${discoveredBookmarks.length} authoritative sources from the Research Tab library.`
+      consensus: consensusMatrix ? {
+        confidenceScore: consensusMatrix.confidenceScore,
+        consensusLevel: consensusMatrix.consensusLevel,
+        corroboratedLayersCount: consensusMatrix.corroboratedLayersCount
+      } : null,
+      message: `Found ${discoveredBookmarks.length} authentic sources triangulated directly through the Research Tab search engine.`
     });
 
   } catch (err: any) {
-    console.error('[Auto-Sources API] Unexpected error finding sources:', err);
+    console.error('[Auto-Sources API] Unexpected error finding sources via Research Tab:', err);
     return NextResponse.json(
-      { success: false, error: err.message || 'Internal error searching research tab' },
+      { success: false, error: err.message || 'Internal error querying research tab search engine' },
       { status: 500 }
     );
   }

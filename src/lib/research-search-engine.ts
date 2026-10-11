@@ -1,0 +1,978 @@
+import fs from 'fs';
+import path from 'path';
+import {
+  normalizeKhazainText,
+  normalizeWithIndexMap,
+  getBookForPage,
+  THEOLOGICAL_TOPIC_MAP
+} from '@/lib/khazain-data';
+import {
+  searchQuranVerses,
+  searchSunnahHadith,
+  searchAlIslamResources,
+  searchPeriodicals,
+  MultiSourceSearchResult,
+  RuhaniKhazainSearchResult,
+  HadithResult,
+  ResearchDossier,
+  AudioResult,
+  VideoResult,
+  MediaItemResult,
+  BookItem,
+  searchAhmadiyyaBooks
+} from '@/lib/research-sources';
+import { searchAskIslamAudios } from '@/lib/askislam-data';
+import { searchMediaVideos } from '@/lib/video-search';
+import { MalfuzatResult } from '@/lib/malfuzat-data';
+import { searchUnifiedMalfuzat } from '@/lib/malfuzat-fulltext';
+import { searchUnifiedTazkirah } from '@/lib/tazkirah-fulltext';
+import { searchEssenceFullText } from '@/lib/essence-fulltext';
+import { EssenceResult } from '@/lib/essence-data';
+import { TazkirahResult } from '@/lib/tazkirah-data';
+import { disambiguateTheologicalContext } from '@/lib/dsgt/context-disambiguation';
+import { expandQueryVector } from '@/lib/dsgt/query-expansion';
+import { getCitationGraph, snowballTraverse } from '@/lib/dsgt/citation-graph';
+import { computeHitsRankings } from '@/lib/dsgt/hits-engine';
+import { computeConsensusTriangulation } from '@/lib/dsgt/triangulation-engine';
+import {
+  fetchLiveAlHakam,
+  fetchLiveReviewOfReligions,
+  fetchLiveAlFazl,
+  fetchLiveAlIslam
+} from '@/lib/external-sources';
+import { PublicationResult, AlIslamArticleResult } from '@/lib/research-sources';
+import { resolveVerbatimEquivalents } from '@/lib/verbatim-search';
+
+export interface ResearchSearchParams {
+  query: string;
+  searchMode?: 'contextual' | 'verbatim';
+  yearFrom?: number | null;
+  yearTo?: number | null;
+  language?: 'all' | 'en' | 'ar' | 'ur';
+  sources?: string[];
+  articlePage?: number;
+  alhakamPage?: number;
+  periodicalPage?: number;
+}
+
+interface CachedPage {
+  page_num: number;
+  text: string;
+  norm: string;
+  indexMap: number[];
+}
+
+interface CachedVolume {
+  volume: number;
+  pages: CachedPage[];
+}
+
+const volumeCache: Map<number, CachedVolume> = new Map();
+
+function getCachedVolume(volNum: number): CachedVolume | null {
+  if (volumeCache.has(volNum)) {
+    return volumeCache.get(volNum)!;
+  }
+  try {
+    const filePath = path.resolve(process.cwd(), `public/ruhani-khazain/volume_${volNum}.json`);
+    if (!fs.existsSync(filePath)) return null;
+
+    const rawData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const pages: CachedPage[] = [];
+
+    if (Array.isArray(rawData.pages)) {
+      for (const p of rawData.pages) {
+        if (!p.text) continue;
+        const { norm, indexMap } = normalizeWithIndexMap(p.text);
+        pages.push({
+          page_num: p.page_num,
+          text: p.text,
+          norm,
+          indexMap
+        });
+      }
+    }
+
+    const cached: CachedVolume = { volume: volNum, pages };
+    volumeCache.set(volNum, cached);
+    return cached;
+  } catch (err) {
+    console.error(`[Research API] Failed to load volume ${volNum}:`, err);
+    return null;
+  }
+}
+
+export async function executeResearchSearch(params: ResearchSearchParams): Promise<MultiSourceSearchResult> {
+  const body = params;
+  const rawQuery = String(body.query || '').trim();
+  const searchMode: 'contextual' | 'verbatim' = body.searchMode === 'verbatim' ? 'verbatim' : 'contextual';
+  const verbatimEquivs = resolveVerbatimEquivalents(rawQuery);
+  const yearFrom = typeof body.yearFrom === 'number' ? body.yearFrom : null;
+  const yearTo = typeof body.yearTo === 'number' ? body.yearTo : null;
+  const filterLanguage: 'all' | 'en' | 'ar' | 'ur' = ['en', 'ar', 'ur'].includes(body.language || '') ? (body.language as any) : 'all';
+
+  if (!rawQuery) {
+    throw new Error('Search query is required');
+  }
+
+    // Fast-path: On-demand page retrieval for Articles (Al Hakam, Review of Religions, Al Islam)
+    if (
+      typeof body.articlePage === 'number' ||
+      typeof body.alhakamPage === 'number' ||
+      typeof body.periodicalPage === 'number'
+    ) {
+      const pageIndex = Math.max(0, Math.floor(body.articlePage ?? body.alhakamPage ?? body.periodicalPage));
+      const humanPage = pageIndex + 1;
+
+      // Extract winning concept if query is non-Latin (Urdu/Arabic) or find Urdu concept if Latin (English)
+      const hasLatinQuery = /[a-zA-Z]/.test(rawQuery);
+      let englishSearchQuery = rawQuery;
+      let urduSearchQuery = rawQuery;
+
+      if (searchMode === 'verbatim') {
+        const enMatch = verbatimEquivs.translations.find(t => /[a-zA-Z]/.test(t)) || rawQuery;
+        const urMatch = verbatimEquivs.translations.find(t => /[\u0600-\u06FF]/.test(t)) || rawQuery;
+        englishSearchQuery = enMatch;
+        urduSearchQuery = urMatch;
+      } else if (!hasLatinQuery) {
+        const dsgtCtx = disambiguateTheologicalContext(rawQuery);
+        if (dsgtCtx.winningSense?.primaryConcept) {
+          englishSearchQuery = dsgtCtx.winningSense.primaryConcept;
+        }
+      } else {
+        const dsgtCtx = disambiguateTheologicalContext(rawQuery);
+        if (dsgtCtx.winningSense?.scripturalAnchors?.length) {
+          urduSearchQuery = dsgtCtx.winningSense.scripturalAnchors[0];
+        } else if (THEOLOGICAL_TOPIC_MAP[rawQuery.toLowerCase()]) {
+          urduSearchQuery = THEOLOGICAL_TOPIC_MAP[rawQuery.toLowerCase()][0];
+        }
+      }
+
+      let [alHakamData, rorData, alFazlData, alIslamData] = await Promise.all([
+        fetchLiveAlHakam(rawQuery, pageIndex),
+        fetchLiveReviewOfReligions(englishSearchQuery, humanPage),
+        fetchLiveAlFazl(urduSearchQuery, humanPage),
+        fetchLiveAlIslam(rawQuery, humanPage)
+      ]);
+
+      if (alHakamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+        alHakamData = await fetchLiveAlHakam(englishSearchQuery, pageIndex);
+      }
+      if (alFazlData.results.length === 0 && urduSearchQuery !== rawQuery) {
+        alFazlData = await fetchLiveAlFazl(rawQuery, humanPage);
+      }
+      if (alIslamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+        alIslamData = await fetchLiveAlIslam(englishSearchQuery, humanPage);
+      }
+
+      const publications: PublicationResult[] = [
+        ...alHakamData.results,
+        ...rorData.results,
+        ...alFazlData.results
+      ];
+
+      const totalAlHakamHits = alHakamData.totalHits;
+      const totalRoRHits = rorData.totalHits;
+      const totalAlFazlHits = alFazlData.totalHits;
+      const totalAlIslamHits = alIslamData.totalHits;
+      const totalArticleHits = totalAlHakamHits + totalRoRHits + totalAlFazlHits + totalAlIslamHits;
+      const totalPages = Math.max(
+        alHakamData.totalPages,
+        rorData.totalPages,
+        alFazlData.totalPages,
+        alIslamData.totalPages
+      );
+
+      return {
+        query: rawQuery,
+        normalizedTerms: [rawQuery],
+        searchMode,
+        ruhaniKhazain: [],
+        quranVerses: [],
+        ahadith: [],
+        books: [],
+        malfuzat: [],
+        tazkirah: [],
+        essenceOfIslam: [],
+        totalMalfuzatHits: 0,
+        totalTazkirahHits: 0,
+        totalEssenceHits: 0,
+        totalBookHits: 0,
+        publications,
+        alislamArticles: alIslamData.results,
+        audios: [],
+        videos: [],
+        media: [],
+        totalMediaHits: 0,
+        totalAlHakamHits,
+        totalRoRHits,
+        totalAlFazlHits,
+        totalAlIslamHits,
+        totalArticleHits,
+        totalPagesAlHakam: alHakamData.totalPages,
+        totalPagesRoR: rorData.totalPages,
+        totalPagesAlFazl: alFazlData.totalPages,
+        totalPagesAlIslam: alIslamData.totalPages,
+        totalPages,
+        currentPage: humanPage,
+        totalResults: totalArticleHits
+      } as any;
+    }
+
+    // Check if client provided custom sources filter. If not provided or empty, all sources are enabled.
+    const customSources: string[] = Array.isArray(body.sources) && body.sources.length > 0 ? body.sources : [];
+    const isSourceEnabled = (src: string) => customSources.length === 0 || customSources.includes(src);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 1: Theological Lesk Context Disambiguation
+    // ─────────────────────────────────────────────────────────────────────────
+    const dsgtContext = disambiguateTheologicalContext(rawQuery);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 2: Rocchio Algebraic Query Expansion & Cross-Lingual Vector Bridging
+    // ─────────────────────────────────────────────────────────────────────────
+    const dsgtExpanded = expandQueryVector(dsgtContext);
+
+    // 1. Resolve search terms for Ruhani Khazain
+    const hasLatin = /[a-zA-Z]/.test(rawQuery);
+    const searchTerms: string[] = [];
+    const queryClean = rawQuery.toLowerCase();
+
+    if (hasLatin) {
+      if (THEOLOGICAL_TOPIC_MAP[queryClean]) {
+        searchTerms.push(...THEOLOGICAL_TOPIC_MAP[queryClean]);
+      } else {
+        const queryWords = queryClean.split(/\s+/).filter(w => w.length > 2);
+        for (const word of queryWords) {
+          if (THEOLOGICAL_TOPIC_MAP[word]) {
+            searchTerms.push(...THEOLOGICAL_TOPIC_MAP[word]);
+          }
+        }
+      }
+      // If no mapping found, use rawQuery
+      if (searchTerms.length === 0) {
+        searchTerms.push(rawQuery);
+      }
+    } else {
+      const normQuery = normalizeKhazainText(rawQuery);
+      if (normQuery) searchTerms.push(normQuery);
+      const words = normQuery.split(/\s+/).filter(w => w.length >= 3);
+      if (words.length > 1) {
+        words.forEach(w => {
+          if (!searchTerms.includes(w)) searchTerms.push(w);
+        });
+      }
+    }
+
+    // Add Rocchio-expanded Urdu Khazain terms
+    if (dsgtExpanded.urduKhazainTerms && dsgtExpanded.urduKhazainTerms.length > 0) {
+      for (const term of dsgtExpanded.urduKhazainTerms) {
+        if (!searchTerms.includes(term)) {
+          searchTerms.push(term);
+        }
+      }
+    }
+
+    const normalizedTerms = Array.from(new Set(searchTerms.map(t => normalizeKhazainText(t)).filter(Boolean)))
+      .sort((a, b) => {
+        const aIsUrdu = /[\u0600-\u06FF]/.test(a);
+        const bIsUrdu = /[\u0600-\u06FF]/.test(b);
+        if (aIsUrdu && !bIsUrdu) return -1;
+        if (!aIsUrdu && bIsUrdu) return 1;
+        return 0;
+      });
+
+    // Prioritize target volumes identified by the DSGT expansion
+    const volumeOrder: number[] = [];
+    if (dsgtExpanded.targetVolumes && dsgtExpanded.targetVolumes.length > 0) {
+      for (const v of dsgtExpanded.targetVolumes) {
+        if (v >= 1 && v <= 23 && !volumeOrder.includes(v)) {
+          volumeOrder.push(v);
+        }
+      }
+    }
+    for (let v = 1; v <= 23; v++) {
+      if (!volumeOrder.includes(v)) {
+        volumeOrder.push(v);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3 & 4: Cross-Corpus Citation Graph, Snowballing & Kleinberg HITS
+    // ─────────────────────────────────────────────────────────────────────────
+    const graph = getCitationGraph();
+    const seedIds: string[] = [];
+
+    // Match scripture refs
+    const graphNodeKeys = Array.from(graph.nodes.keys());
+    for (const ref of dsgtContext.extractedScriptureRefs) {
+      const cleanRef = ref.replace(/\s+/g, '');
+      for (const nodeId of graphNodeKeys) {
+        if (nodeId.includes(cleanRef)) seedIds.push(nodeId);
+      }
+    }
+
+    // Match priority volumes
+    for (const vol of dsgtExpanded.targetVolumes) {
+      for (const nodeId of graphNodeKeys) {
+        if (nodeId.startsWith(`rk:vol${vol}:`)) seedIds.push(nodeId);
+      }
+    }
+
+    // Match sense keywords
+    const winningSenseTerms = [
+      dsgtContext.winningSense?.primaryConcept || '',
+      ...(dsgtContext.winningSense?.urduTerms || []),
+      ...(dsgtContext.winningSense?.arabicTerms || [])
+    ].map(s => s.toLowerCase());
+
+    const graphNodeEntries = Array.from(graph.nodes.entries());
+    for (const [nodeId, node] of graphNodeEntries) {
+      const nodeText = `${node.title} ${node.referenceLabel}`.toLowerCase();
+      if (
+        dsgtContext.extractedKeywords.some(t => t.length > 3 && nodeText.includes(t.toLowerCase())) ||
+        winningSenseTerms.some(st => st.length > 3 && nodeText.includes(st))
+      ) {
+        seedIds.push(nodeId);
+      }
+    }
+
+    if (seedIds.length === 0) {
+      seedIds.push(...graphNodeKeys.slice(0, 10));
+    }
+
+    const traversedNodeIds = snowballTraverse(seedIds, 2);
+    const hitsRankings = computeHitsRankings(Array.from(traversedNodeIds));
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Multi-Source Parallel Execution
+    // ─────────────────────────────────────────────────────────────────────────
+    const ruhaniKhazainPromise: Promise<RuhaniKhazainSearchResult[]> = (async () => {
+      if (!isSourceEnabled('ruhani-khazain')) return [];
+      const matches: RuhaniKhazainSearchResult[] = [];
+
+      // ── Verbatim Mode: Exact string & translation/phonetic matching ──
+      if (searchMode === 'verbatim') {
+        const verbatimTargets: string[] = [];
+        if (!hasLatin) {
+          const norm = normalizeKhazainText(rawQuery);
+          if (norm) verbatimTargets.push(norm);
+        }
+        for (const t of [...verbatimEquivs.translations, ...verbatimEquivs.allSearchTerms]) {
+          if (/[\u0600-\u06FF]/.test(t)) {
+            const norm = normalizeKhazainText(t);
+            if (norm && !verbatimTargets.includes(norm)) verbatimTargets.push(norm);
+          }
+        }
+        if (verbatimTargets.length === 0) {
+          const norm = normalizeKhazainText(rawQuery);
+          if (norm) verbatimTargets.push(norm);
+        }
+
+        for (let volNum = 1; volNum <= 23; volNum++) {
+          const volData = getCachedVolume(volNum);
+          if (!volData) continue;
+
+          for (const page of volData.pages) {
+            for (const target of verbatimTargets) {
+              const pos = page.norm.indexOf(target);
+              if (pos !== -1) {
+                const rawStart = page.indexMap[pos] ?? pos;
+                const endNormPos = Math.min(page.indexMap.length - 1, pos + target.length - 1);
+                const rawEnd = (page.indexMap[endNormPos] ?? rawStart + target.length - 1) + 1;
+
+                const snippetStart = Math.max(0, rawStart - 120);
+                const snippetEnd = Math.min(page.text.length, rawEnd + 120);
+                const constituentBook = getBookForPage(volNum, page.page_num);
+
+                matches.push({
+                  volume: volNum,
+                  pageNum: page.page_num,
+                  bookTitle: constituentBook.title,
+                  bookUrduTitle: constituentBook.urduTitle,
+                  snippetBefore: page.text.slice(snippetStart, rawStart),
+                  matchedSlice: page.text.slice(rawStart, rawEnd),
+                  snippetAfter: page.text.slice(rawEnd, snippetEnd),
+                  matchedTerm: target,
+                  isExactPhrase: true,
+                  readerUrl: `/reader?volume=${volNum}&page=${page.page_num}`
+                });
+                break;
+              }
+            }
+            if (matches.length >= 1000) break;
+          }
+          if (matches.length >= 1000) break;
+        }
+
+        return matches;
+      }
+
+      // ── Contextual Mode: Thematic prioritization and Rocchio expansion ──
+      const urduTerms = normalizedTerms.filter(t => /[\u0600-\u06FF]/.test(t));
+      const activeSearchTerms = urduTerms.length > 0 ? urduTerms : normalizedTerms;
+      const primaryTerm = activeSearchTerms[0] || normalizeKhazainText(rawQuery);
+      if (!primaryTerm) return [];
+
+      // Search priority volumes first, then remaining
+      for (const volNum of volumeOrder) {
+        const volData = getCachedVolume(volNum);
+        if (!volData) continue;
+
+        for (const page of volData.pages) {
+          let pos = page.norm.indexOf(primaryTerm);
+          let matchedTerm = primaryTerm;
+
+          if (pos === -1 && activeSearchTerms.length > 1) {
+            for (let i = 1; i < activeSearchTerms.length; i++) {
+              pos = page.norm.indexOf(activeSearchTerms[i]);
+              if (pos !== -1) {
+                matchedTerm = activeSearchTerms[i];
+                break;
+              }
+            }
+          }
+
+          if (pos !== -1) {
+            const rawStart = page.indexMap[pos] ?? pos;
+            const endNormPos = Math.min(page.indexMap.length - 1, pos + matchedTerm.length - 1);
+            const rawEnd = (page.indexMap[endNormPos] ?? rawStart + matchedTerm.length - 1) + 1;
+
+            const snippetStart = Math.max(0, rawStart - 120);
+            const snippetEnd = Math.min(page.text.length, rawEnd + 120);
+
+            const constituentBook = getBookForPage(volNum, page.page_num);
+
+            matches.push({
+              volume: volNum,
+              pageNum: page.page_num,
+              bookTitle: constituentBook.title,
+              bookUrduTitle: constituentBook.urduTitle,
+              snippetBefore: page.text.slice(snippetStart, rawStart),
+              matchedSlice: page.text.slice(rawStart, rawEnd),
+              snippetAfter: page.text.slice(rawEnd, snippetEnd),
+              matchedTerm,
+              isExactPhrase: matchedTerm === primaryTerm,
+              readerUrl: `/reader?volume=${volNum}&page=${page.page_num}`
+            });
+
+            if (matches.length >= 1000) break; // Generous ceiling for safety
+          }
+        }
+        if (matches.length >= 1000) break;
+      }
+
+      return matches;
+    })();
+
+    const quranPromise: Promise<any[]> = (async () => {
+      if (!isSourceEnabled('quran')) return [];
+      const results = searchQuranVerses(rawQuery);
+      const seenVerses = new Set(results.map(r => `${r.surahNumber}:${r.verseNumber}`));
+
+      if (searchMode === 'verbatim') {
+        for (const term of verbatimEquivs.allSearchTerms.slice(0, 6)) {
+          if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+          const extra = searchQuranVerses(term);
+          for (const item of extra) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
+              results.push(item);
+            }
+          }
+        }
+        return results;
+      }
+
+      if (results.length === 0 && dsgtExpanded.arabicQuranTerms.length > 0) {
+        for (const arabicTerm of dsgtExpanded.arabicQuranTerms) {
+          const extra = searchQuranVerses(arabicTerm);
+          for (const item of extra) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
+              results.push(item);
+            }
+          }
+        }
+      }
+      if (results.length === 0 && dsgtContext.winningSense) {
+        for (const anchor of dsgtContext.winningSense.scripturalAnchors) {
+          const extra = searchQuranVerses(anchor);
+          for (const item of extra) {
+            const key = `${item.surahNumber}:${item.verseNumber}`;
+            if (!seenVerses.has(key)) {
+              seenVerses.add(key);
+              results.push(item);
+            }
+          }
+        }
+      }
+      return results;
+    })();
+
+    const hadithPromise: Promise<HadithResult[]> = (async () => {
+      if (!isSourceEnabled('ahadith')) return [];
+      try {
+        const results = await searchSunnahHadith(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (results.length < 3 && verbatimEquivs.translations.length > 0) {
+            const primaryTrans = verbatimEquivs.translations[0];
+            const extra = await searchSunnahHadith(primaryTrans);
+            for (const item of extra) {
+              if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+                results.push(item);
+              }
+            }
+          }
+          return results;
+        }
+
+        if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = await searchSunnahHadith(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+              results.push(item);
+            }
+          }
+        }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Sunnah.com live search error:', e);
+        return [];
+      }
+    })();
+
+    let totalAlHakamHits = 0;
+    let totalRoRHits = 0;
+    let totalAlFazlHits = 0;
+    let totalAlIslamHits = 0;
+    let totalPagesAlHakam = 0;
+    let totalPagesRoR = 0;
+    let totalPagesAlFazl = 0;
+    let totalPagesAlIslam = 0;
+
+    const alislamPromise: Promise<AlIslamArticleResult[]> = (async () => {
+      if (!isSourceEnabled('alislam') && !isSourceEnabled('periodicals')) return [];
+      const localResults = searchAlIslamResources(rawQuery);
+      if (localResults.length === 0 && dsgtContext.winningSense) {
+        const extra = searchAlIslamResources(dsgtContext.winningSense.primaryConcept);
+        for (const item of extra) {
+          if (!localResults.some(r => r.id === item.id)) localResults.push(item);
+        }
+      }
+
+      // Query live Al Islam search with pagination support
+      try {
+        let liveAlIslam = await fetchLiveAlIslam(rawQuery, 1);
+        if (liveAlIslam.results.length === 0 && !hasLatin && dsgtContext.winningSense?.primaryConcept) {
+          liveAlIslam = await fetchLiveAlIslam(dsgtContext.winningSense.primaryConcept, 1);
+        }
+
+        totalAlIslamHits = liveAlIslam.totalHits;
+        totalPagesAlIslam = liveAlIslam.totalPages;
+
+        const merged: AlIslamArticleResult[] = [...localResults];
+        const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
+
+        for (const art of liveAlIslam.results) {
+          const normUrl = art.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(art);
+          }
+        }
+        return merged;
+      } catch (e) {
+        console.warn('[Research API] Live Al Islam fallback to local:', e);
+        return localResults;
+      }
+    })();
+
+    const periodicalsPromise: Promise<PublicationResult[]> = (async () => {
+      if (!isSourceEnabled('periodicals')) return [];
+      const localResults = searchPeriodicals(rawQuery);
+      if (localResults.length === 0 && dsgtContext.winningSense) {
+        const extra = searchPeriodicals(dsgtContext.winningSense.primaryConcept);
+        for (const item of extra) {
+          if (!localResults.some(r => r.id === item.id)) localResults.push(item);
+        }
+      }
+
+      // Query live Al Hakam, Review of Religions, and Al Fazl in parallel
+      try {
+        const englishSearchQuery = (!hasLatin && dsgtContext.winningSense?.primaryConcept)
+          ? dsgtContext.winningSense.primaryConcept
+          : rawQuery;
+
+        let urduSearchQuery = rawQuery;
+        if (hasLatin) {
+          if (dsgtContext.winningSense?.scripturalAnchors?.length) {
+            urduSearchQuery = dsgtContext.winningSense.scripturalAnchors[0];
+          } else if (THEOLOGICAL_TOPIC_MAP[rawQuery.toLowerCase()]) {
+            urduSearchQuery = THEOLOGICAL_TOPIC_MAP[rawQuery.toLowerCase()][0];
+          } else if (dsgtExpanded.urduKhazainTerms?.length) {
+            urduSearchQuery = dsgtExpanded.urduKhazainTerms[0];
+          }
+        }
+
+        let [alHakamData, rorData, alFazlData] = await Promise.all([
+          fetchLiveAlHakam(rawQuery, 0),
+          fetchLiveReviewOfReligions(englishSearchQuery, 1),
+          fetchLiveAlFazl(urduSearchQuery, 1)
+        ]);
+
+        if (alHakamData.results.length === 0 && englishSearchQuery !== rawQuery) {
+          alHakamData = await fetchLiveAlHakam(englishSearchQuery, 0);
+        }
+        if (alFazlData.results.length === 0 && urduSearchQuery !== rawQuery) {
+          alFazlData = await fetchLiveAlFazl(rawQuery, 1);
+        }
+
+        totalAlHakamHits = alHakamData.totalHits;
+        totalPagesAlHakam = alHakamData.totalPages;
+        totalRoRHits = rorData.totalHits;
+        totalPagesRoR = rorData.totalPages;
+        totalAlFazlHits = alFazlData.totalHits;
+        totalPagesAlFazl = alFazlData.totalPages;
+
+        const merged: PublicationResult[] = [...localResults];
+        const seenUrls = new Set(localResults.map(r => r.url.toLowerCase()));
+
+        // Incorporate live Al Hakam articles
+        for (const pub of alHakamData.results) {
+          const normUrl = pub.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(pub);
+          }
+        }
+
+        // Incorporate live Review of Religions articles
+        for (const pub of rorData.results) {
+          const normUrl = pub.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(pub);
+          }
+        }
+
+        // Incorporate live Al Fazl articles
+        for (const pub of alFazlData.results) {
+          const normUrl = pub.url.toLowerCase();
+          if (!seenUrls.has(normUrl)) {
+            seenUrls.add(normUrl);
+            merged.push(pub);
+          }
+        }
+
+        return merged;
+      } catch (e) {
+        console.warn('[Research API] Live periodicals fallback to local:', e);
+        return localResults;
+      }
+    })();
+
+    const askIslamPromise: Promise<AudioResult[]> = (async () => {
+      if (!isSourceEnabled('audios')) return [];
+      try {
+        return searchAskIslamAudios(rawQuery);
+      } catch (e) {
+        console.warn('[Research API] Ask Islam search failed:', e);
+        return [];
+      }
+    })();
+
+    const videosPromise: Promise<VideoResult[]> = (async () => {
+      if (!isSourceEnabled('videos')) return [];
+      try {
+        const results = await searchMediaVideos(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (results.length < 3 && verbatimEquivs.translations.length > 0) {
+            const extra = await searchMediaVideos(verbatimEquivs.translations[0]);
+            for (const item of extra) {
+              if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+                results.push(item);
+              }
+            }
+          }
+          return results;
+        }
+
+        if (results.length < 3 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = await searchMediaVideos(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!results.some(r => r.id === item.id || (r.url && r.url === item.url))) {
+              results.push(item);
+            }
+          }
+        }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Video search failed:', e);
+        return [];
+      }
+    })();
+
+    const booksPromise: Promise<BookItem[]> = (async () => {
+      if (!isSourceEnabled('books') && !isSourceEnabled('literature')) return [];
+      try {
+        const localBooks = searchAhmadiyyaBooks(rawQuery);
+        if (searchMode === 'verbatim') {
+          if (localBooks.length === 0 && verbatimEquivs.translations.length > 0) {
+            const extra = searchAhmadiyyaBooks(verbatimEquivs.translations[0]);
+            for (const item of extra) {
+              if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+            }
+          }
+          return localBooks;
+        }
+
+        if (localBooks.length === 0 && dsgtContext.winningSense?.primaryConcept) {
+          const extra = searchAhmadiyyaBooks(dsgtContext.winningSense.primaryConcept);
+          for (const item of extra) {
+            if (!localBooks.some(b => b.id === item.id)) localBooks.push(item);
+          }
+        }
+        return localBooks;
+      } catch (e) {
+        console.warn('[Research API] Books search failed:', e);
+        return [];
+      }
+    })();
+
+    const malfuzatPromise: Promise<MalfuzatResult[]> = (async () => {
+      if (!isSourceEnabled('malfuzat') && !isSourceEnabled('literature')) return [];
+      try {
+        const results = searchUnifiedMalfuzat(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenKeys = new Set(results.map(r => `vol-${r.volume}-p-${r.pageNum}`));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchUnifiedMalfuzat(term);
+            for (const item of extra) {
+              const key = `vol-${item.volume}-p-${item.pageNum}`;
+              if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Malfuzat search failed:', e);
+        return [];
+      }
+    })();
+
+    const tazkirahPromise: Promise<TazkirahResult[]> = (async () => {
+      if (!isSourceEnabled('tazkirah') && !isSourceEnabled('literature')) return [];
+      try {
+        const results = searchUnifiedTazkirah(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenIds = new Set(results.map(r => r.id));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchUnifiedTazkirah(term);
+            for (const item of extra) {
+              if (!seenIds.has(item.id)) {
+                seenIds.add(item.id);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Tazkirah search failed:', e);
+        return [];
+      }
+    })();
+
+    const essencePromise: Promise<EssenceResult[]> = (async () => {
+      if (!isSourceEnabled('essence') && !isSourceEnabled('literature')) return [];
+      try {
+        const results = searchEssenceFullText(rawQuery);
+        if (searchMode === 'verbatim') {
+          const seenIds = new Set(results.map(r => r.id));
+          for (const term of verbatimEquivs.allSearchTerms.slice(0, 5)) {
+            if (term.toLowerCase() === rawQuery.toLowerCase()) continue;
+            const extra = searchEssenceFullText(term);
+            for (const item of extra) {
+              if (!seenIds.has(item.id)) {
+                seenIds.add(item.id);
+                results.push(item);
+              }
+            }
+          }
+        }
+        return results;
+      } catch (e) {
+        console.warn('[Research API] Essence of Islam search failed:', e);
+        return [];
+      }
+    })();
+
+    const [
+      rkResults,
+      quranResults,
+      hadithResults,
+      alislamResults,
+      periodicalsResults,
+      askIslamResults,
+      videoResults,
+      booksResults,
+      malfuzatResults,
+      tazkirahResults,
+      essenceResults
+    ] = await Promise.all([
+      ruhaniKhazainPromise,
+      quranPromise,
+      hadithPromise,
+      alislamPromise,
+      periodicalsPromise,
+      askIslamPromise,
+      videosPromise,
+      booksPromise,
+      malfuzatPromise,
+      tazkirahPromise,
+      essencePromise
+    ]);
+
+    // Merge any live Al Islam results identified as books
+    const mergedBooks: BookItem[] = [...booksResults];
+    const seenBookUrls = new Set(booksResults.map(b => b.url.toLowerCase()));
+
+    for (const art of alislamResults) {
+      if (art.category === 'Book' || art.url.includes('/book/')) {
+        const normUrl = art.url.toLowerCase();
+        if (!seenBookUrls.has(normUrl)) {
+          seenBookUrls.add(normUrl);
+          mergedBooks.push({
+            id: art.id,
+            title: art.title,
+            author: art.author || 'Hazrat Mirza Ghulam Ahmad (as) / Khulafa',
+            category: 'Contemporary',
+            summary: art.summary,
+            url: art.url,
+            topics: art.topics
+          });
+        }
+      }
+    }
+
+    const media: MediaItemResult[] = [
+      ...askIslamResults.map(a => ({ mediaType: 'audio' as const, ...a })),
+      ...videoResults.map(v => ({ mediaType: 'video' as const, ...v }))
+    ];
+
+    // ── Apply Year Range Filtering ──
+    const filterYear = (dateStr?: string | number): number | null => {
+      if (!dateStr) return null;
+      if (typeof dateStr === 'number') return dateStr;
+      const match = String(dateStr).match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+      return match ? parseInt(match[1], 10) : null;
+    };
+
+    let filteredPublications = periodicalsResults;
+    let filteredAlIslam = alislamResults;
+    let filteredTazkirah = tazkirahResults;
+    let filteredMalfuzat = malfuzatResults;
+
+    if (yearFrom !== null || yearTo !== null) {
+      const isInYearRange = (year: number | null) => {
+        if (year === null) return true; // Keep if no year information available
+        if (yearFrom !== null && year < yearFrom) return false;
+        if (yearTo !== null && year > yearTo) return false;
+        return true;
+      };
+
+      filteredPublications = periodicalsResults.filter(p => isInYearRange(filterYear(p.date)));
+      filteredAlIslam = alislamResults.filter(a => isInYearRange(filterYear(a.date)));
+      filteredTazkirah = tazkirahResults.filter(t => isInYearRange(t.year || filterYear(t.dateStr)));
+      filteredMalfuzat = malfuzatResults.filter(m => isInYearRange(filterYear(m.dateStr)));
+    }
+
+    // ── Apply Language Filtering ──
+    let filteredQuran = quranResults;
+    let filteredHadith = hadithResults;
+
+    if (filterLanguage === 'en') {
+      // English: require English translation content, keep English literature
+      filteredQuran = quranResults.filter(q => Boolean(q.englishTranslation));
+      filteredHadith = hadithResults.filter(h => Boolean(h.englishTranslation));
+      filteredPublications = filteredPublications.filter(p => p.source === 'Review of Religions' || p.source === 'Al Hakam');
+    } else if (filterLanguage === 'ar') {
+      // Arabic: emphasize Quran and Arabic hadith text, Arabic treatises
+      filteredQuran = quranResults.filter(q => Boolean(q.arabicText));
+      filteredHadith = hadithResults.filter(h => Boolean(h.arabicText));
+    } else if (filterLanguage === 'ur') {
+      // Urdu: emphasize Urdu translations and Urdu publications
+      filteredQuran = quranResults.filter(q => Boolean(q.urduTranslation));
+      filteredPublications = filteredPublications.filter(p => p.source === 'Al Fazl');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 5: Consensus Triangulation Matrix & Evidence Verifier
+    // ─────────────────────────────────────────────────────────────────────────
+    const consensusMatrix = computeConsensusTriangulation(
+      dsgtContext,
+      quranResults,
+      rkResults,
+      alislamResults,
+      periodicalsResults,
+      hitsRankings
+    );
+
+    const totalArticleHits = (totalAlHakamHits || 0) + (totalRoRHits || 0) + (totalAlFazlHits || 0) + (totalAlIslamHits || 0);
+    const totalResults =
+      rkResults.length +
+      filteredQuran.length +
+      filteredHadith.length +
+      mergedBooks.length +
+      filteredMalfuzat.length +
+      filteredTazkirah.length +
+      essenceResults.length +
+      Math.max(filteredAlIslam.length + filteredPublications.length, totalArticleHits) +
+      media.length;
+
+    const payload: MultiSourceSearchResult = {
+      query: rawQuery,
+      normalizedTerms,
+      searchMode,
+      verbatimEquivalents: searchMode === 'verbatim' ? verbatimEquivs : undefined,
+      ruhaniKhazain: rkResults,
+      quranVerses: filteredQuran,
+      ahadith: filteredHadith,
+      books: mergedBooks,
+      malfuzat: filteredMalfuzat,
+      tazkirah: filteredTazkirah,
+      essenceOfIslam: essenceResults,
+      totalMalfuzatHits: filteredMalfuzat.length,
+      totalTazkirahHits: filteredTazkirah.length,
+      totalEssenceHits: essenceResults.length,
+      totalBookHits: mergedBooks.length,
+      alislamArticles: filteredAlIslam,
+      publications: filteredPublications,
+      audios: askIslamResults,
+      videos: videoResults,
+      media,
+      totalMediaHits: media.length,
+      consensusMatrix,
+      hitsRankings,
+      totalResults,
+      totalAlHakamHits,
+      totalRoRHits,
+      totalAlFazlHits,
+      totalAlIslamHits,
+      totalArticleHits,
+      totalPagesAlHakam,
+      totalPagesRoR,
+      totalPagesAlFazl,
+      totalPagesAlIslam
+    };
+
+    return payload;
+}
