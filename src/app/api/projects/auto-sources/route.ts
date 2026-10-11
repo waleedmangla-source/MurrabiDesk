@@ -9,7 +9,8 @@ import {
   RuhaniKhazainSearchResult,
   BookItem,
   AlIslamArticleResult,
-  PublicationResult
+  PublicationResult,
+  searchPeriodicals
 } from '@/lib/research-sources';
 import { EssenceResult } from '@/lib/essence-data';
 import { MalfuzatResult } from '@/lib/malfuzat-data';
@@ -44,6 +45,7 @@ interface DecomposedQueries {
   hadithTerms: string[];
   khazainUrduTerms: string[];
   essenceTerms: string[];
+  periodicalTerms: string[];
   generalConcepts: string[];
 }
 
@@ -66,7 +68,8 @@ Decompose this topic into targeted search queries to execute directly through th
 2. "hadithTerms": Array of 2 to 3 search phrases in English or Arabic for Sunnah/Hadith collections (e.g. ["bukhari divine decree", "supplication changes fate", "tirmidhi dua"]).
 3. "khazainUrduTerms": Array of 2 to 4 Urdu terms or treatise concepts from Hazrat Masih-e-Maud (as) in Ruhani Khazain (e.g. ["تقدیر", "جبر و قدر", "دعا اور تقدیر", "مسئلہ قضا و قدر"]).
 4. "essenceTerms": Array of 1 to 2 English concepts for The Essence of Islam series (e.g. ["Fate and Divine Decree", "Philosophy of Prayer"]).
-5. "generalConcepts": Array of 2 to 3 primary thematic keywords (e.g. ["predestination", "free will", "supplication"]).
+5. "periodicalTerms": Array of 2 to 3 search phrases specifically for historical and contemporary periodicals (The Review of Religions, Al Hakam, and Daily Al Fazl).
+6. "generalConcepts": Array of 2 to 3 primary thematic keywords (e.g. ["predestination", "free will", "supplication"]).
 
 Return strictly valid JSON without markdown wrapping or code blocks:
 {
@@ -74,6 +77,7 @@ Return strictly valid JSON without markdown wrapping or code blocks:
   "hadithTerms": ["string"],
   "khazainUrduTerms": ["string"],
   "essenceTerms": ["string"],
+  "periodicalTerms": ["string"],
   "generalConcepts": ["string"]
 }`;
 
@@ -164,9 +168,12 @@ export async function POST(req: NextRequest) {
     if (aiQueries?.hadithTerms && aiQueries.hadithTerms.length > 0) {
       extraQueriesToRun.push(aiQueries.hadithTerms[0]);
     }
+    if (aiQueries?.periodicalTerms && aiQueries.periodicalTerms.length > 0) {
+      extraQueriesToRun.push(aiQueries.periodicalTerms[0]);
+    }
 
-    // Limit extra queries to top 2 to preserve speed
-    for (const eq of extraQueriesToRun.slice(0, 2)) {
+    // Limit extra queries to top 4 to preserve speed while ensuring periodicals are queried
+    for (const eq of extraQueriesToRun.slice(0, 4)) {
       if (eq.toLowerCase() !== rawTopic.toLowerCase()) {
         searchPromises.push(executeResearchSearch({ query: eq, searchMode: 'contextual' }));
       }
@@ -265,6 +272,32 @@ export async function POST(req: NextRequest) {
           allPublications.push(p);
         }
       });
+    }
+
+    // Supplement with curated historical & research periodical archives (Review of Religions, Al Hakam, Al Fazl)
+    const localPeriodicals = searchPeriodicals(rawTopic);
+    for (const p of localPeriodicals) {
+      if (!allPublications.some(item => (item.url && p.url && item.url.toLowerCase() === p.url.toLowerCase()) || item.id === p.id)) {
+        allPublications.push(p);
+      }
+    }
+    if (dsgtCtx?.winningSense?.primaryConcept) {
+      const conceptPeriodicals = searchPeriodicals(dsgtCtx.winningSense.primaryConcept);
+      for (const p of conceptPeriodicals) {
+        if (!allPublications.some(item => (item.url && p.url && item.url.toLowerCase() === p.url.toLowerCase()) || item.id === p.id)) {
+          allPublications.push(p);
+        }
+      }
+    }
+    if (aiQueries?.periodicalTerms && aiQueries.periodicalTerms.length > 0) {
+      for (const pt of aiQueries.periodicalTerms) {
+        const ptPeriodicals = searchPeriodicals(pt);
+        for (const p of ptPeriodicals) {
+          if (!allPublications.some(item => (item.url && p.url && item.url.toLowerCase() === p.url.toLowerCase()) || item.id === p.id)) {
+            allPublications.push(p);
+          }
+        }
+      }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -446,22 +479,42 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 7. Select Al Islam Articles / Periodicals (top 1)
-    const topArticle = allAlIslamArticles[0] || allPublications[0];
-    if (topArticle) {
+    // 7. Select Periodicals (The Review of Religions, Al Hakam, Daily Al Fazl - top 2 to 3)
+    const selectedPeriodicals = allPublications.slice(0, 3);
+    for (const pub of selectedPeriodicals) {
       discoveredBookmarks.push({
-        id: `article-${topArticle.id}`,
+        id: `pub-${pub.id}`,
         category: 'articles',
-        title: topArticle.title,
-        subtitle: (topArticle as any).source ? `${(topArticle as any).source} • ${topArticle.author || ''}` : `Al Islam • ${topArticle.author || ''}`,
-        snippet: topArticle.summary,
-        citationText: `["${topArticle.title}"${topArticle.author ? ` by ${topArticle.author}` : ''}]\n"${topArticle.summary}"\nSource: ${topArticle.url}`,
-        url: topArticle.url,
+        title: pub.title,
+        subtitle: `${pub.source}${pub.author ? ` • ${pub.author}` : ''}${pub.date ? ` (${pub.date})` : ''}`,
+        snippet: pub.summary,
+        citationText: `[${pub.source}: "${pub.title}"${pub.author ? ` by ${pub.author}` : ''}${pub.date ? ` (${pub.date})` : ''}]\n"${pub.summary}"\nSource: ${pub.url}`,
+        url: pub.url,
         metadata: {
-          url: topArticle.url,
-          title: topArticle.title,
-          author: topArticle.author,
-          summary: topArticle.summary
+          isPeriodical: true,
+          source: pub.source,
+          author: pub.author,
+          date: pub.date,
+          summary: pub.summary
+        },
+        savedAt: now
+      });
+    }
+
+    // 8. Select Al Islam Scholarly Articles / Portals (top 1 to 2)
+    for (const art of allAlIslamArticles.slice(0, 2)) {
+      discoveredBookmarks.push({
+        id: `alislam-${art.id}`,
+        category: 'articles',
+        title: art.title,
+        subtitle: art.author ? `Al Islam • ${art.author}` : 'Al Islam Article',
+        snippet: art.summary,
+        citationText: `[Al Islam: "${art.title}"${art.author ? ` by ${art.author}` : ''}]\n"${art.summary}"\nSource: ${art.url}`,
+        url: art.url,
+        metadata: {
+          source: 'Al Islam',
+          author: art.author,
+          summary: art.summary
         },
         savedAt: now
       });

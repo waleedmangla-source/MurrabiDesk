@@ -730,7 +730,20 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
     }
   };
 
-  const getCategoryBadge = (cat: BookmarkCategory) => {
+  const getCategoryBadge = (cat: BookmarkCategory, metadata?: Record<string, any>) => {
+    if (metadata?.source === 'Review of Religions' || metadata?.source?.toLowerCase()?.includes('review of religions')) {
+      return { label: 'Review of Religions', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+    }
+    if (metadata?.source === 'Al Hakam' || metadata?.source?.toLowerCase()?.includes('al hakam')) {
+      return { label: 'Al Hakam', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+    }
+    if (metadata?.source === 'Al Fazl' || metadata?.source?.toLowerCase()?.includes('al fazl')) {
+      return { label: 'Daily Al Fazl', color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' };
+    }
+    if (metadata?.isPeriodical) {
+      return { label: 'Periodical', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+    }
+
     switch (cat) {
       case 'quran':
         return { label: 'Quran', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
@@ -744,6 +757,8 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
         return { label: 'Tazkirah', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
       case 'essence':
         return { label: 'Essence of Islam', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' };
+      case 'articles':
+        return { label: metadata?.source || 'Article', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20' };
       default:
         return { label: cat.toUpperCase(), color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
     }
@@ -930,12 +945,12 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                             ? "bg-[var(--accent-main)]/20 text-[var(--accent-main)] border-[var(--accent-main)]/40 cursor-wait animate-pulse"
                             : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:border-emerald-500/50 active:scale-[0.98]"
                         )}
-                        title="Automatically search Holy Qur'an, Ahadith, Ruhani Khazain & classical literature from the Research tab"
+                        title="Automatically search Holy Qur'an, Ahadith, Ruhani Khazain, literature & periodicals from the Research tab"
                       >
                         {isFindingSources ? (
                           <>
                             <Loader2 size={13} className="animate-spin text-emerald-400" />
-                            <span>Scanning Research Library...</span>
+                            <span>Scanning Library & Periodicals...</span>
                           </>
                         ) : (
                           <>
@@ -1446,7 +1461,7 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                       {isFindingSources ? (
                         <>
                           <Loader2 size={14} className="animate-spin" />
-                          <span>Scanning Holy Qur'an, Hadith & Ruhani Khazain...</span>
+                          <span>Scanning Holy Qur'an, Hadith, Khazain & Periodicals...</span>
                         </>
                       ) : (
                         <>
@@ -1465,7 +1480,7 @@ ${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITE
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
                   {filteredBookmarks.map(b => {
                     const isSelected = selectedBookmarkIds.has(b.id);
-                    const badge = getCategoryBadge(b.category);
+                    const badge = getCategoryBadge(b.category, b.metadata);
 
                     return (
                       <div
