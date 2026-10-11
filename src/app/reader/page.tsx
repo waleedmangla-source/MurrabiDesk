@@ -716,38 +716,48 @@ export default function LiveReaderPage() {
       {/* ─────────────────────────────────────────────────────────────
           SECONDARY SIDEBAR: Exactly w-[240px] Matching Email Tab
       ───────────────────────────────────────────────────────────── */}
-      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-[var(--glass-border)] glass bg-black/5 dark:bg-black/20 select-none">
+      <div className="hidden lg:flex w-[240px] shrink-0 h-full flex-col border-r border-white/5 glass bg-black/20 select-none">
         {/* Sidebar Title */}
         <div className="px-5 pt-8 pb-2">
-          <h1 className="text-4xl font-black italic tracking-tighter text-[var(--text-main)] uppercase leading-none">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
             Live Reader
           </h1>
         </div>
 
-        {/* Sync Status Badge */}
-        <div className="px-5 pt-1 pb-3 border-b border-[var(--glass-border)] mb-2">
-          <div className="flex items-center gap-2 py-1">
-            <span
-              className={clsx(
-                "w-2 h-2 rounded-full shrink-0",
-                driveSyncStatus === "synced"
-                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                  : driveSyncStatus === "saving"
-                  ? "bg-amber-500 animate-pulse"
-                  : "bg-slate-400"
-              )}
-            />
-            <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
-              {driveSyncStatus === "synced"
-                ? "Google Drive Linked"
-                : driveSyncStatus === "saving"
-                ? "Syncing JSON to Drive..."
-                : "Local Link Only"}
-            </span>
+        {/* Account / Sync Header */}
+        <div className="px-5 pt-1 pb-4 border-b border-white/5 mb-2">
+          <div className="flex items-center gap-2 px-0 py-2 overflow-hidden opacity-80">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    className={clsx(
+                      "w-2 h-2 rounded-full shrink-0",
+                      driveSyncStatus === "synced"
+                        ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                        : driveSyncStatus === "saving"
+                        ? "bg-amber-500 animate-pulse"
+                        : "bg-slate-400"
+                    )}
+                  />
+                  <span className="text-[10px] font-bold tracking-tight text-[var(--text-dim)] truncate">
+                    {driveSyncStatus === "synced"
+                      ? "Google Drive Synced"
+                      : driveSyncStatus === "saving"
+                      ? "Syncing JSON..."
+                      : "Local Storage"}
+                  </span>
+                </div>
+                <span className="text-[9px] font-mono font-bold text-[var(--text-dim)] shrink-0">
+                  {inProgressList.length} Active
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Animated Sidebar Tabs: Reading vs Library */}
-          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-3 border border-[var(--glass-border)]">
+          <div className="relative flex bg-[var(--text-dim)]/5 rounded-xl p-1 mt-4 border border-white/5">
+            {/* Animated Background Pill */}
             <div
               className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-[8px] transition-all duration-300 ease-out shadow-sm"
               style={{
@@ -755,38 +765,33 @@ export default function LiveReaderPage() {
                 background: "var(--accent-main)",
               }}
             />
-            <button
-              onClick={() => setSidebarTab("reading")}
-              className={clsx(
-                "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                sidebarTab === "reading" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-main)]"
-              )}
-            >
-              Reading
-            </button>
-            <button
-              onClick={() => setSidebarTab("library")}
-              className={clsx(
-                "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
-                sidebarTab === "library" ? "text-white drop-shadow-md" : "text-[var(--text-dim)] hover:text-[var(--text-main)]"
-              )}
-            >
-              Library
-            </button>
+            {[
+              { id: "reading", label: "Reading" },
+              { id: "library", label: "Library" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSidebarTab(t.id as any)}
+                className={clsx(
+                  "relative z-10 flex-1 py-1.5 rounded-[8px] text-[10px] font-black uppercase tracking-widest transition-colors duration-200",
+                  sidebarTab === t.id
+                    ? "text-white drop-shadow-md"
+                    : "text-[var(--text-dim)] hover:text-[var(--text-muted)]"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Sidebar Tab Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col p-3 gap-2">
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           {sidebarTab === "reading" ? (
-            <div className="flex flex-col gap-2">
-              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] px-2">
-                Currently Reading
-              </div>
-
+            <nav className="py-4 space-y-px">
               {inProgressList.length === 0 ? (
-                <div className="text-[11px] text-[var(--text-dim)] italic text-center py-6">
-                  Select a book from Library to begin reading.
+                <div className="text-[10px] font-bold text-[var(--text-muted)] italic text-center py-8 px-4">
+                  No active books yet. Select a book from Library to begin reading.
                 </div>
               ) : (
                 inProgressList.map((prog) => {
@@ -804,35 +809,55 @@ export default function LiveReaderPage() {
                         if (matchingBook) setActiveBook(matchingBook);
                       }}
                       className={clsx(
-                        "w-full flex flex-col p-3 rounded-2xl border text-left transition-all duration-200 group relative",
+                        "w-full flex flex-col gap-1.5 px-6 py-3 transition-all text-left border-l-2 group",
                         isActive
-                          ? "bg-[var(--accent-main)]/10 border-[var(--accent-main)]/40 shadow-sm"
-                          : "bg-black/5 dark:bg-white/5 border-[var(--glass-border)] hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)]"
+                          ? "font-black text-white border-[var(--accent-main)]"
+                          : "text-[var(--text-muted)] hover:bg-black/10 hover:text-[var(--foreground)] border-transparent"
                       )}
+                      style={isActive ? { background: "rgba(0, 0, 0, 0.2)" } : {}}
                     >
-                      <div className="flex items-center justify-between gap-1 mb-1">
+                      <div className="flex items-center justify-between gap-2 w-full">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <BookOpen
+                            size={14}
+                            className={clsx(
+                              "shrink-0",
+                              isActive
+                                ? "text-[var(--accent-main)]"
+                                : "text-[var(--text-dim)] group-hover:text-[var(--foreground)]"
+                            )}
+                          />
+                          <span
+                            className={clsx(
+                              "text-xs font-bold truncate",
+                              isActive
+                                ? "text-white"
+                                : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
+                            )}
+                          >
+                            {prog.bookTitle}
+                          </span>
+                        </div>
                         <span
                           className={clsx(
-                            "text-xs font-black truncate",
-                            isActive ? "text-[var(--accent-main)]" : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
+                            "text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full shrink-0",
+                            isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
                           )}
                         >
-                          {prog.bookTitle}
-                        </span>
-                        <span className="text-[9px] font-mono font-bold text-[var(--accent-main)] shrink-0">
                           {progressPct}%
                         </span>
                       </div>
 
-                      {/* Progress Bar */}
-                      <div className="w-full bg-black/10 dark:bg-black/40 rounded-full h-1 overflow-hidden my-1">
+                      {/* Progress Bar & Telemetry */}
+                      <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden mt-0.5">
                         <div
                           className="bg-[var(--accent-main)] h-full transition-all duration-500 rounded-full"
                           style={{ width: `${progressPct}%` }}
                         />
                       </div>
-
-                      <div className="flex items-center justify-between text-[9px] text-[var(--text-dim)] mt-1">
+                      <div className="flex items-center justify-between text-[9px] text-[var(--text-dim)] font-medium">
                         <span>Page {prog.lastPage} of {prog.totalPages}</span>
                         <span>{formatTimeSeconds(prog.telemetry.averagePageTimeSeconds)} / pg</span>
                       </div>
@@ -840,33 +865,36 @@ export default function LiveReaderPage() {
                   );
                 })
               )}
-            </div>
+            </nav>
           ) : (
-            /* Library Tab */
-            <div className="flex flex-col gap-2">
+            <div className="p-4 flex flex-col flex-1">
+              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-[var(--text-dim)] mb-3 shrink-0">
+                Library Catalog
+              </div>
+
               {/* Search */}
-              <div className="relative">
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
+              <div className="relative mb-3 shrink-0">
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
                 <input
                   type="text"
                   placeholder="Search books..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-black/5 dark:bg-black/20 border border-[var(--glass-border)] text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-[var(--foreground)] placeholder-[var(--text-dim)] outline-none focus:border-[var(--accent-main)] font-medium"
                 />
               </div>
 
               {/* Category Pills */}
-              <div className="flex items-center gap-1 overflow-x-auto pb-1">
+              <div className="flex items-center gap-1 overflow-x-auto pb-3 mb-1 shrink-0 no-scrollbar">
                 {(["all", "khazain", "english", "custom"] as const).map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setLibraryFilter(cat)}
                     className={clsx(
-                      "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider shrink-0 transition-all",
+                      "px-2.5 py-1 rounded-[8px] text-[9px] font-black uppercase tracking-wider shrink-0 transition-all",
                       libraryFilter === cat
                         ? "bg-[var(--accent-main)] text-white shadow-sm"
-                        : "bg-black/5 dark:bg-white/5 text-[var(--text-dim)] hover:text-[var(--text-main)]"
+                        : "bg-white/5 text-[var(--text-dim)] hover:text-white hover:bg-white/10"
                     )}
                   >
                     {cat === "khazain" ? "Khazain" : cat === "english" ? "English" : cat}
@@ -874,8 +902,8 @@ export default function LiveReaderPage() {
                 ))}
               </div>
 
-              {/* Book List */}
-              <div className="flex flex-col gap-1.5 mt-1">
+              {/* Book List (Matching Email Frequent Recipient Cards) */}
+              <div className="flex flex-col gap-2 pb-4">
                 {filteredLibrary.map((b) => {
                   const isSelected = b.id === activeBook.id;
                   return (
@@ -883,23 +911,42 @@ export default function LiveReaderPage() {
                       key={b.id}
                       onClick={() => setActiveBook(b)}
                       className={clsx(
-                        "w-full flex flex-col p-2.5 rounded-xl border text-left transition-all group",
+                        "flex items-center gap-3 p-2 pr-3 rounded-2xl border transition-all text-left group",
                         isSelected
-                          ? "bg-[var(--accent-main)] text-white border-[var(--accent-main)] shadow-sm"
-                          : "bg-black/5 dark:bg-white/5 border-[var(--glass-border)] hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-dim)]"
+                          ? "bg-white/10 border-[var(--accent-main)]/50 text-white shadow-sm"
+                          : "bg-white/5 border-white/5 hover:bg-black/10 hover:border-white/10"
                       )}
                     >
-                      <span className={clsx("text-xs font-bold truncate", isSelected ? "text-white" : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]")}>
-                        {b.title}
-                      </span>
-                      {b.urduTitle && (
-                        <span className="text-[10px] font-arabic opacity-80 truncate text-right">
-                          {b.urduTitle}
-                        </span>
-                      )}
-                      <span className="text-[8px] uppercase tracking-wider opacity-60 truncate mt-0.5">
-                        {b.author}
-                      </span>
+                      <div
+                        className={clsx(
+                          "w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-colors",
+                          isSelected
+                            ? "bg-[var(--accent-main)] text-white"
+                            : "bg-[var(--accent-soft)] text-[var(--accent-main)]"
+                        )}
+                      >
+                        <BookOpen size={14} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={clsx(
+                            "text-[10px] font-black tracking-tight truncate transition-colors",
+                            isSelected
+                              ? "text-white"
+                              : "text-[var(--foreground)] group-hover:text-[var(--accent-main)]"
+                          )}
+                        >
+                          {b.title}
+                        </div>
+                        {b.urduTitle && (
+                          <div className="text-[9px] font-arabic opacity-80 truncate text-[var(--text-dim)]">
+                            {b.urduTitle}
+                          </div>
+                        )}
+                        <div className="text-[8px] text-[var(--text-dim)] uppercase tracking-wider truncate">
+                          {b.author}
+                        </div>
+                      </div>
                     </button>
                   );
                 })}
@@ -908,16 +955,51 @@ export default function LiveReaderPage() {
           )}
         </div>
 
-        {/* Footer: + Add Custom Book Button */}
-        <div className="p-3 border-t border-[var(--glass-border)]">
+        {/* Footer: Compose / Add Book Button (Exact Match to Email Tab) */}
+        <div className="p-4 border-t border-white/5">
           <button
             onClick={() => setIsAddBookModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[var(--glass-border)] glass bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-[var(--text-main)] text-xs font-bold transition-all active:scale-95"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95"
+            style={{ background: "var(--accent-main)" }}
           >
             <Plus size={14} />
-            <span>Add Custom PDF</span>
+            Add Book
           </button>
         </div>
+      </div>
+
+      {/* ── Mobile Book Strip — shown only on mobile/tablet (Matching Email Tab) ── */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-b border-white/5 glass bg-black/10 shrink-0 no-scrollbar">
+        <button
+          onClick={() => setIsAddBookModalOpen(true)}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95"
+          style={{ background: "var(--accent-main)" }}
+        >
+          <Plus size={12} />
+          Add Book
+        </button>
+        {inProgressList.map((prog) => {
+          const isActive = prog.bookId === activeBook.id;
+          const matchingBook = [...ALL_DEFAULT_BOOKS, ...customBooks].find((b) => b.id === prog.bookId);
+          return (
+            <button
+              key={prog.bookId}
+              onClick={() => {
+                if (matchingBook) setActiveBook(matchingBook);
+              }}
+              className={clsx(
+                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                isActive
+                  ? "text-white"
+                  : "text-[var(--text-muted)] border border-white/10"
+              )}
+              style={isActive ? { background: "var(--accent-main)" } : {}}
+            >
+              <BookOpen size={11} />
+              {prog.bookTitle}
+            </button>
+          );
+        })}
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
