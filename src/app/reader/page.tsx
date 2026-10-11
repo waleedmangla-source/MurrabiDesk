@@ -84,13 +84,19 @@ export default function LiveReaderPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
-  const swipeLockRef = useRef<boolean>(false);
+  const [pagesToShow, setPagesToShow] = useState<{ pageNumber: number; status: "current" | "outgoing" }[]>([
+    { pageNumber: 1, status: "current" },
+  ]);
+  const isFlippingRef = useRef<boolean>(false);
+  const hasFlippedInSessionRef = useRef<boolean>(false);
   const wheelAccumulatorRef = useRef<number>(0);
-  const wheelResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wheelInertiaTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const flipAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Touch tracking for mobile/touchscreens
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+  const touchHasFlippedRef = useRef<boolean>(false);
 
   // ─────────────────────────────────────────────────────────────
   // 4. Telemetry & Per-Page Timer State
@@ -169,6 +175,7 @@ export default function LiveReaderPage() {
       setBookProgress(existing);
       const resumePage = existing.lastPage || 1;
       setCurrentPage(resumePage);
+      setPagesToShow([{ pageNumber: resumePage, status: "current" }]);
       setPageInput(String(resumePage));
       setPageNotes(existing.pages?.[String(resumePage)]?.notes || "");
     } else {
@@ -187,11 +194,17 @@ export default function LiveReaderPage() {
       };
       setBookProgress(initialProg);
       setCurrentPage(1);
+      setPagesToShow([{ pageNumber: 1, status: "current" }]);
       setPageInput("1");
       setPageNotes("");
       saveBookProgress(activeBook.id, initialProg);
     }
 
+    setIsFlipping(false);
+    setFlipDirection(null);
+    isFlippingRef.current = false;
+    hasFlippedInSessionRef.current = false;
+    wheelAccumulatorRef.current = 0;
     setPageElapsedSeconds(0);
     setAiAnalysisResult(null);
     setAiError(null);
@@ -329,6 +342,10 @@ export default function LiveReaderPage() {
 
       // Switch to new page
       setCurrentPage(newPage);
+      setPagesToShow([{ pageNumber: newPage, status: "current" }]);
+      setIsFlipping(false);
+      setFlipDirection(null);
+      isFlippingRef.current = false;
       setPageInput(String(newPage));
 
       // Load notes for incoming page
@@ -343,41 +360,43 @@ export default function LiveReaderPage() {
   // ── Trigger Animated Page Flip ──
   const triggerPageFlip = useCallback(
     (direction: "next" | "prev") => {
-      if (swipeLockRef.current) return;
+      if (isFlippingRef.current) return;
 
-      if (direction === "next") {
-        if (!numPages || currentPage >= numPages) return;
-        swipeLockRef.current = true;
-        wheelAccumulatorRef.current = 0;
-        setFlipDirection("next");
-        setIsFlipping(true);
+      const targetPage = direction === "next" ? currentPage + 1 : currentPage - 1;
+      if (!numPages || targetPage < 1 || targetPage > numPages) return;
 
-        setTimeout(() => {
-          changePage(currentPage + 1);
-          setTimeout(() => {
-            setIsFlipping(false);
-            setFlipDirection(null);
-            swipeLockRef.current = false;
-          }, 200);
-        }, 130);
-      } else {
-        if (currentPage <= 1) return;
-        swipeLockRef.current = true;
-        wheelAccumulatorRef.current = 0;
-        setFlipDirection("prev");
-        setIsFlipping(true);
+      isFlippingRef.current = true;
+      setFlipDirection(direction);
+      setIsFlipping(true);
 
-        setTimeout(() => {
-          changePage(currentPage - 1);
-          setTimeout(() => {
-            setIsFlipping(false);
-            setFlipDirection(null);
-            swipeLockRef.current = false;
-          }, 200);
-        }, 130);
-      }
+      // Save telemetry and notes for outgoing page
+      recordPageTelemetryAndBookmark(currentPage, pageElapsedSeconds, pageNotes);
+
+      // Keep outgoing page mounted for smooth slide-out while incoming page slides in
+      setPagesToShow([
+        { pageNumber: currentPage, status: "outgoing" },
+        { pageNumber: targetPage, status: "current" },
+      ]);
+
+      // Switch current page telemetry and input
+      setCurrentPage(targetPage);
+      setPageInput(String(targetPage));
+
+      // Load notes for incoming page
+      const existingNotesForNewPage = bookProgress?.pages?.[String(targetPage)]?.notes || "";
+      setPageNotes(existingNotesForNewPage);
+      setAiAnalysisResult(null);
+      setAiError(null);
+
+      if (flipAnimationTimeoutRef.current) clearTimeout(flipAnimationTimeoutRef.current);
+      flipAnimationTimeoutRef.current = setTimeout(() => {
+        setPagesToShow([{ pageNumber: targetPage, status: "current" }]);
+        setIsFlipping(false);
+        setFlipDirection(null);
+        isFlippingRef.current = false;
+      }, 280);
     },
-    [currentPage, numPages, changePage]
+    [currentPage, numPages, pageElapsedSeconds, pageNotes, recordPageTelemetryAndBookmark, bookProgress]
   );
 
   // ── Two-Finger Swipe Trackpad & Touch Listeners ──
@@ -387,25 +406,43 @@ export default function LiveReaderPage() {
 
     // Trackpad 2-finger horizontal swipe
     const onWheel = (e: WheelEvent) => {
-      const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.75 && Math.abs(e.deltaX) > 6;
+      const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.15 && Math.abs(e.deltaX) > 4;
       if (!isHorizontal && !e.shiftKey) return;
 
       // Prevent macOS back/forward browser navigation swipe
       e.preventDefault();
 
-      if (swipeLockRef.current) return;
-
-      wheelAccumulatorRef.current += e.deltaX;
-
-      if (wheelResetTimeoutRef.current) clearTimeout(wheelResetTimeoutRef.current);
-      wheelResetTimeoutRef.current = setTimeout(() => {
+      // Reset inertia timeout on every horizontal wheel event.
+      // This defines the lifetime of a single physical swipe gesture (including inertia).
+      if (wheelInertiaTimeoutRef.current) clearTimeout(wheelInertiaTimeoutRef.current);
+      wheelInertiaTimeoutRef.current = setTimeout(() => {
+        // Continuous gesture and momentum have completely ceased
+        hasFlippedInSessionRef.current = false;
         wheelAccumulatorRef.current = 0;
       }, 200);
 
-      const SWIPE_THRESHOLD = 28; // Responsive threshold for macOS trackpad
+      // If this swipe gesture has already flipped a page, ignore all momentum/lingering wheel events
+      if (hasFlippedInSessionRef.current) {
+        wheelAccumulatorRef.current = 0;
+        return;
+      }
+
+      // If animation is in progress, ignore
+      if (isFlippingRef.current) {
+        wheelAccumulatorRef.current = 0;
+        return;
+      }
+
+      wheelAccumulatorRef.current += e.deltaX;
+
+      const SWIPE_THRESHOLD = 36; // Responsive threshold for macOS trackpad
       if (wheelAccumulatorRef.current > SWIPE_THRESHOLD) {
+        hasFlippedInSessionRef.current = true;
+        wheelAccumulatorRef.current = 0;
         triggerPageFlip("next");
       } else if (wheelAccumulatorRef.current < -SWIPE_THRESHOLD) {
+        hasFlippedInSessionRef.current = true;
+        wheelAccumulatorRef.current = 0;
         triggerPageFlip("prev");
       }
     };
@@ -415,10 +452,12 @@ export default function LiveReaderPage() {
       if (e.touches.length >= 1) {
         touchStartXRef.current = e.touches[0].clientX;
         touchStartYRef.current = e.touches[0].clientY;
+        touchHasFlippedRef.current = false;
       }
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (touchHasFlippedRef.current) return;
       if (touchStartXRef.current === null || touchStartYRef.current === null) return;
 
       const currentX = e.touches[0].clientX;
@@ -426,13 +465,12 @@ export default function LiveReaderPage() {
       const deltaX = currentX - touchStartXRef.current;
       const deltaY = currentY - touchStartYRef.current;
 
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
-        if (deltaX < -40) {
+      if (Math.abs(deltaX) > Math.abs(deltaY) * 1.3 && Math.abs(deltaX) > 45) {
+        touchHasFlippedRef.current = true;
+        if (deltaX < -45) {
           triggerPageFlip("next");
-          touchStartXRef.current = null;
-        } else if (deltaX > 40) {
+        } else if (deltaX > 45) {
           triggerPageFlip("prev");
-          touchStartXRef.current = null;
         }
       }
     };
@@ -440,6 +478,7 @@ export default function LiveReaderPage() {
     const onTouchEnd = () => {
       touchStartXRef.current = null;
       touchStartYRef.current = null;
+      touchHasFlippedRef.current = false;
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -452,6 +491,8 @@ export default function LiveReaderPage() {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
+      if (wheelInertiaTimeoutRef.current) clearTimeout(wheelInertiaTimeoutRef.current);
+      if (flipAnimationTimeoutRef.current) clearTimeout(flipAnimationTimeoutRef.current);
     };
   }, [triggerPageFlip]);
 
@@ -1075,25 +1116,34 @@ export default function LiveReaderPage() {
                   </div>
                 }
               >
-                <div
-                  className={clsx(
-                    "shadow-2xl rounded-2xl overflow-hidden border border-zinc-200 dark:border-white/10 bg-white transition-all duration-200",
-                    isFlipping && flipDirection === "next" && "-translate-x-6 opacity-70",
-                    isFlipping && flipDirection === "prev" && "translate-x-6 opacity-70",
-                    !isFlipping && "translate-x-0 opacity-100"
-                  )}
-                >
-                  <Page
-                    pageNumber={currentPage}
-                    scale={pdfScale}
-                    renderAnnotationLayer={false}
-                    renderTextLayer={false}
-                    loading={
-                      <div className="w-[600px] h-[800px] flex items-center justify-center bg-zinc-100 dark:bg-zinc-900/60">
-                        <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
-                      </div>
-                    }
-                  />
+                <div className="relative mx-auto w-fit">
+                  {pagesToShow.map((item) => (
+                    <div
+                      key={`page-slot-${item.pageNumber}`}
+                      className={clsx(
+                        "shadow-2xl rounded-2xl overflow-hidden border border-zinc-200 dark:border-white/10 bg-white",
+                        item.status === "outgoing" && "absolute inset-0 pointer-events-none z-0",
+                        item.status === "outgoing" && flipDirection === "next" && "animate-page-slide-out-left",
+                        item.status === "outgoing" && flipDirection === "prev" && "animate-page-slide-out-right",
+                        item.status === "current" && isFlipping && flipDirection === "next" && "animate-page-slide-in-right relative z-10",
+                        item.status === "current" && isFlipping && flipDirection === "prev" && "animate-page-slide-in-left relative z-10",
+                        item.status === "current" && !isFlipping && "relative z-10"
+                      )}
+                      style={{ willChange: "transform, opacity" }}
+                    >
+                      <Page
+                        pageNumber={item.pageNumber}
+                        scale={pdfScale}
+                        renderAnnotationLayer={false}
+                        renderTextLayer={false}
+                        loading={
+                          <div className="w-[600px] h-[800px] flex items-center justify-center bg-white">
+                            <Loader2 size={24} className="animate-spin text-[var(--accent-main)]" />
+                          </div>
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
               </Document>
             </div>

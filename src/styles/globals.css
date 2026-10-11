@@ -1398,4 +1398,66 @@ body {
   will-change: transform;
 }
 
+/* ═══════════════════════════════════════════════
+   LIVE READER SILKY PAGE SWIPE ANIMATIONS
+   ═══════════════════════════════════════════════ */
 
+@keyframes pageSlideOutLeft {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-44px, 0, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes pageSlideInRight {
+  0% {
+    transform: translate3d(44px, 0, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes pageSlideOutRight {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(44px, 0, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes pageSlideInLeft {
+  0% {
+    transform: translate3d(-44px, 0, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.animate-page-slide-out-left {
+  animation: pageSlideOutLeft 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-page-slide-in-right {
+  animation: pageSlideInRight 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-page-slide-out-right {
+  animation: pageSlideOutRight 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-page-slide-in-left {
+  animation: pageSlideInLeft 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
