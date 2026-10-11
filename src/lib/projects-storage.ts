@@ -37,6 +37,7 @@ export interface MurabbiProject {
   arabicTreatment?: 'arabic_translation' | 'transliteration_translation' | 'translation_only';
   audienceBaseline?: 'core' | 'youth' | 'interfaith';
   outputStyle?: 'verbatim' | 'cue_cards';
+  literaryDevices?: string[];
   occasion?: string; // e.g. 'Friday Gathering', 'Monthly Ijlas'
   callToAction?: string; // Desired outcome / next step
   generatedPrompt?: string; // Form-generated prompt brief
@@ -94,6 +95,7 @@ export function createNewProject(payload: {
   arabicTreatment?: 'arabic_translation' | 'transliteration_translation' | 'translation_only';
   audienceBaseline?: 'core' | 'youth' | 'interfaith';
   outputStyle?: 'verbatim' | 'cue_cards';
+  literaryDevices?: string[];
   occasion?: string;
   callToAction?: string;
   generatedPrompt?: string;
@@ -118,6 +120,7 @@ export function createNewProject(payload: {
     arabicTreatment: payload.arabicTreatment || 'arabic_translation',
     audienceBaseline: payload.audienceBaseline || 'core',
     outputStyle: payload.outputStyle || 'verbatim',
+    literaryDevices: payload.literaryDevices || [],
     occasion: payload.occasion || '',
     callToAction: payload.callToAction || '',
     generatedPrompt: payload.generatedPrompt || '',

@@ -145,6 +145,7 @@ export default function ProjectWorkspaceModal({
           arabicTreatment: project.arabicTreatment,
           audienceBaseline: project.audienceBaseline,
           outputStyle: project.outputStyle,
+          literaryDevices: project.literaryDevices,
           occasion: project.occasion,
           callToAction: project.callToAction,
           customPrompt: project.customPrompt || project.generatedPrompt,

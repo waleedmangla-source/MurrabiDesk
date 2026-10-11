@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
       arabicTreatment,
       audienceBaseline,
       outputStyle,
+      literaryDevices,
       occasion,
       callToAction,
       customPrompt,
@@ -123,6 +124,7 @@ export async function POST(req: NextRequest) {
       arabicTreatment?: string;
       audienceBaseline?: string;
       outputStyle?: string;
+      literaryDevices?: string[];
       occasion?: string;
       callToAction?: string;
       customPrompt?: string;
@@ -199,7 +201,7 @@ Generate the JSON output containing both the "plan" (strategic approach & breakd
 - Opening Liturgical Protocol: ${openingProtocol || 'Standard'}
 - Sacred Script & Citation Handling: ${arabicTreatment || 'Arabic Script + Translation'}
 - Desired Output Structure: ${outputStyle || 'Full Verbatim Manuscript'}
-- ${durationNotice}
+${Array.isArray(literaryDevices) && literaryDevices.length > 0 ? `- Target Literary & Rhetorical Devices: ${literaryDevices.join(', ')}\n` : ''}- ${durationNotice}
 ${occasion ? `- Occasion / Setting: ${occasion}` : ''}
 ${callToAction ? `- Core Call to Action / Desired Outcome: ${callToAction}` : ''}
 ${description ? `- Creator Notes & Focus Angle: ${description}` : ''}

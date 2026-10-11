@@ -58,6 +58,15 @@ export type OpeningProtocolOption = 'khutba' | 'dars' | 'direct' | 'none';
 export type ArabicTreatmentOption = 'arabic_translation' | 'transliteration_translation' | 'translation_only';
 export type AudienceBaselineOption = 'core' | 'youth' | 'interfaith';
 export type OutputStyleOption = 'verbatim' | 'cue_cards';
+export type LiteraryDeviceOption =
+  | 'rhetorical_questions'
+  | 'anaphora'
+  | 'metaphors'
+  | 'antithesis'
+  | 'tricolon'
+  | 'hypophora'
+  | 'historical_anecdotes'
+  | 'climax_dua';
 
 export default function CreateProjectForm({
   onCancel,
@@ -77,6 +86,10 @@ export default function CreateProjectForm({
   const [arabicTreatment, setArabicTreatment] = useState<ArabicTreatmentOption>('arabic_translation');
   const [audienceBaseline, setAudienceBaseline] = useState<AudienceBaselineOption>('core');
   const [outputStyle, setOutputStyle] = useState<OutputStyleOption>('verbatim');
+  const [selectedLiteraryDevices, setSelectedLiteraryDevices] = useState<LiteraryDeviceOption[]>([
+    'rhetorical_questions',
+    'metaphors'
+  ]);
   const [occasion, setOccasion] = useState('');
   const [callToAction, setCallToAction] = useState('');
   const [autoGenerateAI, setAutoGenerateAI] = useState(true);
@@ -336,6 +349,69 @@ export default function CreateProjectForm({
     }
   ];
 
+  // Literary & Rhetorical Devices for Speeches
+  const LITERARY_DEVICES: {
+    id: LiteraryDeviceOption;
+    label: string;
+    sublabel: string;
+    promptDirective: string;
+  }[] = [
+    {
+      id: 'rhetorical_questions',
+      label: 'Rhetorical Questions',
+      sublabel: 'Provokes audience reflection & awakens the conscience before delivering answers',
+      promptDirective: 'Weave provocative rhetorical questions at crucial thematic transitions to stimulate deep internal reflection before presenting scriptural resolutions.'
+    },
+    {
+      id: 'anaphora',
+      label: 'Anaphora / Repetition',
+      sublabel: 'Repeats opening phrases across consecutive sentences for rhythm & emotional crescendo',
+      promptDirective: 'Use anaphora (repeating key opening phrases across successive lines) during pivotal emotional peaks to create resonant oratorical rhythm.'
+    },
+    {
+      id: 'metaphors',
+      label: 'Parables & Metaphors',
+      sublabel: 'Vivid earthly analogies making abstract spiritual truths tangible (Promised Messiah’s style)',
+      promptDirective: 'Employ striking spiritual parables and vivid natural metaphors in the tradition of Hazrat Masih-e-Maud (as) to illuminate abstract theological truths.'
+    },
+    {
+      id: 'antithesis',
+      label: 'Antithesis & Contrast',
+      sublabel: 'Juxtaposes light vs. darkness, temporal illusion vs. divine reality for moral clarity',
+      promptDirective: 'Construct sharp antitheses contrasting worldly illusions with spiritual reality, darkness with light, and arrogance with humility to clarify moral choices.'
+    },
+    {
+      id: 'tricolon',
+      label: 'Rule of Three (Tricolon)',
+      sublabel: 'Groups assertions, virtues, or warnings in threes for harmonious rhythm & retention',
+      promptDirective: 'Structure core oratorical assertions, virtues, and calls-to-action in triplets (tricolon) for maximum oratorical cadence and listener retention.'
+    },
+    {
+      id: 'hypophora',
+      label: 'Hypophora (Counter-Arguments)',
+      sublabel: 'Voices unsaid doubts or modern skepticism aloud and systematically dismantles them',
+      promptDirective: 'Incorporate hypophora: voice silent doubts or contemporary secular objections explicitly, then immediately dismantle them with airtight Quranic logic.'
+    },
+    {
+      id: 'historical_anecdotes',
+      label: 'Historical Anecdotes',
+      sublabel: 'Weaves real incidents from the Sirah of the Prophet (sa) and the Sahaba into the thesis',
+      promptDirective: 'Anchor the thesis in vivid historical narratives and personal sacrifices from the life of the Holy Prophet (sa), the Companions, or early Ahmadis.'
+    },
+    {
+      id: 'climax_dua',
+      label: 'Climactic Crescendo & Du‘a',
+      sublabel: 'Progressively builds emotional intensity from logical exposition to an impassioned prayer',
+      promptDirective: 'Build an oratorical crescendo: elevate the delivery from rational exposition to an impassioned spiritual peak, culminating in a fervent concluding Du‘a.'
+    }
+  ];
+
+  const handleToggleLiteraryDevice = (id: LiteraryDeviceOption) => {
+    setSelectedLiteraryDevices(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
   // Dynamic Lookups
   const selectedPace = SPEAKING_PACES.find(p => p.id === speakingPace) || SPEAKING_PACES[1];
   const estWords = Math.round(durationMinutes * selectedPace.wpm);
@@ -385,6 +461,10 @@ export default function CreateProjectForm({
     const openingDesc = OPENING_PROTOCOLS.find(o => o.id === openingProtocol)?.label || 'Full Khutba Opening';
     const arabicDesc = ARABIC_TREATMENTS.find(a => a.id === arabicTreatment)?.label || 'Arabic Script + Translation';
     const outputDesc = OUTPUT_STYLES.find(s => s.id === outputStyle)?.label || 'Full Verbatim Manuscript';
+    const selectedDevicesConfig = LITERARY_DEVICES.filter(d => selectedLiteraryDevices.includes(d.id));
+    const deviceLabels = selectedDevicesConfig.length > 0
+      ? selectedDevicesConfig.map(d => d.label).join(', ')
+      : 'None specified';
 
     let brief = `DELIVERABLE FORMAT: ${workType.toUpperCase()}
 TOPIC / CENTRAL THESIS: "${topic || 'Untitled Theological Theme'}"
@@ -396,7 +476,7 @@ TARGET DURATION: Exactly ${durationMinutes} minute(s) (~${calcWords} words targe
 OPENING LITURGICAL PROTOCOL: ${openingDesc}
 SACRED TEXT / CITATION HANDLING: ${arabicDesc}
 DESIRED OUTPUT STRUCTURE: ${outputDesc}
-`;
+${workType === 'speech' && selectedDevicesConfig.length > 0 ? `RHETORICAL & LITERARY DEVICES: ${deviceLabels}\n` : ''}`;
 
     if (occasion.trim()) {
       brief += `OCCASION / SETTING: ${occasion.trim()}\n`;
@@ -443,6 +523,13 @@ DESIRED OUTPUT STRUCTURE: ${outputDesc}
       brief += `\n6. MANUSCRIPT FORMAT: Provide a comprehensive, full-length verbatim prose manuscript ready for immediate podium reading.`;
     }
 
+    if (workType === 'speech' && selectedDevicesConfig.length > 0) {
+      brief += `\n7. ORATORICAL & LITERARY DEVICES (MANDATORY INTEGRATION):\n`;
+      selectedDevicesConfig.forEach((dev) => {
+        brief += `   - [${dev.label}]: ${dev.promptDirective}\n`;
+      });
+    }
+
     return brief;
   }, [
     workType,
@@ -456,6 +543,7 @@ DESIRED OUTPUT STRUCTURE: ${outputDesc}
     arabicTreatment,
     audienceBaseline,
     outputStyle,
+    selectedLiteraryDevices,
     occasion,
     callToAction
   ]);
@@ -550,6 +638,7 @@ DESIRED OUTPUT STRUCTURE: ${outputDesc}
       arabicTreatment,
       audienceBaseline,
       outputStyle,
+      literaryDevices: workType === 'speech' ? selectedLiteraryDevices : [],
       occasion: occasion.trim(),
       callToAction: callToAction.trim(),
       generatedPrompt: finalPrompt,
@@ -965,6 +1054,80 @@ DESIRED OUTPUT STRUCTURE: ${outputDesc}
                   </p>
                 </div>
               </div>
+
+              {/* 4. Literary & Rhetorical Devices (Speeches Specific) */}
+              {workType === 'speech' && (
+                <div className="pt-6 border-t border-[var(--glass-border)] space-y-3 animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={14} className="text-[var(--accent-main)]" />
+                        <label className="lbl !mb-0 font-bold">
+                          Literary & Rhetorical Devices (Speech Enrichment)
+                        </label>
+                      </div>
+                      <p className="text-[10px] text-[var(--text-dim)] mt-0.5">
+                        Select oratorical figures to infuse classical resonance, rhythmic cadence, and emotional crescendo into the draft.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                      <span className="text-[10px] font-mono text-[var(--accent-main)] font-black">
+                        {selectedLiteraryDevices.length} / {LITERARY_DEVICES.length} Active
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (selectedLiteraryDevices.length === LITERARY_DEVICES.length) {
+                            setSelectedLiteraryDevices([]);
+                          } else {
+                            setSelectedLiteraryDevices(LITERARY_DEVICES.map(d => d.id));
+                          }
+                        }}
+                        className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--accent-main)] transition-colors underline cursor-pointer"
+                      >
+                        {selectedLiteraryDevices.length === LITERARY_DEVICES.length ? 'Clear All' : 'Select All'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {LITERARY_DEVICES.map(device => {
+                      const isSelected = selectedLiteraryDevices.includes(device.id);
+                      return (
+                        <div
+                          key={device.id}
+                          onClick={() => handleToggleLiteraryDevice(device.id)}
+                          className={clsx(
+                            "p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between gap-1.5 select-none",
+                            isSelected
+                              ? "bg-[var(--accent-soft)] border-[var(--accent-main)] shadow-sm"
+                              : "bg-[var(--glass-bg)] border-[var(--glass-border)] hover:border-[var(--accent-main)]/30 hover:bg-[var(--accent-soft)]/20"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={clsx(
+                              "text-xs font-bold leading-tight",
+                              isSelected ? "text-[var(--accent-main)]" : "text-[var(--text-main)]"
+                            )}>
+                              {device.label}
+                            </span>
+                            <div className={clsx(
+                              "w-4 h-4 rounded-md border flex items-center justify-center shrink-0 text-[10px]",
+                              isSelected ? "bg-[var(--accent-main)] border-[var(--accent-main)] text-white" : "border-[var(--glass-border)]"
+                            )}>
+                              {isSelected && <Check size={10} />}
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">
+                            {device.sublabel}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
