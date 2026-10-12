@@ -217,14 +217,16 @@ Please provide a comprehensive, scholarly research synthesis addressing this inq
         temperature: 0.25,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 2500
+        maxOutputTokens: 2500,
+        thinkingConfig: { thinkingBudget: 0 }
       }
     };
 
-    // Fetch with fallback between gemini-2.5-flash and gemini-1.5-flash
+    // Fetch with fallback across active models: gemini-3.6-flash, gemini-flash-latest, gemini-3.8-flash
+    let lastErrorDetail = '';
     const fetchGemini = async (isStream: boolean) => {
       const mode = isStream ? 'streamGenerateContent?alt=sse' : 'generateContent';
-      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+      const models = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
       for (const m of models) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:${mode}&key=${apiKey}`;
         try {
@@ -234,19 +236,25 @@ Please provide a comprehensive, scholarly research synthesis addressing this inq
             body: JSON.stringify(requestBody)
           });
           if (res.ok) return res;
-          console.warn(`[Ask-AI] Model ${m} returned ${res.status}, trying fallback if available...`);
-        } catch (e) {
+          const errText = await res.text().catch(() => '');
+          lastErrorDetail = `Model ${m} (${res.status}): ${errText}`;
+          console.warn(`[Ask-AI] Model ${m} returned ${res.status}:`, errText);
+        } catch (e: any) {
+          lastErrorDetail = `Model ${m} network error: ${e.message}`;
           console.warn(`[Ask-AI] Model ${m} network failure:`, e);
         }
       }
       return null;
-    }
+    };
 
     // If client requested streaming SSE
     if (stream) {
       const geminiRes = await fetchGemini(true);
       if (!geminiRes) {
-        return NextResponse.json({ error: 'Failed to communicate with AI model' }, { status: 502 });
+        return NextResponse.json(
+          { error: lastErrorDetail || 'Failed to communicate with AI model' },
+          { status: 502 }
+        );
       }
 
       const encoder = new TextEncoder();
@@ -313,7 +321,10 @@ Please provide a comprehensive, scholarly research synthesis addressing this inq
     // Non-streaming standard POST mode
     const geminiRes = await fetchGemini(false);
     if (!geminiRes) {
-      return NextResponse.json({ error: 'Failed to communicate with AI model' }, { status: 502 });
+      return NextResponse.json(
+        { error: lastErrorDetail || 'Failed to communicate with AI model' },
+        { status: 502 }
+      );
     }
 
     const data = await geminiRes.json();
