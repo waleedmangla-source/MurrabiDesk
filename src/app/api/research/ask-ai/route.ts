@@ -3,6 +3,8 @@ import { searchCanonicalFTS } from '@/lib/canonical-db';
 import fs from 'fs';
 import path from 'path';
 
+import rawAhmadiyyaBooks from '@/data/research/ahmadiyya-books.json';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -93,33 +95,36 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Canonical Retrieval (Small-to-big: Search FTS5 and retrieve parent pages)
-    const ftsResults = searchCanonicalFTS(query, {
-      bookSlug: bookSlug || undefined,
-      author: author && author !== 'all' ? author : undefined,
-      limit: 10
-    });
-
-    if (ftsResults.length === 0) {
-      return NextResponse.json({
-        success: true,
-        answer: `No canonical pages in the currently indexed library directly match your query "${query}". Please broaden your search terms or search for related keywords.`,
-        citations: [],
-        verification: { totalQuotes: 0, verifiedQuotes: 0, unverifiedQuotes: [], allVerified: true }
+    let ftsResults: any[] = [];
+    try {
+      ftsResults = searchCanonicalFTS(query, {
+        bookSlug: bookSlug || undefined,
+        author: author && author !== 'all' ? author : undefined,
+        limit: 10
       });
+    } catch (ftsErr) {
+      console.warn('[Ask-AI] Canonical FTS search non-critical notice:', ftsErr);
+      ftsResults = [];
     }
 
-    // Build unique page sources
-    const seenPages = new Set<string>();
-    const uniqueSources = ftsResults.filter(r => {
-      const key = `${r.bookSlug}:${r.pageNum}`;
-      if (seenPages.has(key)) return false;
-      seenPages.add(key);
-      return true;
-    }).slice(0, 6);
+    let sourceContextText = '';
+    let combinedSourceRaw = '';
+    let citations: any[] = [];
+    let systemPrompt = '';
 
-    const sourceContextText = uniqueSources
-      .map((s, idx) => {
-        return `[SOURCE ${idx + 1}]
+    if (ftsResults.length > 0) {
+      // Build unique page sources
+      const seenPages = new Set<string>();
+      const uniqueSources = ftsResults.filter(r => {
+        const key = `${r.bookSlug}:${r.pageNum}`;
+        if (seenPages.has(key)) return false;
+        seenPages.add(key);
+        return true;
+      }).slice(0, 6);
+
+      sourceContextText = uniqueSources
+        .map((s, idx) => {
+          return `[SOURCE ${idx + 1}]
 Book: "${s.title}"
 Author: ${s.author}
 Page: ${s.pageNum}
@@ -127,12 +132,23 @@ ${s.collection ? `Collection: ${s.collection}` : ''}
 Text Content:
 ${s.textRaw}
 ---`;
-      })
-      .join('\n\n');
+        })
+        .join('\n\n');
 
-    const combinedSourceRaw = uniqueSources.map(s => s.textRaw).join('\n\n');
+      combinedSourceRaw = uniqueSources.map(s => s.textRaw).join('\n\n');
 
-    const systemPrompt = `You are Murabbi AI, an expert scholarly theological assistant for the Ahmadiyya Muslim Community.
+      citations = uniqueSources.map(s => ({
+        pageId: s.pageId,
+        bookSlug: s.bookSlug,
+        title: s.title,
+        author: s.author,
+        pageNum: s.pageNum,
+        collection: s.collection,
+        snippet: s.snippet,
+        alislamScanUrl: s.alislamScanUrl
+      }));
+
+      systemPrompt = `You are Murabbi AI, an expert scholarly theological assistant for the Ahmadiyya Muslim Community.
 Your role is to answer questions objectively and comprehensively using EXCLUSIVELY the provided canonical source excerpts.
 
 STRICT ACCURACY AND CITATION RULES:
@@ -140,14 +156,52 @@ STRICT ACCURACY AND CITATION RULES:
 2. VERBATIM QUOTES: When quoting the Promised Messiah (as), the Khulafa, or any canonical author, put the words inside double quotes "..." and ensure they match EXACTLY word-for-word with the text in the sources.
 3. BOUNDARIES: Do not invent or assume citations. If an aspect of the question is not covered in the excerpts, state: "The indexed excerpts do not detail this aspect."
 4. TONE: Scholarly, reverent, articulate, and well-structured using markdown headings and bullet points.`;
+    } else {
+      // Catalog fallback: find relevant works from the 1,531 books library
+      const qTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+      const matchingBooks = (rawAhmadiyyaBooks as any[])
+        .filter(b => {
+          const t = (b.title || '').toLowerCase();
+          const a = (b.author || '').toLowerCase();
+          const desc = (b.description || '').toLowerCase();
+          return qTerms.some(term => t.includes(term) || a.includes(term) || desc.includes(term));
+        })
+        .slice(0, 4);
 
-    const userPrompt = `CANONICAL SOURCE EXCERPTS:
+      if (matchingBooks.length > 0) {
+        citations = matchingBooks.map(b => ({
+          pageId: `${b.slug}:1`,
+          bookSlug: b.slug,
+          title: b.title,
+          author: b.author,
+          pageNum: 1,
+          collection: b.collectionSlug,
+          snippet: b.description || `Canonical work by ${b.author}`,
+          alislamScanUrl: b.alislamUrl
+        }));
+      }
+
+      systemPrompt = `You are Murabbi AI, an expert scholarly theological assistant for the Ahmadiyya Muslim Community.
+Your role is to answer theological, historical, and scriptural questions authoritatively and comprehensively based on the Holy Quran, Sunnah, Hadith, and the canonical writings of Hazrat Mirza Ghulam Ahmad (as) (such as Barahin-e-Ahmadiyya, The Philosophy of the Teachings of Islam, Haqiqat-ul-Wahi, Jesus in India, Kashti-e-Nuh, Malfuzat) and the Khulafa-e-Ahmadiyyat.
+
+STRICT SCHOLARLY RULES:
+1. CITATIONS: Include inline citations in square brackets to the relevant canonical books, treatises, or Quranic Surahs, e.g. [Philosophy of the Teachings of Islam] or [Barahin-e-Ahmadiyya, Part IV].
+2. STRUCTURE: Use clear markdown headings (###), bullet points, and blockquotes (> ) for quotes and prayers.
+3. TONE: Objective, articulate, respectful, and academically grounded in classical and Ahmadiyya scholarship.`;
+    }
+
+    const userPrompt = sourceContextText
+      ? `CANONICAL SOURCE EXCERPTS:
 ${sourceContextText}
 
 RESEARCH QUESTION:
 ${query}
 
-Please provide a well-structured, thoroughly cited research synthesis addressing the question based on the canonical sources above.`;
+Please provide a well-structured, thoroughly cited research synthesis addressing the question based on the canonical sources above.`
+      : `RESEARCH QUESTION:
+${query}
+
+Please provide a comprehensive, scholarly research synthesis addressing this inquiry rooted in canonical Ahmadiyya literature, citing relevant treatises and foundational texts.`;
 
     const requestBody = {
       system_instruction: {
@@ -166,17 +220,6 @@ Please provide a well-structured, thoroughly cited research synthesis addressing
         maxOutputTokens: 2500
       }
     };
-
-    const citations = uniqueSources.map(s => ({
-      pageId: s.pageId,
-      bookSlug: s.bookSlug,
-      title: s.title,
-      author: s.author,
-      pageNum: s.pageNum,
-      collection: s.collection,
-      snippet: s.snippet,
-      alislamScanUrl: s.alislamScanUrl
-    }));
 
     // Fetch with fallback between gemini-2.5-flash and gemini-1.5-flash
     const fetchGemini = async (isStream: boolean) => {

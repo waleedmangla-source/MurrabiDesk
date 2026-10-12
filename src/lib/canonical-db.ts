@@ -56,27 +56,92 @@ export interface CanonicalSearchOptions {
 }
 
 let dbInstance: Database.Database | null = null;
+let dbInitAttempted = false;
 
-export function getCanonicalDb(): Database.Database {
-  if (dbInstance) return dbInstance;
-
-  const dbDir = path.resolve(process.cwd(), 'data');
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+function resolveDatabasePath(): { path: string; canWrite: boolean } | null {
+  // 1. Check if local data/canonical-corpus.db already exists
+  try {
+    const cwdDb = path.join(process.cwd(), 'data', 'canonical-corpus.db');
+    if (fs.existsSync(cwdDb)) {
+      return { path: cwdDb, canWrite: false };
+    }
+  } catch {
+    // Ignore read check error
   }
 
-  const dbPath = path.join(dbDir, 'canonical-corpus.db');
-  dbInstance = new Database(dbPath, { timeout: 10000 });
+  // 2. Try creating local data directory if writable
+  try {
+    const localDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(localDir)) {
+      fs.mkdirSync(localDir, { recursive: true });
+    }
+    return { path: path.join(localDir, 'canonical-corpus.db'), canWrite: true };
+  } catch {
+    // In serverless / read-only environment (e.g. /var/task on Vercel/AWS Lambda)
+  }
 
-  // Performance optimizations
-  dbInstance.pragma('journal_mode = WAL');
-  dbInstance.pragma('synchronous = NORMAL');
-  dbInstance.pragma('temp_store = MEMORY');
-  dbInstance.pragma('cache_size = -64000'); // 64MB cache
+  // 3. Fallback to /tmp which is always writable in serverless environments
+  try {
+    const tmpDir = path.join('/tmp', 'murabbi-data');
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true });
+    }
+    return { path: path.join(tmpDir, 'canonical-corpus.db'), canWrite: true };
+  } catch {
+    try {
+      return { path: path.join('/tmp', 'canonical-corpus.db'), canWrite: true };
+    } catch {
+      return null;
+    }
+  }
+}
 
-  initDatabaseTables(dbInstance);
+export function getCanonicalDb(): Database.Database | null {
+  if (dbInstance) return dbInstance;
+  if (dbInitAttempted) return null;
 
-  return dbInstance;
+  dbInitAttempted = true;
+
+  try {
+    const target = resolveDatabasePath();
+    if (!target) {
+      console.warn('[Canonical DB] No writable or readable directory available for SQLite.');
+      return null;
+    }
+
+    // Try opening SQLite database
+    let isReadOnly = false;
+    try {
+      dbInstance = new Database(target.path, { timeout: 10000 });
+    } catch (writeErr: any) {
+      // If write mode failed (e.g. read-only filesystem), try readonly
+      try {
+        dbInstance = new Database(target.path, { readonly: true, timeout: 10000 });
+        isReadOnly = true;
+      } catch (readErr) {
+        console.warn('[Canonical DB] Could not initialize SQLite at', target.path, readErr);
+        return null;
+      }
+    }
+
+    if (dbInstance && !isReadOnly) {
+      try {
+        dbInstance.pragma('journal_mode = WAL');
+        dbInstance.pragma('synchronous = NORMAL');
+        dbInstance.pragma('temp_store = MEMORY');
+        dbInstance.pragma('cache_size = -64000'); // 64MB cache
+        initDatabaseTables(dbInstance);
+      } catch (pragmaErr) {
+        // WAL or table initialization might fail on restricted environments
+        console.warn('[Canonical DB] Pragma / Table init notice:', pragmaErr);
+      }
+    }
+
+    return dbInstance;
+  } catch (err) {
+    console.warn('[Canonical DB] Unexpected database initialization error:', err);
+    return null;
+  }
 }
 
 function initDatabaseTables(db: Database.Database) {
@@ -144,6 +209,7 @@ function initDatabaseTables(db: Database.Database) {
  */
 export function upsertCanonicalBook(book: CanonicalBook): void {
   const db = getCanonicalDb();
+  if (!db) return;
   const stmt = db.prepare(`
     INSERT INTO books (
       id, slug, title, urdu_title, author, author_slug, collection, collection_slug,
@@ -180,6 +246,7 @@ export function upsertCanonicalBook(book: CanonicalBook): void {
 export function insertPagesBatch(pages: CanonicalPageInsert[]): void {
   if (pages.length === 0) return;
   const db = getCanonicalDb();
+  if (!db) return;
 
   const insertPageStmt = db.prepare(`
     INSERT OR REPLACE INTO book_pages (id, book_slug, page_num, text_raw, text_norm, alislam_scan_url, word_count)
@@ -308,6 +375,7 @@ export function searchCanonicalFTS(
   options?: CanonicalSearchOptions
 ): CanonicalSearchResult[] {
   const db = getCanonicalDb();
+  if (!db) return [];
   const ftsQuery = buildFtsQuery(query);
   if (!ftsQuery) return [];
 
@@ -383,6 +451,7 @@ export function searchWithinBook(
   limit = 50
 ): { pageNum: number; snippet: string; alislamScanUrl?: string }[] {
   const db = getCanonicalDb();
+  if (!db) return [];
   const ftsQuery = buildFtsQuery(query);
   if (!ftsQuery || !slug) return [];
 
@@ -419,26 +488,32 @@ export function getCanonicalPage(
   pageNum: number
 ): { text: string; alislamUrl?: string; totalPages: number; title: string; author: string } | null {
   const db = getCanonicalDb();
+  if (!db) return null;
   const pageId = `${slug}:${pageNum}`;
 
-  const pageRow = db
-    .prepare(`
-      SELECT p.text_raw, p.alislam_scan_url, b.total_pages, b.title, b.author
-      FROM book_pages p
-      JOIN books b ON p.book_slug = b.slug
-      WHERE p.id = ?
-    `)
-    .get(pageId) as any;
+  try {
+    const pageRow = db
+      .prepare(`
+        SELECT p.text_raw, p.alislam_scan_url, b.total_pages, b.title, b.author
+        FROM book_pages p
+        JOIN books b ON p.book_slug = b.slug
+        WHERE p.id = ?
+      `)
+      .get(pageId) as any;
 
-  if (!pageRow) return null;
+    if (!pageRow) return null;
 
-  return {
-    text: pageRow.text_raw,
-    alislamUrl: pageRow.alislam_scan_url || undefined,
-    totalPages: pageRow.total_pages || 1,
-    title: pageRow.title,
-    author: pageRow.author
-  };
+    return {
+      text: pageRow.text_raw,
+      alislamUrl: pageRow.alislam_scan_url || undefined,
+      totalPages: pageRow.total_pages || 1,
+      title: pageRow.title,
+      author: pageRow.author
+    };
+  } catch (err) {
+    console.warn('[Canonical DB] getCanonicalPage error:', err);
+    return null;
+  }
 }
 
 /**
@@ -446,8 +521,13 @@ export function getCanonicalPage(
  */
 export function isBookCrawled(slug: string): boolean {
   const db = getCanonicalDb();
-  const row = db.prepare('SELECT 1 FROM books WHERE slug = ? AND total_pages > 0').get(slug);
-  return Boolean(row);
+  if (!db) return false;
+  try {
+    const row = db.prepare('SELECT 1 FROM books WHERE slug = ? AND total_pages > 0').get(slug);
+    return Boolean(row);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -460,15 +540,33 @@ export function getLibraryStats(): {
   totalChunks: number;
 } {
   const db = getCanonicalDb();
-  const booksCount = (db.prepare('SELECT count(*) as count FROM books').get() as any)?.count || 0;
-  const crawledBooksCount = (db.prepare('SELECT count(*) as count FROM books WHERE total_pages > 0').get() as any)?.count || 0;
-  const pagesCount = (db.prepare('SELECT count(*) as count FROM book_pages').get() as any)?.count || 0;
-  const chunksCount = (db.prepare('SELECT count(*) as count FROM rag_chunks').get() as any)?.count || 0;
+  if (!db) {
+    return {
+      totalBooks: 0,
+      crawledBooks: 0,
+      totalPagesIndexed: 0,
+      totalChunks: 0
+    };
+  }
 
-  return {
-    totalBooks: booksCount,
-    crawledBooks: crawledBooksCount,
-    totalPagesIndexed: pagesCount,
-    totalChunks: chunksCount
-  };
+  try {
+    const booksCount = (db.prepare('SELECT count(*) as count FROM books').get() as any)?.count || 0;
+    const crawledBooksCount = (db.prepare('SELECT count(*) as count FROM books WHERE total_pages > 0').get() as any)?.count || 0;
+    const pagesCount = (db.prepare('SELECT count(*) as count FROM book_pages').get() as any)?.count || 0;
+    const chunksCount = (db.prepare('SELECT count(*) as count FROM rag_chunks').get() as any)?.count || 0;
+
+    return {
+      totalBooks: booksCount,
+      crawledBooks: crawledBooksCount,
+      totalPagesIndexed: pagesCount,
+      totalChunks: chunksCount
+    };
+  } catch {
+    return {
+      totalBooks: 0,
+      crawledBooks: 0,
+      totalPagesIndexed: 0,
+      totalChunks: 0
+    };
+  }
 }
