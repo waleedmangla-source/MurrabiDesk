@@ -78,36 +78,36 @@ function renderMarkdown(text: string) {
   html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-black/90 text-emerald-400 p-3 rounded-xl text-xs font-mono my-2 overflow-x-auto border border-white/10"><code>$1</code></pre>');
 
   // Headers
-  html = html.replace(/^#### (.*$)/gm, '<h4 class="text-xs font-black uppercase tracking-widest mt-3 mb-1 text-[var(--accent-main)]">$1</h4>');
-  html = html.replace(/^### (.*$)/gm, '<h3 class="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-[var(--accent-main)] text-black">$1</h3>');
+  html = html.replace(/^#### (.*$)/gm, '<h4 class="text-xs font-black uppercase tracking-widest mt-3 mb-1 text-black">$1</h4>');
+  html = html.replace(/^### (.*$)/gm, '<h3 class="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-black">$1</h3>');
   html = html.replace(/^## (.*$)/gm, '<h2 class="text-base font-black mt-5 mb-2 text-black">$1</h2>');
   html = html.replace(/^# (.*$)/gm, '<h1 class="text-lg font-black mt-6 mb-2 text-black">$1</h1>');
 
   // Blockquotes (> or > )
-  html = html.replace(/^(?:> ?)(.*$)/gm, '<blockquote class="border-l-4 border-[var(--accent-main)] pl-3 py-1 my-2 bg-black/5 italic rounded-r text-black/80">$1</blockquote>');
+  html = html.replace(/^(?:> ?)(.*$)/gm, '<blockquote class="border-l-4 border-[var(--accent-main)] pl-3 py-1 my-2 bg-black/5 italic rounded-r text-black">$1</blockquote>');
 
   // Bullet points (*, -, •, +) including indented sub-bullets
   html = html.replace(/^( *)([•*+\-]) (.*$)/gm, (match, indent, symbol, content) => {
     const spaceCount = indent.length;
     const marginClass = spaceCount >= 4 ? 'ml-8 list-circle' : spaceCount >= 2 ? 'ml-6 list-disc' : 'ml-4 list-disc';
-    return `<li class="${marginClass} my-1 leading-relaxed">${content}</li>`;
+    return `<li class="${marginClass} my-1 leading-relaxed text-black">${content}</li>`;
   });
 
   // Numbered lists (1., 2., etc.)
   html = html.replace(/^( *)(\d+)\. (.*$)/gm, (match, indent, num, content) => {
     const spaceCount = indent.length;
     const marginClass = spaceCount >= 2 ? 'ml-8 list-decimal' : 'ml-4 list-decimal';
-    return `<li class="${marginClass} my-1 leading-relaxed">${content}</li>`;
+    return `<li class="${marginClass} my-1 leading-relaxed text-black">${content}</li>`;
   });
 
   // Bold & Italic
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-black font-extrabold">$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong class="text-black font-extrabold">$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em class="text-black">$1</em>');
+  html = html.replace(/_(.*?)_/g, '<em class="text-black">$1</em>');
 
   // Inline code
-  html = html.replace(/`(.*?)`/g, '<code class="bg-black/10 text-[var(--accent-main)] px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
+  html = html.replace(/`(.*?)`/g, '<code class="bg-black/10 text-black font-semibold px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
 
   // Horizontal rules
   html = html.replace(/^[-*━_]{3,}$/gm, '<hr class="border-black/10 my-3" />');
@@ -807,7 +807,7 @@ export default function MurabbiAIPage() {
                     )}
                   >
                     {msg.role === "assistant" ? (
-                      <div className="prose max-w-none text-sm leading-relaxed text-black"
+                      <div className="prose max-w-none text-sm leading-relaxed text-black dark:text-black [&_*]:text-black"
                         dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                       />
                     ) : msg.content}
