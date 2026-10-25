@@ -51,69 +51,21 @@ interface Conversation {
 const STORAGE_KEY = "murabbi_ai_conversations_v1";
 const OLD_STORAGE_KEY = "murabbi_ai_chat_v1";
 
-function renderMarkdown(text: string) {
+function formatInline(text: string): string {
   if (!text) return "";
-
-  let html = text;
-
-  // Markdown Tables (| Header | Header | \n | --- | --- | \n | Cell | Cell |)
-  html = html.replace(/(?:(?:^|\n)\|[^\n]+\|\n\|[\s:-|-]+\|\n(?:\|[^\n]+\|\n?)+)/gm, (tableMatch) => {
-    const lines = tableMatch.trim().split('\n');
-    if (lines.length < 3) return tableMatch;
-
-    const parseRow = (rowStr: string) => {
-      return rowStr.split('|').slice(1, -1).map(cell => cell.trim());
-    };
-
-    const headerCells = parseRow(lines[0]);
-    const bodyRows = lines.slice(2).map(parseRow);
-
-    const thead = `<thead class="bg-black/10 text-black font-bold uppercase text-[11px] tracking-wider border-b border-black/15"><tr>${headerCells.map(h => `<th class="px-3 py-2 text-left">${h}</th>`).join('')}</tr></thead>`;
-    const tbody = `<tbody>${bodyRows.map((row, idx) => `<tr class="${idx % 2 === 0 ? 'bg-black/[0.02]' : 'bg-transparent'} border-b border-black/5 hover:bg-black/5 transition-colors">${row.map(c => `<td class="px-3 py-2 text-xs text-black/90 font-medium">${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
-
-    return `<div class="my-3 overflow-x-auto rounded-xl border border-black/15 bg-white/40 shadow-sm"><table class="w-full text-left border-collapse">${thead}${tbody}</table></div>`;
-  });
-
-  // Code blocks ```code```
-  html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-black/90 text-emerald-400 p-3 rounded-xl text-xs font-mono my-2 overflow-x-auto border border-white/10"><code>$1</code></pre>');
-
-  // Headers
-  html = html.replace(/^#### (.*$)/gm, '<h4 class="text-xs font-black uppercase tracking-widest mt-3 mb-1 text-black">$1</h4>');
-  html = html.replace(/^### (.*$)/gm, '<h3 class="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-black">$1</h3>');
-  html = html.replace(/^## (.*$)/gm, '<h2 class="text-base font-black mt-5 mb-2 text-black">$1</h2>');
-  html = html.replace(/^# (.*$)/gm, '<h1 class="text-lg font-black mt-6 mb-2 text-black">$1</h1>');
-
-  // Blockquotes (> or > )
-  html = html.replace(/^(?:> ?)(.*$)/gm, '<blockquote class="border-l-4 border-[var(--accent-main)] pl-3 py-1 my-2 bg-black/5 italic rounded-r text-black">$1</blockquote>');
-
-  // Bullet points (*, -, •, +) including indented sub-bullets
-  html = html.replace(/^( *)([•*+\-]) (.*$)/gm, (match, indent, symbol, content) => {
-    const spaceCount = indent.length;
-    const marginClass = spaceCount >= 4 ? 'ml-8 list-circle' : spaceCount >= 2 ? 'ml-6 list-disc' : 'ml-4 list-disc';
-    return `<li class="${marginClass} my-1 leading-relaxed text-black">${content}</li>`;
-  });
-
-  // Numbered lists (1., 2., etc.)
-  html = html.replace(/^( *)(\d+)\. (.*$)/gm, (match, indent, num, content) => {
-    const spaceCount = indent.length;
-    const marginClass = spaceCount >= 2 ? 'ml-8 list-decimal' : 'ml-4 list-decimal';
-    return `<li class="${marginClass} my-1 leading-relaxed text-black">${content}</li>`;
-  });
-
-  // Bold & Italic
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-black font-extrabold">$1</strong>');
-  html = html.replace(/__(.*?)__/g, '<strong class="text-black font-extrabold">$1</strong>');
-  html = html.replace(/\*(.*?)\*/g, '<em class="text-black">$1</em>');
-  html = html.replace(/_(.*?)_/g, '<em class="text-black">$1</em>');
+  let s = text;
 
   // Inline code
-  html = html.replace(/`(.*?)`/g, '<code class="bg-black/10 text-black font-semibold px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
+  s = s.replace(/`([^`]+)`/g, '<code class="bg-black/5 text-black border border-black/10 px-1.5 py-0.5 rounded font-mono text-xs font-semibold">$1</code>');
 
-  // Horizontal rules
-  html = html.replace(/^[-*━_]{3,}$/gm, '<hr class="border-black/10 my-3" />');
+  // Bold & Italic
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-extrabold text-black">$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong class="font-extrabold text-black">$1</strong>');
+  s = s.replace(/\*([^*]+)\*/g, '<em class="italic text-black">$1</em>');
+  s = s.replace(/_([^_]+)_/g, '<em class="italic text-black">$1</em>');
 
   // Format Arabic / Urdu text: Urdu in Nastaleeq, Arabic in Manzoor Naskh
-  html = html.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:\s+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*)/g, (match) => {
+  s = s.replace(/([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+(?:\s+[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)*)/g, (match) => {
     const isUrduText = /[ٹپچڈڑژگںھہۂۃے]/.test(match) || /(?:^|\s)(ہے|ہیں|تھا|تھی|تھے|کا|کے|کی|میں|پر|سے|کو|نے|اور|کہ|یہ|وہ|کیا|کر|گے|گی)(?:\s|$)/.test(match);
     if (isUrduText) {
       return `<span class="font-urdu text-lg lg:text-xl leading-[2.2] inline-block text-black px-1" dir="rtl">${match}</span>`;
@@ -121,12 +73,177 @@ function renderMarkdown(text: string) {
     return `<span class="font-quran text-base lg:text-lg leading-loose inline-block text-black px-1" dir="rtl">${match}</span>`;
   });
 
-  // Paragraph breaks & newlines (avoid breaking table HTML)
-  const parts = html.split(/(<div class="my-3 overflow-x-auto[\s\S]*?<\/div>)/g);
-  html = parts.map(part => {
-    if (part.startsWith('<div class="my-3 overflow-x-auto')) return part;
-    return part.replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>');
-  }).join('');
+  return s;
+}
+
+function renderMarkdown(text: string) {
+  if (!text) return "";
+
+  // 1. Extract protected code blocks
+  const codeBlocks: string[] = [];
+  let processed = text.replace(/```([\s\S]*?)```/g, (_, code) => {
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(
+      `<pre class="bg-black/90 text-emerald-400 p-3.5 rounded-xl text-xs font-mono my-3 overflow-x-auto border border-white/10 shadow-sm leading-relaxed"><code>${code.trim()}</code></pre>`
+    );
+    return `\n\n${placeholder}\n\n`;
+  });
+
+  // 2. Extract protected markdown tables
+  const tableBlocks: string[] = [];
+  processed = processed.replace(/(?:(?:^|\n)\|[^\n]+\|\n\|[\s:-|-]+\|\n(?:\|[^\n]+\|\n?)+)/gm, (tableMatch) => {
+    const lines = tableMatch.trim().split('\n');
+    if (lines.length < 3) return tableMatch;
+
+    const parseRow = (rowStr: string) => rowStr.split('|').slice(1, -1).map(cell => cell.trim());
+    const headerCells = parseRow(lines[0]);
+    const bodyRows = lines.slice(2).map(parseRow);
+
+    const thead = `<thead class="bg-black/10 text-black font-bold uppercase text-[11px] tracking-wider border-b border-black/15"><tr>${headerCells.map(h => `<th class="px-3 py-2 text-left">${formatInline(h)}</th>`).join('')}</tr></thead>`;
+    const tbody = `<tbody>${bodyRows.map((row, idx) => `<tr class="${idx % 2 === 0 ? 'bg-black/[0.02]' : 'bg-transparent'} border-b border-black/5 hover:bg-black/5 transition-colors">${row.map(c => `<td class="px-3 py-2 text-xs text-black font-medium">${formatInline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+    const placeholder = `__TABLE_BLOCK_${tableBlocks.length}__`;
+    tableBlocks.push(
+      `<div class="my-3 overflow-x-auto rounded-xl border border-black/15 bg-white/40 shadow-sm"><table class="w-full text-left border-collapse">${thead}${tbody}</table></div>`
+    );
+    return `\n\n${placeholder}\n\n`;
+  });
+
+  // 3. Process lines and assemble structured blocks
+  const lines = processed.split('\n');
+  const result: string[] = [];
+
+  let inUl = false;
+  let inOl = false;
+  let inBlockquote = false;
+  let quoteBuffer: string[] = [];
+
+  const closeList = () => {
+    if (inUl) {
+      result.push('</ul>');
+      inUl = false;
+    }
+    if (inOl) {
+      result.push('</ol>');
+      inOl = false;
+    }
+  };
+
+  const closeBlockquote = () => {
+    if (inBlockquote) {
+      result.push(
+        `<blockquote class="border-l-4 border-[var(--accent-main)] pl-3.5 py-1.5 my-2.5 bg-black/5 italic rounded-r text-black font-medium leading-relaxed">${quoteBuffer.map(l => formatInline(l)).join('<br/>')}</blockquote>`
+      );
+      quoteBuffer = [];
+      inBlockquote = false;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Check for code or table placeholders
+    if (trimmed.startsWith('__CODE_BLOCK_') || trimmed.startsWith('__TABLE_BLOCK_')) {
+      closeList();
+      closeBlockquote();
+      result.push(trimmed);
+      continue;
+    }
+
+    // Blank line
+    if (!trimmed) {
+      closeList();
+      closeBlockquote();
+      continue;
+    }
+
+    // Horizontal Rule
+    if (/^[-*━_]{3,}$/.test(trimmed)) {
+      closeList();
+      closeBlockquote();
+      result.push('<hr class="border-black/10 my-3.5" />');
+      continue;
+    }
+
+    // Headings
+    if (/^#{1,4}\s/.test(trimmed)) {
+      closeList();
+      closeBlockquote();
+      if (trimmed.startsWith('#### ')) {
+        result.push(`<h4 class="text-xs font-black uppercase tracking-wider mt-3 mb-1 text-black">${formatInline(trimmed.slice(5))}</h4>`);
+      } else if (trimmed.startsWith('### ')) {
+        result.push(`<h3 class="text-sm font-black uppercase tracking-wider mt-4 mb-1.5 text-black">${formatInline(trimmed.slice(4))}</h3>`);
+      } else if (trimmed.startsWith('## ')) {
+        result.push(`<h2 class="text-base font-black tracking-tight mt-4 mb-2 text-black">${formatInline(trimmed.slice(3))}</h2>`);
+      } else if (trimmed.startsWith('# ')) {
+        result.push(`<h1 class="text-lg font-black tracking-tight mt-5 mb-2.5 text-black">${formatInline(trimmed.slice(2))}</h1>`);
+      }
+      continue;
+    }
+
+    // Blockquote
+    if (/^>\s?/.test(trimmed)) {
+      closeList();
+      inBlockquote = true;
+      quoteBuffer.push(trimmed.replace(/^>\s?/, ''));
+      continue;
+    } else {
+      closeBlockquote();
+    }
+
+    // Bullet Lists (*, -, •, +)
+    const bulletMatch = line.match(/^(\s*)([•*+\-])\s+(.*)$/);
+    if (bulletMatch) {
+      if (inOl) {
+        result.push('</ol>');
+        inOl = false;
+      }
+      if (!inUl) {
+        result.push('<ul class="my-2 space-y-1 pl-5 list-disc text-black">');
+        inUl = true;
+      }
+      const indent = bulletMatch[1].length;
+      const subClass = indent >= 2 ? 'ml-4 list-circle' : '';
+      result.push(`<li class="leading-relaxed text-black ${subClass}">${formatInline(bulletMatch[3])}</li>`);
+      continue;
+    }
+
+    // Numbered Lists (1., 2., etc.)
+    const numMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      if (inUl) {
+        result.push('</ul>');
+        inUl = false;
+      }
+      if (!inOl) {
+        result.push('<ol class="my-2 space-y-1 pl-5 list-decimal text-black">');
+        inOl = true;
+      }
+      const indent = numMatch[1].length;
+      const subClass = indent >= 2 ? 'ml-4 list-[lower-alpha]' : '';
+      result.push(`<li class="leading-relaxed text-black ${subClass}">${formatInline(numMatch[3])}</li>`);
+      continue;
+    }
+
+    // Normal paragraph line
+    closeList();
+    closeBlockquote();
+    result.push(`<p class="my-1.5 leading-relaxed text-black">${formatInline(trimmed)}</p>`);
+  }
+
+  closeList();
+  closeBlockquote();
+
+  let html = result.join('');
+
+  // 4. Restore placeholders
+  codeBlocks.forEach((block, idx) => {
+    html = html.replace(`__CODE_BLOCK_${idx}__`, block);
+  });
+  tableBlocks.forEach((block, idx) => {
+    html = html.replace(`__TABLE_BLOCK_${idx}__`, block);
+  });
 
   return html;
 }
